@@ -1,0 +1,19 @@
+# ignore database and logs
+*.db
+*.db*
+OZW_Log.txt
+*.log
+*.old
+*.xml
+
+# don't leak secrets
+ip_bans.yaml
+secrets.yaml
+known_devices.yaml
+*.ppk
+
+# ignore folders
+.storage
+.cloud
+.google.token
+.ssh

@@ -1,0 +1,266 @@
+- id: '1515525794372'
+  alias: Felix rum vardag, tänd
+  trigger:
+  - platform: time
+    at: '07:00:00'
+  - platform: numeric_state
+    entity_id: sun.sun
+    value_template: '{{ state.attributes.elevation }}'
+    below: 5.0
+  condition:
+    condition: and
+    conditions:
+    - condition: template
+      value_template: '{{ state_attr("sun.sun", "elevation") < 5 }}'
+    - condition: time
+      weekday:
+      - mon
+      - tue
+      - wed
+      - thu
+      - fri
+  action:
+  - service: script.turn_on_felix_rum
+- id: '180109204500'
+  alias: Felix rum vardag, släck
+  trigger:
+  - platform: time
+    at: '22:00:00'
+  - platform: numeric_state
+    entity_id: sun.sun
+    value_template: '{{ state.attributes.elevation }}'
+    above: 5.0
+  condition:
+  - condition: time
+    weekday:
+    - mon
+    - tue
+    - wed
+    - thu
+    - sun
+  action:
+  - service: script.turn_off_felix_rum
+- id: '180109204000'
+  alias: Felix rum helg, tänd
+  trigger:
+  - platform: time
+    at: '09:30:00'
+  - platform: numeric_state
+    entity_id: sun.sun
+    value_template: '{{ state.attributes.elevation }}'
+    below: 5.0
+  condition:
+    condition: and
+    conditions:
+    - condition: template
+      value_template: '{{ state_attr("sun.sun", "elevation") < 5 }}'
+    - condition: time
+      weekday:
+      - sat
+      - sun
+  action:
+  - service: script.turn_on_felix_rum
+- id: '180109204700'
+  alias: Felix rum helg, släck
+  trigger:
+  - platform: time
+    at: '22:15:00'
+  - platform: numeric_state
+    entity_id: sun.sun
+    value_template: '{{ state.attributes.elevation }}'
+    above: 5.0
+  condition:
+  - condition: time
+    weekday:
+    - fri
+    - sat
+  action:
+  - service: script.turn_off_felix_rum
+- id: '1515522028713'
+  alias: Felix rum lov, tänd
+  initial_state: false
+  trigger:
+  - platform: time
+    at: '09:30:00'
+  - platform: numeric_state
+    entity_id: sun.sun
+    value_template: '{{ state.attributes.elevation }}'
+    below: 5.0
+  condition:
+  - condition: template
+    value_template: '{{ state_attr("sun.sun", "elevation") < 5 }}'
+  action:
+  - service: script.turn_on_felix_rum
+- id: '180109203600'
+  alias: Felix rum lov, släck
+  initial_state: false
+  trigger:
+  - platform: time
+    at: '22:15:00'
+  - platform: numeric_state
+    entity_id: sun.sun
+    value_template: '{{ state.attributes.elevation }}'
+    above: 5.0
+  action:
+  - service: script.turn_off_felix_rum
+- id: '1515530983851'
+  alias: Allmän belysning, tänd
+  trigger:
+  - platform: numeric_state
+    entity_id: sun.sun
+    value_template: '{{ state.attributes.elevation }}'
+    below: 5.0
+  condition:
+    condition: and
+    conditions:
+    - condition: template
+      value_template: '{{ state_attr("sun.sun", "elevation") < 5 }}'
+    - condition: time
+      weekday:
+      - mon
+      - tue
+      - wed
+      - thu
+      - fri
+  action:
+  - service: script.turn_on_general_lights
+- alias: Morgonbelysning, tänd
+  trigger:
+  - platform: time
+    at: '06:55:00'
+  condition:
+    condition: and
+    conditions:
+    - condition: template
+      value_template: '{{ state_attr("sun.sun", "elevation") < 5 }}'
+    - condition: time
+      weekday:
+      - mon
+      - tue
+      - wed
+      - thu
+      - fri
+  action:
+  - service: script.turn_on_morning_lights
+  id: 0b1073dedfa245b2835600cf6972b74a
+- alias: Morgonbelysning, tänd, helg
+  trigger:
+  - platform: time
+    at: '08:30:00'
+  condition:
+    condition: and
+    conditions:
+    - condition: template
+      value_template: '{{ state_attr("sun.sun", "elevation") < 5 }}'
+    - condition: time
+      weekday:
+      - sat
+      - sun
+  action:
+  - service: script.turn_on_morning_lights
+  id: 9f920a28dc6b4985b53ecb6e13c42a06
+- id: '1515530983853'
+  alias: Allmän belysning, tänd, helg
+  trigger:
+  - platform: numeric_state
+    entity_id: sun.sun
+    value_template: '{{ state.attributes.elevation }}'
+    below: 5.0
+  condition:
+    condition: and
+    conditions:
+    - condition: template
+      value_template: '{{ state_attr("sun.sun", "elevation") < 5 }}'
+    - condition: time
+      weekday:
+      - sat
+      - sun
+  action:
+  - service: script.turn_on_general_lights
+- id: '1515530983852'
+  alias: Allmän belysning, släck
+  trigger:
+  - platform: time
+    at: '23:45:00'
+  - platform: numeric_state
+    entity_id: sun.sun
+    value_template: '{{ state.attributes.elevation }}'
+    above: 5.0
+  action:
+  - service: script.turn_off_general_lights
+- id: '180109222801'
+  alias: Utomhusbelysning, tänd på morgonen
+  trigger:
+  - at: '07:00:00'
+    platform: time
+  condition:
+    - condition: sun
+      before: 'sunrise'
+  action:
+  - service: script.turn_on_outdoor
+- id: '200305204500'
+  alias: Utomhusbelysning, tänd på kvällen
+  trigger:
+  - event: sunset
+    platform: sun
+  action:
+  - service: script.turn_on_outdoor
+- alias: Utomhusbelysning, släck
+  id: '180109222803'
+  trigger:
+  - platform: sun
+    event: sunrise
+  - platform: time
+    at: '23:55:00'
+  action:
+  - service: script.turn_off_outdoor
+- id: '180109231900'
+  alias: Telefonladdare på
+  trigger:
+  - platform: time
+    at: '04:30:00'
+  - platform: time
+    at: '23:00:00'
+  action:
+    service: homeassistant.turn_on
+    data:
+      entity_id: switch.nexa_5
+- id: '180109231901'
+  alias: Telefonladdare av
+  trigger:
+  - platform: time
+    at: '00:00:00'
+  - platform: time
+    at: '07:00:00'
+  action:
+    service: homeassistant.turn_off
+    data:
+      entity_id: switch.nexa_5
+- id: '190806164100'
+  alias: Tänd (mulet)
+  trigger:
+  - platform: template
+    value_template: "{{ (states('sensor.yr_cloudiness')|float > 90) and (states('sensor.yr_symbol')|float > 3) and (states.sun.sun.attributes.elevation|float > 5) 
+        and (is_state('device_tracker.4040a7bb473c', 'home') 
+            or is_state('device_tracker.08_c5_e1_52_45_62','home')
+            or is_state('device_tracker.6c_c7_ec_04_25_00','home')) }}"
+  condition:
+    condition: or
+    conditions:
+    - condition: time
+      after: '07:00:00'
+      before: '23:00:00'
+      weekday:
+      - mon
+      - tue
+      - wed
+      - thu
+      - fri
+    - condition: time
+      after: '09:00:00'
+      before: '23:00:00'
+      weekday:
+      - sat
+      - sun
+  action:
+    service: script.turn_on_general_lights

@@ -1,0 +1,78 @@
+# Tellstick Duo temp
+- platform: tellstick
+  only_named:
+  - id: 199
+    name: Altan
+  - id: 215
+    name: Sovrummet
+  - id: 231
+    name: Framsidan
+# Weather prediction
+- platform: yr
+  monitored_conditions:
+    - temperature
+    - symbol
+    - windSpeed
+    - pressure
+    - cloudiness
+#pushbullet
+#  - platform: pushbullet
+#    api_key: !secret pushbullet_token
+# Samsung printer
+#  - platform: syncthru
+#    resource: http://192.168.1.101
+
+- platform: rest
+  resource: http://192.168.1.189/solar_api/v1/GetInverterRealtimeData.cgi?Scope=Device&DeviceId=1&DataCollection=CommonInverterData
+  method: GET
+  name: "Aktuell effekt"
+  value_template: "{{ (value_json.Body.Data.PAC.Value /1000 | float)|round(2) }}"
+  unit_of_measurement: 'kW'
+  force_update: true
+  scan_interval: 60
+  
+- platform: rest
+  resource: http://192.168.1.189/solar_api/v1/GetInverterRealtimeData.cgi?Scope=Device&DeviceId=1&DataCollection=CommonInverterData
+  method: GET
+  name: "Total energi idag"
+  unit_of_measurement: 'kWh'
+  force_update: true
+  scan_interval: 600
+  value_template: >-
+    {% set tlen = (value_json.Body.Data.DAY_ENERGY.Value|string)|length - 3 %}
+    {{(value_json.Body.Data.DAY_ENERGY.Value/(10**tlen))|round(0) * (10**tlen)/1000}}
+
+  #"{{ ((value_json.Body.Data.DAY_ENERGY.Value /1000 | float / 10)|round(2)) * 10}}"
+  
+- platform: template
+  sensors:
+    last_sp_value:
+      friendly_name: "Senaste energi"
+      unit_of_measurement: 'kWh'
+      entity_id: sensor.total_energi_idag
+      value_template: >-
+        {% if is_state('sensor.total_energi_idag', 'unavailable') or is_state('sensor.total_energi_idag', 'unknown') %}
+          {{ states("sensor.last_sp_value") }}
+        {% elif state_attr('sun.sun', 'rising') == true and state_attr('sun.sun', 'elevation')|float > -5 %}
+          {{ states('sensor.total_energi_idag')|float }}
+        {% elif states('sensor.total_energi_idag')|float > states('sensor.last_sp_value')|float %}
+          {{ states('sensor.total_energi_idag')|float }}
+        {% else %}
+          {{ states('sensor.last_sp_value')|float }}
+        {% endif %}
+# {% set last_sp_value = states('sensor.total_energi_idag') %}
+# {% elif is_state('sun.sun', 'above_horizon') and (states('sensor.total_energi_idag')|float > states('sensor.last_sp_value')|float) %}
+          
+- platform: template
+  sensors:
+    last_sp_kw:
+      friendly_name: "Senaste effekt"
+      unit_of_measurement: "kW"
+      entity_id: sensor.aktuell_effekt
+      value_template: >-
+        {% if is_state('sensor.aktuell_effekt', 'unavailable') or is_state('sensor.aktuell_effekt','unknown') %}
+          0
+        {% else %}
+          {% set last_sp_kw = states("sensor.aktuell_effekt") %}
+          {{ states("sensor.aktuell_effekt") }}
+        {% endif %}

@@ -1,0 +1,68 @@
+vrum_nere:
+  name: Vardagsrummet, nere
+  entities:
+    - switch.rusta15d
+    - switch.tz2
+    - switch.fibaro_system_fgwpe_f_wall_plug_gen5_switch
+    - light.fibaro_system_fgd212_dimmer_2_level_2
+#    - switch.nexa_2
+#    - media_player.vardagsrummet
+#    - device_tracker.47sl9000za
+#    - media_player.chromecast-nord
+#    - media_player.xbox_360_(138prl)
+
+felix_rum:
+  name: Felix rum
+  entities:
+    - switch.nexa_6
+    
+gastrummet:
+  name: Gästrummet
+  entities:
+    - switch.tz1
+    - switch.Rusta15E
+    
+hallen:
+  name: Hallen
+  entities:
+    - switch.telldus_1
+    
+koket:
+  name: Köket
+  entities:
+    - switch.kitchen_window
+    
+grovkoket:
+  name: Grovköket
+  entities:
+    - switch.rusta15b
+    
+vrum_uppe:
+  name: Vardagsrummet, uppe
+  entities:
+    - switch.rusta25b
+    - switch.telldus_3
+
+sovrummet:      
+  name: Sovrummet
+  entities:
+    - switch.nexa_3
+    - switch.nexa_4
+    - switch.nexa_1 # klädkammaren
+
+kontoret:
+  name: Kontoret
+  entities:
+    - switch.telldus_2
+    - switch.rusta25a
+#    - switch.tz1
+
+ute:      
+  name: Ute
+  entities:
+#    - switch.altanbelysning
+    - switch.nexa_out_1
+#    - switch.nexa_out_2
+    - switch.telldusout1
+    - switch.telldusout2
+    - switch.an179_1     # altanväggen söderut

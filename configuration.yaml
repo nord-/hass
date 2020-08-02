@@ -1,0 +1,134 @@
+# # Configure a default setup of Home Assistant (frontend, api, etc)
+# default_config:
+
+# # Text to speech
+# tts:
+#   - platform: google_translate
+
+# group: !include groups.yaml
+# automation: !include automations.yaml
+# script: !include scripts.yaml
+# scene: !include scenes.yaml
+
+homeassistant:
+  # Name of the location where Home Assistant is running
+  name: Home
+  # Location required to calculate the time the sun rises and sets
+  latitude: 58.298057
+  longitude: 12.276063
+  # Impacts weather/sunrise data (altitude above sea level in meters)
+  elevation: 76
+  # metric for Metric, imperial for Imperial
+  unit_system: metric
+  # Pick yours from here: http://en.wikipedia.org/wiki/List_of_tz_database_time_zones
+  time_zone: Europe/Stockholm
+  # Customization file
+  customize: !include customize.yaml
+  
+  packages: !include_dir_named packages
+
+# Show links to resources in log and frontend
+#introduction:
+# Redirect output to Synology NAS Maria DB
+recorder:
+  db_url: !secret recorder_db_url
+
+#system health component
+system_health: 
+
+# Enables the frontend
+frontend:
+
+mobile_app:
+
+# Enables configuration UI
+config:
+
+http:
+  # Secrets are defined in the file secrets.yaml
+  # api_password: !secret http_password
+  # Uncomment this if you are using SSL/TLS, running in Docker container, etc.
+  # base_url: example.duckdns.org:8123
+
+# Checks for available updates
+# Note: This component will send some information about your system to
+# the developers to assist with development of Home Assistant.
+# For more information, please see:
+# https://home-assistant.io/blog/2016/10/25/explaining-the-updater/
+updater:
+  # Optional, allows Home Assistant developers to focus on popular components.
+  # include_used_components: true
+
+# Discover some devices automatically
+#discovery: !include discovery.yaml
+
+# Allows you to issue voice commands from the frontend in enabled browsers
+#conversation:
+
+# Enables support for tracking state changes over time
+history:
+
+# View all events in a logbook
+logbook:
+
+# Enables a map showing the location of tracked devices
+map:
+
+# Track the sun
+sun:
+
+sensor: !include sensors.yaml
+
+zwave:
+  usb_path: /dev/ttyACM0
+  network_key: !secret zwave_networkkey
+#   device_config_glob:
+#     "sensor.*_exporting*":
+#       ignored: true
+#     "sensor.*_sourcenodeid*":
+#       ignored: true
+#   device_config: !include zwave_device_config.yaml
+
+# Text to speech
+tts:
+  platform: google_translate
+  language: 'sv'
+
+# Cloud
+cloud:
+
+# Här inkluderar jag några brytare. 
+#switch: !include switches.yaml
+switch:
+  platform: tellstick
+
+group: !include groups.yaml
+automation: !include automations.yaml
+script: !include scripts.yaml
+
+# För att få min HA att läsa upp mina Nexa enheter lägger jag till följande rad.
+tellstick:
+  host: core-tellstick
+  port: [50800, 50801]
+  signal_repetitions: 3
+  
+device_tracker: !include device_tracker.yaml 
+
+#notify:
+#  - platform: pushbullet
+#    name: pushbullet
+#    api_key: !secret pushbullet_token
+
+
+
+# # Configure a default setup of Home Assistant (frontend, api, etc)
+# default_config:
+
+# # Text to speech
+# tts:
+#   - platform: google_translate
+
+# group: !include groups.yaml
+# automation: !include automations.yaml
+# script: !include scripts.yaml
+# scene: !include scenes.yaml

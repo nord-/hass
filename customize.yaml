@@ -1,0 +1,98 @@
+persistent_notification.notification:
+  title: Välkommen hem!
+sensor.yr_symbol:
+  friendly_name: yr
+sensor.199_temperature:
+  friendly_name: Temp, altan
+sensor.215_temperature:
+  friendly_name: Temp, sovrummet
+sensor.231_temperature:
+  friendly_name: Temp, vardagsrummet
+sensor.199_humidity:
+  friendly_name: Luftfukt, altan
+sensor.215_humidity:
+  friendly_name: Luftfukt, sovrummet
+sensor.231_humidity:
+  friendly_name: Luftfukt, vardagsrummet
+  
+device_tracker.47sl9000za:
+  friendly_name: LG 47SL9000
+  hidden: true
+zone.home:
+  friendly_name: Hemma
+
+light.fibaro_system_fgd212_dimmer_2_level_2:
+  friendly_name: Vardagsrumsfönstret
+switch.fibaro_system_fgwpe_f_wall_plug_gen5_switch:
+  friendly_name: Skänken
+switch.kitchen_window:
+  friendly_name: Köksfönstret
+switch.nexa_1:
+  friendly_name: Klädkammaren
+switch.nexa_2:
+  friendly_name: Vedstapeln
+switch.nexa_3:
+  friendly_name: Sovrummet Rickard
+switch.nexa_4:
+  friendly_name: Sovrummet Frida
+switch.nexa_5:
+  friendly_name: Telefonladdare
+switch.nexa_6:
+  friendly_name: Fönstret, Felix rum
+switch.nexa_out_1:
+  friendly_name: Huvudentrén
+switch.an179_1:
+  friendly_name: Altan, söder
+switch.telldus_1:
+  friendly_name: Hallbyrån
+switch.telldus_2:
+  friendly_name: Kontorsfönstret
+switch.telldus_3:
+  friendly_name: Brudkistan
+switch.telldusout1:
+  friendly_name: Södra altanväggen
+switch.telldusout2:
+  friendly_name: Norra altanväggen
+switch.rusta15b:
+  friendly_name: Grovköket
+switch.rusta15d:
+  friendly_name: TV-bänken
+switch.rusta25a:
+  friendly_name: Skrivbordet
+switch.rusta25b:
+  friendly_name: Skåpet uppe
+switch.tz1:
+  friendly_name: Telldus TZ1
+switch.tz2:
+  friendly_name: Flörtkulorna
+switch.rusta15e:
+  friendly_name: Gästrummet
+switch.rusta13a:
+  friendly_name: Sänglampan
+switch.rusta13b:
+  friendly_name: Ljusslingan
+switch.rusta13c:
+  friendly_name: Byrån
+
+switch.rusta14a:
+  hidden: true
+  friendly_name: Rusta R14A
+switch.rusta14b:
+  hidden: true
+  friendly_name: Rusta R14B
+switch.rusta14c:
+  hidden: true
+  friendly_name: Rusta R14C
+switch.rusta14e:
+  hidden: true
+  friendly_name: Rusta R14E
+switch.rusta15a:
+  hidden: true
+  friendly_name: Rusta R15A
+switch.rusta15c:
+  hidden: true
+  friendly_name: Rusta R15C
+#switch.altanbelysning:
+#  friendly_name: Altan söder
+#switch.nexa_out_2:
+#  friendly_name: Altanväggen

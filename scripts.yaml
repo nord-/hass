@@ -1,0 +1,175 @@
+turn_on_felix_rum:
+  alias: Tänd Felix rum
+  sequence:
+  - service: homeassistant.turn_on
+    data:
+      entity_id: group.felix_rum
+
+turn_off_felix_rum:
+  alias: Släck Felix rum
+  sequence:
+  - service: homeassistant.turn_off
+    data:
+      entity_id: group.felix_rum
+
+turn_on_uppe:
+  alias: Tänd övervån
+  sequence:
+  - service: switch.turn_on
+    data:
+      entity_id: 
+      - group.vrum_uppe
+      - group.sovrummet
+      - group.kontoret
+
+turn_off_uppe:
+  alias: Släck övervån
+  sequence:
+  - service: switch.turn_off
+    data:
+      entity_id: 
+      - group.vrum_uppe
+      - group.sovrummet
+      - group.kontoret   
+
+turn_on_nere:
+  alias: Tänd undervån
+  sequence:
+  - service: switch.turn_on
+    data:
+      entity_id: 
+      - group.grovkoket
+      - group.koket
+      - group.vrum_nere
+      - group.hallen
+      - group.gastrummet
+      - group.felix_rum
+  - service: light.turn_on
+    data:
+      entity_id: group.vrum_nere
+
+turn_off_nere:
+  alias: Släck undervån
+  sequence:
+  - service: switch.turn_off
+    data:
+      entity_id: 
+      - group.grovkoket
+      - group.koket
+      - group.vrum_nere
+      - group.hallen
+      - group.gastrummet
+      - group.felix_rum
+  - service: light.turn_off
+    data:
+      entity_id: group.vrum_nere
+
+turn_on_general_lights:
+  alias: Tänd allmän belysning
+  sequence:
+  - service: switch.turn_on
+    data:
+      entity_id:
+      - group.grovkoket
+      - group.koket
+      - group.vrum_nere
+      - group.hallen
+      - group.gastrummet
+      - group.sovrummet
+      - group.vrum_uppe
+      - group.kontoret
+  - service: light.turn_on
+    data:
+      entity_id: group.vrum_nere
+
+turn_off_general_lights:
+  alias: Släck allmän belysning
+  sequence:
+  - service: switch.turn_off
+    data:
+      entity_id:
+      - group.grovkoket
+      - group.koket
+      - group.vrum_nere
+      - group.hallen
+      - group.gastrummet
+      - group.sovrummet
+      - group.vrum_uppe
+      - group.kontoret
+      - switch.rusta13a
+      - switch.rusta13b
+      - switch.rusta13c
+  - service: light.turn_off
+    data:
+      entity_id: group.vrum_nere
+
+turn_off_all:
+  alias: Stäng av allt
+  sequence:
+  - service: switch.turn_off
+    data:
+      entity_id:
+      - group.grovkoket
+      - group.koket
+      - group.vrum_nere
+      - group.hallen
+      - group.gastrummet
+      - group.sovrummet
+      - group.vrum_uppe
+      - group.kontoret
+      - group.felix_rum
+      - group.ute
+  - service: light.turn_off
+    data:
+      entity_id: group.vrum_nere
+
+turn_on_outdoor:
+  alias: Slå på utomhusbelysning
+  sequence:
+  - service: switch.turn_on
+    data:
+      entity_id: group.ute
+
+turn_off_outdoor:
+  alias: Slå av utomhusbelysning
+  sequence:
+  - service: switch.turn_off
+    data:
+      entity_id: group.ute
+
+turn_on_all_lights:
+  alias: Tänd belysning
+  sequence:
+    - service: switch.turn_on
+      data:
+        entity_id:
+        - group.grovkoket
+        - group.koket
+        - group.vrum_nere
+        - group.hallen
+        - group.gastrummet
+        - group.sovrummet
+        - group.vrum_uppe
+        - group.kontoret
+        - group.felix_rum
+    - service: light.turn_on
+      data:
+        entity_id: group.vrum_nere
+
+turn_on_morning_lights:
+  alias: Tänd morgonbelysning
+  sequence:
+  - service: switch.turn_on
+    data:
+      entity_id:
+      - group.grovkoket
+      - group.koket
+      - group.vrum_nere
+      - group.hallen
+      - group.gastrummet
+      - group.kontoret
+      - switch.nexa_1   # klädkammaren
+      - switch.rusta25b # vardagsrummet uppe, byrån
+  - service: light.turn_on
+    data:
+      entity_id: group.vrum_nere
