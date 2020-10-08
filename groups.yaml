@@ -30,7 +30,8 @@ hallen:
 koket:
   name: Köket
   entities:
-    - switch.kitchen_window
+    - light.kitchen_window
+#    - light.fibaro_system_fgd212_dimmer_2_level_4
     
 grovkoket:
   name: Grovköket

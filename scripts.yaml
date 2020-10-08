@@ -46,7 +46,9 @@ turn_on_nere:
       - group.felix_rum
   - service: light.turn_on
     data:
-      entity_id: group.vrum_nere
+      entity_id: 
+      - group.vrum_nere
+      - group.koket
 
 turn_off_nere:
   alias: Släck undervån
@@ -62,7 +64,9 @@ turn_off_nere:
       - group.felix_rum
   - service: light.turn_off
     data:
-      entity_id: group.vrum_nere
+      entity_id: 
+      - group.vrum_nere
+      - group.koket
 
 turn_on_general_lights:
   alias: Tänd allmän belysning
@@ -80,7 +84,9 @@ turn_on_general_lights:
       - group.kontoret
   - service: light.turn_on
     data:
-      entity_id: group.vrum_nere
+      entity_id: 
+      - group.vrum_nere
+      - group.koket
 
 turn_off_general_lights:
   alias: Släck allmän belysning
@@ -101,7 +107,9 @@ turn_off_general_lights:
       - switch.rusta13c
   - service: light.turn_off
     data:
-      entity_id: group.vrum_nere
+      entity_id: 
+      - group.vrum_nere
+      - group.koket
 
 turn_off_all:
   alias: Stäng av allt
@@ -121,7 +129,9 @@ turn_off_all:
       - group.ute
   - service: light.turn_off
     data:
-      entity_id: group.vrum_nere
+      entity_id: 
+      - group.vrum_nere
+      - group.koket
 
 turn_on_outdoor:
   alias: Slå på utomhusbelysning
@@ -154,7 +164,9 @@ turn_on_all_lights:
         - group.felix_rum
     - service: light.turn_on
       data:
-        entity_id: group.vrum_nere
+        entity_id: 
+        - group.vrum_nere
+        - group.koket
 
 turn_on_morning_lights:
   alias: Tänd morgonbelysning
@@ -172,4 +184,7 @@ turn_on_morning_lights:
       - switch.rusta25b # vardagsrummet uppe, byrån
   - service: light.turn_on
     data:
-      entity_id: group.vrum_nere
+      entity_id: 
+      - group.vrum_nere
+      - group.koket
+

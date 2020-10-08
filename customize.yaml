@@ -7,13 +7,13 @@ sensor.199_temperature:
 sensor.215_temperature:
   friendly_name: Temp, sovrummet
 sensor.231_temperature:
-  friendly_name: Temp, vardagsrummet
+  friendly_name: Temp, framsidan
 sensor.199_humidity:
   friendly_name: Luftfukt, altan
 sensor.215_humidity:
   friendly_name: Luftfukt, sovrummet
 sensor.231_humidity:
-  friendly_name: Luftfukt, vardagsrummet
+  friendly_name: Luftfukt, framsidan
   
 device_tracker.47sl9000za:
   friendly_name: LG 47SL9000
