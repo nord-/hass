@@ -239,28 +239,51 @@
 - id: '190806164100'
   alias: Tänd (mulet)
   trigger:
-  - platform: template
-    value_template: "{{ (states('sensor.yr_cloudiness')|float > 90) and (states('sensor.yr_symbol')|float > 3) and (states.sun.sun.attributes.elevation|float > 5) 
-        and (is_state('device_tracker.4040a7bb473c', 'home') 
-            or is_state('device_tracker.08_c5_e1_52_45_62','home')
-            or is_state('device_tracker.6c_c7_ec_04_25_00','home')) }}"
+    - platform: numeric_state
+      entity_id: sensor.yr_cloudiness
+      above: 80
+      for:
+        minutes: 10
+    - platform: state
+      entity_id: group.my_people
+      to: 'home'
   condition:
-    condition: or
-    conditions:
-    - condition: time
-      after: '07:00:00'
-      before: '23:00:00'
-      weekday:
-      - mon
-      - tue
-      - wed
-      - thu
-      - fri
-    - condition: time
-      after: '09:00:00'
-      before: '23:00:00'
-      weekday:
-      - sat
-      - sun
+    - condition: numeric_state
+      entity_id: sun.sun
+      value_template: '{{ state.attributes.elevation }}'
+      above: 5.0
+    # - condition: state
+    #   entity_id: sun.sun
+    #   state: 'above_horizon'
+    # - condition: state
+    #   entity_id: group.my_people
+    #   state: 'home'
+    - condition: numeric_state
+      entity_id: sensor.yr_cloudiness
+      above: 80
+  # trigger:
+  # - platform: template
+  #   value_template: "{{ (states('sensor.yr_cloudiness')|float > 90) and (states('sensor.yr_symbol')|float > 3) and (states.sun.sun.attributes.elevation|float > 5) 
+  #       and (is_state('device_tracker.4040a7bb473c', 'home') 
+  #           or is_state('device_tracker.08_c5_e1_52_45_62','home')
+  #           or is_state('device_tracker.6c_c7_ec_04_25_00','home')) }}"
+  # condition:
+  #   condition: or
+  #   conditions:
+  #   - condition: time
+  #     after: '07:00:00'
+  #     before: '23:00:00'
+  #     weekday:
+  #     - mon
+  #     - tue
+  #     - wed
+  #     - thu
+  #     - fri
+  #   - condition: time
+  #     after: '09:00:00'
+  #     before: '23:00:00'
+  #     weekday:
+  #     - sat
+  #     - sun
   action:
     service: script.turn_on_general_lights

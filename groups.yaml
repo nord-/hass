@@ -15,6 +15,7 @@ felix_rum:
   name: Felix rum
   entities:
     - switch.nexa_6
+    - switch.rusta13b
     
 gastrummet:
   name: Gästrummet
@@ -54,8 +55,9 @@ sovrummet:
 kontoret:
   name: Kontoret
   entities:
-    - switch.telldus_2
+    - light.office_window
     - switch.rusta25a
+#    - switch.telldus_2
 #    - switch.tz1
 
 ute:      
@@ -67,3 +69,6 @@ ute:
     - switch.telldusout1
     - switch.telldusout2
     - switch.an179_1     # altanväggen söderut
+
+my_people:
+  name: Frida och Rickard
