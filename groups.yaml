@@ -72,3 +72,6 @@ ute:
 
 my_people:
   name: Frida och Rickard
+  entities:
+    - person.rickard_nord
+    - person.frida

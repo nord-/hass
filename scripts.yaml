@@ -89,6 +89,7 @@ turn_on_general_lights:
       entity_id:
       - group.vrum_nere
       - group.koket
+      - group.kontoret
 turn_off_general_lights:
   alias: Släck allmän belysning
   sequence:
