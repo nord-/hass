@@ -217,14 +217,20 @@
 - id: '180109231900'
   alias: Telefonladdare på
   trigger:
-  - platform: time
-    at: 04:30:00
-  - platform: time
-    at: '23:00:00'
+  - at: '23:00:00'
+    platform: time
+  - below: '25'
+    entity_id: sensor.sm_g960f_battery_level
+    platform: numeric_state
+  condition:
+  - condition: state
+    entity_id: person.rickard_nord
+    state: home
   action:
-    service: homeassistant.turn_on
-    data:
-      entity_id: switch.nexa_5
+  - data: {}
+    entity_id: switch.nexa_5
+    service: switch.turn_on
+  mode: single
 - id: '180109231901'
   alias: Telefonladdare av
   trigger:
@@ -265,14 +271,14 @@
   alias: Släck (mulet)
   description: Släck lamporna när det inte är mulet längre
   trigger:
-  - entity_id: group.my_people
+  - platform: state
+    entity_id: group.my_people
     for: '5'
-    from: home
-    platform: state
+    from: home    
     to: not_home
-  - below: '80'
-    entity_id: sensor.yr_cloudiness
-    platform: numeric_state
+  - platform: numeric_state
+    below: '80'
+    entity_id: sensor.yr_cloudiness    
   condition:
   - above: 5
     condition: numeric_state
@@ -281,4 +287,17 @@
   action:
   - data: {}
     service: script.turn_off_general_lights
+  mode: single
+- id: '1603895419161'
+  alias: Sluta ladda
+  description: ''
+  trigger:
+  - above: '99'
+    entity_id: sensor.sm_g960f_battery_level
+    for: '5'
+    platform: numeric_state
+  condition: []
+  action:
+  - service: switch.turn_off
+    entity_id: switch.nexa_5    
   mode: single

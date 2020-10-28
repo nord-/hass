@@ -2,8 +2,10 @@
   hosts: 192.168.1.0/24
   home_interval: 10
   scan_options: " --privileged -sP "
-  interval_seconds: 3
+  interval_seconds: 12
   consider_home: 180
+  new_device_defaults:
+      track_new_devices: false
 
 # - platform: bluetooth_tracker
 #   track_new_devices: True

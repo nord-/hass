@@ -19,8 +19,8 @@
 #  - platform: pushbullet
 #    api_key: !secret pushbullet_token
 # Samsung printer
-#  - platform: syncthru
-#    resource: http://192.168.1.101
+- platform: syncthru
+  resource: http://192.168.1.101
 
 - platform: rest
   resource: http://192.168.1.189/solar_api/v1/GetInverterRealtimeData.cgi?Scope=Device&DeviceId=1&DataCollection=CommonInverterData
