@@ -1,0 +1,23 @@
+{
+    "data": {
+        "items": [
+            {
+                "id": "0e5a410309f948f8a7b99525c8175ff8",
+                "type": "module",
+                "url": "/local/plugins/fold-entity-row.js?v=19"
+            },
+            {
+                "id": "7a77a69eb7c5442eacec4f2c4843d4aa",
+                "type": "module",
+                "url": "/local/plugins/group-card.js"
+            },
+            {
+                "id": "56963393097f4e10a1da452f352fb271",
+                "type": "module",
+                "url": "/local/plugins/monster-card.js"
+            }
+        ]
+    },
+    "key": "lovelace_resources",
+    "version": 1
+}

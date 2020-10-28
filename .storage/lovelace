@@ -1,0 +1,479 @@
+{
+    "data": {
+        "config": {
+            "title": "Hem",
+            "views": [
+                {
+                    "badges": [
+                        {
+                            "entity": "person.rickard_nord"
+                        },
+                        {
+                            "entity": "person.frida"
+                        },
+                        {
+                            "entity": "person.felix"
+                        }
+                    ],
+                    "cards": [
+                        {
+                            "entity": "sensor.199_temperature",
+                            "graph": "line",
+                            "name": "Altanen",
+                            "type": "sensor"
+                        },
+                        {
+                            "cards": [
+                                {
+                                    "cards": [
+                                        {
+                                            "entity": "script.turn_on_general_lights",
+                                            "hold_action": {
+                                                "action": "none"
+                                            },
+                                            "icon": "mdi:lightbulb-on",
+                                            "tap_action": {
+                                                "action": "toggle"
+                                            },
+                                            "type": "entity-button"
+                                        },
+                                        {
+                                            "entity": "script.turn_off_general_lights",
+                                            "hold_action": {
+                                                "action": "none"
+                                            },
+                                            "icon": "mdi:lightbulb-off",
+                                            "tap_action": {
+                                                "action": "toggle"
+                                            },
+                                            "type": "entity-button"
+                                        }
+                                    ],
+                                    "type": "horizontal-stack"
+                                },
+                                {
+                                    "cards": [
+                                        {
+                                            "entity": "switch.rusta25a",
+                                            "hold_action": {
+                                                "action": "none"
+                                            },
+                                            "icon": "mdi:lightbulb-on",
+                                            "name": "Skriv-bordet",
+                                            "show_icon": true,
+                                            "show_name": true,
+                                            "show_state": false,
+                                            "tap_action": {
+                                                "action": "toggle"
+                                            },
+                                            "type": "button"
+                                        },
+                                        {
+                                            "entity": "script.turn_on_nere",
+                                            "hold_action": {
+                                                "action": "none"
+                                            },
+                                            "icon": "mdi:lightbulb-on",
+                                            "name": "T\u00e4nd uv\u00e5n",
+                                            "tap_action": {
+                                                "action": "toggle"
+                                            },
+                                            "type": "entity-button"
+                                        },
+                                        {
+                                            "entity": "script.turn_off_nere",
+                                            "hold_action": {
+                                                "action": "none"
+                                            },
+                                            "icon": "mdi:lightbulb-off",
+                                            "name": "Sl\u00e4ck uv\u00e5n",
+                                            "tap_action": {
+                                                "action": "toggle"
+                                            },
+                                            "type": "entity-button"
+                                        },
+                                        {
+                                            "entity": "script.turn_on_uppe",
+                                            "hold_action": {
+                                                "action": "none"
+                                            },
+                                            "icon": "mdi:lightbulb-on",
+                                            "tap_action": {
+                                                "action": "toggle"
+                                            },
+                                            "type": "entity-button"
+                                        },
+                                        {
+                                            "entity": "script.turn_off_uppe",
+                                            "hold_action": {
+                                                "action": "none"
+                                            },
+                                            "icon": "mdi:lightbulb-off",
+                                            "tap_action": {
+                                                "action": "toggle"
+                                            },
+                                            "type": "entity-button"
+                                        },
+                                        {
+                                            "entity": "script.early_morning_lights_on",
+                                            "hold_action": {
+                                                "action": "none"
+                                            },
+                                            "icon": "mdi:lightbulb-on",
+                                            "name": "God Morgon",
+                                            "show_icon": true,
+                                            "show_name": true,
+                                            "show_state": false,
+                                            "tap_action": {
+                                                "action": "toggle"
+                                            },
+                                            "type": "button"
+                                        }
+                                    ],
+                                    "type": "horizontal-stack"
+                                }
+                            ],
+                            "type": "vertical-stack"
+                        },
+                        {
+                            "cards": [
+                                {
+                                    "cards": [
+                                        {
+                                            "entity": "sensor.last_sp_kw",
+                                            "max": 8.2,
+                                            "min": 0,
+                                            "name": "Effekt",
+                                            "type": "gauge"
+                                        },
+                                        {
+                                            "entity": "sensor.last_sp_value",
+                                            "max": 70,
+                                            "name": "Energi",
+                                            "type": "gauge"
+                                        }
+                                    ],
+                                    "type": "horizontal-stack"
+                                },
+                                {
+                                    "entity": "sensor.aktuell_effekt",
+                                    "graph": "line",
+                                    "hours_to_show": 48,
+                                    "icon": "hass:flash",
+                                    "name": "Effekt",
+                                    "type": "sensor"
+                                }
+                            ],
+                            "type": "vertical-stack"
+                        },
+                        {
+                            "entities": [
+                                "sensor.heater_departuretime",
+                                "input_number.heater_hour",
+                                "input_number.heater_minute",
+                                "automation.motorvarmare_sla_pa",
+                                {
+                                    "entities": [
+                                        "sensor.heater_activationtime",
+                                        "sensor.heater_forecast",
+                                        "input_number.heater_delay",
+                                        "input_number.heater_maxmin",
+                                        {
+                                            "entity": "sensor.popp_co_700397_wall_plug_switch_outdoor_schuko_ip44_energy",
+                                            "icon": "mdi:flash-circle"
+                                        },
+                                        {
+                                            "entity": "sensor.popp_co_700397_wall_plug_switch_outdoor_schuko_ip44_power_2",
+                                            "icon": "mdi:power-plug",
+                                            "name": "Effekt"
+                                        },
+                                        "switch.popp_co_700397_wall_plug_switch_outdoor_schuko_ip44_switch"
+                                    ],
+                                    "head": {
+                                        "label": "Anpassa",
+                                        "type": "section"
+                                    },
+                                    "type": "custom:fold-entity-row"
+                                }
+                            ],
+                            "show_header_toggle": false,
+                            "title": "Motorv\u00e4rmare",
+                            "type": "entities"
+                        }
+                    ],
+                    "path": "default_view",
+                    "title": "Hemma"
+                },
+                {
+                    "badges": [
+                        {
+                            "entity": "sensor.sm_g960f_battery_level"
+                        },
+                        {
+                            "entity": "sensor.sm_t290_battery_level_2"
+                        },
+                        {
+                            "entity": "sensor.sm_g950f_batteriniva"
+                        }
+                    ],
+                    "cards": [
+                        {
+                            "entity": "switch.nexa_5",
+                            "hold_action": {
+                                "action": "more-info"
+                            },
+                            "icon": "hass:cellphone-charging",
+                            "name": "Laddare",
+                            "show_icon": true,
+                            "show_name": true,
+                            "show_state": false,
+                            "tap_action": {
+                                "action": "toggle"
+                            },
+                            "type": "button"
+                        },
+                        {
+                            "entities": [
+                                {
+                                    "entity": "switch.nexa_3"
+                                },
+                                {
+                                    "entity": "switch.nexa_4"
+                                },
+                                {
+                                    "entity": "switch.nexa_5"
+                                },
+                                {
+                                    "entity": "switch.nexa_1"
+                                }
+                            ],
+                            "show_header_toggle": false,
+                            "type": "entities"
+                        },
+                        {
+                            "entity": "sensor.215_temperature",
+                            "graph": "line",
+                            "type": "sensor"
+                        },
+                        {
+                            "entity": "media_player.sovrummet",
+                            "type": "media-control"
+                        }
+                    ],
+                    "title": "Sovrummet"
+                },
+                {
+                    "badges": [],
+                    "cards": [
+                        {
+                            "entities": [
+                                {
+                                    "entity": "switch.rusta15d"
+                                },
+                                {
+                                    "entity": "switch.fibaro_system_fgwpe_f_wall_plug_gen5_switch"
+                                },
+                                {
+                                    "entity": "switch.tz2"
+                                },
+                                {
+                                    "entity": "switch.nexa_2"
+                                }
+                            ],
+                            "show_header_toggle": false,
+                            "type": "entities"
+                        },
+                        {
+                            "entity": "light.fibaro_system_fgd212_dimmer_2_level_2",
+                            "name": "F\u00f6nstret",
+                            "theme": "default",
+                            "type": "light"
+                        },
+                        {
+                            "entity": "media_player.vardagsrummet",
+                            "type": "media-control"
+                        }
+                    ],
+                    "title": "Vardagsrummet"
+                },
+                {
+                    "badges": [],
+                    "cards": [
+                        {
+                            "entities": [
+                                "switch.nexa_6",
+                                "switch.rusta13a",
+                                "switch.rusta13b",
+                                "switch.rusta13c"
+                            ],
+                            "title": "Belysning",
+                            "type": "entities"
+                        }
+                    ],
+                    "path": "felix",
+                    "title": "Felix"
+                },
+                {
+                    "badges": [],
+                    "cards": [
+                        {
+                            "entity": "light.kitchen_window",
+                            "name": "K\u00f6ksf\u00f6nstret",
+                            "type": "light"
+                        },
+                        {
+                            "entity": "media_player.koket",
+                            "type": "media-control"
+                        }
+                    ],
+                    "path": "koket",
+                    "title": "K\u00f6ket"
+                },
+                {
+                    "badges": [],
+                    "cards": [
+                        {
+                            "entities": [
+                                {
+                                    "entity": "switch.telldus_3"
+                                },
+                                {
+                                    "entity": "switch.rusta25b"
+                                }
+                            ],
+                            "type": "entities"
+                        },
+                        {
+                            "entity": "media_player.projektorn",
+                            "type": "media-control"
+                        }
+                    ],
+                    "title": "Vardagsrummet, uppe"
+                },
+                {
+                    "badges": [
+                        {
+                            "entity": "sensor.215_temperature"
+                        },
+                        {
+                            "entity": "sensor.samsung_c43x_series_192_168_1_101_toner_black"
+                        },
+                        {
+                            "entity": "sensor.samsung_c43x_series_192_168_1_101_toner_cyan"
+                        },
+                        {
+                            "entity": "sensor.samsung_c43x_series_192_168_1_101_toner_magenta"
+                        },
+                        {
+                            "entity": "sensor.samsung_c43x_series_192_168_1_101_toner_yellow"
+                        }
+                    ],
+                    "cards": [
+                        {
+                            "entities": [
+                                {
+                                    "entity": "light.office_window"
+                                },
+                                {
+                                    "entity": "switch.rusta25a"
+                                }
+                            ],
+                            "type": "entities"
+                        }
+                    ],
+                    "title": "Kontoret"
+                },
+                {
+                    "badges": [
+                        {
+                            "entity": "sun.sun"
+                        },
+                        {
+                            "entity": "sensor.yr_symbol"
+                        },
+                        {
+                            "entity": "sensor.199_temperature"
+                        },
+                        {
+                            "entity": "sensor.231_temperature"
+                        },
+                        {
+                            "entity": "sensor.yr_wind_speed"
+                        },
+                        {
+                            "entity": "sensor.yr_cloudiness"
+                        },
+                        {
+                            "entity": "sensor.199_humidity"
+                        }
+                    ],
+                    "cards": [
+                        {
+                            "entities": [
+                                {
+                                    "entity": "switch.an179_1"
+                                },
+                                {
+                                    "entity": "switch.telldusout1"
+                                },
+                                {
+                                    "entity": "switch.telldusout2"
+                                },
+                                {
+                                    "entity": "switch.nexa_out_1"
+                                }
+                            ],
+                            "show_header_toggle": true,
+                            "title": "Utomhus",
+                            "type": "entities"
+                        },
+                        {
+                            "entities": [
+                                {
+                                    "entity": "sensor.231_temperature",
+                                    "name": "Framsidan"
+                                },
+                                {
+                                    "entity": "sensor.199_temperature",
+                                    "name": "Altan"
+                                }
+                            ],
+                            "hours_to_show": 8,
+                            "refresh_interval": 30,
+                            "type": "history-graph"
+                        },
+                        {
+                            "entity": "weather.smhi_home",
+                            "type": "weather-forecast"
+                        }
+                    ],
+                    "title": "Ute"
+                },
+                {
+                    "badges": null,
+                    "cards": [
+                        {
+                            "entities": [
+                                {
+                                    "entity": "switch.telldus_1"
+                                },
+                                {
+                                    "entity": "switch.rusta15e"
+                                },
+                                {
+                                    "entity": "switch.tz1",
+                                    "name": "Grovk\u00f6ket"
+                                }
+                            ],
+                            "show_header_toggle": false,
+                            "type": "entities"
+                        }
+                    ],
+                    "title": "\u00d6vriga"
+                }
+            ]
+        }
+    },
+    "key": "lovelace",
+    "version": 1
+}
