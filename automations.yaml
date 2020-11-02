@@ -184,7 +184,18 @@
     entity_id: sun.sun
     platform: numeric_state
     value_template: '{{ state.attributes.elevation }}'
-  condition: []
+  condition: 
+    condition: or
+    conditions:
+    - condition: and
+      conditions:
+      - condition: sun
+        after: sunrise
+      - condition: numeric_state
+        entity_id: sensor.yr_cloudiness
+        below: '80'      
+    - condition: sun
+      after: sunset
   action:
   - service: script.turn_off_general_lights
   mode: single

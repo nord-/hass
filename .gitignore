@@ -17,3 +17,4 @@ known_devices.yaml
 .cloud
 .google.token
 .ssh
+custom_components

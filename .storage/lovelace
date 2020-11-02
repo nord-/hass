@@ -1,4 +1,6 @@
 {
+    "version": 1,
+    "key": "lovelace",
     "data": {
         "config": {
             "title": "Hem",
@@ -351,21 +353,22 @@
                     "title": "Vardagsrummet, uppe"
                 },
                 {
+                    "title": "Kontoret",
                     "badges": [
                         {
                             "entity": "sensor.215_temperature"
                         },
                         {
-                            "entity": "sensor.samsung_c43x_series_192_168_1_101_toner_black"
+                            "entity": "sensor.samsung_printer_toner_black"
                         },
                         {
-                            "entity": "sensor.samsung_c43x_series_192_168_1_101_toner_cyan"
+                            "entity": "sensor.samsung_printer_toner_cyan"
                         },
                         {
-                            "entity": "sensor.samsung_c43x_series_192_168_1_101_toner_magenta"
+                            "entity": "sensor.samsung_printer_toner_magenta"
                         },
                         {
-                            "entity": "sensor.samsung_c43x_series_192_168_1_101_toner_yellow"
+                            "entity": "sensor.samsung_printer_toner_yellow"
                         }
                     ],
                     "cards": [
@@ -380,10 +383,10 @@
                             ],
                             "type": "entities"
                         }
-                    ],
-                    "title": "Kontoret"
+                    ]
                 },
                 {
+                    "title": "Ute",
                     "badges": [
                         {
                             "entity": "sun.sun"
@@ -446,8 +449,7 @@
                             "entity": "weather.smhi_home",
                             "type": "weather-forecast"
                         }
-                    ],
-                    "title": "Ute"
+                    ]
                 },
                 {
                     "badges": null,
@@ -473,7 +475,5 @@
                 }
             ]
         }
-    },
-    "key": "lovelace",
-    "version": 1
+    }
 }
