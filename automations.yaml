@@ -257,18 +257,17 @@
     data:
       entity_id: switch.nexa_5
 - id: '190806164100'
-  alias: Tänd (mulet)
+  alias: Mulet (tänd)
   trigger:
   - above: '80'
     entity_id: sensor.yr_cloudiness
-    for:
-      minutes: 10
+    for: 0:10:00
     platform: numeric_state
   - entity_id: group.my_people
     platform: state
     to: home
   condition:
-  - above: 5
+  - above: '5'
     condition: numeric_state
     entity_id: sun.sun
     value_template: '{{ state.attributes.elevation }}'
@@ -282,19 +281,19 @@
   - service: script.turn_on_general_lights
   mode: single
 - id: '1603878294613'
-  alias: Släck (mulet)
+  alias: Mulet (släck)
   description: Släck lamporna när det inte är mulet längre
   trigger:
   - platform: state
     entity_id: group.my_people
-    for: '5'
     from: home
     to: not_home
+    for: 00:05:00
   - platform: numeric_state
     below: '80'
     entity_id: sensor.yr_cloudiness
   condition:
-  - above: 5
+  - above: '5'
     condition: numeric_state
     entity_id: sun.sun
     value_template: '{{ state.attributes.elevation }}'
