@@ -184,8 +184,8 @@
     entity_id: sun.sun
     platform: numeric_state
     value_template: '{{ state.attributes.elevation }}'
-  condition: 
-    condition: or
+  condition:
+  - condition: or
     conditions:
     - condition: and
       conditions:
@@ -193,9 +193,12 @@
         after: sunrise
       - condition: numeric_state
         entity_id: sensor.yr_cloudiness
-        below: '80'      
+        below: '80'
     - condition: sun
       after: sunset
+    - condition: state
+      entity_id: group.my_people
+      state: not_home
   action:
   - service: script.turn_off_general_lights
   mode: single
@@ -285,11 +288,11 @@
   - platform: state
     entity_id: group.my_people
     for: '5'
-    from: home    
+    from: home
     to: not_home
   - platform: numeric_state
     below: '80'
-    entity_id: sensor.yr_cloudiness    
+    entity_id: sensor.yr_cloudiness
   condition:
   - above: 5
     condition: numeric_state
@@ -310,5 +313,5 @@
   condition: []
   action:
   - service: switch.turn_off
-    entity_id: switch.nexa_5    
+    entity_id: switch.nexa_5
   mode: single
