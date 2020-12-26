@@ -2,7 +2,6 @@ vrum_nere:
   name: Vardagsrummet, nere
   entities:
     - switch.rusta15d
-    - switch.tz2
     - switch.fibaro_system_fgwpe_f_wall_plug_gen5_switch
     - light.fibaro_system_fgd212_dimmer_2_level_2
 #    - switch.nexa_2
@@ -56,7 +55,8 @@ kontoret:
   name: Kontoret
   entities:
     - light.office_window
-    - switch.rusta25a
+    - switch.tz2
+#    - switch.rusta25a
 #    - switch.telldus_2
 #    - switch.tz1
 

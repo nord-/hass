@@ -6,7 +6,12 @@
             "title": "Hem",
             "views": [
                 {
+                    "path": "default_view",
+                    "title": "Hemma",
                     "badges": [
+                        {
+                            "entity": "group.my_people"
+                        },
                         {
                             "entity": "person.rickard_nord"
                         },
@@ -182,14 +187,18 @@
                                         "input_number.heater_maxmin",
                                         {
                                             "entity": "sensor.popp_co_700397_wall_plug_switch_outdoor_schuko_ip44_energy",
-                                            "icon": "mdi:flash-circle"
+                                            "icon": "mdi:flash-circle",
+                                            "name": "Energi"
                                         },
                                         {
-                                            "entity": "sensor.popp_co_700397_wall_plug_switch_outdoor_schuko_ip44_power_2",
+                                            "entity": "sensor.popp_co_700397_wall_plug_switch_outdoor_schuko_ip44_power",
                                             "icon": "mdi:power-plug",
                                             "name": "Effekt"
                                         },
-                                        "switch.popp_co_700397_wall_plug_switch_outdoor_schuko_ip44_switch"
+                                        {
+                                            "entity": "switch.popp_co_700397_wall_plug_switch_outdoor_schuko_ip44_switch",
+                                            "name": "P\u00e5/av"
+                                        }
                                     ],
                                     "head": {
                                         "label": "Anpassa",
@@ -202,9 +211,7 @@
                             "title": "Motorv\u00e4rmare",
                             "type": "entities"
                         }
-                    ],
-                    "path": "default_view",
-                    "title": "Hemma"
+                    ]
                 },
                 {
                     "badges": [
@@ -243,14 +250,13 @@
                                     "entity": "switch.nexa_4"
                                 },
                                 {
-                                    "entity": "switch.nexa_5"
-                                },
-                                {
                                     "entity": "switch.nexa_1"
                                 }
                             ],
-                            "show_header_toggle": false,
-                            "type": "entities"
+                            "show_header_toggle": true,
+                            "type": "entities",
+                            "title": "Belysning",
+                            "state_color": true
                         },
                         {
                             "entity": "sensor.215_temperature",
@@ -274,9 +280,6 @@
                                 },
                                 {
                                     "entity": "switch.fibaro_system_fgwpe_f_wall_plug_gen5_switch"
-                                },
-                                {
-                                    "entity": "switch.tz2"
                                 },
                                 {
                                     "entity": "switch.nexa_2"
@@ -343,7 +346,9 @@
                                     "entity": "switch.rusta25b"
                                 }
                             ],
-                            "type": "entities"
+                            "type": "entities",
+                            "state_color": true,
+                            "title": "Belysning"
                         },
                         {
                             "entity": "media_player.projektorn",
@@ -378,7 +383,7 @@
                                     "entity": "light.office_window"
                                 },
                                 {
-                                    "entity": "switch.rusta25a"
+                                    "entity": "switch.tz2"
                                 }
                             ],
                             "type": "entities"

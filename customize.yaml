@@ -45,8 +45,6 @@ switch.an179_1:
   friendly_name: Altan, söder
 switch.telldus_1:
   friendly_name: Hallbyrån
-switch.telldus_2:
-  friendly_name: Kontorsfönstret
 switch.telldus_3:
   friendly_name: Brudkistan
 switch.telldusout1:
@@ -57,14 +55,12 @@ switch.rusta15b:
   friendly_name: Grovköket
 switch.rusta15d:
   friendly_name: TV-bänken
-switch.rusta25a:
-  friendly_name: Skrivbordet
 switch.rusta25b:
   friendly_name: Skåpet uppe
 switch.tz1:
   friendly_name: Telldus TZ1
 switch.tz2:
-  friendly_name: Flörtkulorna
+  friendly_name: Skrivbordslampan
 switch.rusta15e:
   friendly_name: Gästrummet
 switch.rusta13a:
@@ -96,3 +92,7 @@ switch.rusta15c:
 #  friendly_name: Altan söder
 #switch.nexa_out_2:
 #  friendly_name: Altanväggen
+# switch.rusta25a:
+#   friendly_name: Skrivbordet
+# switch.telldus_2:
+#   friendly_name: Kontorsfönstret

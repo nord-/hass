@@ -236,6 +236,8 @@
   - below: '25'
     entity_id: sensor.sm_g960f_battery_level
     platform: numeric_state
+  - platform: time
+    at: 06:30:00
   condition:
   - condition: state
     entity_id: person.rickard_nord
@@ -266,6 +268,11 @@
   - entity_id: group.my_people
     platform: state
     to: home
+    for: 0:5:00
+  - platform: numeric_state
+    entity_id: sensor.yr_symbol
+    above: '3'
+    for: 0:10:00
   condition:
   - above: '5'
     condition: numeric_state
@@ -277,6 +284,9 @@
   - above: '80'
     condition: numeric_state
     entity_id: sensor.yr_cloudiness
+  - condition: numeric_state
+    entity_id: sensor.yr_symbol
+    above: '3'
   action:
   - service: script.turn_on_general_lights
   mode: single
@@ -292,11 +302,22 @@
   - platform: numeric_state
     below: '80'
     entity_id: sensor.yr_cloudiness
+    for: 0:10:00
+  - platform: numeric_state
+    entity_id: sensor.yr_symbol
+    below: '4'
+    for: 0:10:00
   condition:
   - above: '5'
     condition: numeric_state
     entity_id: sun.sun
     value_template: '{{ state.attributes.elevation }}'
+  - condition: numeric_state
+    entity_id: sensor.yr_symbol
+    below: '4'
+  - condition: numeric_state
+    entity_id: sensor.yr_cloudiness
+    below: '80'
   action:
   - data: {}
     service: script.turn_off_general_lights
