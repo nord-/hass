@@ -283,6 +283,12 @@
                                 },
                                 {
                                     "entity": "switch.nexa_2"
+                                },
+                                {
+                                    "entity": "switch.rusta14c"
+                                },
+                                {
+                                    "entity": "switch.rusta15b"
                                 }
                             ],
                             "show_header_toggle": false,

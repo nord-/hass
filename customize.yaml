@@ -51,8 +51,10 @@ switch.telldusout1:
   friendly_name: Södra altanväggen
 switch.telldusout2:
   friendly_name: Norra altanväggen
+switch.rusta14c:
+  friendly_name: Röda Julgranen
 switch.rusta15b:
-  friendly_name: Grovköket
+  friendly_name: Julgranen
 switch.rusta15d:
   friendly_name: TV-bänken
 switch.rusta25b:
@@ -76,9 +78,6 @@ switch.rusta14a:
 switch.rusta14b:
   hidden: true
   friendly_name: Rusta R14B
-switch.rusta14c:
-  hidden: true
-  friendly_name: Rusta R14C
 switch.rusta14e:
   hidden: true
   friendly_name: Rusta R14E

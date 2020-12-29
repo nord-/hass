@@ -37,6 +37,9 @@ http:
   # api_password: !secret http_password
   # Uncomment this if you are using SSL/TLS, running in Docker container, etc.
   # base_url: example.duckdns.org:8123
+  # Example configuration.yaml entry for the HTTP component
+  ssl_certificate: /ssl/fullchain.pem
+  ssl_key: /ssl/privkey.pem
 
 # Checks for available updates
 # Note: This component will send some information about your system to
@@ -102,6 +105,24 @@ tellstick:
   
 device_tracker: !include device_tracker.yaml 
 
+# Example configuration.yaml entry
+google_assistant:
+  project_id: hassio-2295b
+  service_account: !include google_service_account.json
+  report_state: true
+  exposed_domains:
+    - switch
+    - light
+  # entity_config:
+  #   switch.kitchen:
+  #     name: CUSTOM_NAME_FOR_GOOGLE_ASSISTANT
+  #     aliases:
+  #       - BRIGHT_LIGHTS
+  #       - ENTRY_LIGHTS
+  #   light.living_room:
+  #     expose: false
+  #     room: LIVING_ROOM
+  
 #notify:
 #  - platform: pushbullet
 #    name: pushbullet

@@ -4,11 +4,8 @@ vrum_nere:
     - switch.rusta15d
     - switch.fibaro_system_fgwpe_f_wall_plug_gen5_switch
     - light.fibaro_system_fgd212_dimmer_2_level_2
-#    - switch.nexa_2
-#    - media_player.vardagsrummet
-#    - device_tracker.47sl9000za
-#    - media_player.chromecast-nord
-#    - media_player.xbox_360_(138prl)
+    - switch.rusta14c # röda julgranen
+    - switch.rusta15b # julgranen
 
 felix_rum:
   name: Felix rum

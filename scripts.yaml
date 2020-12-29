@@ -141,20 +141,12 @@ turn_on_outdoor:
   - service: switch.turn_on
     data:
       entity_id: group.ute
-  - service: switch.turn_on
-    data: {}
-    entity_id: switch.rusta14c
-  mode: single
 turn_off_outdoor:
   alias: Slå av utomhusbelysning
   sequence:
   - service: switch.turn_off
     data:
       entity_id: group.ute
-  - service: switch.turn_off
-    data: {}
-    entity_id: switch.rusta14c
-  mode: single
 turn_on_all_lights:
   alias: Tänd belysning
   sequence:
