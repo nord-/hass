@@ -52,9 +52,9 @@ switch.telldusout1:
 switch.telldusout2:
   friendly_name: Norra altanväggen
 switch.rusta14c:
-  friendly_name: Röda Julgranen
-switch.rusta15b:
   friendly_name: Julgranen
+switch.rusta15b:
+  friendly_name: Röda Julgranen
 switch.rusta15d:
   friendly_name: TV-bänken
 switch.rusta25b:
@@ -64,7 +64,7 @@ switch.tz1:
 switch.tz2:
   friendly_name: Skrivbordslampan
 switch.rusta15e:
-  friendly_name: Gästrummet
+  friendly_name: Spelrumsfönstret
 switch.rusta13a:
   friendly_name: Sänglampan
 switch.rusta13b:

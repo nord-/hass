@@ -4,8 +4,8 @@ vrum_nere:
     - switch.rusta15d
     - switch.fibaro_system_fgwpe_f_wall_plug_gen5_switch
     - light.fibaro_system_fgd212_dimmer_2_level_2
-    - switch.rusta14c # röda julgranen
-    - switch.rusta15b # julgranen
+    - switch.rusta14c # julgranen
+    - switch.rusta15b # röda julgranen
 
 felix_rum:
   name: Felix rum
@@ -14,7 +14,7 @@ felix_rum:
     - switch.rusta13b
     
 gastrummet:
-  name: Gästrummet
+  name: Spelrummet
   entities:
     - switch.tz1
     - switch.Rusta15E

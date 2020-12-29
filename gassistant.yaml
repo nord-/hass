@@ -1,0 +1,38 @@
+project_id: hassio-2295b
+service_account: !include google_service_account.json
+report_state: true
+exposed_domains:
+  - switch
+  - light
+entity_config:
+  switch.nexa_out_2:
+    expose: false
+  light.fibaro_system_fgd212_dimmer_2_level:
+    expose: false
+  light.fibaro_system_fgd212_dimmer_2_level_5:
+    expose: false
+  switch.rusta14a:
+    expose: false
+  switch.rusta14b:
+    expose: false
+  switch.rusta14e:
+    expose: false
+  switch.rusta15a:
+    expose: false
+  switch.rusta15c:
+    expose: false
+  switch.rusta13a:
+    expose: false
+  switch.rusta25a:
+    expose: false
+  switch.telldus_2:
+    expose: false
+
+#   switch.kitchen:
+#     name: CUSTOM_NAME_FOR_GOOGLE_ASSISTANT
+#     aliases:
+#       - BRIGHT_LIGHTS
+#       - ENTRY_LIGHTS
+#   light.living_room:
+#     expose: false
+#     room: LIVING_ROOM
