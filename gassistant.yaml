@@ -4,6 +4,7 @@ report_state: true
 exposed_domains:
   - switch
   - light
+  - lock
 entity_config:
   switch.nexa_out_2:
     expose: false
@@ -21,13 +22,24 @@ entity_config:
     expose: false
   switch.rusta15c:
     expose: false
-  switch.rusta13a:
+  switch.rusta13a_2:
     expose: false
   switch.rusta25a:
     expose: false
-  switch.telldus_2:
+# switch.telldus_2:
+#   expose: false
+  sensor.azarel_range_sensor:
+    expose: true
+  climate.azarel_hvac_climate_system:
+    expose: true
+  switch.azarel_charger_switch:
     expose: false
-
+  switch.azarel_maxrange_switch:
+    expose: false
+  switch.azarel_sentry_mode_switch:
+    expose: false
+  switch.azarel_update_switch:
+    expose: false
 #   switch.kitchen:
 #     name: CUSTOM_NAME_FOR_GOOGLE_ASSISTANT
 #     aliases:

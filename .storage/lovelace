@@ -210,16 +210,34 @@
                             "show_header_toggle": false,
                             "title": "Motorv\u00e4rmare",
                             "type": "entities"
+                        },
+                        {
+                            "type": "thermostat",
+                            "entity": "climate.azarel_hvac_climate_system",
+                            "name": "Azarel"
+                        },
+                        {
+                            "type": "glance",
+                            "entities": [
+                                {
+                                    "entity": "sensor.azarel_battery_sensor"
+                                }
+                            ],
+                            "title": "Azarel",
+                            "show_name": false,
+                            "show_state": true,
+                            "state_color": false
                         }
                     ]
                 },
                 {
+                    "title": "Sovrummet",
                     "badges": [
                         {
                             "entity": "sensor.sm_g960f_battery_level"
                         },
                         {
-                            "entity": "sensor.sm_t290_battery_level_2"
+                            "entity": "sensor.sm_p610_batteriniva"
                         },
                         {
                             "entity": "sensor.sm_g950f_batteriniva"
@@ -267,8 +285,7 @@
                             "entity": "media_player.sovrummet",
                             "type": "media-control"
                         }
-                    ],
-                    "title": "Sovrummet"
+                    ]
                 },
                 {
                     "badges": [],
@@ -285,6 +302,9 @@
                                     "entity": "switch.nexa_2"
                                 },
                                 {
+                                    "entity": "switch.telldus_2"
+                                },
+                                {
                                     "entity": "switch.rusta14c"
                                 },
                                 {
@@ -292,7 +312,8 @@
                                 }
                             ],
                             "show_header_toggle": false,
-                            "type": "entities"
+                            "type": "entities",
+                            "state_color": true
                         },
                         {
                             "entity": "light.fibaro_system_fgd212_dimmer_2_level_2",
@@ -483,6 +504,110 @@
                         }
                     ],
                     "title": "\u00d6vriga"
+                },
+                {
+                    "title": "Tesla",
+                    "path": "tesla",
+                    "icon": "mdi:car",
+                    "panel": true,
+                    "badges": [],
+                    "cards": [
+                        {
+                            "type": "vertical-stack",
+                            "title": "Azarel",
+                            "cards": [
+                                {
+                                    "type": "entities",
+                                    "entities": [
+                                        {
+                                            "entity": "lock.azarel_door_lock",
+                                            "name": "D\u00f6rrl\u00e5s"
+                                        },
+                                        {
+                                            "entity": "lock.azarel_charger_door_lock",
+                                            "name": "Laddlucka"
+                                        },
+                                        {
+                                            "entity": "lock.azarel_trunk_lock",
+                                            "name": "Bagage"
+                                        },
+                                        {
+                                            "entity": "lock.azarel_frunk_lock",
+                                            "name": "Frunk"
+                                        }
+                                    ],
+                                    "state_color": true,
+                                    "show_header_toggle": false
+                                },
+                                {
+                                    "type": "horizontal-stack",
+                                    "cards": [
+                                        {
+                                            "type": "vertical-stack",
+                                            "cards": [
+                                                {
+                                                    "type": "glance",
+                                                    "entities": [
+                                                        {
+                                                            "entity": "sensor.azarel_temperature_sensor_inside",
+                                                            "name": "I bilen"
+                                                        },
+                                                        {
+                                                            "entity": "sensor.azarel_temperature_sensor_outside",
+                                                            "name": "Utomhus"
+                                                        }
+                                                    ]
+                                                },
+                                                {
+                                                    "type": "button",
+                                                    "tap_action": {
+                                                        "action": "toggle"
+                                                    },
+                                                    "entity": "climate.azarel_hvac_climate_system",
+                                                    "name": "Klimatsystem",
+                                                    "show_state": true
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "type": "vertical-stack",
+                                            "cards": [
+                                                {
+                                                    "type": "gauge",
+                                                    "min": 0,
+                                                    "max": 100,
+                                                    "entity": "sensor.azarel_battery_sensor",
+                                                    "name": "SoC",
+                                                    "severity": {
+                                                        "green": 60,
+                                                        "yellow": 20,
+                                                        "red": 0
+                                                    }
+                                                },
+                                                {
+                                                    "type": "button",
+                                                    "tap_action": {
+                                                        "action": "toggle"
+                                                    },
+                                                    "entity": "switch.azarel_charger_switch",
+                                                    "name": "Laddar",
+                                                    "show_state": true
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                },
+                                {
+                                    "type": "sensor",
+                                    "entity": "sensor.azarel_charging_rate_sensor",
+                                    "graph": "line",
+                                    "hours_to_show": 12,
+                                    "detail": 2,
+                                    "name": "Azarel"
+                                }
+                            ]
+                        }
+                    ]
                 }
             ]
         }

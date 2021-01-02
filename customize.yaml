@@ -45,6 +45,8 @@ switch.an179_1:
   friendly_name: Altan, söder
 switch.telldus_1:
   friendly_name: Hallbyrån
+switch.telldus_2:
+  friendly_name: Flörtkulorna
 switch.telldus_3:
   friendly_name: Brudkistan
 switch.telldusout1:

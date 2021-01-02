@@ -129,10 +129,6 @@ devices:
     controller: 0
     protocol: sartano
     code: '1010010000'
-  - id: 22
-    name: Rusta13A
-    protocol: sartano
-    code: '1010010000'
   - id: 23
     name: Nexa 4
     protocol: arctech

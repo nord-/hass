@@ -6,6 +6,7 @@ vrum_nere:
     - light.fibaro_system_fgd212_dimmer_2_level_2
     - switch.rusta14c # julgranen
     - switch.rusta15b # röda julgranen
+    - switch.telldus_2 # flörtkulorna
 
 felix_rum:
   name: Felix rum
@@ -54,7 +55,6 @@ kontoret:
     - light.office_window
     - switch.tz2
 #    - switch.rusta25a
-#    - switch.telldus_2
 #    - switch.tz1
 
 ute:      
