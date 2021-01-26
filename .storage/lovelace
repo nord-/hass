@@ -386,34 +386,92 @@
                 },
                 {
                     "title": "Kontoret",
-                    "badges": [
-                        {
-                            "entity": "sensor.215_temperature"
-                        },
-                        {
-                            "entity": "sensor.samsung_printer_toner_black"
-                        },
-                        {
-                            "entity": "sensor.samsung_printer_toner_cyan"
-                        },
-                        {
-                            "entity": "sensor.samsung_printer_toner_magenta"
-                        },
-                        {
-                            "entity": "sensor.samsung_printer_toner_yellow"
-                        }
-                    ],
+                    "badges": [],
                     "cards": [
                         {
-                            "entities": [
+                            "type": "horizontal-stack",
+                            "cards": [
                                 {
-                                    "entity": "light.office_window"
+                                    "type": "light",
+                                    "entity": "light.office_window",
+                                    "hold_action": {
+                                        "action": "toggle"
+                                    },
+                                    "double_tap_action": {
+                                        "action": "more-info"
+                                    }
                                 },
                                 {
-                                    "entity": "switch.tz2"
+                                    "type": "button",
+                                    "tap_action": {
+                                        "action": "toggle"
+                                    },
+                                    "entity": "switch.tz2",
+                                    "name": "Skrivbordet",
+                                    "show_state": false
                                 }
-                            ],
-                            "type": "entities"
+                            ]
+                        },
+                        {
+                            "type": "horizontal-stack",
+                            "cards": [
+                                {
+                                    "type": "gauge",
+                                    "entity": "sensor.samsung_printer_toner_black",
+                                    "min": 0,
+                                    "max": 100,
+                                    "severity": {
+                                        "green": 20,
+                                        "yellow": 10,
+                                        "red": 0
+                                    },
+                                    "name": "Svart"
+                                },
+                                {
+                                    "type": "gauge",
+                                    "entity": "sensor.samsung_printer_toner_cyan",
+                                    "min": 0,
+                                    "max": 100,
+                                    "name": "Cyan",
+                                    "severity": {
+                                        "green": 20,
+                                        "yellow": 10,
+                                        "red": 0
+                                    }
+                                },
+                                {
+                                    "type": "gauge",
+                                    "entity": "sensor.samsung_printer_toner_magenta",
+                                    "min": 0,
+                                    "max": 100,
+                                    "name": "Magenta",
+                                    "severity": {
+                                        "green": 20,
+                                        "yellow": 10,
+                                        "red": 0
+                                    }
+                                },
+                                {
+                                    "type": "gauge",
+                                    "entity": "sensor.samsung_printer_toner_yellow",
+                                    "min": 0,
+                                    "max": 100,
+                                    "name": "Gul",
+                                    "severity": {
+                                        "green": 20,
+                                        "yellow": 10,
+                                        "red": 0
+                                    }
+                                }
+                            ]
+                        },
+                        {
+                            "type": "sensor",
+                            "entity": "sensor.215_temperature",
+                            "graph": "line",
+                            "hours_to_show": 12,
+                            "detail": 2,
+                            "name": "Kontoret"
                         }
                     ]
                 },

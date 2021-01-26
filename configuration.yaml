@@ -68,6 +68,9 @@ map:
 # Track the sun
 sun:
 
+# Nordpool Electric Spot Price
+nordpool:
+
 sensor: !include sensors.yaml
 
 zwave:

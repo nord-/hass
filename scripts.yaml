@@ -199,8 +199,22 @@ early_morning_lights_on:
       - group.koket
       - group.hallen
       - switch.nexa_1
+      - group.sovrummet
   - service: light.turn_on
     data:
       entity_id:
       - group.koket
       - group.kontoret
+  mode: single
+start_the_car:
+  alias: Starta bilen
+  sequence:
+  - service: lock.unlock
+    data:
+      entity_id:
+      - lock.azarel_door_lock
+      - lock.azarel_charger_door_lock
+  - service: climate.turn_on
+    data:
+      entity_id: climate.azarel_hvac_climate_system
+  mode: single

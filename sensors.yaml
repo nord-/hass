@@ -76,3 +76,8 @@
           {% set last_sp_kw = states("sensor.aktuell_effekt") %}
           {{ states("sensor.aktuell_effekt") }}
         {% endif %}
+
+- platform: nordpool  
+  VAT: True     # Should the prices include vat? Default True
+  currency: "SEK"  
+  region: "SE3" # What power regions your are interested in.

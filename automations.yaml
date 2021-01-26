@@ -273,6 +273,10 @@
     entity_id: sensor.yr_symbol
     above: '3'
     for: 0:10:00
+  - platform: numeric_state
+    entity_id: sensor.aktuell_effekt
+    for: 0:05:00
+    below: '0.2'
   condition:
   - above: '5'
     condition: numeric_state
@@ -287,6 +291,9 @@
   - condition: numeric_state
     entity_id: sensor.yr_symbol
     above: '3'
+  - condition: numeric_state
+    entity_id: sensor.aktuell_effekt
+    below: '0.2'
   action:
   - service: script.turn_on_general_lights
   mode: single
@@ -307,6 +314,10 @@
     entity_id: sensor.yr_symbol
     below: '4'
     for: 0:10:00
+  - platform: numeric_state
+    entity_id: sensor.aktuell_effekt
+    for: 0:05:00
+    above: '0.2'
   condition:
   - above: '5'
     condition: numeric_state
@@ -318,12 +329,15 @@
   - condition: numeric_state
     entity_id: sensor.yr_cloudiness
     below: '80'
+  - condition: numeric_state
+    entity_id: sensor.aktuell_effekt
+    above: '0.2'
   action:
   - data: {}
     service: script.turn_off_general_lights
   mode: single
 - id: '1603895419161'
-  alias: Sluta ladda
+  alias: Sluta ladda GS9
   description: ''
   trigger:
   - above: '99'
@@ -334,4 +348,49 @@
   action:
   - service: switch.turn_off
     entity_id: switch.nexa_5
+  mode: single
+- id: '1610304172777'
+  alias: Ladda bilen när det är kallt
+  description: ''
+  trigger:
+  - platform: state
+    entity_id: binary_sensor.azarel_charger_sensor
+    from: 'Off'
+    to: 'On'
+  condition:
+  - condition: numeric_state
+    entity_id: sensor.199_temperature
+    below: '10'
+  - condition: numeric_state
+    entity_id: sensor.azarel_battery_sensor
+    below: '20'
+  - condition: device
+    type: is_off
+    device_id: c9c4aa2a0a97e2ca2cc52467b9372ad1
+    entity_id: switch.azarel_charger_switch
+    domain: switch
+  action:
+  - type: turn_on
+    device_id: c9c4aa2a0a97e2ca2cc52467b9372ad1
+    entity_id: switch.azarel_charger_switch
+    domain: switch
+  mode: single
+- id: '1610304940192'
+  alias: Laddat till 20%
+  description: ''
+  trigger:
+  - platform: numeric_state
+    entity_id: sensor.azarel_battery_sensor
+    above: '19'
+    below: '23'
+  condition:
+  - condition: state
+    entity_id: binary_sensor.azarel_charger_sensor
+    attribute: charging_state
+    state: Charging
+  action:
+  - service: notify.mobile_app_sm_g960f
+    data:
+      title: Teslan har nått 20%
+      message: Azarel har laddat tillräckligt för att vara utom fara.
   mode: single

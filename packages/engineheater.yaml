@@ -75,8 +75,8 @@ input_number:
     icon: mdi:timer
     #  initial: 00
     min: 0
-    max: 55
-    step: 5
+    max: 50
+    step: 10
 
   heater_delay:
     name: Marginal
@@ -90,10 +90,10 @@ input_number:
   heater_maxmin:
     name: Maxtid
     icon: mdi:timer
-    initial: 120
-    min: 30
-    max: 240
-    step: 10
+    initial: 90
+    min: 20
+    max: 120
+    step: 15
     unit_of_measurement: min
     
 group:
@@ -158,7 +158,7 @@ automation:
         seconds: 5
     condition:
       - condition: template
-        value_template: '{{ states.sensor.popp_co_700397_wall_plug_switch_outdoor_schuko_ip44_power_2.state|int < 100 }}'
+        value_template: '{{ states.sensor.popp_co_700397_wall_plug_switch_outdoor_schuko_ip44_power.state|int < 100 }}'
     action:
       - service: notify.mobile_app_sm_g960f
         data:

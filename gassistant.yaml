@@ -6,6 +6,16 @@ exposed_domains:
   - light
   - lock
 entity_config:
+  script.start_the_car:
+    expose: true
+    name: Elektrifiera bilen
+    aliases: 
+      - Rubber
+    room: Tesla
+  sensor.azarel_range_sensor:
+    expose: true
+  climate.azarel_hvac_climate_system:
+    expose: true
   switch.nexa_out_2:
     expose: false
   light.fibaro_system_fgd212_dimmer_2_level:
@@ -26,12 +36,6 @@ entity_config:
     expose: false
   switch.rusta25a:
     expose: false
-# switch.telldus_2:
-#   expose: false
-  sensor.azarel_range_sensor:
-    expose: true
-  climate.azarel_hvac_climate_system:
-    expose: true
   switch.azarel_charger_switch:
     expose: false
   switch.azarel_maxrange_switch:
