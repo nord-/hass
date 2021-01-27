@@ -329,9 +329,6 @@
   - condition: numeric_state
     entity_id: sensor.yr_cloudiness
     below: '80'
-  - condition: numeric_state
-    entity_id: sensor.aktuell_effekt
-    above: '0.2'
   action:
   - data: {}
     service: script.turn_off_general_lights

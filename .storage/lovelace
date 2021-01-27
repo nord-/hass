@@ -27,7 +27,8 @@
                             "entity": "sensor.199_temperature",
                             "graph": "line",
                             "name": "Altanen",
-                            "type": "sensor"
+                            "type": "sensor",
+                            "detail": 2
                         },
                         {
                             "cards": [
@@ -163,12 +164,20 @@
                                     "type": "horizontal-stack"
                                 },
                                 {
-                                    "entity": "sensor.aktuell_effekt",
+                                    "entity": "sensor.last_sp_kw",
                                     "graph": "line",
-                                    "hours_to_show": 48,
-                                    "icon": "hass:flash",
+                                    "icon": "mdi:weather-sunny",
                                     "name": "Effekt",
-                                    "type": "sensor"
+                                    "type": "sensor",
+                                    "detail": 2,
+                                    "hours_to_show": 32
+                                },
+                                {
+                                    "type": "sensor",
+                                    "entity": "sensor.nordpool_kwh_se3_sek_3_10_025",
+                                    "graph": "line",
+                                    "detail": 2,
+                                    "unit": "kr"
                                 }
                             ],
                             "type": "vertical-stack"
@@ -212,21 +221,26 @@
                             "type": "entities"
                         },
                         {
-                            "type": "thermostat",
-                            "entity": "climate.azarel_hvac_climate_system",
-                            "name": "Azarel"
-                        },
-                        {
-                            "type": "glance",
-                            "entities": [
+                            "type": "horizontal-stack",
+                            "cards": [
                                 {
-                                    "entity": "sensor.azarel_battery_sensor"
+                                    "type": "thermostat",
+                                    "entity": "climate.azarel_hvac_climate_system",
+                                    "name": "Klimat"
+                                },
+                                {
+                                    "type": "glance",
+                                    "entities": [
+                                        {
+                                            "entity": "sensor.azarel_battery_sensor"
+                                        }
+                                    ],
+                                    "title": "Ladda",
+                                    "show_name": false,
+                                    "show_state": true,
+                                    "state_color": true
                                 }
-                            ],
-                            "title": "Azarel",
-                            "show_name": false,
-                            "show_state": true,
-                            "state_color": false
+                            ]
                         }
                     ]
                 },
@@ -279,7 +293,8 @@
                         {
                             "entity": "sensor.215_temperature",
                             "graph": "line",
-                            "type": "sensor"
+                            "type": "sensor",
+                            "detail": 2
                         },
                         {
                             "entity": "media_player.sovrummet",
@@ -538,6 +553,32 @@
                         {
                             "entity": "weather.smhi_home",
                             "type": "weather-forecast"
+                        },
+                        {
+                            "type": "horizontal-stack",
+                            "cards": [
+                                {
+                                    "type": "gauge",
+                                    "entity": "sensor.nordpool_kwh_se3_sek_3_10_025",
+                                    "min": 0,
+                                    "max": 1.5,
+                                    "severity": {
+                                        "green": 0,
+                                        "yellow": 0.5,
+                                        "red": 0.9
+                                    },
+                                    "unit": "kr"
+                                },
+                                {
+                                    "type": "sensor",
+                                    "entity": "sensor.last_sp_kw",
+                                    "graph": "line",
+                                    "detail": 2,
+                                    "name": "Effekt",
+                                    "icon": "mdi:weather-sunny",
+                                    "hours_to_show": 12
+                                }
+                            ]
                         }
                     ]
                 },
