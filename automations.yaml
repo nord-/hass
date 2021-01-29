@@ -285,12 +285,6 @@
   - condition: state
     entity_id: group.my_people
     state: home
-  - above: '80'
-    condition: numeric_state
-    entity_id: sensor.yr_cloudiness
-  - condition: numeric_state
-    entity_id: sensor.yr_symbol
-    above: '3'
   - condition: numeric_state
     entity_id: sensor.aktuell_effekt
     below: '0.2'
@@ -323,12 +317,6 @@
     condition: numeric_state
     entity_id: sun.sun
     value_template: '{{ state.attributes.elevation }}'
-  - condition: numeric_state
-    entity_id: sensor.yr_symbol
-    below: '4'
-  - condition: numeric_state
-    entity_id: sensor.yr_cloudiness
-    below: '80'
   action:
   - data: {}
     service: script.turn_off_general_lights
