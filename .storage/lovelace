@@ -10,16 +10,20 @@
                     "title": "Hemma",
                     "badges": [
                         {
-                            "entity": "group.my_people"
+                            "entity": "group.my_people",
+                            "name": " "
                         },
                         {
-                            "entity": "person.rickard_nord"
+                            "entity": "person.rickard_nord",
+                            "name": " "
                         },
                         {
-                            "entity": "person.frida"
+                            "entity": "person.frida",
+                            "name": " "
                         },
                         {
-                            "entity": "person.felix"
+                            "entity": "person.felix",
+                            "name": " "
                         }
                     ],
                     "cards": [
@@ -61,21 +65,6 @@
                                 },
                                 {
                                     "cards": [
-                                        {
-                                            "entity": "switch.rusta25a",
-                                            "hold_action": {
-                                                "action": "none"
-                                            },
-                                            "icon": "mdi:lightbulb-on",
-                                            "name": "Skriv-bordet",
-                                            "show_icon": true,
-                                            "show_name": true,
-                                            "show_state": false,
-                                            "tap_action": {
-                                                "action": "toggle"
-                                            },
-                                            "type": "button"
-                                        },
                                         {
                                             "entity": "script.turn_on_nere",
                                             "hold_action": {
@@ -121,66 +110,66 @@
                                                 "action": "toggle"
                                             },
                                             "type": "entity-button"
-                                        },
-                                        {
-                                            "entity": "script.early_morning_lights_on",
-                                            "hold_action": {
-                                                "action": "none"
-                                            },
-                                            "icon": "mdi:lightbulb-on",
-                                            "name": "God Morgon",
-                                            "show_icon": true,
-                                            "show_name": true,
-                                            "show_state": false,
-                                            "tap_action": {
-                                                "action": "toggle"
-                                            },
-                                            "type": "button"
                                         }
                                     ],
                                     "type": "horizontal-stack"
+                                },
+                                {
+                                    "type": "horizontal-stack",
+                                    "cards": [
+                                        {
+                                            "type": "button",
+                                            "tap_action": {
+                                                "action": "toggle"
+                                            },
+                                            "entity": "switch.tz2",
+                                            "show_state": false,
+                                            "icon": "mdi:lightbulb-on"
+                                        },
+                                        {
+                                            "type": "button",
+                                            "tap_action": {
+                                                "action": "toggle"
+                                            },
+                                            "entity": "script.early_morning_lights_on",
+                                            "show_state": false,
+                                            "name": "God Morgon!",
+                                            "show_icon": true,
+                                            "hold_action": {
+                                                "action": "none"
+                                            },
+                                            "icon": "mdi:lightbulb"
+                                        }
+                                    ]
                                 }
                             ],
                             "type": "vertical-stack"
                         },
                         {
+                            "type": "horizontal-stack",
                             "cards": [
                                 {
-                                    "cards": [
-                                        {
-                                            "entity": "sensor.last_sp_kw",
-                                            "max": 8.2,
-                                            "min": 0,
-                                            "name": "Effekt",
-                                            "type": "gauge"
-                                        },
-                                        {
-                                            "entity": "sensor.last_sp_value",
-                                            "max": 70,
-                                            "name": "Energi",
-                                            "type": "gauge"
-                                        }
-                                    ],
-                                    "type": "horizontal-stack"
-                                },
-                                {
+                                    "type": "sensor",
                                     "entity": "sensor.last_sp_kw",
                                     "graph": "line",
-                                    "icon": "mdi:weather-sunny",
-                                    "name": "Effekt",
-                                    "type": "sensor",
                                     "detail": 2,
-                                    "hours_to_show": 32
+                                    "name": "Effekt",
+                                    "icon": "mdi:weather-sunny",
+                                    "hours_to_show": 8
                                 },
                                 {
-                                    "type": "sensor",
+                                    "type": "gauge",
                                     "entity": "sensor.nordpool_kwh_se3_sek_3_10_025",
-                                    "graph": "line",
-                                    "detail": 2,
+                                    "min": 0,
+                                    "max": 1.5,
+                                    "severity": {
+                                        "green": 0,
+                                        "yellow": 0.5,
+                                        "red": 0.9
+                                    },
                                     "unit": "kr"
                                 }
-                            ],
-                            "type": "vertical-stack"
+                            ]
                         },
                         {
                             "entities": [
@@ -297,7 +286,7 @@
                             "detail": 2
                         },
                         {
-                            "entity": "media_player.sovrummet",
+                            "entity": "media_player.vardagsrummet",
                             "type": "media-control"
                         }
                     ]
@@ -337,7 +326,7 @@
                             "type": "light"
                         },
                         {
-                            "entity": "media_player.vardagsrummet",
+                            "entity": "media_player.sovrummet",
                             "type": "media-control"
                         }
                     ],
@@ -494,25 +483,28 @@
                     "title": "Ute",
                     "badges": [
                         {
-                            "entity": "sun.sun"
+                            "entity": "sun.sun",
+                            "name": " "
                         },
                         {
-                            "entity": "sensor.yr_symbol"
+                            "entity": "sensor.yr_symbol",
+                            "name": " "
                         },
                         {
-                            "entity": "sensor.199_temperature"
+                            "entity": "sensor.yr_cloudiness",
+                            "name": " "
                         },
                         {
-                            "entity": "sensor.231_temperature"
+                            "entity": "sensor.199_temperature",
+                            "name": " "
                         },
                         {
-                            "entity": "sensor.yr_wind_speed"
+                            "entity": "sensor.199_humidity",
+                            "name": " "
                         },
                         {
-                            "entity": "sensor.yr_cloudiness"
-                        },
-                        {
-                            "entity": "sensor.199_humidity"
+                            "entity": "sensor.yr_wind_speed",
+                            "name": " "
                         }
                     ],
                     "cards": [
@@ -523,9 +515,6 @@
                                 },
                                 {
                                     "entity": "switch.telldusout1"
-                                },
-                                {
-                                    "entity": "switch.telldusout2"
                                 },
                                 {
                                     "entity": "switch.nexa_out_1"
@@ -558,25 +547,24 @@
                             "type": "horizontal-stack",
                             "cards": [
                                 {
-                                    "type": "gauge",
-                                    "entity": "sensor.nordpool_kwh_se3_sek_3_10_025",
-                                    "min": 0,
-                                    "max": 1.5,
-                                    "severity": {
-                                        "green": 0,
-                                        "yellow": 0.5,
-                                        "red": 0.9
-                                    },
-                                    "unit": "kr"
-                                },
-                                {
-                                    "type": "sensor",
-                                    "entity": "sensor.last_sp_kw",
-                                    "graph": "line",
-                                    "detail": 2,
-                                    "name": "Effekt",
-                                    "icon": "mdi:weather-sunny",
-                                    "hours_to_show": 12
+                                    "type": "glance",
+                                    "entities": [
+                                        {
+                                            "entity": "sensor.openweathermap_weather"
+                                        },
+                                        {
+                                            "entity": "sensor.openweathermap_temperature"
+                                        },
+                                        {
+                                            "entity": "sensor.openweathermap_cloud_coverage"
+                                        },
+                                        {
+                                            "entity": "sensor.openweathermap_pressure"
+                                        },
+                                        {
+                                            "entity": "sensor.openweathermap_humidity"
+                                        }
+                                    ]
                                 }
                             ]
                         }
@@ -705,6 +693,64 @@
                                     "name": "Azarel"
                                 }
                             ]
+                        }
+                    ]
+                },
+                {
+                    "icon": "mdi:weather-sunny",
+                    "panel": false,
+                    "title": "Solcellerna",
+                    "badges": [
+                        {
+                            "entity": "sensor.yr_symbol",
+                            "name": " ",
+                            "show_name": false
+                        },
+                        {
+                            "entity": "sensor.199_temperature",
+                            "show_name": false,
+                            "name": " "
+                        }
+                    ],
+                    "cards": [
+                        {
+                            "cards": [
+                                {
+                                    "cards": [
+                                        {
+                                            "entity": "sensor.last_sp_kw",
+                                            "max": 8.2,
+                                            "min": 0,
+                                            "name": "Effekt",
+                                            "type": "gauge"
+                                        },
+                                        {
+                                            "entity": "sensor.last_sp_value",
+                                            "max": 70,
+                                            "name": "Energi",
+                                            "type": "gauge"
+                                        }
+                                    ],
+                                    "type": "horizontal-stack"
+                                },
+                                {
+                                    "entity": "sensor.last_sp_kw",
+                                    "graph": "line",
+                                    "icon": "mdi:weather-sunny",
+                                    "name": "Effekt",
+                                    "type": "sensor",
+                                    "detail": 2,
+                                    "hours_to_show": 32
+                                },
+                                {
+                                    "type": "sensor",
+                                    "entity": "sensor.nordpool_kwh_se3_sek_3_10_025",
+                                    "graph": "line",
+                                    "detail": 2,
+                                    "unit": "kr"
+                                }
+                            ],
+                            "type": "vertical-stack"
                         }
                     ]
                 }

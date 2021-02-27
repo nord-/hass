@@ -262,17 +262,22 @@
   alias: Mulet (tänd)
   trigger:
   - above: '80'
-    entity_id: sensor.yr_cloudiness
+    entity_id: sensor.openweathermap_cloud_coverage
     for: 0:10:00
     platform: numeric_state
   - entity_id: group.my_people
     platform: state
     to: home
     for: 0:5:00
-  - platform: numeric_state
-    entity_id: sensor.yr_symbol
-    above: '3'
-    for: 0:10:00
+  # - platform: numeric_state
+  #   entity_id: sensor.yr_symbol
+  #   above: '3'
+  #   for: 0:10:00
+  - platform: template
+    value_template: >-
+      {% set wstate = states("sensor.openweathermap_weather_code") | int %}
+      {% if (wstate is equalto 804) or (wstate > 200 and wstate < 699) %}true{% endif %}
+    for: 0:05:00      
   - platform: numeric_state
     entity_id: sensor.aktuell_effekt
     for: 0:05:00
@@ -288,6 +293,13 @@
   - condition: numeric_state
     entity_id: sensor.aktuell_effekt
     below: '0.2'
+  - condition: template
+    value_template: >-
+      {% set wstate = states("sensor.openweathermap_weather_code") | int %}
+      {% if (wstate is equalto 804) or (wstate > 200 and wstate < 699) %}true{% endif %}
+  # - condition: numeric_state
+  #   entity_id: sensor.yr_symbol
+  #   above: '3'
   action:
   - service: script.turn_on_general_lights
   mode: single
@@ -302,16 +314,21 @@
     for: 00:05:00
   - platform: numeric_state
     below: '80'
-    entity_id: sensor.yr_cloudiness
+    entity_id: sensor.openweathermap_cloud_coverage
     for: 0:10:00
-  - platform: numeric_state
-    entity_id: sensor.yr_symbol
-    below: '4'
-    for: 0:10:00
+  # - platform: numeric_state
+  #   entity_id: sensor.yr_symbol
+  #   below: '4'
+  #   for: 0:10:00
+  - platform: template
+    value_template: >-
+      {% set wstate = states("sensor.openweathermap_weather_code") | int %}
+      {% if (wstate > 700 and wstate < 804) %}true{% endif %}
+    for: 0:05:00      
   - platform: numeric_state
     entity_id: sensor.aktuell_effekt
     for: 0:05:00
-    above: '0.2'
+    above: '0.3'
   condition:
   - above: '5'
     condition: numeric_state
