@@ -6,6 +6,7 @@ homeassistant:
   longitude: 12.276063
   # Impacts weather/sunrise data (altitude above sea level in meters)
   elevation: 76
+  external_url: "https://nordhassio.duckdns.org:8123"
   # metric for Metric, imperial for Imperial
   unit_system: metric
   # Pick yours from here: http://en.wikipedia.org/wiki/List_of_tz_database_time_zones
@@ -73,15 +74,15 @@ nordpool:
 
 sensor: !include sensors.yaml
 
-zwave:
-  usb_path: /dev/ttyACM0
-  network_key: !secret zwave_networkkey
-  device_config: !include zwave_device_config.yaml
-  device_config_glob:
-    "sensor.*_exporting*":
-      ignored: true
-    "sensor.*_sourcenodeid*":
-      ignored: true
+# zwave:
+#  usb_path: /dev/ttyACM0
+#  network_key: !secret zwave_networkkey
+#  device_config: !include zwave_device_config.yaml
+#  device_config_glob:
+#     "sensor.*_exporting*":
+#      ignored: true
+#     "sensor.*_sourcenodeid*":
+#      ignored: true
 
 # Text to speech
 tts:
@@ -95,6 +96,8 @@ cloud:
 #switch: !include switches.yaml
 switch:
   platform: tellstick
+
+light: !include mqttlights.yaml
 
 group: !include groups.yaml
 automation: !include automations.yaml

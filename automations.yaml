@@ -234,8 +234,8 @@
   - at: '23:00:00'
     platform: time
   - below: '25'
-    entity_id: sensor.sm_g960f_battery_level
     platform: numeric_state
+    entity_id: sensor.oneplus9pro_battery_level
   - platform: time
     at: 06:30:00
   condition:
@@ -269,19 +269,15 @@
     platform: state
     to: home
     for: 0:5:00
-  # - platform: numeric_state
-  #   entity_id: sensor.yr_symbol
-  #   above: '3'
-  #   for: 0:10:00
   - platform: template
-    value_template: >-
-      {% set wstate = states("sensor.openweathermap_weather_code") | int %}
-      {% if (wstate is equalto 804) or (wstate > 200 and wstate < 699) %}true{% endif %}
-    for: 0:05:00      
+    value_template: '{% set wstate = states("sensor.openweathermap_weather_code")
+      | int %} {% if (wstate is equalto 804) or (wstate > 200 and wstate < 799) %}true{%
+      endif %}'
+    for: 0:05:00
   - platform: numeric_state
     entity_id: sensor.aktuell_effekt
     for: 0:05:00
-    below: '0.2'
+    below: '0.4'
   condition:
   - above: '5'
     condition: numeric_state
@@ -292,14 +288,11 @@
     state: home
   - condition: numeric_state
     entity_id: sensor.aktuell_effekt
-    below: '0.2'
+    below: '0.4'
   - condition: template
-    value_template: >-
-      {% set wstate = states("sensor.openweathermap_weather_code") | int %}
-      {% if (wstate is equalto 804) or (wstate > 200 and wstate < 699) %}true{% endif %}
-  # - condition: numeric_state
-  #   entity_id: sensor.yr_symbol
-  #   above: '3'
+    value_template: '{% set wstate = states("sensor.openweathermap_weather_code")
+      | int %} {% if (wstate is equalto 804) or (wstate > 200 and wstate < 699) %}true{%
+      endif %}'
   action:
   - service: script.turn_on_general_lights
   mode: single
@@ -316,19 +309,14 @@
     below: '80'
     entity_id: sensor.openweathermap_cloud_coverage
     for: 0:10:00
-  # - platform: numeric_state
-  #   entity_id: sensor.yr_symbol
-  #   below: '4'
-  #   for: 0:10:00
   - platform: template
-    value_template: >-
-      {% set wstate = states("sensor.openweathermap_weather_code") | int %}
-      {% if (wstate > 700 and wstate < 804) %}true{% endif %}
-    for: 0:05:00      
+    value_template: '{% set wstate = states("sensor.openweathermap_weather_code")
+      | int %} {% if (wstate > 700 and wstate < 804) %}true{% endif %}'
+    for: 0:05:00
   - platform: numeric_state
     entity_id: sensor.aktuell_effekt
     for: 0:05:00
-    above: '0.3'
+    above: '0.5'
   condition:
   - above: '5'
     condition: numeric_state
@@ -339,13 +327,13 @@
     service: script.turn_off_general_lights
   mode: single
 - id: '1603895419161'
-  alias: Sluta ladda GS9
+  alias: Sluta ladda Rickards telefon
   description: ''
   trigger:
   - above: '99'
-    entity_id: sensor.sm_g960f_battery_level
     for: '5'
     platform: numeric_state
+    entity_id: sensor.oneplus9pro_battery_level
   condition: []
   action:
   - service: switch.turn_off
@@ -376,6 +364,9 @@
     device_id: c9c4aa2a0a97e2ca2cc52467b9372ad1
     entity_id: switch.azarel_charger_switch
     domain: switch
+  - service: notify.mobile_app_oneplus9pro
+    data:
+      message: Ladda bilen. Under 20%.
   mode: single
 - id: '1610304940192'
   alias: Laddat till 20%
@@ -391,8 +382,27 @@
     attribute: charging_state
     state: Charging
   action:
-  - service: notify.mobile_app_sm_g960f
+  - service: notify.mobile_app_oneplus9pro
     data:
-      title: Teslan har nått 20%
       message: Azarel har laddat tillräckligt för att vara utom fara.
+      title: Teslan har nått 20%
+  mode: single
+- id: '1617052336219'
+  alias: Dags att ladda plattan
+  description: ''
+  trigger:
+  - platform: numeric_state
+    entity_id: sensor.sm_p610_batteriniva
+    below: '25'
+  condition:
+  - type: is_not_plugged_in
+    condition: device
+    device_id: 12560843ff3ebcb9b53643f71e1c6efc
+    entity_id: binary_sensor.sm_p610_laddar
+    domain: binary_sensor
+  action:
+  - service: notify.mobile_app_oneplus_9
+    data:
+      message: Samsung-plattan har mindre än 25% laddning.
+      title: Dags att ladda plattan
   mode: single

@@ -23,7 +23,7 @@
   resource: http://192.168.1.101
 
 - platform: rest
-  resource: http://192.168.1.189/solar_api/v1/GetInverterRealtimeData.cgi?Scope=Device&DeviceId=1&DataCollection=CommonInverterData
+  resource: http://192.168.1.54/solar_api/v1/GetInverterRealtimeData.cgi?Scope=Device&DeviceId=1&DataCollection=CommonInverterData
   method: GET
   name: "Aktuell effekt"
   value_template: "{{ (value_json.Body.Data.PAC.Value /1000 | float)|round(2) }}"
@@ -32,7 +32,7 @@
   scan_interval: 60
   
 - platform: rest
-  resource: http://192.168.1.189/solar_api/v1/GetInverterRealtimeData.cgi?Scope=Device&DeviceId=1&DataCollection=CommonInverterData
+  resource: http://192.168.1.54/solar_api/v1/GetInverterRealtimeData.cgi?Scope=Device&DeviceId=1&DataCollection=CommonInverterData
   method: GET
   name: "Total energi idag"
   unit_of_measurement: 'kWh'
@@ -81,3 +81,29 @@
   VAT: True     # Should the prices include vat? Default True
   currency: "SEK"  
   region: "SE3" # What power regions your are interested in.
+  
+- platform: template
+  sensors:
+    aza_mileage:
+      friendly_name: Körsträcka
+      unit_of_measurement: 'mil'
+      icon_template: mdi:counter
+      value_template: "{{ (float(states('sensor.azarel_mileage_sensor'))/10) | round }}"
+    aza_last_update:
+      friendly_name: Senast uppdaterad
+      value_template: "{{ as_timestamp(states.sensor.azarel_mileage_sensor.last_updated) | timestamp_custom('%H:%M, %d %b') }}"
+
+- platform: template
+  sensors:
+    house_power_kw:
+      friendly_name: "Husets effekt"
+      unit_of_measurement: "kW"
+      entity_id: sensor.hem_gen5_electric_consumed_w
+      value_template: "{{ ((states('sensor.hem_gen5_electric_consumed_w') | float) / 1000) | round(2) }}"
+      
+- platform: template
+  sensors:
+    house_net_power_kw:
+      friendly_name: "Husets nettoeffekt"
+      unit_of_measurement: "kW"
+      value_template: "{{ (states('sensor.last_sp_kw') | float - states('sensor.house_power_kw') | float) | round(2) }}"

@@ -8,6 +8,7 @@
                 {
                     "path": "default_view",
                     "title": "Hemma",
+                    "icon": "mdi:home",
                     "badges": [
                         {
                             "entity": "group.my_people",
@@ -28,11 +29,11 @@
                     ],
                     "cards": [
                         {
-                            "entity": "sensor.199_temperature",
+                            "entity": "sensor.231_temperature",
                             "graph": "line",
-                            "name": "Altanen",
                             "type": "sensor",
-                            "detail": 2
+                            "detail": 2,
+                            "name": "Altanen"
                         },
                         {
                             "cards": [
@@ -43,22 +44,24 @@
                                             "hold_action": {
                                                 "action": "none"
                                             },
-                                            "icon": "mdi:lightbulb-on",
+                                            "icon": "mdi:weather-sunset-up",
                                             "tap_action": {
                                                 "action": "toggle"
                                             },
-                                            "type": "entity-button"
+                                            "type": "entity-button",
+                                            "show_name": false
                                         },
                                         {
                                             "entity": "script.turn_off_general_lights",
                                             "hold_action": {
                                                 "action": "none"
                                             },
-                                            "icon": "mdi:lightbulb-off",
+                                            "icon": "mdi:weather-night",
                                             "tap_action": {
                                                 "action": "toggle"
                                             },
-                                            "type": "entity-button"
+                                            "type": "entity-button",
+                                            "show_name": false
                                         }
                                     ],
                                     "type": "horizontal-stack"
@@ -70,8 +73,8 @@
                                             "hold_action": {
                                                 "action": "none"
                                             },
-                                            "icon": "mdi:lightbulb-on",
-                                            "name": "T\u00e4nd uv\u00e5n",
+                                            "icon": "mdi:home-floor-g",
+                                            "name": "Underv\u00e5n",
                                             "tap_action": {
                                                 "action": "toggle"
                                             },
@@ -87,18 +90,21 @@
                                             "tap_action": {
                                                 "action": "toggle"
                                             },
-                                            "type": "entity-button"
+                                            "type": "entity-button",
+                                            "show_name": false
                                         },
                                         {
                                             "entity": "script.turn_on_uppe",
                                             "hold_action": {
                                                 "action": "none"
                                             },
-                                            "icon": "mdi:lightbulb-on",
+                                            "icon": "mdi:home-floor-1",
                                             "tap_action": {
                                                 "action": "toggle"
                                             },
-                                            "type": "entity-button"
+                                            "type": "entity-button",
+                                            "show_name": true,
+                                            "name": "\u00d6verv\u00e5n"
                                         },
                                         {
                                             "entity": "script.turn_off_uppe",
@@ -109,38 +115,11 @@
                                             "tap_action": {
                                                 "action": "toggle"
                                             },
-                                            "type": "entity-button"
+                                            "type": "entity-button",
+                                            "show_name": false
                                         }
                                     ],
                                     "type": "horizontal-stack"
-                                },
-                                {
-                                    "type": "horizontal-stack",
-                                    "cards": [
-                                        {
-                                            "type": "button",
-                                            "tap_action": {
-                                                "action": "toggle"
-                                            },
-                                            "entity": "switch.tz2",
-                                            "show_state": false,
-                                            "icon": "mdi:lightbulb-on"
-                                        },
-                                        {
-                                            "type": "button",
-                                            "tap_action": {
-                                                "action": "toggle"
-                                            },
-                                            "entity": "script.early_morning_lights_on",
-                                            "show_state": false,
-                                            "name": "God Morgon!",
-                                            "show_icon": true,
-                                            "hold_action": {
-                                                "action": "none"
-                                            },
-                                            "icon": "mdi:lightbulb"
-                                        }
-                                    ]
                                 }
                             ],
                             "type": "vertical-stack"
@@ -149,13 +128,35 @@
                             "type": "horizontal-stack",
                             "cards": [
                                 {
-                                    "type": "sensor",
+                                    "type": "gauge",
+                                    "entity": "sensor.house_power_kw",
+                                    "min": 0,
+                                    "max": 11,
+                                    "name": "Kons"
+                                },
+                                {
+                                    "type": "gauge",
+                                    "min": 0,
                                     "entity": "sensor.last_sp_kw",
-                                    "graph": "line",
-                                    "detail": 2,
-                                    "name": "Effekt",
-                                    "icon": "mdi:weather-sunny",
-                                    "hours_to_show": 8
+                                    "max": 8.2,
+                                    "severity": {
+                                        "green": 0,
+                                        "yellow": 4,
+                                        "red": 7
+                                    },
+                                    "name": "Prod"
+                                },
+                                {
+                                    "type": "gauge",
+                                    "entity": "sensor.house_net_power_kw",
+                                    "max": 11,
+                                    "severity": {
+                                        "green": -11,
+                                        "yellow": -1,
+                                        "red": 1
+                                    },
+                                    "min": -11,
+                                    "name": "Netto"
                                 },
                                 {
                                     "type": "gauge",
@@ -164,8 +165,8 @@
                                     "max": 1.5,
                                     "severity": {
                                         "green": 0,
-                                        "yellow": 0.5,
-                                        "red": 0.9
+                                        "yellow": 0.4,
+                                        "red": 0.8
                                     },
                                     "unit": "kr"
                                 }
@@ -208,59 +209,45 @@
                             "show_header_toggle": false,
                             "title": "Motorv\u00e4rmare",
                             "type": "entities"
-                        },
-                        {
-                            "type": "horizontal-stack",
-                            "cards": [
-                                {
-                                    "type": "thermostat",
-                                    "entity": "climate.azarel_hvac_climate_system",
-                                    "name": "Klimat"
-                                },
-                                {
-                                    "type": "glance",
-                                    "entities": [
-                                        {
-                                            "entity": "sensor.azarel_battery_sensor"
-                                        }
-                                    ],
-                                    "title": "Ladda",
-                                    "show_name": false,
-                                    "show_state": true,
-                                    "state_color": true
-                                }
-                            ]
                         }
                     ]
                 },
                 {
                     "title": "Sovrummet",
+                    "icon": "mdi:bed",
                     "badges": [
                         {
-                            "entity": "sensor.sm_g960f_battery_level"
+                            "entity": "sensor.oneplus9pro_battery_level",
+                            "name": "Rickards OP9"
                         },
                         {
-                            "entity": "sensor.sm_p610_batteriniva"
+                            "entity": "sensor.sm_p610_batteriniva",
+                            "name": "Samsung S6 Lite"
                         },
                         {
-                            "entity": "sensor.sm_g950f_batteriniva"
+                            "entity": "sensor.sm_g950f_batteriniva",
+                            "name": "Fridas GS8"
                         }
                     ],
                     "cards": [
                         {
-                            "entity": "switch.nexa_5",
-                            "hold_action": {
-                                "action": "more-info"
-                            },
-                            "icon": "hass:cellphone-charging",
-                            "name": "Laddare",
-                            "show_icon": true,
-                            "show_name": true,
-                            "show_state": false,
-                            "tap_action": {
-                                "action": "toggle"
-                            },
-                            "type": "button"
+                            "type": "horizontal-stack",
+                            "cards": [
+                                {
+                                    "type": "button",
+                                    "tap_action": {
+                                        "action": "toggle"
+                                    },
+                                    "icon": "hass:cellphone-charging",
+                                    "entity": "switch.nexa_5",
+                                    "name": "Laddare"
+                                },
+                                {
+                                    "type": "entity",
+                                    "entity": "binary_sensor.oneplus9pro_is_charging",
+                                    "name": "OP9"
+                                }
+                            ]
                         },
                         {
                             "entities": [
@@ -292,6 +279,8 @@
                     ]
                 },
                 {
+                    "title": "Vardagsrummet",
+                    "icon": "mdi:sofa",
                     "badges": [],
                     "cards": [
                         {
@@ -329,10 +318,12 @@
                             "entity": "media_player.sovrummet",
                             "type": "media-control"
                         }
-                    ],
-                    "title": "Vardagsrummet"
+                    ]
                 },
                 {
+                    "path": "felix",
+                    "title": "Felix",
+                    "icon": "mdi:human-male-child",
                     "badges": [],
                     "cards": [
                         {
@@ -345,11 +336,12 @@
                             "title": "Belysning",
                             "type": "entities"
                         }
-                    ],
-                    "path": "felix",
-                    "title": "Felix"
+                    ]
                 },
                 {
+                    "path": "koket",
+                    "title": "K\u00f6ket",
+                    "icon": "mdi:silverware-fork-knife",
                     "badges": [],
                     "cards": [
                         {
@@ -361,11 +353,11 @@
                             "entity": "media_player.koket",
                             "type": "media-control"
                         }
-                    ],
-                    "path": "koket",
-                    "title": "K\u00f6ket"
+                    ]
                 },
                 {
+                    "title": "Vardagsrummet, uppe",
+                    "icon": "mdi:home-floor-1",
                     "badges": [],
                     "cards": [
                         {
@@ -385,11 +377,11 @@
                             "entity": "media_player.projektorn",
                             "type": "media-control"
                         }
-                    ],
-                    "title": "Vardagsrummet, uppe"
+                    ]
                 },
                 {
                     "title": "Kontoret",
+                    "icon": "mdi:desk-lamp",
                     "badges": [],
                     "cards": [
                         {
@@ -421,7 +413,7 @@
                             "cards": [
                                 {
                                     "type": "gauge",
-                                    "entity": "sensor.samsung_printer_toner_black",
+                                    "entity": "sensor.samsung_c430w_toner_black",
                                     "min": 0,
                                     "max": 100,
                                     "severity": {
@@ -433,7 +425,7 @@
                                 },
                                 {
                                     "type": "gauge",
-                                    "entity": "sensor.samsung_printer_toner_cyan",
+                                    "entity": "sensor.samsung_c430w_toner_cyan",
                                     "min": 0,
                                     "max": 100,
                                     "name": "Cyan",
@@ -445,7 +437,7 @@
                                 },
                                 {
                                     "type": "gauge",
-                                    "entity": "sensor.samsung_printer_toner_magenta",
+                                    "entity": "sensor.samsung_c430w_toner_magenta",
                                     "min": 0,
                                     "max": 100,
                                     "name": "Magenta",
@@ -457,7 +449,7 @@
                                 },
                                 {
                                     "type": "gauge",
-                                    "entity": "sensor.samsung_printer_toner_yellow",
+                                    "entity": "sensor.samsung_c430w_toner_yellow",
                                     "min": 0,
                                     "max": 100,
                                     "name": "Gul",
@@ -481,13 +473,14 @@
                 },
                 {
                     "title": "Ute",
+                    "icon": "mdi:outdoor-lamp",
                     "badges": [
                         {
                             "entity": "sun.sun",
                             "name": " "
                         },
                         {
-                            "entity": "sensor.yr_symbol",
+                            "entity": "weather.openweathermap",
                             "name": " "
                         },
                         {
@@ -528,11 +521,11 @@
                             "entities": [
                                 {
                                     "entity": "sensor.231_temperature",
-                                    "name": "Framsidan"
+                                    "name": "Altanen"
                                 },
                                 {
                                     "entity": "sensor.199_temperature",
-                                    "name": "Altan"
+                                    "name": "Framsidan"
                                 }
                             ],
                             "hours_to_show": 8,
@@ -562,7 +555,8 @@
                                             "entity": "sensor.openweathermap_pressure"
                                         },
                                         {
-                                            "entity": "sensor.openweathermap_humidity"
+                                            "entity": "sensor.openweathermap_wind_speed",
+                                            "name": "Vind"
                                         }
                                     ]
                                 }
@@ -593,116 +587,12 @@
                     "title": "\u00d6vriga"
                 },
                 {
-                    "title": "Tesla",
-                    "path": "tesla",
-                    "icon": "mdi:car",
-                    "panel": true,
-                    "badges": [],
-                    "cards": [
-                        {
-                            "type": "vertical-stack",
-                            "title": "Azarel",
-                            "cards": [
-                                {
-                                    "type": "entities",
-                                    "entities": [
-                                        {
-                                            "entity": "lock.azarel_door_lock",
-                                            "name": "D\u00f6rrl\u00e5s"
-                                        },
-                                        {
-                                            "entity": "lock.azarel_charger_door_lock",
-                                            "name": "Laddlucka"
-                                        },
-                                        {
-                                            "entity": "lock.azarel_trunk_lock",
-                                            "name": "Bagage"
-                                        },
-                                        {
-                                            "entity": "lock.azarel_frunk_lock",
-                                            "name": "Frunk"
-                                        }
-                                    ],
-                                    "state_color": true,
-                                    "show_header_toggle": false
-                                },
-                                {
-                                    "type": "horizontal-stack",
-                                    "cards": [
-                                        {
-                                            "type": "vertical-stack",
-                                            "cards": [
-                                                {
-                                                    "type": "glance",
-                                                    "entities": [
-                                                        {
-                                                            "entity": "sensor.azarel_temperature_sensor_inside",
-                                                            "name": "I bilen"
-                                                        },
-                                                        {
-                                                            "entity": "sensor.azarel_temperature_sensor_outside",
-                                                            "name": "Utomhus"
-                                                        }
-                                                    ]
-                                                },
-                                                {
-                                                    "type": "button",
-                                                    "tap_action": {
-                                                        "action": "toggle"
-                                                    },
-                                                    "entity": "climate.azarel_hvac_climate_system",
-                                                    "name": "Klimatsystem",
-                                                    "show_state": true
-                                                }
-                                            ]
-                                        },
-                                        {
-                                            "type": "vertical-stack",
-                                            "cards": [
-                                                {
-                                                    "type": "gauge",
-                                                    "min": 0,
-                                                    "max": 100,
-                                                    "entity": "sensor.azarel_battery_sensor",
-                                                    "name": "SoC",
-                                                    "severity": {
-                                                        "green": 60,
-                                                        "yellow": 20,
-                                                        "red": 0
-                                                    }
-                                                },
-                                                {
-                                                    "type": "button",
-                                                    "tap_action": {
-                                                        "action": "toggle"
-                                                    },
-                                                    "entity": "switch.azarel_charger_switch",
-                                                    "name": "Laddar",
-                                                    "show_state": true
-                                                }
-                                            ]
-                                        }
-                                    ]
-                                },
-                                {
-                                    "type": "sensor",
-                                    "entity": "sensor.azarel_charging_rate_sensor",
-                                    "graph": "line",
-                                    "hours_to_show": 12,
-                                    "detail": 2,
-                                    "name": "Azarel"
-                                }
-                            ]
-                        }
-                    ]
-                },
-                {
                     "icon": "mdi:weather-sunny",
                     "panel": false,
                     "title": "Solcellerna",
                     "badges": [
                         {
-                            "entity": "sensor.yr_symbol",
+                            "entity": "weather.openweathermap",
                             "name": " ",
                             "show_name": false
                         },
@@ -714,43 +604,294 @@
                     ],
                     "cards": [
                         {
+                            "type": "horizontal-stack",
                             "cards": [
                                 {
-                                    "cards": [
-                                        {
-                                            "entity": "sensor.last_sp_kw",
-                                            "max": 8.2,
-                                            "min": 0,
-                                            "name": "Effekt",
-                                            "type": "gauge"
-                                        },
-                                        {
-                                            "entity": "sensor.last_sp_value",
-                                            "max": 70,
-                                            "name": "Energi",
-                                            "type": "gauge"
-                                        }
-                                    ],
-                                    "type": "horizontal-stack"
-                                },
-                                {
                                     "entity": "sensor.last_sp_kw",
-                                    "graph": "line",
-                                    "icon": "mdi:weather-sunny",
+                                    "max": 8.2,
+                                    "min": 0,
                                     "name": "Effekt",
-                                    "type": "sensor",
-                                    "detail": 2,
-                                    "hours_to_show": 32
+                                    "type": "gauge"
                                 },
                                 {
-                                    "type": "sensor",
+                                    "entity": "sensor.last_sp_value",
+                                    "max": 70,
+                                    "name": "Energi",
+                                    "type": "gauge"
+                                },
+                                {
+                                    "type": "gauge",
                                     "entity": "sensor.nordpool_kwh_se3_sek_3_10_025",
-                                    "graph": "line",
-                                    "detail": 2,
+                                    "min": 0,
+                                    "max": 1.5,
+                                    "severity": {
+                                        "green": 0,
+                                        "yellow": 0.4,
+                                        "red": 0.8
+                                    },
                                     "unit": "kr"
                                 }
+                            ]
+                        },
+                        {
+                            "type": "custom:apexcharts-card",
+                            "header": {
+                                "show": true,
+                                "title": "Nordpool Pris",
+                                "show_states": false
+                            },
+                            "graph_span": "2d",
+                            "span": {
+                                "start": "day"
+                            },
+                            "series": [
+                                {
+                                    "entity": "sensor.nordpool_kwh_se3_sek_3_10_025",
+                                    "name": "Idag",
+                                    "float_precision": 2,
+                                    "data_generator": "return entity.attributes.raw_today.map((entry) => {\n  return [new Date(entry.start), entry.value];\n});\n",
+                                    "type": "column",
+                                    "show": {
+                                        "legend_value": false,
+                                        "in_header": false
+                                    },
+                                    "extend_to_end": false
+                                },
+                                {
+                                    "entity": "sensor.nordpool_kwh_se3_sek_3_10_025",
+                                    "name": "Imorgon",
+                                    "float_precision": 2,
+                                    "data_generator": "return entity.attributes.raw_tomorrow.map((entry) => {\n  return [new Date(entry.start), entry.value];\n});\n",
+                                    "type": "column",
+                                    "show": {
+                                        "legend_value": false,
+                                        "in_header": false
+                                    }
+                                }
                             ],
-                            "type": "vertical-stack"
+                            "apex_config": {
+                                "yaxis": {
+                                    "min": 0,
+                                    "decimalsInFloat": 2
+                                }
+                            }
+                        },
+                        {
+                            "type": "custom:apexcharts-card",
+                            "header": {
+                                "show": true,
+                                "title": "Aktuell effekt",
+                                "show_states": true,
+                                "colorize_states": true
+                            },
+                            "series": [
+                                {
+                                    "entity": "sensor.last_sp_kw",
+                                    "color": "lightgreen",
+                                    "stroke_width": 2
+                                }
+                            ]
+                        },
+                        {
+                            "type": "custom:apexcharts-card",
+                            "graph_span": "10d",
+                            "update_interval": "1hour",
+                            "cache": true,
+                            "series": [
+                                {
+                                    "entity": "sensor.last_sp_value",
+                                    "type": "column",
+                                    "show": {
+                                        "datalabels": true
+                                    },
+                                    "group_by": {
+                                        "func": "max",
+                                        "duration": "1d"
+                                    }
+                                }
+                            ],
+                            "span": {
+                                "end": "day"
+                            },
+                            "apex_config": {
+                                "dataLabels": {
+                                    "background": {
+                                        "foreColor": "rgb(80,80,80)",
+                                        "opacity": 0
+                                    },
+                                    "dropShadow": {
+                                        "enabled": true
+                                    }
+                                }
+                            }
+                        }
+                    ]
+                },
+                {
+                    "title": "Tesla",
+                    "path": "tesla",
+                    "icon": "mdi:car",
+                    "panel": false,
+                    "badges": [],
+                    "cards": [
+                        {
+                            "type": "horizontal-stack",
+                            "cards": [
+                                {
+                                    "type": "button",
+                                    "tap_action": {
+                                        "action": "toggle"
+                                    },
+                                    "entity": "lock.azarel_door_lock",
+                                    "icon": "mdi:car-door-lock",
+                                    "name": "D\u00f6rr"
+                                },
+                                {
+                                    "type": "button",
+                                    "tap_action": {
+                                        "action": "toggle"
+                                    },
+                                    "entity": "lock.azarel_charger_door_lock",
+                                    "name": "Laddlucka",
+                                    "icon": "mdi:gas-station"
+                                },
+                                {
+                                    "type": "button",
+                                    "tap_action": {
+                                        "action": "toggle"
+                                    },
+                                    "entity": "lock.azarel_frunk_lock",
+                                    "name": "Frunk"
+                                },
+                                {
+                                    "type": "button",
+                                    "tap_action": {
+                                        "action": "toggle"
+                                    },
+                                    "entity": "lock.azarel_trunk_lock",
+                                    "name": "Bagage",
+                                    "icon": "mdi:briefcase-variant"
+                                }
+                            ]
+                        },
+                        {
+                            "type": "horizontal-stack",
+                            "cards": [
+                                {
+                                    "type": "gauge",
+                                    "min": 0,
+                                    "max": 100,
+                                    "entity": "sensor.azarel_battery_sensor",
+                                    "name": "SoC",
+                                    "severity": {
+                                        "green": 40,
+                                        "yellow": 80,
+                                        "red": 0
+                                    }
+                                },
+                                {
+                                    "type": "glance",
+                                    "entities": [
+                                        {
+                                            "entity": "sensor.azarel_temperature_sensor_inside",
+                                            "name": "Inne"
+                                        },
+                                        {
+                                            "entity": "sensor.azarel_temperature_sensor_outside",
+                                            "name": "Ute"
+                                        }
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            "type": "horizontal-stack",
+                            "cards": [
+                                {
+                                    "type": "entity",
+                                    "entity": "sensor.aza_mileage"
+                                },
+                                {
+                                    "type": "entity",
+                                    "entity": "sensor.aza_last_update"
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "title": "Husf\u00f6rbrukning",
+                    "path": "huset",
+                    "icon": "mdi:lightning-bolt-outline",
+                    "badges": [],
+                    "cards": [
+                        {
+                            "type": "custom:apexcharts-card",
+                            "header": {
+                                "show": true,
+                                "title": "Husets f\u00f6rbrukning (04-21)",
+                                "show_states": true,
+                                "colorize_states": true
+                            },
+                            "series": [
+                                {
+                                    "entity": "sensor.hem_gen5_electric_consumed_kwh",
+                                    "name": " ",
+                                    "type": "column",
+                                    "group_by": {
+                                        "func": "delta",
+                                        "duration": "1d"
+                                    }
+                                }
+                            ],
+                            "update_interval": "1h",
+                            "graph_span": "10d",
+                            "span": {
+                                "end": "day"
+                            }
+                        },
+                        {
+                            "type": "history-graph",
+                            "entities": [
+                                {
+                                    "entity": "sensor.aeon_labs_zw095_home_energy_meter_gen5_power",
+                                    "name": "Husets effekt"
+                                }
+                            ],
+                            "hours_to_show": 24,
+                            "refresh_interval": 60
+                        },
+                        {
+                            "type": "custom:apexcharts-card",
+                            "header": {
+                                "show": true,
+                                "title": "Husets effekt",
+                                "show_states": true,
+                                "colorize_states": true
+                            },
+                            "series": [
+                                {
+                                    "entity": "sensor.hem_gen5_electric_consumed_w_1",
+                                    "name": "L1"
+                                },
+                                {
+                                    "entity": "sensor.hem_gen5_electric_consumed_w_2",
+                                    "name": "L2"
+                                },
+                                {
+                                    "entity": "sensor.hem_gen5_electric_consumed_w_3",
+                                    "name": "L3"
+                                }
+                            ],
+                            "cache": true,
+                            "update_interval": "10s",
+                            "graph_span": "6h",
+                            "apex_config": {
+                                "stroke": {
+                                    "show": true,
+                                    "width": 2
+                                }
+                            }
                         }
                     ]
                 }

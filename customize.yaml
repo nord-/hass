@@ -3,24 +3,24 @@ persistent_notification.notification:
 sensor.yr_symbol:
   friendly_name: yr
 sensor.199_temperature:
-  friendly_name: Temp, altan
+  friendly_name: Temp, framsidan
 sensor.215_temperature:
   friendly_name: Temp, sovrummet
 sensor.231_temperature:
-  friendly_name: Temp, framsidan
+  friendly_name: Temp, altan
 sensor.199_humidity:
-  friendly_name: Luftfukt, altan
+  friendly_name: Luftfukt, framsidan
 sensor.215_humidity:
   friendly_name: Luftfukt, sovrummet
 sensor.231_humidity:
-  friendly_name: Luftfukt, framsidan
+  friendly_name: Luftfukt, altan
   
 device_tracker.47sl9000za:
   friendly_name: LG 47SL9000
   hidden: true
 zone.home:
   friendly_name: Hemma
-
+  
 light.fibaro_system_fgd212_dimmer_2_level_2:
   friendly_name: Vardagsrumsfönstret
 switch.fibaro_system_fgwpe_f_wall_plug_gen5_switch:
