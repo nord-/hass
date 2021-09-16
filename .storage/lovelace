@@ -151,12 +151,13 @@
                                     "entity": "sensor.house_net_power_kw",
                                     "max": 11,
                                     "severity": {
-                                        "green": -11,
-                                        "yellow": -1,
-                                        "red": 1
+                                        "green": 2,
+                                        "yellow": -2,
+                                        "red": -11
                                     },
                                     "min": -11,
-                                    "name": "Netto"
+                                    "name": "Netto",
+                                    "needle": true
                                 },
                                 {
                                     "type": "gauge",
@@ -480,23 +481,11 @@
                             "name": " "
                         },
                         {
-                            "entity": "weather.openweathermap",
-                            "name": " "
-                        },
-                        {
-                            "entity": "sensor.yr_cloudiness",
-                            "name": " "
-                        },
-                        {
                             "entity": "sensor.199_temperature",
                             "name": " "
                         },
                         {
                             "entity": "sensor.199_humidity",
-                            "name": " "
-                        },
-                        {
-                            "entity": "sensor.yr_wind_speed",
                             "name": " "
                         }
                     ],
@@ -511,6 +500,9 @@
                                 },
                                 {
                                     "entity": "switch.nexa_out_1"
+                                },
+                                {
+                                    "entity": "light.shelly1_1"
                                 }
                             ],
                             "show_header_toggle": true,
@@ -543,20 +535,26 @@
                                     "type": "glance",
                                     "entities": [
                                         {
-                                            "entity": "sensor.openweathermap_weather"
+                                            "entity": "sensor.yr_symbol",
+                                            "name": "V\u00e4der"
                                         },
                                         {
-                                            "entity": "sensor.openweathermap_temperature"
+                                            "entity": "sensor.yr_temperature",
+                                            "name": "Temp"
                                         },
                                         {
-                                            "entity": "sensor.openweathermap_cloud_coverage"
+                                            "entity": "sensor.yr_cloudiness",
+                                            "name": "Moln",
+                                            "icon": "mdi:weather-cloudy"
                                         },
                                         {
-                                            "entity": "sensor.openweathermap_pressure"
+                                            "entity": "sensor.yr_pressure",
+                                            "name": "Lufttryck"
                                         },
                                         {
-                                            "entity": "sensor.openweathermap_wind_speed",
-                                            "name": "Vind"
+                                            "entity": "sensor.yr_wind_speed",
+                                            "name": "Vind",
+                                            "icon": "mdi:weather-windy"
                                         }
                                     ]
                                 }
@@ -854,7 +852,7 @@
                             "type": "history-graph",
                             "entities": [
                                 {
-                                    "entity": "sensor.aeon_labs_zw095_home_energy_meter_gen5_power",
+                                    "entity": "sensor.house_power_kw",
                                     "name": "Husets effekt"
                                 }
                             ],

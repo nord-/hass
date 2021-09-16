@@ -68,7 +68,6 @@
     last_sp_kw:
       friendly_name: "Senaste effekt"
       unit_of_measurement: "kW"
-      entity_id: sensor.aktuell_effekt
       value_template: >-
         {% if is_state('sensor.aktuell_effekt', 'unavailable') or is_state('sensor.aktuell_effekt','unknown') %}
           0
@@ -107,3 +106,8 @@
       friendly_name: "Husets nettoeffekt"
       unit_of_measurement: "kW"
       value_template: "{{ (states('sensor.last_sp_kw') | float - states('sensor.house_power_kw') | float) | round(2) }}"
+
+- platform: template
+  sensors:
+    yrwthr:
+      value_template: "{%set badWeatherList = 'cloudy','fog','heavyrain','heavyrainandthunder','heavyrainshowers','heavyrainshowersandthunder','heavysleet','heavysleetandthunder','heavysleetshowers','heavysleetshowersandthunder','heavysnow','heavysnowandthunder','heavysnowshowers','heavysnowshowersandthunder','lightrain','lightrainandthunder','lightrainshowers','lightrainshowersandthunder','lightsleet','lightsleetandthunder','lightsleetshowers','lightsnow','lightsnowandthunder','lightsnowshowers','lightssleetshowersandthunder','lightssnowshowersandthunder','rain','rainandthunder','rainshowers','rainshowersandthunder','sleet','sleetandthunder','sleetshowers','sleetshowersandthunder','snow','snowandthunder','snowshowers','snowshowersandthunder'%}{{states('sensor.yr_symbol') in badWeatherList}}"

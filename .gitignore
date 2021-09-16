@@ -2,7 +2,7 @@
 *.db
 *.db*
 OZW_Log.txt
-*.log
+*.log*
 *.old
 *.xml
 
