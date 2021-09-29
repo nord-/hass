@@ -186,17 +186,17 @@
                                         "input_number.heater_delay",
                                         "input_number.heater_maxmin",
                                         {
-                                            "entity": "sensor.popp_co_700397_wall_plug_switch_outdoor_schuko_ip44_energy",
+                                            "entity": "sensor.popp_outdoor_energy",
                                             "icon": "mdi:flash-circle",
                                             "name": "Energi"
                                         },
                                         {
-                                            "entity": "sensor.popp_co_700397_wall_plug_switch_outdoor_schuko_ip44_power",
+                                            "entity": "sensor.popp_outdoor_power",
                                             "icon": "mdi:power-plug",
                                             "name": "Effekt"
                                         },
                                         {
-                                            "entity": "switch.popp_co_700397_wall_plug_switch_outdoor_schuko_ip44_switch",
+                                            "entity": "switch.popp_outdoor",
                                             "name": "P\u00e5/av"
                                         }
                                     ],
@@ -883,7 +883,7 @@
                             ],
                             "cache": true,
                             "update_interval": "10s",
-                            "graph_span": "6h",
+                            "graph_span": "12h",
                             "apex_config": {
                                 "stroke": {
                                     "show": true,

@@ -2,7 +2,7 @@
   alias: Felix rum vardag, tänd
   trigger:
   - platform: time
-    at: '07:00:00'
+    at: 07:00:00
   - platform: numeric_state
     entity_id: sun.sun
     value_template: '{{ state.attributes.elevation }}'
@@ -45,7 +45,7 @@
   alias: Felix rum helg, tänd
   trigger:
   - platform: time
-    at: '09:30:00'
+    at: 09:30:00
   - platform: numeric_state
     entity_id: sun.sun
     value_template: '{{ state.attributes.elevation }}'
@@ -82,7 +82,7 @@
   alias: Felix rum lov, tänd
   trigger:
   - platform: time
-    at: '09:30:00'
+    at: 09:30:00
   - platform: numeric_state
     entity_id: sun.sun
     value_template: '{{ state.attributes.elevation }}'
@@ -128,7 +128,7 @@
   alias: Morgonbelysning, tänd
   trigger:
   - platform: time
-    at: '06:55:00'
+    at: 06:55:00
   condition:
     condition: and
     conditions:
@@ -147,7 +147,7 @@
   alias: Morgonbelysning, tänd, helg
   trigger:
   - platform: time
-    at: '08:30:00'
+    at: 08:30:00
   condition:
     condition: and
     conditions:
@@ -158,7 +158,7 @@
       - sat
       - sun
   action:
-  - service: script.turn_on_morning_lights  
+  - service: script.turn_on_morning_lights
 - id: '1515530983853'
   alias: Allmän belysning, tänd, helg
   trigger:
@@ -185,7 +185,7 @@
   - platform: numeric_state
     entity_id: sun.sun
     value_template: '{{ state.attributes.elevation }}'
-    above: 5.0    
+    above: 5.0
   condition:
   - condition: or
     conditions:
@@ -207,7 +207,7 @@
 - id: '180109222801'
   alias: Utomhusbelysning, tänd på morgonen
   trigger:
-  - at: '07:00:00'
+  - at: 07:00:00
     platform: time
   condition:
   - condition: sun
@@ -222,7 +222,7 @@
   action:
   - service: script.turn_on_outdoor
 - id: '180109222803'
-  alias: Utomhusbelysning, släck  
+  alias: Utomhusbelysning, släck
   trigger:
   - platform: sun
     event: sunrise
@@ -239,7 +239,7 @@
     entity_id: sensor.oneplus9pro_battery_level
     below: 25
   - platform: time
-    at: '06:30:00'
+    at: 06:30:00
   condition:
   - condition: state
     entity_id: person.rickard_nord
@@ -253,9 +253,9 @@
   alias: Telefonladdare av
   trigger:
   - platform: time
-    at: '00:00:00'
+    at: 00:00:00
   - platform: time
-    at: '07:00:00'
+    at: 07:00:00
   action:
     service: homeassistant.turn_off
     data:
@@ -266,18 +266,18 @@
   - platform: numeric_state
     entity_id: sensor.yr_cloudiness
     above: 80
-    for: '00:10:00'
+    for: 00:10:00
   - platform: state
-    entity_id: group.my_people    
+    entity_id: group.my_people
     to: home
-    for: '00:05:00'
+    for: 00:05:00
   - platform: state
     entity_id: sensor.yrwthr
     to: 'True'
   - platform: numeric_state
     entity_id: sensor.aktuell_effekt
     below: 0.4
-    for: '00:05:00'
+    for: 00:05:00
   condition:
   - condition: numeric_state
     entity_id: sun.sun
@@ -306,26 +306,23 @@
     entity_id: group.my_people
     from: home
     to: not_home
-    for: '00:05:00'
+    for: 00:05:00
   - platform: numeric_state
     entity_id: sensor.yr_cloudiness
     below: 80
-    for: '00:10:00'
+    for: 00:10:00
   - platform: state
     entity_id: sensor.yrwthr
     to: 'False'
   - platform: numeric_state
     entity_id: sensor.aktuell_effekt
-    above: 0.5
-    for: '00:05:00'
+    above: '0.5'
+    for: 00:05:00
   condition:
   - condition: numeric_state
     entity_id: sun.sun
     value_template: '{{ state.attributes.elevation }}'
     above: 5
-  - condition: numeric_state
-    entity_id: sensor.yr_cloudiness
-    below: 80
   action:
   - data: {}
     service: script.turn_off_general_lights
@@ -337,7 +334,7 @@
   - platform: numeric_state
     entity_id: sensor.oneplus9pro_battery_level
     above: 99
-    for: '00:05:00'
+    for: 00:05:00
   condition: []
   action:
   - service: switch.turn_off
@@ -370,7 +367,7 @@
     domain: switch
   - service: notify.mobile_app_oneplus9pro
     data:
-      message: 'Ladda bilen! Under 20%.'
+      message: Ladda bilen! Under 20%.
   mode: single
 - id: '1610304940192'
   alias: Laddat till 20%
@@ -388,8 +385,8 @@
   action:
   - service: notify.mobile_app_oneplus9pro
     data:
-      message: 'Azarel har laddat tillräckligt för att vara utom fara.'
-      title: 'Teslan har nått 20%'
+      message: Azarel har laddat tillräckligt för att vara utom fara.
+      title: Teslan har nått 20%
   mode: single
 - id: '1617052336219'
   alias: Dags att ladda plattan
@@ -400,7 +397,7 @@
     below: 25
   condition:
   - condition: device
-    type: is_not_plugged_in    
+    type: is_not_plugged_in
     device_id: 12560843ff3ebcb9b53643f71e1c6efc
     entity_id: binary_sensor.sm_p610_laddar
     domain: binary_sensor
@@ -415,7 +412,8 @@
   description: ''
   trigger:
   - platform: state
-    entity_id: sensor.hem_gen5_electric_consumed_1, sensor.hem_gen5_electric_consumed_2, sensor.hem_gen5_electric_consumed_3
+    entity_id: sensor.hem_gen5_electric_consumed_1, sensor.hem_gen5_electric_consumed_2,
+      sensor.hem_gen5_electric_consumed_3
   condition: []
   action:
   - service: mqtt.publish

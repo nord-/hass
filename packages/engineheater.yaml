@@ -109,17 +109,24 @@ group:
       - input_number.heater_minute
       - input_number.heater_delay
       - input_number.heater_maxmin
-      - switch.popp_co_700397_wall_plug_switch_outdoor_schuko_ip44_switch
+      - switch.popp_outdoor
 
 automation:
   - alias: "Motorvärmare - slå på"
     trigger: 
       platform: template
-      value_template: '{{ (states.sensor.time.state >= states.sensor.heater_activationtime.state) and (states.sensor.time.state <= states.sensor.heater_departuretime.state) and (states.switch.popp_co_700397_wall_plug_switch_outdoor_schuko_ip44_switch.state == "off") }}'
+      value_template: '{{ (states.sensor.time.state >= states.sensor.heater_activationtime.state) and (states.sensor.time.state <= states.sensor.heater_departuretime.state) and (states.switch.popp_outdoor.state == "off") }}'
     action:
       - service: homeassistant.turn_on
-        entity_id: switch.popp_co_700397_wall_plug_switch_outdoor_schuko_ip44_switch
-
+        entity_id: switch.popp_outdoor
+    condition:
+      - condition: time
+        weekday:
+        - mon
+        - tue
+        - wed
+        - thu
+        - fri
   - alias: "Motorvärmare - slå av"
     trigger:
       platform: template
@@ -128,9 +135,9 @@ automation:
       - delay:
           minutes: "{{ states('input_number.heater_delay') | int }}"
       - service: homeassistant.turn_off
-        entity_id: switch.popp_co_700397_wall_plug_switch_outdoor_schuko_ip44_switch
-      - service: automation.turn_off
-        entity_id: automation.motorvarmare_sla_pa
+        entity_id: switch.popp_outdoor
+      # - service: automation.turn_off
+      #   entity_id: automation.motorvarmare_sla_pa
 
   - alias: "Motorvärmare - precheck activate"
     # at one hour before start time
@@ -143,25 +150,30 @@ automation:
         state: 'on'
     action:
       - service: homeassistant.turn_on
-        entity_id: switch.popp_co_700397_wall_plug_switch_outdoor_schuko_ip44_switch
+        entity_id: switch.popp_outdoor
       - delay:
           seconds: 10
       - service: homeassistant.turn_off
-        entity_id: switch.popp_co_700397_wall_plug_switch_outdoor_schuko_ip44_switch
+        entity_id: switch.popp_outdoor
 
   - alias: "Motorvärmare - precheck measure"
     trigger: 
       platform: state
-      entity_id: switch.popp_co_700397_wall_plug_switch_outdoor_schuko_ip44_switch
+      entity_id: switch.popp_outdoor
       to: 'on'
       for:
         seconds: 5
     condition:
       - condition: template
-        value_template: '{{ states.sensor.popp_co_700397_wall_plug_switch_outdoor_schuko_ip44_power.state|int < 100 }}'
+        value_template: '{{ states.sensor.popp_outdoor_power.state|int < 100 }}'
     action:
-      - service: notify.mobile_app_sm_g960f
+      - service: notify.oneplus9pro
         data:
           title: "Motorvärmaren"
-          message: "Du glömde sätta i sladden!"
+          message: "Sladden sitter inte i!"
+      - service: notify.mobile_app_sm_g950f
+        data:
+          title: "Motorvärmaren"
+          message: "Sladden verkar inte sitta i!"
+      
 
