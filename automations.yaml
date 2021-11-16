@@ -236,10 +236,10 @@
   - platform: time
     at: '23:00:00'
   - platform: numeric_state
-    entity_id: sensor.oneplus9pro_battery_level
+    entity_id: sensor.op9pro_battery_level
     below: 25
   - platform: time
-    at: 06:30:00
+    at: 06:30
   condition:
   - condition: state
     entity_id: person.rickard_nord
@@ -332,8 +332,8 @@
   description: ''
   trigger:
   - platform: numeric_state
-    entity_id: sensor.oneplus9pro_battery_level
-    above: 99
+    entity_id: sensor.op9pro_battery_level
+    above: '99'
     for: 00:05:00
   condition: []
   action:
@@ -354,7 +354,7 @@
     below: 10
   - condition: numeric_state
     entity_id: sensor.azarel_battery_sensor
-    below: 20
+    below: '20'
   - condition: device
     type: is_off
     device_id: c9c4aa2a0a97e2ca2cc52467b9372ad1
@@ -365,7 +365,7 @@
     device_id: c9c4aa2a0a97e2ca2cc52467b9372ad1
     entity_id: switch.azarel_charger_switch
     domain: switch
-  - service: notify.mobile_app_oneplus9pro
+  - service: notify.mobile_app_op9pro
     data:
       message: Ladda bilen! Under 20%.
   mode: single
@@ -376,14 +376,14 @@
   - platform: numeric_state
     entity_id: sensor.azarel_battery_sensor
     above: 19
-    below: 23
+    below: '23'
   condition:
   - condition: state
     entity_id: binary_sensor.azarel_charger_sensor
     attribute: charging_state
     state: Charging
   action:
-  - service: notify.mobile_app_oneplus9pro
+  - service: notify.mobile_app_op9pro
     data:
       message: Azarel har laddat tillräckligt för att vara utom fara.
       title: Teslan har nått 20%
@@ -394,7 +394,7 @@
   trigger:
   - platform: numeric_state
     entity_id: sensor.sm_p610_batteriniva
-    below: 25
+    below: '25'
   condition:
   - condition: device
     type: is_not_plugged_in
@@ -402,7 +402,7 @@
     entity_id: binary_sensor.sm_p610_laddar
     domain: binary_sensor
   action:
-  - service: notify.mobile_app_oneplus9pro
+  - service: notify.mobile_app_op9pro
     data:
       message: Samsung-plattan har mindre än 25% laddning.
       title: Dags att ladda plattan
@@ -420,4 +420,23 @@
     data:
       topic: ha/sensor/hem/current/{{trigger.to_state.object_id}}
       payload: '{{trigger.to_state.state}}'
+  mode: single
+- id: '1633032752936'
+  alias: Tänd tidig morgon
+  description: ''
+  trigger:
+  - platform: time
+    at: 06:05
+  condition:
+  - condition: time
+    weekday:
+    - mon
+    - tue
+    - wed
+    - thu
+    - fri
+  - condition: sun
+    before: sunrise
+  action:
+  - service: script.early_morning_lights_on
   mode: single

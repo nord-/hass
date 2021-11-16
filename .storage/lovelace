@@ -218,7 +218,7 @@
                     "icon": "mdi:bed",
                     "badges": [
                         {
-                            "entity": "sensor.oneplus9pro_battery_level",
+                            "entity": "sensor.op9pro_battery_level",
                             "name": "Rickards OP9"
                         },
                         {
@@ -245,7 +245,7 @@
                                 },
                                 {
                                     "type": "entity",
-                                    "entity": "binary_sensor.oneplus9pro_is_charging",
+                                    "entity": "binary_sensor.op9pro_is_charging",
                                     "name": "OP9"
                                 }
                             ]
@@ -586,20 +586,8 @@
                 },
                 {
                     "icon": "mdi:weather-sunny",
-                    "panel": false,
                     "title": "Solcellerna",
-                    "badges": [
-                        {
-                            "entity": "weather.openweathermap",
-                            "name": " ",
-                            "show_name": false
-                        },
-                        {
-                            "entity": "sensor.199_temperature",
-                            "show_name": false,
-                            "name": " "
-                        }
-                    ],
+                    "badges": [],
                     "cards": [
                         {
                             "type": "horizontal-stack",
@@ -729,8 +717,16 @@
                     "title": "Tesla",
                     "path": "tesla",
                     "icon": "mdi:car",
-                    "panel": false,
-                    "badges": [],
+                    "badges": [
+                        {
+                            "entity": "sensor.azarel_temperature_sensor_inside",
+                            "name": "Inne"
+                        },
+                        {
+                            "entity": "sensor.azarel_temperature_sensor_outside",
+                            "name": "Ute"
+                        }
+                    ],
                     "cards": [
                         {
                             "type": "horizontal-stack",
@@ -786,21 +782,12 @@
                                         "yellow": 80,
                                         "red": 0
                                     }
-                                },
-                                {
-                                    "type": "glance",
-                                    "entities": [
-                                        {
-                                            "entity": "sensor.azarel_temperature_sensor_inside",
-                                            "name": "Inne"
-                                        },
-                                        {
-                                            "entity": "sensor.azarel_temperature_sensor_outside",
-                                            "name": "Ute"
-                                        }
-                                    ]
                                 }
                             ]
+                        },
+                        {
+                            "type": "entity",
+                            "entity": "sensor.aza_last_update"
                         },
                         {
                             "type": "horizontal-stack",
@@ -808,12 +795,12 @@
                                 {
                                     "type": "entity",
                                     "entity": "sensor.aza_mileage"
-                                },
-                                {
-                                    "type": "entity",
-                                    "entity": "sensor.aza_last_update"
                                 }
                             ]
+                        },
+                        {
+                            "type": "entity",
+                            "entity": "binary_sensor.azarel_online_sensor"
                         }
                     ]
                 },
@@ -824,10 +811,16 @@
                     "badges": [],
                     "cards": [
                         {
+                            "type": "entity",
+                            "entity": "sensor.hem_gen5_electric_consumed_kwh",
+                            "name": "F\u00f6rbrukat (04-21)",
+                            "icon": "mdi:power-plug"
+                        },
+                        {
                             "type": "custom:apexcharts-card",
                             "header": {
                                 "show": true,
-                                "title": "Husets f\u00f6rbrukning (04-21)",
+                                "title": "Husets f\u00f6rbrukning",
                                 "show_states": true,
                                 "colorize_states": true
                             },
@@ -843,7 +836,7 @@
                                 }
                             ],
                             "update_interval": "1h",
-                            "graph_span": "10d",
+                            "graph_span": "5d",
                             "span": {
                                 "end": "day"
                             }
@@ -854,6 +847,9 @@
                                 {
                                     "entity": "sensor.house_power_kw",
                                     "name": "Husets effekt"
+                                },
+                                {
+                                    "entity": "sensor.199_temperature"
                                 }
                             ],
                             "hours_to_show": 24,

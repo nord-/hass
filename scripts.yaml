@@ -193,18 +193,20 @@ early_morning_lights_on:
   alias: Tänd tidig morgon
   sequence:
   - service: switch.turn_on
-    data:
+    data: {}
+    target:
       entity_id:
       - group.grovkoket
       - group.koket
       - group.hallen
       - switch.nexa_1
-      - group.sovrummet
+      - switch.rusta25b
+      - switch.tz1
   - service: light.turn_on
-    data:
+    data: {}
+    target:
       entity_id:
       - group.koket
-      - group.kontoret
   mode: single
 start_the_car:
   alias: Starta bilen
