@@ -26,16 +26,19 @@ turn_on_uppe:
 turn_off_uppe:
   alias: Släck övervån
   sequence:
+  - service: script.slack_sovrummet
   - service: switch.turn_off
-    data:
+    data: {}
+    target:
       entity_id:
       - group.vrum_uppe
-      - group.sovrummet
       - group.kontoret
+      - switch.nexa_1
   - service: light.turn_off
     data:
       entity_id:
       - group.kontoret
+  mode: single
 turn_on_nere:
   alias: Tänd undervån
   sequence:
@@ -94,25 +97,28 @@ turn_off_general_lights:
   alias: Släck allmän belysning
   sequence:
   - service: switch.turn_off
-    data:
+    data: {}
+    target:
       entity_id:
       - group.grovkoket
       - group.koket
       - group.vrum_nere
       - group.hallen
       - group.gastrummet
-      - group.sovrummet
       - group.vrum_uppe
       - group.kontoret
       - switch.rusta13a
       - switch.rusta13b
       - switch.rusta13c
+      - switch.nexa_1
   - service: light.turn_off
     data:
       entity_id:
       - group.vrum_nere
       - group.koket
       - group.kontoret
+  - service: script.slack_sovrummet
+  mode: single
 turn_off_all:
   alias: Stäng av allt
   sequence:
@@ -220,3 +226,28 @@ start_the_car:
     data:
       entity_id: climate.azarel_hvac_climate_system
   mode: single
+tand_sovrummet:
+  sequence:
+  - service: switch.turn_on
+    target:
+      entity_id:
+      - switch.nexa_3
+      - switch.nexa_4
+  - service: script.early_morning_lights_on
+  - service: light.turn_on
+    target:
+      entity_id: light.office_window
+  mode: single
+  alias: Tänd sovrummet
+slack_sovrummet:
+  sequence:
+  - service: switch.turn_off
+    target:
+      entity_id: switch.nexa_4
+  - wait_template: ''
+    timeout: 00:00:03
+  - service: switch.turn_off
+    target:
+      entity_id: switch.nexa_3
+  mode: single
+  alias: Släck sovrummet

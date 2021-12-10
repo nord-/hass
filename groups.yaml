@@ -42,11 +42,12 @@ vrum_uppe:
     - switch.rusta25b
     - switch.telldus_3
 
-sovrummet:      
+sovrummet:
+  # id: 202111222351
   name: Sovrummet
   entities:
-    - switch.nexa_3
     - switch.nexa_4
+    - switch.nexa_3
     - switch.nexa_1 # klädkammaren
 
 kontoret:

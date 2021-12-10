@@ -115,4 +115,6 @@
 - platform: template
   sensors: 
     sunelevation:
+      friendly_name: "Solvinkel"
+      unit_of_measurement: "°"
       value_template: "{{ states.sun.sun.attributes.elevation | round }}"

@@ -44,7 +44,7 @@
                                             "hold_action": {
                                                 "action": "none"
                                             },
-                                            "icon": "mdi:weather-sunset-up",
+                                            "icon": "mdi:brightness-7",
                                             "tap_action": {
                                                 "action": "toggle"
                                             },
@@ -69,16 +69,29 @@
                                 {
                                     "cards": [
                                         {
-                                            "entity": "script.turn_on_nere",
+                                            "entity": "script.tand_sovrummet",
                                             "hold_action": {
                                                 "action": "none"
                                             },
-                                            "icon": "mdi:home-floor-g",
-                                            "name": "Underv\u00e5n",
+                                            "name": "God morgon",
                                             "tap_action": {
                                                 "action": "toggle"
                                             },
-                                            "type": "entity-button"
+                                            "type": "entity-button",
+                                            "icon": "mdi:weather-sunset-up"
+                                        },
+                                        {
+                                            "entity": "script.slack_sovrummet",
+                                            "hold_action": {
+                                                "action": "none"
+                                            },
+                                            "icon": "mdi:weather-night",
+                                            "tap_action": {
+                                                "action": "toggle"
+                                            },
+                                            "type": "entity-button",
+                                            "show_name": true,
+                                            "name": "God natt"
                                         },
                                         {
                                             "entity": "script.turn_off_nere",
@@ -86,25 +99,12 @@
                                                 "action": "none"
                                             },
                                             "icon": "mdi:lightbulb-off",
-                                            "name": "Sl\u00e4ck uv\u00e5n",
+                                            "name": "Underv\u00e5n",
                                             "tap_action": {
                                                 "action": "toggle"
                                             },
                                             "type": "entity-button",
-                                            "show_name": false
-                                        },
-                                        {
-                                            "entity": "script.turn_on_uppe",
-                                            "hold_action": {
-                                                "action": "none"
-                                            },
-                                            "icon": "mdi:home-floor-1",
-                                            "tap_action": {
-                                                "action": "toggle"
-                                            },
-                                            "type": "entity-button",
-                                            "show_name": true,
-                                            "name": "\u00d6verv\u00e5n"
+                                            "show_name": true
                                         },
                                         {
                                             "entity": "script.turn_off_uppe",
@@ -116,7 +116,8 @@
                                                 "action": "toggle"
                                             },
                                             "type": "entity-button",
-                                            "show_name": false
+                                            "show_name": true,
+                                            "name": "\u00d6verv\u00e5n"
                                         }
                                     ],
                                     "type": "horizontal-stack"
@@ -274,7 +275,7 @@
                             "detail": 2
                         },
                         {
-                            "entity": "media_player.vardagsrummet",
+                            "entity": "media_player.chromecast5303",
                             "type": "media-control"
                         }
                     ]
@@ -284,6 +285,10 @@
                     "icon": "mdi:sofa",
                     "badges": [],
                     "cards": [
+                        {
+                            "entity": "media_player.vardagsrummet",
+                            "type": "media-control"
+                        },
                         {
                             "entities": [
                                 {
@@ -314,10 +319,6 @@
                             "name": "F\u00f6nstret",
                             "theme": "default",
                             "type": "light"
-                        },
-                        {
-                            "entity": "media_player.sovrummet",
-                            "type": "media-control"
                         }
                     ]
                 },
@@ -325,7 +326,12 @@
                     "path": "felix",
                     "title": "Felix",
                     "icon": "mdi:human-male-child",
-                    "badges": [],
+                    "badges": [
+                        {
+                            "entity": "sensor.sm_g960f_batteriniva_2",
+                            "name": "Felix mobil"
+                        }
+                    ],
                     "cards": [
                         {
                             "entities": [
@@ -346,13 +352,13 @@
                     "badges": [],
                     "cards": [
                         {
+                            "entity": "media_player.koket",
+                            "type": "media-control"
+                        },
+                        {
                             "entity": "light.kitchen_window",
                             "name": "K\u00f6ksf\u00f6nstret",
                             "type": "light"
-                        },
-                        {
-                            "entity": "media_player.koket",
-                            "type": "media-control"
                         }
                     ]
                 },
@@ -361,6 +367,10 @@
                     "icon": "mdi:home-floor-1",
                     "badges": [],
                     "cards": [
+                        {
+                            "entity": "media_player.projektorn",
+                            "type": "media-control"
+                        },
                         {
                             "entities": [
                                 {
@@ -373,10 +383,6 @@
                             "type": "entities",
                             "state_color": true,
                             "title": "Belysning"
-                        },
-                        {
-                            "entity": "media_player.projektorn",
-                            "type": "media-control"
                         }
                     ]
                 },
@@ -478,6 +484,10 @@
                     "badges": [
                         {
                             "entity": "sun.sun",
+                            "name": " "
+                        },
+                        {
+                            "entity": "sensor.sunelevation",
                             "name": " "
                         },
                         {
@@ -691,7 +701,7 @@
                                         "datalabels": true
                                     },
                                     "group_by": {
-                                        "func": "max",
+                                        "func": "last",
                                         "duration": "1d"
                                     }
                                 }
@@ -831,61 +841,127 @@
                                     "type": "column",
                                     "group_by": {
                                         "func": "delta",
-                                        "duration": "1d"
+                                        "duration": "23h59m"
                                     }
                                 }
                             ],
                             "update_interval": "1h",
-                            "graph_span": "5d",
+                            "graph_span": "7d",
                             "span": {
                                 "end": "day"
                             }
                         },
                         {
-                            "type": "history-graph",
-                            "entities": [
+                            "type": "vertical-stack",
+                            "title": "Effekt och temperatur",
+                            "cards": [
                                 {
-                                    "entity": "sensor.house_power_kw",
-                                    "name": "Husets effekt"
+                                    "type": "custom:apexcharts-card",
+                                    "series": [
+                                        {
+                                            "entity": "sensor.house_power_kw",
+                                            "type": "line",
+                                            "group_by": {
+                                                "func": "avg",
+                                                "duration": "15m"
+                                            }
+                                        }
+                                    ],
+                                    "update_interval": "15m",
+                                    "graph_span": "1d",
+                                    "apex_config": {
+                                        "stroke": {
+                                            "show": true,
+                                            "width": 2,
+                                            "curve": "smooth"
+                                        }
+                                    }
                                 },
                                 {
-                                    "entity": "sensor.199_temperature"
+                                    "type": "custom:apexcharts-card",
+                                    "series": [
+                                        {
+                                            "entity": "sensor.199_temperature",
+                                            "type": "line",
+                                            "color": "SteelBlue",
+                                            "group_by": {
+                                                "func": "avg",
+                                                "duration": "15m"
+                                            }
+                                        }
+                                    ],
+                                    "update_interval": "15m",
+                                    "graph_span": "1d",
+                                    "apex_config": {
+                                        "stroke": {
+                                            "show": true,
+                                            "width": 3
+                                        }
+                                    }
                                 }
-                            ],
-                            "hours_to_show": 24,
-                            "refresh_interval": 60
+                            ]
                         },
                         {
-                            "type": "custom:apexcharts-card",
-                            "header": {
-                                "show": true,
-                                "title": "Husets effekt",
-                                "show_states": true,
-                                "colorize_states": true
-                            },
-                            "series": [
+                            "type": "vertical-stack",
+                            "title": "Husets effekt",
+                            "cards": [
                                 {
-                                    "entity": "sensor.hem_gen5_electric_consumed_w_1",
-                                    "name": "L1"
+                                    "type": "custom:apexcharts-card",
+                                    "series": [
+                                        {
+                                            "entity": "sensor.hem_gen5_electric_consumed_w_1",
+                                            "name": "L1"
+                                        }
+                                    ],
+                                    "cache": true,
+                                    "graph_span": "9h",
+                                    "apex_config": {
+                                        "stroke": {
+                                            "show": true,
+                                            "width": 2,
+                                            "curve": "stepline"
+                                        }
+                                    }
                                 },
                                 {
-                                    "entity": "sensor.hem_gen5_electric_consumed_w_2",
-                                    "name": "L2"
+                                    "type": "custom:apexcharts-card",
+                                    "series": [
+                                        {
+                                            "entity": "sensor.hem_gen5_electric_consumed_w_2",
+                                            "name": "L2",
+                                            "color": "DeepSkyBlue"
+                                        }
+                                    ],
+                                    "cache": true,
+                                    "graph_span": "9h",
+                                    "apex_config": {
+                                        "stroke": {
+                                            "show": true,
+                                            "width": 2,
+                                            "curve": "stepline"
+                                        }
+                                    }
                                 },
                                 {
-                                    "entity": "sensor.hem_gen5_electric_consumed_w_3",
-                                    "name": "L3"
+                                    "type": "custom:apexcharts-card",
+                                    "series": [
+                                        {
+                                            "entity": "sensor.hem_gen5_electric_consumed_w_3",
+                                            "name": "L3",
+                                            "color": "red"
+                                        }
+                                    ],
+                                    "cache": true,
+                                    "graph_span": "9h",
+                                    "apex_config": {
+                                        "stroke": {
+                                            "show": true,
+                                            "width": 2,
+                                            "curve": "stepline"
+                                        }
+                                    }
                                 }
-                            ],
-                            "cache": true,
-                            "update_interval": "10s",
-                            "graph_span": "12h",
-                            "apex_config": {
-                                "stroke": {
-                                    "show": true,
-                                    "width": 2
-                                }
-                            }
+                            ]
                         }
                     ]
                 }
