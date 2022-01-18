@@ -49,9 +49,9 @@
   - platform: numeric_state
     entity_id: sun.sun
     value_template: '{{ state.attributes.elevation }}'
-    below: 5.0
+    below: '5'
   condition:
-    condition: and
+  - condition: and
     conditions:
     - condition: template
       value_template: '{{ state_attr("sun.sun", "elevation") < 5 }}'
@@ -59,6 +59,9 @@
       weekday:
       - sat
       - sun
+  - condition: state
+    entity_id: group.my_people
+    state: home
   action:
   - service: script.turn_on_felix_rum
 - id: '180109204700'
@@ -140,9 +143,9 @@
   alias: Morgonbelysning, tänd
   trigger:
   - platform: time
-    at: 06:55:00
+    at: 06:55
   condition:
-    condition: and
+  - condition: and
     conditions:
     - condition: template
       value_template: '{{ state_attr("sun.sun", "elevation") < 5 }}'
@@ -153,15 +156,18 @@
       - wed
       - thu
       - fri
+  - condition: state
+    entity_id: group.my_people
+    state: home
   action:
   - service: script.turn_on_morning_lights
 - id: 0b1073dedfa245b2835600cf6972b74a
   alias: Morgonbelysning, tänd, helg
   trigger:
   - platform: time
-    at: 08:30:00
+    at: 08:30
   condition:
-    condition: and
+  - condition: and
     conditions:
     - condition: template
       value_template: '{{ state_attr("sun.sun", "elevation") < 5 }}'
@@ -169,6 +175,9 @@
       weekday:
       - sat
       - sun
+  - condition: state
+    entity_id: group.my_people
+    state: home
   action:
   - service: script.turn_on_morning_lights
 - id: '1515530983853'
@@ -177,9 +186,18 @@
   - platform: numeric_state
     entity_id: sun.sun
     value_template: '{{ state.attributes.elevation }}'
-    below: 5.0
+    below: 5
+  - platform: state
+    entity_id: group.my_people
+    from: not_home
+    to: home
+    for:
+      hours: 0
+      minutes: 1
+      seconds: 0
+      milliseconds: 0
   condition:
-    condition: and
+  - condition: and
     conditions:
     - condition: template
       value_template: '{{ state_attr("sun.sun", "elevation") < 5 }}'
@@ -187,6 +205,9 @@
       weekday:
       - sat
       - sun
+  - condition: state
+    entity_id: group.my_people
+    state: home
   action:
   - service: script.turn_on_general_lights
 - id: '1515530983852'
@@ -291,13 +312,17 @@
   - platform: state
     entity_id: group.my_people
     to: home
-    for: 00:05:00
+    for:
+      hours: 0
+      minutes: 1
+      seconds: 0
+      milliseconds: 0
   - platform: state
     entity_id: sensor.yrwthr
     to: 'True'
   - platform: numeric_state
     entity_id: sensor.aktuell_effekt
-    below: 0.4
+    below: '0.4'
     for: 00:05:00
   condition:
   - condition: numeric_state
@@ -315,7 +340,7 @@
     state: 'True'
   - condition: numeric_state
     entity_id: sensor.yr_cloudiness
-    above: 79
+    above: '79'
   action:
   - service: script.turn_on_general_lights
   mode: single
