@@ -82,11 +82,11 @@
   alias: Felix rum lov, tänd
   trigger:
   - platform: time
-    at: 09:30:00
+    at: '10:00'
   - platform: numeric_state
     entity_id: sun.sun
     value_template: '{{ state.attributes.elevation }}'
-    below: 5.0
+    below: '5'
   condition:
   - condition: template
     value_template: '{{ state_attr("sun.sun", "elevation") < 5 }}'
@@ -96,11 +96,11 @@
   alias: Felix rum lov, släck
   trigger:
   - platform: time
-    at: '22:15:00'
+    at: '23:00'
   - platform: numeric_state
     entity_id: sun.sun
     value_template: '{{ state.attributes.elevation }}'
-    above: 5.0
+    above: '5'
   action:
   - service: script.turn_off_felix_rum
 - id: '1515530983851'
@@ -109,9 +109,18 @@
   - platform: numeric_state
     entity_id: sun.sun
     value_template: '{{ state.attributes.elevation }}'
-    below: 5.0
+    below: 5
+  - platform: state
+    entity_id: group.my_people
+    from: not_home
+    to: home
+    for:
+      hours: 0
+      minutes: 1
+      seconds: 0
+      milliseconds: 0
   condition:
-    condition: and
+  - condition: and
     conditions:
     - condition: template
       value_template: '{{ state_attr("sun.sun", "elevation") < 5 }}'
@@ -122,6 +131,9 @@
       - wed
       - thu
       - fri
+  - condition: state
+    entity_id: group.my_people
+    state: home
   action:
   - service: script.turn_on_general_lights
 - id: 9f920a28dc6b4985b53ecb6e13c42a06
@@ -185,7 +197,16 @@
   - platform: numeric_state
     entity_id: sun.sun
     value_template: '{{ state.attributes.elevation }}'
-    above: 5.0
+    above: '5'
+  - platform: state
+    entity_id: group.my_people
+    from: home
+    to: not_home
+    for:
+      hours: 0
+      minutes: 5
+      seconds: 0
+      milliseconds: 0
   condition:
   - condition: or
     conditions:
@@ -195,7 +216,7 @@
         after: sunrise
       - condition: numeric_state
         entity_id: sensor.yr_cloudiness
-        below: 80
+        below: '80'
     - condition: sun
       after: sunset
     - condition: state
@@ -344,27 +365,17 @@
   alias: Ladda bilen när det är kallt
   description: ''
   trigger:
-  - platform: state
-    entity_id: binary_sensor.azarel_charger_sensor
-    from: 'Off'
-    to: 'On'
+  - platform: numeric_state
+    entity_id: sensor.azarel_battery_sensor
+    below: '20'
   condition:
   - condition: numeric_state
     entity_id: sensor.199_temperature
-    below: 10
-  - condition: numeric_state
-    entity_id: sensor.azarel_battery_sensor
-    below: '20'
-  - condition: device
-    type: is_off
-    device_id: c9c4aa2a0a97e2ca2cc52467b9372ad1
-    entity_id: switch.azarel_charger_switch
-    domain: switch
+    below: '5'
+  - condition: state
+    entity_id: binary_sensor.azarel_parking_brake_sensor
+    state: På
   action:
-  - type: turn_on
-    device_id: c9c4aa2a0a97e2ca2cc52467b9372ad1
-    entity_id: switch.azarel_charger_switch
-    domain: switch
   - service: notify.mobile_app_op9pro
     data:
       message: Ladda bilen! Under 20%.

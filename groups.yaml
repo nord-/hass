@@ -69,7 +69,8 @@ ute:
     - switch.an179_1     # altanväggen söderut
 
 my_people:
-  name: Frida och Rickard
+  name: Familjen
   entities:
     - person.rickard_nord
     - person.frida
+    - person.felix

@@ -1,0 +1,57 @@
+
+- cal_id: p#weeknum@group.v.calendar.google.com
+  entities:
+  - device_id: veckonummer
+    ignore_availability: true
+    name: Veckonummer
+    track: false
+
+- cal_id: sv.swedish#holiday@group.v.calendar.google.com
+  entities:
+  - device_id: helgdagar_i_sverige
+    ignore_availability: true
+    name: Helgdagar i Sverige
+    track: false
+
+- cal_id: rickard.nord@gmail.com
+  entities:
+  - device_id: rickard_nord_gmail_com
+    ignore_availability: true
+    name: rickard.nord@gmail.com
+    track: false
+
+- cal_id: eunv4qb9vh0dk2ltlmb4iofjok@group.calendar.google.com
+  entities:
+  - device_id: fridas_arbetstider
+    ignore_availability: true
+    name: Fridas arbetstider
+    track: false
+
+- cal_id: addressbook#contacts@group.v.calendar.google.com
+  entities:
+  - device_id: fodelsedagar
+    ignore_availability: true
+    name: "F\xF6delsedagar"
+    track: false
+
+- cal_id: felixnord06@gmail.com
+  entities:
+  - device_id: felixnord06_gmail_com
+    ignore_availability: true
+    name: felixnord06@gmail.com
+    track: false
+
+- cal_id: uj3e76beabfmb1rv3pjli80begbrrahp@import.calendar.google.com
+  entities:
+  - device_id: kalender
+    ignore_availability: true
+    name: Kalender
+    track: false
+
+- cal_id: 13t063i259outk06v9mramnvvo@group.calendar.google.com
+  entities:
+  - device_id: family
+    ignore_availability: true
+    name: Familjen
+    track: true
+

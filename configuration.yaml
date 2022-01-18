@@ -114,6 +114,9 @@ device_tracker: !include device_tracker.yaml
 # Example configuration.yaml entry
 google_assistant: !include gassistant.yaml
   
+google:
+  client_id: 406236313752-db7bm79q1n3v77s4cf5j9qfvv7961tic.apps.googleusercontent.com
+  client_secret: !secret gcal_api
 #notify:
 #  - platform: pushbullet
 #    name: pushbullet
