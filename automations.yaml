@@ -541,3 +541,20 @@
     data:
       title: Motorvärmaren
       message: Sladden verkar inte sitta i...
+- id: '1643056235541'
+  alias: Ladda bilen när det är billigt
+  description: ''
+  trigger:
+  - platform: state
+    entity_id: binary_sensor.low_price
+    to: 'on'
+  condition:
+  - condition: state
+    entity_id: device_tracker.azarel_location_tracker
+    state: home
+  action:
+  - service: rest_command.cn_add_to_queue
+  - service: notify.mobile_app_op9pro
+    data:
+      message: Nu startar Azarel att ladda!
+  mode: single

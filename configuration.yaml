@@ -74,6 +74,9 @@ nordpool:
 
 sensor: !include sensors.yaml
 
+binary_sensor: !include binary_sensors.yaml
+
+rest_command: !include rest.yaml
 # zwave:
 #  usb_path: /dev/ttyACM0
 #  network_key: !secret zwave_networkkey

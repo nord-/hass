@@ -23,7 +23,7 @@
   resource: http://192.168.1.101
 
 - platform: rest
-  resource: http://192.168.1.54/solar_api/v1/GetInverterRealtimeData.cgi?Scope=Device&DeviceId=1&DataCollection=CommonInverterData
+  resource: http://192.168.2.24/solar_api/v1/GetInverterRealtimeData.cgi?Scope=Device&DeviceId=1&DataCollection=CommonInverterData
   method: GET
   name: "Aktuell effekt"
   value_template: "{{ (value_json.Body.Data.PAC.Value /1000 | float)|round(2) }}"
@@ -32,7 +32,7 @@
   scan_interval: 60
   
 - platform: rest
-  resource: http://192.168.1.54/solar_api/v1/GetInverterRealtimeData.cgi?Scope=Device&DeviceId=1&DataCollection=CommonInverterData
+  resource: http://192.168.2.24/solar_api/v1/GetInverterRealtimeData.cgi?Scope=Device&DeviceId=1&DataCollection=CommonInverterData
   method: GET
   name: "Total energi idag"
   unit_of_measurement: 'kWh'
@@ -94,19 +94,19 @@
 
 - platform: template
   sensors:
+    house_net_power_kw:
+      friendly_name: "Husets nettoeffekt"
+      unit_of_measurement: "kW"
+      value_template: "{{ ((states('sensor.hem_gen5_electric_consumed_w') | float) / (-1000)) | round(2) }}"
+
+- platform: template
+  sensors:
     house_power_kw:
       friendly_name: "Husets effekt"
       unit_of_measurement: "kW"
       entity_id: sensor.hem_gen5_electric_consumed_w
-      value_template: "{{ ((states('sensor.hem_gen5_electric_consumed_w') | float) / 1000) | round(2) }}"
+      value_template: "{{ (states('sensor.last_sp_kw') | float - states('sensor.house_net_power_kw') | float) | round(2) }}"
       
-- platform: template
-  sensors:
-    house_net_power_kw:
-      friendly_name: "Husets nettoeffekt"
-      unit_of_measurement: "kW"
-      value_template: "{{ (states('sensor.last_sp_kw') | float - states('sensor.house_power_kw') | float) | round(2) }}"
-
 - platform: template
   sensors:
     yrwthr:

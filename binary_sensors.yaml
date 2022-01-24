@@ -1,0 +1,5 @@
+- platform: template
+  sensors:
+    low_price:
+      friendly_name: "Lågt elpris"
+      value_template: "{{ state_attr('sensor.nordpool_kwh_se3_sek_3_10_025','current_price') <= state_attr('sensor.nordpool_kwh_se3_sek_3_10_025', 'off peak 1') }}" 

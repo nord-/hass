@@ -17,7 +17,7 @@ felix_rum:
 gastrummet:
   name: Spelrummet
   entities:
-    - switch.tz1
+#    - switch.tz1
     - switch.Rusta15E
     
 hallen:
@@ -34,7 +34,8 @@ koket:
 grovkoket:
   name: Grovköket
   entities:
-    - switch.rusta15b
+#    - switch.rusta15b
+    - switch.tz1
     
 vrum_uppe:
   name: Vardagsrummet, uppe
