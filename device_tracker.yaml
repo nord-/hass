@@ -1,11 +1,11 @@
-- platform: nmap_tracker
-  hosts: 192.168.1.0/24
-  home_interval: 10
-  scan_options: " --privileged -sP "
-  interval_seconds: 60
-  consider_home: 0:03:00
-  new_device_defaults:
-      track_new_devices: true
+#- platform: nmap_tracker
+#  hosts: 192.168.1.0/24
+#  home_interval: 10
+#  scan_options: " --privileged -sP "
+#  interval_seconds: 60
+#  consider_home: 0:03:00
+#  new_device_defaults:
+#      track_new_devices: true
 
 # - platform: bluetooth_tracker
 #   track_new_devices: True

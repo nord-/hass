@@ -18,21 +18,22 @@
 #pushbullet
 #  - platform: pushbullet
 #    api_key: !secret pushbullet_token
+
 # Samsung printer
-- platform: syncthru
-  resource: http://192.168.1.101
+#- platform: syncthru
+#  resource: http://192.168.1.101
 
 - platform: rest
-  resource: http://192.168.2.24/solar_api/v1/GetInverterRealtimeData.cgi?Scope=Device&DeviceId=1&DataCollection=CommonInverterData
+  resource: http://192.168.2.31/solar_api/v1/GetInverterRealtimeData.cgi?Scope=Device&DeviceId=1&DataCollection=CommonInverterData
   method: GET
   name: "Aktuell effekt"
-  value_template: "{{ (value_json.Body.Data.PAC.Value /1000 | float)|round(2) }}"
+  value_template: "{{ (value_json.Body.Data.PAC.Value /1000 | float(0))|round(2) }}"
   unit_of_measurement: 'kW'
   force_update: true
   scan_interval: 60
   
 - platform: rest
-  resource: http://192.168.2.24/solar_api/v1/GetInverterRealtimeData.cgi?Scope=Device&DeviceId=1&DataCollection=CommonInverterData
+  resource: http://192.168.2.31/solar_api/v1/GetInverterRealtimeData.cgi?Scope=Device&DeviceId=1&DataCollection=CommonInverterData
   method: GET
   name: "Total energi idag"
   unit_of_measurement: 'kWh'
@@ -49,16 +50,16 @@
     last_sp_value:
       friendly_name: "Senaste energi"
       unit_of_measurement: 'kWh'
-      entity_id: sensor.total_energi_idag
+#      entity_id: sensor.total_energi_idag
       value_template: >-
         {% if is_state('sensor.total_energi_idag', 'unavailable') or is_state('sensor.total_energi_idag', 'unknown') %}
           {{ states("sensor.last_sp_value") }}
         {% elif state_attr('sun.sun', 'rising') == true and state_attr('sun.sun', 'elevation')|float > -5 %}
-          {{ states('sensor.total_energi_idag')|float }}
-        {% elif states('sensor.total_energi_idag')|float > states('sensor.last_sp_value')|float %}
-          {{ states('sensor.total_energi_idag')|float }}
+          {{ states('sensor.total_energi_idag')|float(0) }}
+        {% elif states('sensor.total_energi_idag')|float(0) > states('sensor.last_sp_value')|float(0) %}
+          {{ states('sensor.total_energi_idag')|float(0) }}
         {% else %}
-          {{ states('sensor.last_sp_value')|float }}
+          {{ states('sensor.last_sp_value')|float(0) }}
         {% endif %}
 # {% set last_sp_value = states('sensor.total_energi_idag') %}
 # {% elif is_state('sun.sun', 'above_horizon') and (states('sensor.total_energi_idag')|float > states('sensor.last_sp_value')|float) %}
@@ -87,7 +88,7 @@
       friendly_name: Körsträcka
       unit_of_measurement: 'mil'
       icon_template: mdi:counter
-      value_template: "{{ (float(states('sensor.azarel_mileage_sensor'))/10) | round }}"
+      value_template: "{{ ((states('sensor.azarel_mileage_sensor') | float(0))/10) | round }}"
     aza_last_update:
       friendly_name: Senast uppdaterad
       value_template: "{{ as_timestamp(states.sensor.azarel_mileage_sensor.last_updated) | timestamp_custom('%H:%M, %d %b') }}"
@@ -97,15 +98,15 @@
     house_net_power_kw:
       friendly_name: "Husets nettoeffekt"
       unit_of_measurement: "kW"
-      value_template: "{{ ((states('sensor.hem_gen5_electric_consumed_w') | float) / (-1000)) | round(2) }}"
+      value_template: "{{ ((states('sensor.hem_gen5_electric_consumed_w') | float(0)) / (-1000)) | round(2) }}"
 
 - platform: template
   sensors:
     house_power_kw:
       friendly_name: "Husets effekt"
       unit_of_measurement: "kW"
-      entity_id: sensor.hem_gen5_electric_consumed_w
-      value_template: "{{ (states('sensor.last_sp_kw') | float - states('sensor.house_net_power_kw') | float) | round(2) }}"
+#      entity_id: sensor.hem_gen5_electric_consumed_w
+      value_template: "{{ (states('sensor.last_sp_kw') | float(0) - states('sensor.house_net_power_kw') | float(0)) | round(2) }}"
       
 - platform: template
   sensors:

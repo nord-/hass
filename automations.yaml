@@ -548,13 +548,44 @@
   - platform: state
     entity_id: binary_sensor.low_price
     to: 'on'
+  - platform: time_pattern
+    minutes: '15'
   condition:
   - condition: state
     entity_id: device_tracker.azarel_location_tracker
     state: home
+  - condition: state
+    entity_id: binary_sensor.azarel_charger_sensor
+    state: 'on'
+  - condition: time
+    after: 00:00
+    before: 09:00
+  - condition: state
+    entity_id: binary_sensor.low_price
+    state: 'on'
   action:
   - service: rest_command.cn_add_to_queue
   - service: notify.mobile_app_op9pro
     data:
       message: Nu startar Azarel att ladda!
+  mode: single
+- id: '1643296123979'
+  alias: Stoppa laddning av bilen
+  description: ''
+  trigger:
+  - platform: state
+    entity_id: binary_sensor.low_price
+    to: 'off'
+  condition:
+  - condition: state
+    entity_id: device_tracker.azarel_location_tracker
+    state: home
+  - condition: state
+    entity_id: switch.azarel_charger_switch
+    state: 'on'
+  action:
+  - service: notify.mobile_app_op9pro
+    data:
+      message: Laddningen av Azarel har stoppats.
+      title: Högt pris på NordPool
   mode: single
