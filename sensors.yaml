@@ -120,3 +120,15 @@
       friendly_name: "Solvinkel"
       unit_of_measurement: "°"
       value_template: "{{ states.sun.sun.attributes.elevation | round(1) }}"
+      
+- platform: template
+  sensors:
+    car1_charging_rate:
+      friendly_name: "Azarel effekt"
+      unit_of_measurement: "kW"
+      value_template: "{{ (states('sensor.azarel_charging_rate_sensor') | float(0)/1564*230) | round(1) }}"
+
+
+
+
+

@@ -390,20 +390,21 @@
   alias: Ladda bilen när det är kallt
   description: ''
   trigger:
-  - platform: numeric_state
-    entity_id: sensor.azarel_battery_sensor
-    below: '20'
+  - platform: state
+    entity_id: binary_sensor.azarel_charger_sensor
+    to: 'on'
   condition:
   - condition: numeric_state
     entity_id: sensor.199_temperature
     below: '5'
-  - condition: state
-    entity_id: binary_sensor.azarel_parking_brake_sensor
-    state: På
+  - condition: numeric_state
+    entity_id: sensor.azarel_battery_sensor
+    below: '20'
   action:
   - service: notify.mobile_app_op9pro
     data:
       message: Ladda bilen! Under 20%.
+  - service: rest_command.cn_add_to_queue
   mode: single
 - id: '1610304940192'
   alias: Laddat till 20%
@@ -411,13 +412,16 @@
   trigger:
   - platform: numeric_state
     entity_id: sensor.azarel_battery_sensor
-    above: 19
+    above: '19'
     below: '23'
   condition:
   - condition: state
     entity_id: binary_sensor.azarel_charger_sensor
     attribute: charging_state
     state: Charging
+  - condition: numeric_state
+    entity_id: sensor.199_temperature
+    below: '5'
   action:
   - service: notify.mobile_app_op9pro
     data:
@@ -462,7 +466,7 @@
   description: ''
   trigger:
   - platform: time
-    at: 06:05
+    at: 06:00
   condition:
   - condition: time
     weekday:
@@ -475,6 +479,7 @@
     before: sunrise
   action:
   - service: script.early_morning_lights_on
+    data: {}
   mode: single
 - alias: Motorvärmare - slå på
   id: '20220118091401'
@@ -505,8 +510,8 @@
       minutes: '{{ states(''input_number.heater_delay'') | int }}'
   - service: homeassistant.turn_off
     entity_id: switch.popp_outdoor
-- alias: Motorvärmare - precheck activate
-  id: '20220118091300'
+- id: '20220118091300'
+  alias: Motorvärmare - precheck activate
   trigger:
   - platform: time
     at: '21:00'
@@ -514,6 +519,13 @@
   - condition: state
     entity_id: automation.motorvarmare_sla_pa
     state: 'on'
+  - condition: time
+    weekday:
+    - mon
+    - tue
+    - wed
+    - thu
+    - fri
   action:
   - service: homeassistant.turn_on
     entity_id: switch.popp_outdoor
@@ -549,7 +561,10 @@
     entity_id: binary_sensor.low_price
     to: 'on'
   - platform: time_pattern
-    minutes: '15'
+    hours: /1
+  - platform: state
+    entity_id: binary_sensor.azarel_charger_sensor
+    to: 'on'
   condition:
   - condition: state
     entity_id: device_tracker.azarel_location_tracker
@@ -563,6 +578,12 @@
   - condition: state
     entity_id: binary_sensor.low_price
     state: 'on'
+  - condition: numeric_state
+    entity_id: sensor.azarel_energy_added_sensor
+    below: '0.1'
+  - condition: state
+    entity_id: switch.azarel_charger_switch
+    state: 'off'
   action:
   - service: rest_command.cn_add_to_queue
   - service: notify.mobile_app_op9pro
@@ -588,4 +609,5 @@
     data:
       message: Laddningen av Azarel har stoppats.
       title: Högt pris på NordPool
+  - service: rest_command.cn_remove_from_queue
   mode: single

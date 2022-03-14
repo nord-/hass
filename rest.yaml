@@ -5,5 +5,10 @@ cn_add_to_queue:
     authorization: !secret cn_rest_authorization
     accept: 'text/plain, application/json, text/json'
   content_type:  'application/json; charset=utf-8'
-  payload: '{ "portId": 1646, "userCarId": 276, "departureTime": "{{ (now().strftime("%s") | int + (8*60*60)) | timestamp_custom("%Y-%m-%dT%H:%M:00+01:00") }}", "startChargePercentage": {{ states("sensor.azarel_battery_sensor") }}, "targetChargePercentage": 100 }'
+  payload: '{ "portId": 1646, "userCarId": 276, "departureTime": "{{ (as_timestamp(now()) + 6*60*60) | timestamp_local() }}", "startChargePercentage": {{ states("sensor.azarel_battery_sensor") }}, "targetChargePercentage": 100 }'
   
+cn_remove_from_queue:
+  url: "https://api.chargenode.eu/chargingbox/site/82/car/276/stop"
+  method: put
+  headers: 
+    authorization: !secret cn_rest_authorization

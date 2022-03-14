@@ -1,5 +1,6 @@
 {
     "version": 1,
+    "minor_version": 1,
     "key": "lovelace",
     "data": {
         "config": {
@@ -11,7 +12,7 @@
                     "icon": "mdi:home",
                     "badges": [
                         {
-                            "entity": "group.my_people",
+                            "entity": "binary_sensor.bad_weather",
                             "name": " "
                         },
                         {
@@ -714,7 +715,7 @@
                                     },
                                     "entity": "lock.azarel_charger_door_lock",
                                     "name": " ",
-                                    "icon": "mdi:ev-plug-ccs2",
+                                    "icon": "mdi:connection",
                                     "show_name": false
                                 },
                                 {
@@ -735,7 +736,7 @@
                                         "service_data": {},
                                         "target": {}
                                     },
-                                    "icon": "mdi:ev-station",
+                                    "icon": "mdi:lightning-bolt",
                                     "show_name": false
                                 }
                             ]
@@ -753,24 +754,26 @@
                                         "green": 40,
                                         "yellow": 20,
                                         "red": 0
-                                    }
+                                    },
+                                    "needle": true
                                 },
                                 {
-                                    "type": "entities",
-                                    "entities": [
-                                        {
-                                            "entity": "binary_sensor.azarel_charger_sensor",
-                                            "name": "Ansluten"
-                                        },
-                                        {
-                                            "entity": "switch.azarel_charger_switch",
-                                            "name": "Laddar"
-                                        },
-                                        {
-                                            "entity": "sensor.azarel_charging_rate_sensor",
-                                            "name": "Laddhast."
-                                        }
-                                    ]
+                                    "type": "entity",
+                                    "entity": "binary_sensor.azarel_charger_sensor",
+                                    "name": "Inkopplad"
+                                },
+                                {
+                                    "type": "gauge",
+                                    "entity": "sensor.car1_charging_rate",
+                                    "min": 0,
+                                    "max": 11,
+                                    "name": " ",
+                                    "severity": {
+                                        "green": 0,
+                                        "yellow": 5.5,
+                                        "red": 8
+                                    },
+                                    "needle": true
                                 }
                             ]
                         },
@@ -839,7 +842,11 @@
                                 {
                                     "entity": "sensor.last_sp_kw",
                                     "color": "lightgreen",
-                                    "stroke_width": 2
+                                    "stroke_width": 2,
+                                    "group_by": {
+                                        "func": "avg",
+                                        "duration": "3m"
+                                    }
                                 }
                             ]
                         },
@@ -875,6 +882,39 @@
                                     }
                                 }
                             }
+                        },
+                        {
+                            "type": "custom:apexcharts-card",
+                            "graph_span": "12h",
+                            "update_interval": "5m",
+                            "cache": true,
+                            "series": [
+                                {
+                                    "entity": "sensor.last_sp_value",
+                                    "type": "column",
+                                    "show": {
+                                        "datalabels": true
+                                    },
+                                    "group_by": {
+                                        "func": "delta",
+                                        "duration": "1h"
+                                    }
+                                }
+                            ],
+                            "span": {
+                                "end": "hour"
+                            },
+                            "apex_config": {
+                                "dataLabels": {
+                                    "background": {
+                                        "foreColor": "rgb(80,80,80)",
+                                        "opacity": 0
+                                    },
+                                    "dropShadow": {
+                                        "enabled": true
+                                    }
+                                }
+                            }
                         }
                     ]
                 },
@@ -891,172 +931,53 @@
                             "icon": "mdi:power-plug"
                         },
                         {
-                            "type": "custom:apexcharts-card",
-                            "header": {
-                                "show": true,
-                                "title": "Husets f\u00f6rbrukning",
-                                "show_states": true,
-                                "colorize_states": true
-                            },
-                            "series": [
-                                {
-                                    "entity": "sensor.hem_gen5_electric_consumed_kwh",
-                                    "name": " ",
-                                    "type": "column",
-                                    "group_by": {
-                                        "func": "delta",
-                                        "duration": "23h59m"
-                                    }
-                                }
-                            ],
-                            "update_interval": "1h",
-                            "graph_span": "7d",
-                            "cache": true,
-                            "span": {
-                                "end": "day"
-                            }
-                        },
-                        {
-                            "type": "custom:apexcharts-card",
-                            "header": {
-                                "show_states": false
-                            },
-                            "series": [
-                                {
-                                    "entity": "sensor.hem_gen5_electric_consumed_kwh",
-                                    "name": " ",
-                                    "type": "column",
-                                    "show": {
-                                        "legend_value": false
-                                    },
-                                    "group_by": {
-                                        "func": "delta",
-                                        "duration": "1h"
-                                    }
-                                },
-                                {
-                                    "entity": "sensor.last_sp_value",
-                                    "name": " ",
-                                    "stroke_width": 3,
-                                    "show": {
-                                        "legend_value": false
-                                    },
-                                    "group_by": {
-                                        "func": "diff",
-                                        "duration": "1h"
-                                    }
-                                }
-                            ],
-                            "update_interval": "1h",
-                            "graph_span": "1d",
-                            "span": {
-                                "end": "day"
-                            },
-                            "apex_config": {
-                                "legend": {
-                                    "show": false
-                                }
-                            }
-                        },
-                        {
-                            "type": "custom:apexcharts-card",
-                            "header": {
-                                "show": true,
-                                "title": "Nordpool Pris",
-                                "show_states": true
-                            },
-                            "graph_span": "1d",
-                            "span": {
-                                "start": "day"
-                            },
-                            "series": [
-                                {
-                                    "entity": "sensor.nordpool_kwh_se3_sek_3_10_025",
-                                    "name": "Idag",
-                                    "stroke_width": 2,
-                                    "float_precision": 2,
-                                    "data_generator": "return entity.attributes.raw_today.map((p) => {\n  return [new Date(p.start), p.value];\n});\n",
-                                    "curve": "stepline",
-                                    "show": {
-                                        "legend_value": false,
-                                        "in_header": false
-                                    },
-                                    "extend_to_end": false
-                                },
-                                {
-                                    "entity": "sensor.nordpool_kwh_se3_sek_3_10_025",
-                                    "name": "Imorgon",
-                                    "stroke_width": 2,
-                                    "float_precision": 2,
-                                    "data_generator": "return entity.attributes.raw_tomorrow.map((p) => { \n  let d = new Date(p.start);\n  d.setDate(d.getDate() - 1);\n  return [d, p.value]; });\n",
-                                    "curve": "stepline",
-                                    "show": {
-                                        "legend_value": false,
-                                        "in_header": false
-                                    }
-                                }
-                            ],
-                            "apex_config": {
-                                "yaxis": {
-                                    "min": 0,
-                                    "decimalsInFloat": 2
-                                }
-                            }
-                        },
-                        {
-                            "type": "vertical-stack",
-                            "title": "Effekt och temperatur",
-                            "cards": [
-                                {
-                                    "type": "custom:apexcharts-card",
-                                    "series": [
-                                        {
-                                            "entity": "sensor.house_power_kw",
-                                            "type": "line",
-                                            "group_by": {
-                                                "func": "avg",
-                                                "duration": "60m"
-                                            }
-                                        }
-                                    ],
-                                    "update_interval": "15m",
-                                    "graph_span": "1d",
-                                    "apex_config": {
-                                        "stroke": {
-                                            "show": true,
-                                            "width": 2,
-                                            "curve": "smooth"
-                                        }
-                                    }
-                                },
-                                {
-                                    "type": "custom:apexcharts-card",
-                                    "series": [
-                                        {
-                                            "entity": "sensor.199_temperature",
-                                            "type": "line",
-                                            "color": "SteelBlue",
-                                            "group_by": {
-                                                "func": "avg",
-                                                "duration": "15m"
-                                            }
-                                        }
-                                    ],
-                                    "update_interval": "15m",
-                                    "graph_span": "1d",
-                                    "apex_config": {
-                                        "stroke": {
-                                            "show": true,
-                                            "width": 3
-                                        }
-                                    }
-                                }
-                            ]
-                        },
-                        {
                             "type": "vertical-stack",
                             "title": "Str\u00f6m L1-L3 (A)",
                             "cards": [
+                                {
+                                    "type": "horizontal-stack",
+                                    "cards": [
+                                        {
+                                            "type": "gauge",
+                                            "entity": "sensor.hem_gen5_electric_consumed_1",
+                                            "max": 20,
+                                            "name": "L1",
+                                            "min": -12,
+                                            "needle": true,
+                                            "severity": {
+                                                "green": -12,
+                                                "yellow": 0,
+                                                "red": 10
+                                            }
+                                        },
+                                        {
+                                            "type": "gauge",
+                                            "entity": "sensor.hem_gen5_electric_consumed_2",
+                                            "name": "L2",
+                                            "needle": true,
+                                            "severity": {
+                                                "green": -12,
+                                                "yellow": 0,
+                                                "red": 10
+                                            },
+                                            "min": -12,
+                                            "max": 20
+                                        },
+                                        {
+                                            "type": "gauge",
+                                            "entity": "sensor.hem_gen5_electric_consumed_3",
+                                            "max": 20,
+                                            "name": "L3",
+                                            "min": -12,
+                                            "needle": true,
+                                            "severity": {
+                                                "green": -12,
+                                                "yellow": 0,
+                                                "red": 10
+                                            }
+                                        }
+                                    ]
+                                },
                                 {
                                     "type": "custom:apexcharts-card",
                                     "series": [
@@ -1117,6 +1038,168 @@
                                     }
                                 }
                             ]
+                        },
+                        {
+                            "type": "custom:apexcharts-card",
+                            "header": {
+                                "show": true,
+                                "title": "Husets f\u00f6rbrukning",
+                                "show_states": true,
+                                "colorize_states": true
+                            },
+                            "series": [
+                                {
+                                    "entity": "sensor.hem_gen5_electric_consumed_kwh",
+                                    "name": " ",
+                                    "type": "column",
+                                    "group_by": {
+                                        "func": "delta",
+                                        "duration": "23h59m"
+                                    }
+                                }
+                            ],
+                            "update_interval": "1h",
+                            "graph_span": "7d",
+                            "cache": true,
+                            "span": {
+                                "end": "day"
+                            }
+                        },
+                        {
+                            "type": "custom:apexcharts-card",
+                            "header": {
+                                "show_states": false
+                            },
+                            "series": [
+                                {
+                                    "entity": "sensor.house_power_kw",
+                                    "name": " ",
+                                    "type": "column",
+                                    "show": {
+                                        "legend_value": false
+                                    },
+                                    "group_by": {
+                                        "func": "avg",
+                                        "duration": "1h"
+                                    }
+                                },
+                                {
+                                    "entity": "sensor.last_sp_kw",
+                                    "name": " ",
+                                    "stroke_width": 3,
+                                    "show": {
+                                        "legend_value": false
+                                    },
+                                    "group_by": {
+                                        "func": "avg",
+                                        "duration": "1h"
+                                    }
+                                }
+                            ],
+                            "update_interval": "1h",
+                            "graph_span": "1d",
+                            "span": {
+                                "end": "day"
+                            },
+                            "apex_config": {
+                                "legend": {
+                                    "show": false
+                                }
+                            }
+                        },
+                        {
+                            "type": "custom:apexcharts-card",
+                            "header": {
+                                "show": true,
+                                "title": "Nordpool Pris",
+                                "show_states": true
+                            },
+                            "graph_span": "1d",
+                            "span": {
+                                "start": "day"
+                            },
+                            "series": [
+                                {
+                                    "entity": "sensor.nordpool_kwh_se3_sek_3_10_025",
+                                    "name": "Idag",
+                                    "stroke_width": 2,
+                                    "color": "deepskyblue",
+                                    "float_precision": 2,
+                                    "data_generator": "return entity.attributes.raw_today.map((p) => {\n  return [new Date(p.start), p.value];\n});\n",
+                                    "curve": "stepline",
+                                    "show": {
+                                        "legend_value": false,
+                                        "in_header": false
+                                    },
+                                    "extend_to_end": false
+                                },
+                                {
+                                    "entity": "sensor.nordpool_kwh_se3_sek_3_10_025",
+                                    "name": "Imorgon",
+                                    "stroke_width": 2,
+                                    "color": "yellow",
+                                    "float_precision": 2,
+                                    "data_generator": "return entity.attributes.raw_tomorrow.map((p) => { \n  let d = new Date(p.start);\n  d.setDate(d.getDate() - 1);\n  return [d, p.value]; });\n",
+                                    "curve": "stepline",
+                                    "show": {
+                                        "legend_value": false,
+                                        "in_header": false
+                                    }
+                                }
+                            ],
+                            "apex_config": {
+                                "yaxis": {
+                                    "min": 0,
+                                    "decimalsInFloat": 2
+                                }
+                            }
+                        },
+                        {
+                            "type": "custom:apexcharts-card",
+                            "header": {
+                                "show": true,
+                                "title": "Effekt och temperatur"
+                            },
+                            "series": [
+                                {
+                                    "entity": "sensor.house_power_kw",
+                                    "type": "line",
+                                    "name": "effekt",
+                                    "group_by": {
+                                        "func": "avg",
+                                        "duration": "60m"
+                                    }
+                                },
+                                {
+                                    "entity": "sensor.199_temperature",
+                                    "type": "line",
+                                    "name": "temp",
+                                    "color": "SteelBlue"
+                                }
+                            ],
+                            "update_interval": "15m",
+                            "graph_span": "1d",
+                            "apex_config": {
+                                "yaxis": [
+                                    {
+                                        "seriesName": "effekt",
+                                        "decimalsInFloat": 0
+                                    },
+                                    {
+                                        "seriesName": "temp",
+                                        "decimalsInFloat": 0,
+                                        "opposite": true,
+                                        "title": {
+                                            "text": "temp"
+                                        }
+                                    }
+                                ],
+                                "stroke": {
+                                    "show": true,
+                                    "width": 2,
+                                    "curve": "smooth"
+                                }
+                            }
                         }
                     ]
                 }

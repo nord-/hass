@@ -2,4 +2,27 @@
   sensors:
     low_price:
       friendly_name: "Lågt elpris"
-      value_template: "{{ state_attr('sensor.nordpool_kwh_se3_sek_3_10_025','current_price') <= state_attr('sensor.nordpool_kwh_se3_sek_3_10_025', 'off_peak_1') and state_attr('sensor.nordpool_kwh_se3_sek_3_10_025','low price')}}" 
+      value_template: "{{ state_attr('sensor.nordpool_kwh_se3_sek_3_10_025','current_price') <= 0.8 and state_attr('sensor.nordpool_kwh_se3_sek_3_10_025','current_price') <= state_attr('sensor.nordpool_kwh_se3_sek_3_10_025', 'off_peak_1') and state_attr('sensor.nordpool_kwh_se3_sek_3_10_025','low price')}}" 
+
+- platform: template
+  sensors:
+    yr_wthr:
+      friendly_name: "Dåligt väder"
+      value_template: >-
+        {%set badWeatherList = 'cloudy','fog','heavyrain','heavyrainandthunder','heavyrainshowers','heavyrainshowersandthunder','heavysleet','heavysleetandthunder','heavysleetshowers','heavysleetshowersandthunder','heavysnow','heavysnowandthunder','heavysnowshowers','heavysnowshowersandthunder','lightrain','lightrainandthunder','lightrainshowers','lightrainshowersandthunder','lightsleet','lightsleetandthunder','lightsleetshowers','lightsnow','lightsnowandthunder','lightsnowshowers','lightssleetshowersandthunder','lightssnowshowersandthunder','rain','rainandthunder','rainshowers','rainshowersandthunder','sleet','sleetandthunder','sleetshowers','sleetshowersandthunder','snow','snowandthunder','snowshowers','snowshowersandthunder'%}
+        {{states('sensor.yr_symbol') in badWeatherList}}
+
+- platform: template
+  sensors:
+    bad_weather:
+      friendly_name: "Dåligt väder"
+      icon_template: >
+        {% if is_state('binary_sensor.yr_wthr','on') and states("sensor.yr_cloudiness") | int > 80 and states("sensor.aktuell_effekt") | float(0) < 0.4 %} mdi:weather-cloudy-alert
+        {% else %} mdi:weather-partly-cloudy
+        {% endif %}
+      value_template: >-
+        {% if is_state('binary_sensor.yr_wthr','on') and states("sensor.yr_cloudiness") | int > 80 and states("sensor.aktuell_effekt") | float(0) < 0.4 %}
+          true
+        {% else %}
+          false
+        {% endif %}

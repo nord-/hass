@@ -251,3 +251,20 @@ slack_sovrummet:
       entity_id: switch.nexa_3
   mode: single
   alias: Släck sovrummet
+slack_inne:
+  sequence:
+  - service: switch.turn_off
+    data: {}
+    target:
+      entity_id:
+      - group.hallen
+      - switch.rusta13c
+      - switch.rusta13a
+      - switch.rusta13b
+      - group.gastrummet
+      - group.grovkoket
+      - switch.nexa_1
+      - switch.tz2
+  mode: single
+  alias: Släck inne
+  icon: mdi:lightbulb-group-off-outline
