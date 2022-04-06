@@ -278,7 +278,7 @@
   - platform: time
     at: '23:00:00'
   - platform: numeric_state
-    entity_id: sensor.op9pro_battery_level
+    entity_id: sensor.op9_pro_battery_level
     below: 25
   - platform: time
     at: 06:30
@@ -286,6 +286,9 @@
   - condition: state
     entity_id: person.rickard_nord
     state: home
+  - condition: numeric_state
+    entity_id: sensor.op9_pro_battery_level
+    below: '99'
   action:
   - data: {}
     entity_id: switch.nexa_5
@@ -378,10 +381,17 @@
   description: ''
   trigger:
   - platform: numeric_state
-    entity_id: sensor.op9pro_battery_level
+    entity_id: sensor.op9_pro_battery_level
     above: '99'
-    for: 00:05:00
-  condition: []
+    for:
+      hours: 0
+      minutes: 5
+      seconds: 0
+      milliseconds: 0
+  condition:
+  - condition: state
+    entity_id: person.rickard_nord
+    state: home
   action:
   - service: switch.turn_off
     entity_id: switch.nexa_5
@@ -395,16 +405,18 @@
     to: 'on'
   condition:
   - condition: numeric_state
-    entity_id: sensor.199_temperature
+    entity_id: sensor.yr_temperature
     below: '5'
   - condition: numeric_state
     entity_id: sensor.azarel_battery_sensor
     below: '20'
   action:
-  - service: notify.mobile_app_op9pro
+  - service: notify.mobile_app_op9_pro
     data:
       message: Ladda bilen! Under 20%.
-  - service: rest_command.cn_add_to_queue
+      title: Startar laddning av Azarel
+  - service: rest_command.cn_add_aza_to_queue
+    data: {}
   mode: single
 - id: '1610304940192'
   alias: Laddat till 20%
@@ -420,13 +432,16 @@
     attribute: charging_state
     state: Charging
   - condition: numeric_state
-    entity_id: sensor.199_temperature
+    entity_id: sensor.yr_temperature
     below: '5'
+  - condition: state
+    entity_id: device_tracker.azarel_location_tracker
+    state: home
   action:
-  - service: notify.mobile_app_op9pro
+  - service: notify.mobile_app_op9_pro
     data:
       message: Azarel har laddat tillräckligt för att vara utom fara.
-      title: Teslan har nått 20%
+      title: Azarel har nått 20%
   mode: single
 - id: '1617052336219'
   alias: Dags att ladda plattan
@@ -466,7 +481,7 @@
   description: ''
   trigger:
   - platform: time
-    at: 06:00
+    at: 05:30
   condition:
   - condition: time
     weekday:
@@ -573,7 +588,7 @@
     entity_id: binary_sensor.azarel_charger_sensor
     state: 'on'
   - condition: time
-    after: 00:00
+    after: '22:00:00'
     before: 09:00
   - condition: state
     entity_id: binary_sensor.low_price
@@ -585,8 +600,9 @@
     entity_id: switch.azarel_charger_switch
     state: 'off'
   action:
-  - service: rest_command.cn_add_to_queue
-  - service: notify.mobile_app_op9pro
+  - service: rest_command.cn_add_aza_to_queue
+    data: {}
+  - service: notify.mobile_app_op9_pro
     data:
       message: Nu startar Azarel att ladda!
   mode: single
@@ -605,9 +621,32 @@
     entity_id: switch.azarel_charger_switch
     state: 'on'
   action:
-  - service: notify.mobile_app_op9pro
+  - service: notify.mobile_app_op9_pro
     data:
       message: Laddningen av Azarel har stoppats.
       title: Högt pris på NordPool
-  - service: rest_command.cn_remove_from_queue
+  - service: rest_command.cn_remove_aza_from_queue
+    data: {}
+  mode: single
+- id: '1647968733347'
+  alias: Ladda Fridas bil
+  description: ''
+  trigger:
+  - platform: time
+    at: 00:00:00
+  condition:
+  - condition: time
+    weekday:
+    - mon
+    - tue
+    - wed
+    - thu
+    - fri
+  action:
+  - service: rest_command.cn_add_yxx_to_queue
+    data: {}
+  - service: notify.mobile_app_op9_pro
+    data:
+      message: Fridas bil börjar ladda.
+      title: Zoe lagd i kö
   mode: single

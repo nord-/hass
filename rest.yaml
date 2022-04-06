@@ -1,14 +1,31 @@
-cn_add_to_queue:
-  url: "https://api.chargenode.eu/chargingbox/charge"
+cn_add_aza_to_queue:
+  url: "https://dev-app-cn.azurewebsites.net/chargingbox/charge"
   method: post
   headers: 
     authorization: !secret cn_rest_authorization
     accept: 'text/plain, application/json, text/json'
   content_type:  'application/json; charset=utf-8'
-  payload: '{ "portId": 1646, "userCarId": 276, "departureTime": "{{ (as_timestamp(now()) + 6*60*60) | timestamp_local() }}", "startChargePercentage": {{ states("sensor.azarel_battery_sensor") }}, "targetChargePercentage": 100 }'
+  payload: '{ "portId": 510, "userCarId": 12, "departureTime": "{{ (as_timestamp(now()) + 6*60*60) | timestamp_local() }}", "startChargePercentage": {{ states("sensor.azarel_battery_sensor") }}, "targetChargePercentage": 100 }'
+  # 510 uttag 1, 511 uttag 2, 512 uttag 3
+  # UserCarId 12 = Azarel, 423 = Zoe
   
-cn_remove_from_queue:
-  url: "https://api.chargenode.eu/chargingbox/site/82/car/276/stop"
+cn_remove_aza_from_queue:
+  url: "https://dev-app-cn.azurewebsites.net/site/37/car/12/stop"
+  method: put
+  headers: 
+    authorization: !secret cn_rest_authorization
+
+cn_add_yxx_to_queue:
+  url: "https://dev-app-cn.azurewebsites.net/chargingbox/charge"
+  method: post
+  headers: 
+    authorization: !secret cn_rest_authorization
+    accept: 'text/plain, application/json, text/json'
+  content_type:  'application/json; charset=utf-8'
+  payload: '{ "portId": 511, "userCarId": 423, "departureTime": "{% if (now() > today_at("06:30")) %} {{ int(as_timestamp((now() + timedelta(days=1)).date()) + 6*60+30) | timestamp_local() }} {% else %} {{ as_timestamp(today_at("06:30")) | timestamp_local() }}{% endif %}", "startChargePercentage": 0, "targetChargePercentage": 100 }'
+
+cn_remove_yxx_from_queue:
+  url: "https://dev-app-cn.azurewebsites.net/site/37/car/423/stop"
   method: put
   headers: 
     authorization: !secret cn_rest_authorization

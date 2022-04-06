@@ -1,12 +1,12 @@
 # Tellstick Duo temp
 - platform: tellstick
-#   only_named:
-#   - id: 199
-#     name: Altan
-#   - id: 215
-#     name: Sovrummet
-#   - id: 231
-#     name: Framsidan
+  only_named:
+  - id: 231
+    name: Altan
+  - id: 215
+    name: Sovrummet
+  - id: 199
+    name: 199
 # Weather prediction
 - platform: weather_data
   monitored_conditions:

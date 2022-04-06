@@ -1,5 +1,118 @@
 # file is not directly used: copy its content into Tellstick configuration
 devices:
+  - id: 22
+    name: Rusta13A
+    controller: 0
+    protocol: sartano
+    code: '1010010000'
+  - id: 7
+    name: Rusta13B
+    controller: 0
+    protocol: sartano
+    code: '1010001000'
+  - id: 9
+    name: Rusta13C
+    controller: 0
+    protocol: sartano
+    code: '1010000100'
+  - id: 12
+    name: Rusta14A
+    controller: 0
+    protocol: sartano
+    code: '1001010000'
+  - id: 11
+    name: Rusta14B
+    controller: 0
+    protocol: sartano
+    code: '1001001000'
+  - id: 21
+    name: Rusta14E
+    controller: 0
+    protocol: sartano
+    code: '1001000001'
+  - id: 6
+    name: Rusta15C
+    controller: 0
+    protocol: sartano
+    code: '1000100100'
+  - id: 19
+    name: Rusta15D
+    controller: 0
+    protocol: sartano
+    code: '1000100010'
+  - id: 5
+    name: Rusta15E
+    controller: 0
+    protocol: sartano
+    code: '1000100001'
+  - id: 26
+    name: Rusta25A
+    protocol: sartano
+    code: '0100110000'
+  - id: 27
+    name: Rusta25B
+    protocol: sartano
+    code: '0100101000'
+  - id: 8
+    name: Nexa 1
+    controller: 0
+    protocol: arctech
+    model: selflearning-switch
+    house: '4'
+    unit: '1'
+  - id: 20
+    name: Nexa 2
+    controller: 0
+    protocol: arctech
+    model: selflearning-switch
+    house: '4'
+    unit: '2'
+  - id: 14
+    name: Nexa 3
+    controller: 0
+    protocol: arctech
+    model: selflearning-switch
+    house: '4'
+    unit: '4'
+  - id: 23
+    name: Nexa 4
+    protocol: arctech
+    model: selflearning-switch
+    house: '1426'
+    unit: '4'
+  - id: 24
+    name: Nexa 5
+    protocol: arctech
+    model: selflearning-switch
+    house: '953934'
+    unit: '5'
+  - id: 25
+    name: Nexa 6
+    protocol: arctech
+    model: selflearning-switch
+    house: '426'
+    unit: '6'
+  - id: 15
+    name: Nexa Out 2
+    controller: 0
+    protocol: arctech
+    model: selflearning-switch
+    house: '10'
+    unit: '1'
+  - id: 16
+    name: Nexa Out 1
+    controller: 0
+    protocol: arctech
+    model: codeswitch
+    house: D
+    unit: '3'
+  - id: 10
+    name: Kitchen Window
+    controller: 0
+    protocol: arctech
+    model: selflearning-switch
+    house: '4'
+    unit: '3'
   - id: 1
     name: Telldus 1
     protocol: arctech
@@ -20,141 +133,6 @@ devices:
     model: selflearning-switch
     house: '426'
     unit: '3'
-  - id: 4
-    name: Rusta14C
-    controller: 0
-    protocol: sartano
-    code: '1001000100'
-  - id: 5
-    name: Rusta15E
-    controller: 0
-    protocol: sartano
-    code: '1000100001'
-  - id: 6
-    name: Rusta15C
-    controller: 0
-    protocol: sartano
-    code: '1000100100'
-  - id: 7
-    name: Rusta13B
-    controller: 0
-    protocol: sartano
-    code: '1010001000'
-  - id: 8
-    name: Nexa 1
-    controller: 0
-    protocol: arctech
-    model: selflearning-switch
-    house: '4'
-    unit: '1'
-  - id: 9
-    name: Rusta13C
-    controller: 0
-    protocol: sartano
-    code: '1010000100'
-  - id: 10
-    name: Kitchen Window
-    controller: 0
-    protocol: arctech
-    model: selflearning-switch
-    house: '4'
-    unit: '3'
-  - id: 11
-    name: Rusta14B
-    controller: 0
-    protocol: sartano
-    code: '1001001000'
-  - id: 12
-    name: Rusta14A
-    controller: 0
-    protocol: sartano
-    code: '1001010000'
-  # - id: 13
-  #   name: Patio South
-  #   controller: 0
-  #   protocol: arctech
-  #   model: selflearning-switch
-  #   house: '15'
-  #   unit: '11'
-  - id: 14
-    name: Nexa 3
-    controller: 0
-    protocol: arctech
-    model: selflearning-switch
-    house: '4'
-    unit: '4'
-  - id: 15
-    name: Nexa Out 2
-    controller: 0
-    protocol: arctech
-    model: selflearning-switch
-    house: '10'
-    unit: '1'
-  - id: 16
-    name: Nexa Out 1
-    controller: 0
-    protocol: arctech
-    model: codeswitch
-    house: D
-    unit: '3'
-  - id: 17
-    name: Rusta15A
-    controller: 0
-    protocol: sartano
-    code: '1000110000'
-  - id: 18
-    name: Rusta15B
-    controller: 0
-    protocol: sartano
-    code: '1000101000'
-  - id: 19
-    name: Rusta15D
-    controller: 0
-    protocol: sartano
-    code: '1000100010'
-  - id: 20
-    name: Nexa 2
-    controller: 0
-    protocol: arctech
-    model: selflearning-switch
-    house: '4'
-    unit: '2'
-  - id: 21
-    name: Rusta14E
-    controller: 0
-    protocol: sartano
-    code: '1001000001'
-  - id: 22
-    name: Rusta13A
-    controller: 0
-    protocol: sartano
-    code: '1010010000'
-  - id: 23
-    name: Nexa 4
-    protocol: arctech
-    model: selflearning-switch
-    house: '1426'
-    unit: '4'
-  - id: 24
-    name: Nexa 5
-    protocol: arctech
-    model: selflearning-switch
-    house: '1426'
-    unit: '5'
-  - id: 25
-    name: Nexa 6
-    protocol: arctech
-    model: selflearning-switch
-    house: '426'
-    unit: '6'
-  - id: 26
-    name: Rusta25A
-    protocol: sartano
-    code: '0100110000'
-  - id: 27
-    name: Rusta25B
-    protocol: sartano
-    code: '0100101000'
   - id: 28
     name: TelldusOut1
     protocol: arctech

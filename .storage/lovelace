@@ -30,11 +30,12 @@
                     ],
                     "cards": [
                         {
-                            "entity": "sensor.231_temperature",
+                            "hours_to_show": 24,
                             "graph": "line",
+                            "entity": "sensor.framsidan_temperature",
                             "type": "sensor",
                             "detail": 2,
-                            "name": "Altanen"
+                            "name": "Trappan"
                         },
                         {
                             "cards": [
@@ -231,14 +232,20 @@
                                     "type": "horizontal-stack",
                                     "cards": [
                                         {
+                                            "hours_to_show": 24,
+                                            "graph": "none",
                                             "type": "sensor",
-                                            "entity": "sensor.199_temperature",
-                                            "name": "Framsidan"
+                                            "entity": "sensor.framsidan_temperature",
+                                            "name": "Trappan",
+                                            "detail": 1
                                         },
                                         {
+                                            "hours_to_show": 24,
+                                            "graph": "none",
                                             "type": "sensor",
-                                            "entity": "sensor.231_temperature",
-                                            "name": "Altanen"
+                                            "entity": "sensor.altan_temperature",
+                                            "name": "Altanen",
+                                            "detail": 1
                                         },
                                         {
                                             "type": "gauge",
@@ -301,12 +308,12 @@
                     ]
                 },
                 {
+                    "theme": "Backend-selected",
                     "title": "Sovrummet",
                     "icon": "mdi:bed",
                     "badges": [
                         {
-                            "entity": "sensor.op9pro_battery_level",
-                            "name": "Rickards OP9"
+                            "entity": "sensor.op9_pro_battery_level"
                         },
                         {
                             "entity": "sensor.sm_p610_batteriniva",
@@ -332,7 +339,7 @@
                                 },
                                 {
                                     "type": "entity",
-                                    "entity": "binary_sensor.op9pro_is_charging",
+                                    "entity": "binary_sensor.op9_pro_is_charging",
                                     "name": "OP9"
                                 }
                             ]
@@ -355,10 +362,12 @@
                             "state_color": true
                         },
                         {
-                            "entity": "sensor.215_temperature",
+                            "hours_to_show": 24,
                             "graph": "line",
+                            "entity": "sensor.sovrummet_temperature",
                             "type": "sensor",
-                            "detail": 2
+                            "detail": 2,
+                            "name": "Sovrummet"
                         },
                         {
                             "entity": "media_player.chromecast5303",
@@ -553,18 +562,11 @@
                                     }
                                 }
                             ]
-                        },
-                        {
-                            "type": "sensor",
-                            "entity": "sensor.215_temperature",
-                            "graph": "line",
-                            "hours_to_show": 12,
-                            "detail": 2,
-                            "name": "Kontoret"
                         }
                     ]
                 },
                 {
+                    "theme": "Backend-selected",
                     "title": "Ute",
                     "icon": "mdi:outdoor-lamp",
                     "badges": [
@@ -577,11 +579,15 @@
                             "name": " "
                         },
                         {
-                            "entity": "sensor.199_temperature",
+                            "entity": "sensor.framsidan_temperature",
                             "name": " "
                         },
                         {
-                            "entity": "sensor.199_humidity",
+                            "entity": "sensor.framsidan_humidity",
+                            "name": " "
+                        },
+                        {
+                            "entity": "sensor.framsidan_pressure",
                             "name": " "
                         }
                     ],
@@ -608,12 +614,16 @@
                         {
                             "entities": [
                                 {
-                                    "entity": "sensor.231_temperature",
+                                    "entity": "sensor.altan_temperature",
                                     "name": "Altanen"
                                 },
                                 {
+                                    "entity": "sensor.lumi_lumi_weather_temperature",
+                                    "name": "Trappan"
+                                },
+                                {
                                     "entity": "sensor.199_temperature",
-                                    "name": "Framsidan"
+                                    "name": "Carport"
                                 }
                             ],
                             "hours_to_show": 8,
@@ -681,6 +691,7 @@
                     "title": "\u00d6vriga"
                 },
                 {
+                    "theme": "Backend-selected",
                     "title": "Tesla",
                     "path": "tesla",
                     "icon": "mdi:car",
@@ -692,6 +703,10 @@
                         {
                             "entity": "sensor.azarel_temperature_sensor_outside",
                             "name": "Ute"
+                        },
+                        {
+                            "entity": "sensor.199_temperature",
+                            "name": "Carport"
                         }
                     ],
                     "cards": [
@@ -774,6 +789,18 @@
                                         "red": 8
                                     },
                                     "needle": true
+                                },
+                                {
+                                    "type": "gauge",
+                                    "entity": "sensor.azarel_energy_added_sensor",
+                                    "name": "Laddat",
+                                    "max": 50,
+                                    "needle": true,
+                                    "severity": {
+                                        "green": 0.1,
+                                        "yellow": 25,
+                                        "red": 35
+                                    }
                                 }
                             ]
                         },
@@ -845,7 +872,7 @@
                                     "stroke_width": 2,
                                     "group_by": {
                                         "func": "avg",
-                                        "duration": "3m"
+                                        "duration": "10m"
                                     }
                                 }
                             ]
@@ -885,7 +912,7 @@
                         },
                         {
                             "type": "custom:apexcharts-card",
-                            "graph_span": "12h",
+                            "graph_span": "18h",
                             "update_interval": "5m",
                             "cache": true,
                             "series": [
@@ -899,6 +926,15 @@
                                         "func": "delta",
                                         "duration": "1h"
                                     }
+                                },
+                                {
+                                    "entity": "sensor.nordpool_kwh_se3_sek_2_10_025",
+                                    "name": "Idag",
+                                    "stroke_width": 2,
+                                    "color": "deepskyblue",
+                                    "float_precision": 2,
+                                    "data_generator": "return entity.attributes.raw_today.map((p) => {\n  return [new Date(p.start), p.value];\n});\n",
+                                    "curve": "stepline"
                                 }
                             ],
                             "span": {
@@ -1120,7 +1156,7 @@
                             },
                             "series": [
                                 {
-                                    "entity": "sensor.nordpool_kwh_se3_sek_3_10_025",
+                                    "entity": "sensor.nordpool_kwh_se3_sek_2_10_025",
                                     "name": "Idag",
                                     "stroke_width": 2,
                                     "color": "deepskyblue",
@@ -1134,7 +1170,7 @@
                                     "extend_to_end": false
                                 },
                                 {
-                                    "entity": "sensor.nordpool_kwh_se3_sek_3_10_025",
+                                    "entity": "sensor.nordpool_kwh_se3_sek_2_10_025",
                                     "name": "Imorgon",
                                     "stroke_width": 2,
                                     "color": "yellow",
@@ -1171,7 +1207,7 @@
                                     }
                                 },
                                 {
-                                    "entity": "sensor.199_temperature",
+                                    "entity": "sensor.framsidan_temperature",
                                     "type": "line",
                                     "name": "temp",
                                     "color": "SteelBlue"
