@@ -180,44 +180,6 @@
                                     "unit": "kr"
                                 }
                             ]
-                        },
-                        {
-                            "entities": [
-                                "sensor.heater_departuretime",
-                                "input_number.heater_hour",
-                                "input_number.heater_minute",
-                                "automation.motorvarmare_sla_pa",
-                                {
-                                    "entities": [
-                                        "sensor.heater_activationtime",
-                                        "sensor.heater_forecast",
-                                        "input_number.heater_delay",
-                                        "input_number.heater_maxmin",
-                                        {
-                                            "entity": "sensor.popp_outdoor_energy",
-                                            "icon": "mdi:flash-circle",
-                                            "name": "Energi"
-                                        },
-                                        {
-                                            "entity": "sensor.popp_outdoor_power",
-                                            "icon": "mdi:power-plug",
-                                            "name": "Effekt"
-                                        },
-                                        {
-                                            "entity": "switch.popp_outdoor",
-                                            "name": "P\u00e5/av"
-                                        }
-                                    ],
-                                    "head": {
-                                        "label": "Anpassa",
-                                        "type": "section"
-                                    },
-                                    "type": "custom:fold-entity-row"
-                                }
-                            ],
-                            "show_header_toggle": false,
-                            "title": "Motorv\u00e4rmare",
-                            "type": "entities"
                         }
                     ]
                 },
