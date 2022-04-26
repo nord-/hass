@@ -397,16 +397,13 @@
     entity_id: switch.nexa_5
   mode: single
 - id: '1610304172777'
-  alias: Ladda bilen när det är kallt
+  alias: Ladda bilen när <20%
   description: ''
   trigger:
   - platform: state
     entity_id: binary_sensor.azarel_charger_sensor
     to: 'on'
   condition:
-  - condition: numeric_state
-    entity_id: sensor.yr_temperature
-    below: '5'
   - condition: numeric_state
     entity_id: sensor.azarel_battery_sensor
     below: '20'
@@ -575,8 +572,6 @@
   - platform: state
     entity_id: binary_sensor.low_price
     to: 'on'
-  - platform: time_pattern
-    hours: /1
   - platform: state
     entity_id: binary_sensor.azarel_charger_sensor
     to: 'on'
@@ -587,9 +582,6 @@
   - condition: state
     entity_id: binary_sensor.azarel_charger_sensor
     state: 'on'
-  - condition: time
-    after: '22:00:00'
-    before: 09:00
   - condition: state
     entity_id: binary_sensor.low_price
     state: 'on'
@@ -620,6 +612,9 @@
   - condition: state
     entity_id: switch.azarel_charger_switch
     state: 'on'
+  - condition: numeric_state
+    entity_id: sensor.azarel_battery_sensor
+    above: '20'
   action:
   - service: notify.mobile_app_op9_pro
     data:

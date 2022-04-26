@@ -4,14 +4,14 @@ persistent_notification.notification:
 sensor.yr_symbol:
   friendly_name: yr
 
-sensor.231_temperature:
-  friendly_name: Temp, altan
-sensor.231_humidity:
-  friendly_name: Luftfukt, altan
-sensor.215_temperature:
-  friendly_name: Temp, sovrummet
-sensor.215_humidity:
-  friendly_name: Luftfukt, sovrummet
+#sensor.231_temperature:
+#  friendly_name: Temp, altan
+#sensor.231_humidity:
+#  friendly_name: Luftfukt, altan
+#sensor.215_temperature:
+#  friendly_name: Temp, sovrummet
+#sensor.215_humidity:
+#  friendly_name: Luftfukt, sovrummet
 
 device_tracker.47sl9000za:
   friendly_name: LG 47SL9000
@@ -51,10 +51,6 @@ switch.telldusout1:
   friendly_name: Södra altanväggen
 switch.telldusout2:
   friendly_name: Norra altanväggen
-switch.rusta14c:
-  friendly_name: Julgranen
-switch.rusta15b:
-  friendly_name: Röda Julgranen
 switch.rusta15d:
   friendly_name: TV-bänken
 switch.rusta25b:
@@ -81,12 +77,6 @@ switch.rusta14b:
 switch.rusta14e:
   hidden: true
   friendly_name: Rusta R14E
-switch.rusta15a:
-  hidden: true
-  friendly_name: Rusta R15A
-switch.rusta15c:
-  hidden: true
-  friendly_name: Rusta R15C
 #switch.altanbelysning:
 #  friendly_name: Altan söder
 #switch.nexa_out_2:

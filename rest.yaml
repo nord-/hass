@@ -5,7 +5,7 @@ cn_add_aza_to_queue:
     authorization: !secret cn_rest_authorization
     accept: 'text/plain, application/json, text/json'
   content_type:  'application/json; charset=utf-8'
-  payload: '{ "portId": 510, "userCarId": 12, "departureTime": "{{ (as_timestamp(now()) + 6*60*60) | timestamp_local() }}", "startChargePercentage": {{ states("sensor.azarel_battery_sensor") }}, "targetChargePercentage": 100 }'
+  payload: '{ "portId": 510, "userCarId": 12, "departureTime": "{{ (as_timestamp(now()) + 8*60*60) | timestamp_local() }}", "startChargePercentage": {{ states("sensor.azarel_battery_sensor") }}, "targetChargePercentage": 100 }'
   # 510 uttag 1, 511 uttag 2, 512 uttag 3
   # UserCarId 12 = Azarel, 423 = Zoe
   

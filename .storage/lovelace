@@ -169,7 +169,7 @@
                                 },
                                 {
                                     "type": "gauge",
-                                    "entity": "sensor.nordpool_kwh_se3_sek_3_10_025",
+                                    "entity": "sensor.nordpool_kwh_se3_sek_2_10_025",
                                     "min": 0,
                                     "max": 1.5,
                                     "severity": {
@@ -177,7 +177,8 @@
                                         "yellow": 0.4,
                                         "red": 0.8
                                     },
-                                    "unit": "kr"
+                                    "unit": "kr",
+                                    "name": "Elpriset"
                                 }
                             ]
                         }
@@ -326,7 +327,7 @@
                         {
                             "hours_to_show": 24,
                             "graph": "line",
-                            "entity": "sensor.sovrummet_temperature",
+                            "entity": "sensor.215_temperature",
                             "type": "sensor",
                             "detail": 2,
                             "name": "Sovrummet"
@@ -359,12 +360,6 @@
                                 },
                                 {
                                     "entity": "switch.telldus_2"
-                                },
-                                {
-                                    "entity": "switch.rusta14c"
-                                },
-                                {
-                                    "entity": "switch.rusta15b"
                                 }
                             ],
                             "show_header_toggle": false,
@@ -376,6 +371,14 @@
                             "name": "F\u00f6nstret",
                             "theme": "default",
                             "type": "light"
+                        },
+                        {
+                            "hours_to_show": 24,
+                            "graph": "line",
+                            "type": "sensor",
+                            "entity": "sensor.vardagsrummet_temperature",
+                            "detail": 2,
+                            "name": "Vardagsrummet"
                         }
                     ]
                 },
@@ -444,10 +447,15 @@
                     ]
                 },
                 {
+                    "theme": "Backend-selected",
                     "title": "Kontoret",
                     "icon": "mdi:desk-lamp",
                     "badges": [],
                     "cards": [
+                        {
+                            "type": "media-control",
+                            "entity": "media_player.ute_2"
+                        },
                         {
                             "type": "horizontal-stack",
                             "cards": [
@@ -524,6 +532,14 @@
                                     }
                                 }
                             ]
+                        },
+                        {
+                            "hours_to_show": 24,
+                            "graph": "line",
+                            "type": "sensor",
+                            "entity": "sensor.199_temperature",
+                            "detail": 1,
+                            "name": "Kontoret"
                         }
                     ]
                 },
@@ -576,16 +592,12 @@
                         {
                             "entities": [
                                 {
-                                    "entity": "sensor.altan_temperature",
-                                    "name": "Altanen"
-                                },
-                                {
-                                    "entity": "sensor.lumi_lumi_weather_temperature",
+                                    "entity": "sensor.framsidan_temperature",
                                     "name": "Trappan"
                                 },
                                 {
-                                    "entity": "sensor.199_temperature",
-                                    "name": "Carport"
+                                    "entity": "sensor.231_temperature",
+                                    "name": "Altan"
                                 }
                             ],
                             "hours_to_show": 8,
@@ -665,10 +677,6 @@
                         {
                             "entity": "sensor.azarel_temperature_sensor_outside",
                             "name": "Ute"
-                        },
-                        {
-                            "entity": "sensor.199_temperature",
-                            "name": "Carport"
                         }
                     ],
                     "cards": [
@@ -807,7 +815,7 @@
                                 },
                                 {
                                     "type": "gauge",
-                                    "entity": "sensor.nordpool_kwh_se3_sek_3_10_025",
+                                    "entity": "sensor.nordpool_kwh_se3_sek_2_10_025",
                                     "min": 0,
                                     "max": 1.5,
                                     "severity": {
@@ -815,7 +823,8 @@
                                         "yellow": 0.4,
                                         "red": 0.8
                                     },
-                                    "unit": "kr"
+                                    "unit": "kr",
+                                    "name": "Elpriset"
                                 }
                             ]
                         },
