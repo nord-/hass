@@ -410,10 +410,12 @@
   action:
   - service: notify.mobile_app_op9_pro
     data:
-      message: Ladda bilen! Under 20%.
+      message: Ladda bilen! SoC {{ states("sensor.azarel_battery_sensor") }}%.
       title: Startar laddning av Azarel
   - service: rest_command.cn_add_aza_to_queue
     data: {}
+  - service: automation.turn_on
+    entity_id: automation.laddat_till_20
   mode: single
 - id: '1610304940192'
   alias: Laddat till 20%
@@ -428,17 +430,28 @@
     entity_id: binary_sensor.azarel_charger_sensor
     attribute: charging_state
     state: Charging
-  - condition: numeric_state
-    entity_id: sensor.yr_temperature
-    below: '5'
   - condition: state
     entity_id: device_tracker.azarel_location_tracker
     state: home
   action:
-  - service: notify.mobile_app_op9_pro
-    data:
-      message: Azarel har laddat tillräckligt för att vara utom fara.
-      title: Azarel har nått 20%
+  - if:
+    - condition: state
+      entity_id: binary_sensor.low_price
+      state: 'off'
+    then:
+    - service: rest_command.cn_remove_aza_from_queue
+      data: {}
+    - service: notify.mobile_app_op9_pro
+      data:
+        message: Azarel har nått SoC {{ states("sensor.azarel_battery_sensor") }}%
+        title: Azarel har slutat ladda
+    else:
+    - service: notify.mobile_app_op9_pro
+      data:
+        message: Azarel har nått SoC {{ states("sensor.azarel_battery_sensor") }}%
+        title: Azarel laddar fortfarande pga. lågt elpris.
+  - service: automation.turn_off
+    entity_id: automation.laddat_till_20
   mode: single
 - id: '1617052336219'
   alias: Dags att ladda plattan
@@ -588,38 +601,51 @@
   - condition: numeric_state
     entity_id: sensor.azarel_energy_added_sensor
     below: '0.1'
+    enabled: false
   - condition: state
     entity_id: switch.azarel_charger_switch
     state: 'off'
+  - condition: numeric_state
+    entity_id: sensor.azarel_battery_sensor
+    above: '19'
   action:
   - service: rest_command.cn_add_aza_to_queue
     data: {}
   - service: notify.mobile_app_op9_pro
     data:
-      message: Nu startar Azarel att ladda!
+      title: Azarel börjar ladda
+      message: Azarel startar ladda med SoC {{ states("sensor.azarel_battery_sensor")
+        }}%.
   mode: single
 - id: '1643296123979'
-  alias: Stoppa laddning av bilen
+  alias: Stoppa laddning av Azarel
   description: ''
   trigger:
   - platform: state
     entity_id: binary_sensor.low_price
     to: 'off'
+  - platform: numeric_state
+    entity_id: sensor.azarel_battery_sensor
+    above: '20'
   condition:
   - condition: state
     entity_id: device_tracker.azarel_location_tracker
     state: home
   - condition: state
-    entity_id: switch.azarel_charger_switch
+    entity_id: binary_sensor.azarel_charger_sensor
     state: 'on'
   - condition: numeric_state
     entity_id: sensor.azarel_battery_sensor
     above: '20'
+  - condition: state
+    entity_id: binary_sensor.low_price
+    state: 'off'
   action:
   - service: notify.mobile_app_op9_pro
     data:
-      message: Laddningen av Azarel har stoppats.
-      title: Högt pris på NordPool
+      message: Laddningen av Azarel har stoppats pga högt elpris. SoC {{ states("sensor.azarel_battery_sensor")
+        }}%.
+      title: Azarel har slutat ladda
   - service: rest_command.cn_remove_aza_from_queue
     data: {}
   mode: single
@@ -629,6 +655,10 @@
   trigger:
   - platform: time
     at: 00:00:00
+  - platform: state
+    entity_id:
+    - binary_sensor.low_price
+    to: 'on'
   condition:
   - condition: time
     weekday:
@@ -637,11 +667,44 @@
     - wed
     - thu
     - fri
+  - condition: state
+    entity_id: sensor.zoe_plug_state
+    state: plugged
+    enabled: false
+  - condition: or
+    conditions:
+    - condition: state
+      entity_id: binary_sensor.low_price
+      state: 'on'
+    - condition: numeric_state
+      entity_id: sensor.zoe_battery_level
+      below: '80'
   action:
   - service: rest_command.cn_add_yxx_to_queue
     data: {}
   - service: notify.mobile_app_op9_pro
     data:
-      message: Fridas bil börjar ladda.
+      message: Fridas bil börjar ladda med SoC {{ states("sensor.zoe_battery_level")
+        }}%.
       title: Zoe lagd i kö
+  mode: single
+- id: '1652813052285'
+  alias: Wall-E fellarm
+  description: ''
+  trigger:
+  - platform: state
+    entity_id:
+    - sensor.landroid_wall_e_error
+    from: No error
+  condition:
+  - condition: not
+    conditions:
+    - condition: state
+      entity_id: sensor.landroid_wall_e_error
+      state: Rain delay
+  action:
+  - service: notify.mobile_app_op9_pro
+    data:
+      message: Fel på gräsklipparen
+      title: Wall-E larm
   mode: single

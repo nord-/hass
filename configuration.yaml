@@ -124,3 +124,10 @@ google:
 #  - platform: pushbullet
 #    name: pushbullet
 #    api_key: !secret pushbullet_token
+
+landroid_cloud:
+  - email: rickard@nord.cc
+    password: !secret worx_password
+    
+hacs:
+  token: !secret git_token
