@@ -615,7 +615,7 @@
     data:
       title: Azarel börjar ladda
       message: Azarel startar ladda med SoC {{ states("sensor.azarel_battery_sensor")
-        }}%.
+        }}% och elpriset är {{ states("sensor.nordpool_kwh_se3_sek_2_10_025") }} kr.
   mode: single
 - id: '1643296123979'
   alias: Stoppa laddning av Azarel
@@ -634,17 +634,21 @@
   - condition: state
     entity_id: binary_sensor.azarel_charger_sensor
     state: 'on'
+    enabled: false
   - condition: numeric_state
     entity_id: sensor.azarel_battery_sensor
     above: '20'
   - condition: state
     entity_id: binary_sensor.low_price
     state: 'off'
+  - condition: state
+    entity_id: switch.azarel_charger_switch
+    state: 'on'
   action:
   - service: notify.mobile_app_op9_pro
     data:
-      message: Laddningen av Azarel har stoppats pga högt elpris. SoC {{ states("sensor.azarel_battery_sensor")
-        }}%.
+      message: Laddningen av Azarel har stoppats pga högt elpris ({{ states("sensor.nordpool_kwh_se3_sek_2_10_025")
+        }} kr). SoC {{ states("sensor.azarel_battery_sensor") }}%.
       title: Azarel har slutat ladda
   - service: rest_command.cn_remove_aza_from_queue
     data: {}
@@ -679,13 +683,18 @@
     - condition: numeric_state
       entity_id: sensor.zoe_battery_level
       below: '80'
+  - condition: not
+    conditions:
+    - condition: state
+      entity_id: binary_sensor.zoe_charging
+      state: 'on'
   action:
   - service: rest_command.cn_add_yxx_to_queue
     data: {}
   - service: notify.mobile_app_op9_pro
     data:
       message: Fridas bil börjar ladda med SoC {{ states("sensor.zoe_battery_level")
-        }}%.
+        }}% och elpriset {{ states("sensor.nordpool_kwh_se3_sek_2_10_025") }} kr.
       title: Zoe lagd i kö
   mode: single
 - id: '1652813052285'
@@ -694,17 +703,28 @@
   trigger:
   - platform: state
     entity_id:
-    - sensor.landroid_wall_e_error
-    from: No error
+    - vacuum.wall_e
+    from: no error
+    attribute: error
+  - platform: state
+    entity_id:
+    - vacuum.wall_e
+    for:
+      hours: 0
+      minutes: 30
+      seconds: 0
+    to: Återgår till docka
   condition:
   - condition: not
     conditions:
     - condition: state
-      entity_id: sensor.landroid_wall_e_error
-      state: Rain delay
+      state: rain delay
+      entity_id: vacuum.wall_e
+      attribute: error
   action:
   - service: notify.mobile_app_op9_pro
     data:
-      message: Fel på gräsklipparen
+      message: Fel på gräsklipparen. Batteri {{ state_attr("vacuum.wall_e", "battery_level")
+        }}%.
       title: Wall-E larm
   mode: single

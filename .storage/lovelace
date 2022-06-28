@@ -261,6 +261,52 @@
                             ]
                         },
                         {
+                            "type": "custom:apexcharts-card",
+                            "header": {
+                                "show": true,
+                                "title": "Elpriset",
+                                "show_states": true
+                            },
+                            "graph_span": "2d",
+                            "span": {
+                                "start": "day"
+                            },
+                            "series": [
+                                {
+                                    "entity": "sensor.nordpool_kwh_se3_sek_2_10_025",
+                                    "name": "Idag",
+                                    "stroke_width": 3,
+                                    "color": "deepskyblue",
+                                    "float_precision": 2,
+                                    "data_generator": "return entity.attributes.raw_today.map((p) => {\n  return [new Date(p.start), p.value];\n});\n",
+                                    "type": "column",
+                                    "show": {
+                                        "legend_value": false,
+                                        "in_header": false
+                                    }
+                                },
+                                {
+                                    "entity": "sensor.nordpool_kwh_se3_sek_2_10_025",
+                                    "name": "Imorgon",
+                                    "stroke_width": 3,
+                                    "color": "green",
+                                    "float_precision": 2,
+                                    "data_generator": "return entity.attributes.raw_tomorrow.map((p) => { \n  let d = new Date(p.start);\n  //d.setMinutes(d.getMinutes()+59);\n  return [d, p.value]; });\n",
+                                    "type": "column",
+                                    "show": {
+                                        "legend_value": false,
+                                        "in_header": false
+                                    }
+                                }
+                            ],
+                            "apex_config": {
+                                "yaxis": {
+                                    "min": 0,
+                                    "decimalsInFloat": 2
+                                }
+                            }
+                        },
+                        {
                             "type": "calendar",
                             "entities": [
                                 "calendar.family"
@@ -454,7 +500,7 @@
                     "cards": [
                         {
                             "type": "media-control",
-                            "entity": "media_player.ute_2"
+                            "entity": "media_player.hk_citation_one_d73a8b_2"
                         },
                         {
                             "type": "horizontal-stack",
@@ -470,13 +516,16 @@
                                     }
                                 },
                                 {
+                                    "show_name": true,
+                                    "show_icon": true,
                                     "type": "button",
                                     "tap_action": {
                                         "action": "toggle"
                                     },
                                     "entity": "switch.tz2",
                                     "name": "Skrivbordet",
-                                    "show_state": false
+                                    "show_state": false,
+                                    "icon": "mdi:desk-lamp"
                                 }
                             ]
                         },
@@ -642,40 +691,23 @@
                         },
                         {
                             "type": "vertical-stack",
+                            "title": "Wall-E",
                             "cards": [
                                 {
                                     "type": "horizontal-stack",
                                     "cards": [
                                         {
-                                            "type": "gauge",
-                                            "entity": "sensor.landroid_wall_e_battery",
-                                            "name": "Wall-E",
-                                            "needle": true,
-                                            "severity": {
-                                                "green": 40,
-                                                "yellow": 10,
-                                                "red": 0
-                                            }
+                                            "type": "entity",
+                                            "entity": "vacuum.wall_e",
+                                            "icon": "mow"
                                         },
                                         {
-                                            "type": "entities",
-                                            "entities": [
-                                                {
-                                                    "entity": "sensor.landroid_wall_e_status",
-                                                    "name": "Status"
-                                                },
-                                                {
-                                                    "entity": "sensor.landroid_wall_e_status",
-                                                    "type": "attribute",
-                                                    "name": "Uppdaterad",
-                                                    "attribute": "last_update",
-                                                    "icon": "mdi:clock"
-                                                },
-                                                {
-                                                    "entity": "sensor.landroid_wall_e_error",
-                                                    "name": "Fel"
-                                                }
-                                            ]
+                                            "type": "entity",
+                                            "entity": "vacuum.wall_e",
+                                            "name": " Batteri",
+                                            "icon": "mdi:battery-50",
+                                            "attribute": "battery_level",
+                                            "unit": "%"
                                         }
                                     ]
                                 },
@@ -683,32 +715,35 @@
                                     "type": "horizontal-stack",
                                     "cards": [
                                         {
-                                            "show_name": true,
+                                            "show_name": false,
                                             "show_icon": true,
                                             "type": "button",
                                             "tap_action": {
                                                 "action": "call-service",
-                                                "service": "landroid_cloud.start",
-                                                "service_data": {},
-                                                "target": {}
+                                                "service": "vacuum.start",
+                                                "data": {},
+                                                "target": {
+                                                    "device_id": "04744719de96abcefa75f8ffeeb42a05"
+                                                }
                                             },
-                                            "entity": "sensor.landroid_wall_e_status",
-                                            "name": "Start",
-                                            "icon": "mdi:robot-mower"
+                                            "entity": "vacuum.wall_e",
+                                            "icon": "mdi:mower",
+                                            "show_state": false
                                         },
                                         {
-                                            "show_name": true,
+                                            "show_name": false,
                                             "show_icon": true,
                                             "type": "button",
                                             "tap_action": {
                                                 "action": "call-service",
-                                                "service": "landroid_cloud.home",
-                                                "service_data": {},
-                                                "target": {}
+                                                "service": "vacuum.return_to_base",
+                                                "data": {},
+                                                "target": {
+                                                    "device_id": "04744719de96abcefa75f8ffeeb42a05"
+                                                }
                                             },
-                                            "entity": "sensor.landroid_wall_e_status",
-                                            "name": "Hem",
-                                            "icon": "mdi:home"
+                                            "entity": "vacuum.wall_e",
+                                            "icon": "mdi:home-battery"
                                         }
                                     ]
                                 }
