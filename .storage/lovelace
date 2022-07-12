@@ -212,7 +212,7 @@
                     },
                     {
                       "type": "gauge",
-                      "entity": "sensor.template_last_sp_kw",
+                      "entity": "sensor.template_fronius_solar_power",
                       "min": 0,
                       "max": 8.2,
                       "name": "☀ Solen",

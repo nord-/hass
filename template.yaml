@@ -3,7 +3,7 @@
     unit_of_measurement: "kWh"
     device_class: energy
     state_class: total_increasing
-    state: "{{ states('sensor.energy_day_fronius_inverter_1_192_168_2_31') | float / 1000.0 }}"
+    state: "{{ states('sensor.energy_day_fronius_inverter_1_192_168_2_31') | float(default=0.0) / 1000.0 }}"
     attributes:
       friendly_name: "Fronius solenergi"
 
@@ -12,7 +12,7 @@
     unit_of_measurement: "kW"
     device_class: power
     state_class: measurement
-    state: "{{ (states('sensor.power_ac_fronius_inverter_1_192_168_2_31') | float / 1000.0) | round(2) }}"
+    state: "{{ (states('sensor.power_ac_fronius_inverter_1_192_168_2_31') | float(default=0.0) / 1000.0) | round(2) }}"
     attributes:
       friendly_name: "Fronius soleffekt"
 
@@ -90,13 +90,13 @@
     state_class: measurement
     # entity_id: sensor.hem_gen5_electric_consumed_w
     # state: "{{ (states('sensor.template_last_sp_kw') | float(0) - states('sensor.template_house_net_power_kw') | float(0)) | round(2) }}"
-    state: "{{ ((states('sensor.power_ac_fronius_inverter_1_192_168_2_31') | float + states('sensor.hem_gen5_electric_consumed_w') | float) / 1000) | round(2) }}"
+    state: "{{ ((states('sensor.power_ac_fronius_inverter_1_192_168_2_31') | float(default=0.0) + states('sensor.hem_gen5_electric_consumed_w') | float) / 1000) | round(2) }}"
     attributes:
       friendly_name: "Husets effekt"
 
 - sensor:
   - unique_id: yrwthr
-    value_template: "{%set badWeatherList = 'cloudy','fog','heavyrain','heavyrainandthunder','heavyrainshowers','heavyrainshowersandthunder','heavysleet','heavysleetandthunder','heavysleetshowers','heavysleetshowersandthunder','heavysnow','heavysnowandthunder','heavysnowshowers','heavysnowshowersandthunder','lightrain','lightrainandthunder','lightrainshowers','lightrainshowersandthunder','lightsleet','lightsleetandthunder','lightsleetshowers','lightsnow','lightsnowandthunder','lightsnowshowers','lightssleetshowersandthunder','lightssnowshowersandthunder','rain','rainandthunder','rainshowers','rainshowersandthunder','sleet','sleetandthunder','sleetshowers','sleetshowersandthunder','snow','snowandthunder','snowshowers','snowshowersandthunder'%}{{states('sensor.yr_symbol') in badWeatherList}}"
+    state: "{%set badWeatherList = 'cloudy','fog','heavyrain','heavyrainandthunder','heavyrainshowers','heavyrainshowersandthunder','heavysleet','heavysleetandthunder','heavysleetshowers','heavysleetshowersandthunder','heavysnow','heavysnowandthunder','heavysnowshowers','heavysnowshowersandthunder','lightrain','lightrainandthunder','lightrainshowers','lightrainshowersandthunder','lightsleet','lightsleetandthunder','lightsleetshowers','lightsnow','lightsnowandthunder','lightsnowshowers','lightssleetshowersandthunder','lightssnowshowersandthunder','rain','rainandthunder','rainshowers','rainshowersandthunder','sleet','sleetandthunder','sleetshowers','sleetshowersandthunder','snow','snowandthunder','snowshowers','snowshowersandthunder'%}{{states('sensor.yr_symbol') in badWeatherList}}"
     attributes:
       friendly_name: "Dåligt väder enligt YR"
 
