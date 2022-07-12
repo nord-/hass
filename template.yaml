@@ -1,13 +1,30 @@
-
 - sensor:
   - unique_id: fronius_solar_energy
     unit_of_measurement: "kWh"
     device_class: energy
-    state_class: measurement
-    state: "{{ states('sensor.template_last_sp_value') }}"
+    state_class: total_increasing
+    state: "{{ states('sensor.energy_day_fronius_inverter_1_192_168_2_31') | float / 1000.0 }}"
     attributes:
       friendly_name: "Fronius solenergi"
 
+- sensor:
+  - unique_id: fronius_solar_power
+    unit_of_measurement: "kW"
+    device_class: power
+    state_class: measurement
+    state: "{{ (states('sensor.power_ac_fronius_inverter_1_192_168_2_31') | float / 1000.0) | round(2) }}"
+    attributes:
+      friendly_name: "Fronius soleffekt"
+
+- sensor: 
+  - unique_id: nordpool_current_price
+    device_class: monetary
+    state_class: measurement
+    unit_of_measurement: "SEK/kWh"
+    state: "{{ states('sensor.nordpool_kwh_se3_sek_2_10_025') | float }}"
+    attributes:
+      friendly_name: "Aktuellt elpris"
+    
 - sensor:
   - unique_id: last_sp_value
     unit_of_measurement: 'kWh'
@@ -43,14 +60,21 @@
 - sensor:
   - unique_id: aza_mileage
     unit_of_measurement: 'mil'
-    icon_template: mdi:counter
+    icon: mdi:counter
     state: "{{ ((states('sensor.azarel_mileage_sensor') | float(0))/10) | round }}"
     attributes:
       friendly_name: "Körsträcka"
+- sensor:
   - unique_id: aza_last_update
     state: "{{ as_timestamp(states.sensor.azarel_mileage_sensor.last_updated) | timestamp_custom('%H:%M, %d %b') }}"
     attributes:
       friendly_name: "Senast uppdaterad"
+- sensor:
+  - unique_id: aza_charging_rate
+    unit_of_measurement: "kW"
+    state: "{{ (states('sensor.azarel_charging_rate_sensor') | float(0)/1564*230) | round(1) }}"
+    attributes:
+      friendly_name: "Azarel effekt"
 
 - sensor:
   - unique_id: house_net_power_kw
@@ -62,8 +86,11 @@
 - sensor:
   - unique_id: house_power_kw
     unit_of_measurement: "kW"
+    device_class: power
+    state_class: measurement
     # entity_id: sensor.hem_gen5_electric_consumed_w
-    state: "{{ (states('sensor.last_sp_kw') | float(0) - states('sensor.house_net_power_kw') | float(0)) | round(2) }}"
+    # state: "{{ (states('sensor.template_last_sp_kw') | float(0) - states('sensor.template_house_net_power_kw') | float(0)) | round(2) }}"
+    state: "{{ ((states('sensor.power_ac_fronius_inverter_1_192_168_2_31') | float + states('sensor.hem_gen5_electric_consumed_w') | float) / 1000) | round(2) }}"
     attributes:
       friendly_name: "Husets effekt"
 
@@ -79,14 +106,4 @@
     state: "{{ states.sun.sun.attributes.elevation | round(1) }}"
     attributes:
       friendly_name: "Solvinkel"
-
-- sensor:
-  - unique_id: car1_charging_rate
-    unit_of_measurement: "kW"
-    state: "{{ (states('sensor.azarel_charging_rate_sensor') | float(0)/1564*230) | round(1) }}"
-    attributes:
-      friendly_name: "Azarel effekt"
-
-
-
 

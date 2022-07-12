@@ -145,7 +145,7 @@
                 {
                   "type": "gauge",
                   "min": 0,
-                  "entity": "sensor.template_last_sp_kw",
+                  "entity": "sensor.template_fronius_solar_power",
                   "max": 8.2,
                   "severity": {
                     "green": 7,
@@ -1060,14 +1060,14 @@
               "type": "horizontal-stack",
               "cards": [
                 {
-                  "entity": "sensor.template_last_sp_kw",
+                  "entity": "sensor.template_fronius_solar_power",
                   "max": 8.2,
                   "min": 0,
                   "name": "Effekt",
                   "type": "gauge"
                 },
                 {
-                  "entity": "sensor.template_last_sp_value",
+                  "entity": "sensor.template_fronius_solar_energy",
                   "max": 70,
                   "name": "Energi",
                   "type": "gauge"
@@ -1097,7 +1097,7 @@
               },
               "series": [
                 {
-                  "entity": "sensor.template_last_sp_kw",
+                  "entity": "sensor.template_fronius_solar_power",
                   "color": "lightgreen",
                   "stroke_width": 2,
                   "group_by": {
@@ -1114,7 +1114,7 @@
               "cache": true,
               "series": [
                 {
-                  "entity": "sensor.template_last_sp_value",
+                  "entity": "sensor.template_fronius_solar_energy",
                   "type": "column",
                   "show": {
                     "datalabels": true
@@ -1153,7 +1153,7 @@
               "cache": true,
               "series": [
                 {
-                  "entity": "sensor.template_last_sp_value",
+                  "entity": "sensor.template_fronius_solar_power",
                   "name": "Effekt",
                   "type": "column",
                   "show": {
