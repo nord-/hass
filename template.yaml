@@ -3,9 +3,18 @@
     unit_of_measurement: "kWh"
     device_class: energy
     state_class: total_increasing
+    state: "{{ states('sensor.energy_total_fronius_inverter_1_192_168_2_31') | float(default=0.0) / 1000.0 }}"
+    attributes:
+      friendly_name: "Fronius solenergi (totalt)"
+
+- sensor:
+  - unique_id: fronius_solar_daily_energy
+    unit_of_measurement: "kWh"
+    device_class: energy
+    state_class: total_increasing
     state: "{{ states('sensor.energy_day_fronius_inverter_1_192_168_2_31') | float(default=0.0) / 1000.0 }}"
     attributes:
-      friendly_name: "Fronius solenergi"
+      friendly_name: "Fronius solenergi (idag)"
 
 - sensor:
   - unique_id: fronius_solar_power
