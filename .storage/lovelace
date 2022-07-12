@@ -849,7 +849,7 @@
                     },
                     {
                       "type": "gauge",
-                      "entity": "sensor.template_car1_charging_rate",
+                      "entity": "sensor.template_aza_charging_rate",
                       "min": 0,
                       "max": 11,
                       "name": " ",
