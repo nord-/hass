@@ -1,115 +1,115 @@
-homeassistant:
-  customize:
-    sensor.heater_forecast:
-      unit_of_measurement: C
-      device_class: temperature
-      icon: mdi:temperature-celsius
+# homeassistant:
+#   customize:
+#     sensor.heater_forecast:
+#       unit_of_measurement: C
+#       device_class: temperature
+#       icon: mdi:temperature-celsius
 
-    sensor.heater_temptime:
-      unit_of_measurement: min
-      icon: mdi:timer
+#     sensor.heater_temptime:
+#       unit_of_measurement: min
+#       icon: mdi:timer
 
-sensor:
-  ### sensors for engine heater ###
-  #
-  # requires SMHI component for temperature forecast (or change to something else that suits you)
-  #
-  - platform: template
-    sensors:
-      heater_departuretime:
-        friendly_name: 'Tid att åka'
-        value_template: >-
-          {% if states.input_number.heater_hour.state|round(0)|string|length == 1 %} {% set time = 0 %} {% endif %}
-          {% set time = time|string + states.input_number.heater_hour.state|round(0)|string + ':' %}
-          {% if states.input_number.heater_minute.state|round(0)|string|length == 1 %} {% set time = time|string + '0' %} {% endif %}
-          {% set time = time|string + states.input_number.heater_minute.state|round(0)|string %}
-          {{ time }}
+# sensor:
+#   ### sensors for engine heater ###
+#   #
+#   # requires SMHI component for temperature forecast (or change to something else that suits you)
+#   #
+#   - platform: template
+#     sensors:
+#       heater_departuretime:
+#         friendly_name: 'Tid att åka'
+#         value_template: >-
+#           {% if states.input_number.heater_hour.state|round(0)|string|length == 1 %} {% set time = 0 %} {% endif %}
+#           {% set time = time|string + states.input_number.heater_hour.state|round(0)|string + ':' %}
+#           {% if states.input_number.heater_minute.state|round(0)|string|length == 1 %} {% set time = time|string + '0' %} {% endif %}
+#           {% set time = time|string + states.input_number.heater_minute.state|round(0)|string %}
+#           {{ time }}
 
-      heater_temptime:
-        friendly_name: 'Temperature adjusted time'
-        value_template: >-
-          {% set temp = states.sensor.heater_forecast.state|int %}
-          {% if temp <= -10 %} {% set t = 80 - temp %}
-          {% elif temp <= 0 %} {% set t = 60 - temp %}
-          {% elif temp <= 3 %} {% set t = 60 %}
-          {% else %} {% set t = (40 - temp*2) %} {% endif %}
-          {% if t > states.input_number.heater_maxmin.state|int %} {{states.input_number.heater_maxmin.state|int}}
-          {% else %} {{t|int}} {% endif %}
+#       heater_temptime:
+#         friendly_name: 'Temperature adjusted time'
+#         value_template: >-
+#           {% set temp = states.sensor.heater_forecast.state|int %}
+#           {% if temp <= -10 %} {% set t = 80 - temp %}
+#           {% elif temp <= 0 %} {% set t = 60 - temp %}
+#           {% elif temp <= 3 %} {% set t = 60 %}
+#           {% else %} {% set t = (40 - temp*2) %} {% endif %}
+#           {% if t > states.input_number.heater_maxmin.state|int %} {{states.input_number.heater_maxmin.state|int}}
+#           {% else %} {{t|int}} {% endif %}
 
-      heater_forecast:
-        friendly_name: 'Temperaturprognos'
-        value_template: >-
-          {% if states.sensor.time.state > states.sensor.heater_departuretime.state and states.sensor.time.state > '00:00' %}
-          {% set forecast = states.weather.smhi_home.attributes.forecast[1].templow %}
-          {% else %}
-          {% set forecast = states.weather.smhi_home.attributes.temperature %}
-          {% endif %}
-          {{ forecast }}
+#       heater_forecast:
+#         friendly_name: 'Temperaturprognos'
+#         value_template: >-
+#           {% if states.sensor.time.state > states.sensor.heater_departuretime.state and states.sensor.time.state > '00:00' %}
+#           {% set forecast = states.weather.smhi_home.attributes.forecast[1].templow %}
+#           {% else %}
+#           {% set forecast = states.weather.smhi_home.attributes.temperature %}
+#           {% endif %}
+#           {{ forecast }}
 
-      heater_activationtime:
-        friendly_name: 'Starttid'
-        value_template: >-
-          {% set atime = (states.sensor.heater_temptime.state|round(0) * 60) %}
-          {% if states.input_number.heater_hour.state|round(0)|string|length == 1 %} {% set time = 0 %} {% endif %}
-          {% set time = time|string + states.input_number.heater_hour.state|round(0)|string + ':' %}
-          {% if states.input_number.heater_minute.state|round(0)|string|length == 1 %} {% set time = time|string + '0' %} {% endif %}
-          {% set time = time|string + states.input_number.heater_minute.state|round(0)|string %}
-          {{ (as_timestamp(now().strftime("%Y-%m-%d") + ' ' + time) - atime) | timestamp_custom("%H:%M")|string }}
+#       heater_activationtime:
+#         friendly_name: 'Starttid'
+#         value_template: >-
+#           {% set atime = (states.sensor.heater_temptime.state|round(0) * 60) %}
+#           {% if states.input_number.heater_hour.state|round(0)|string|length == 1 %} {% set time = 0 %} {% endif %}
+#           {% set time = time|string + states.input_number.heater_hour.state|round(0)|string + ':' %}
+#           {% if states.input_number.heater_minute.state|round(0)|string|length == 1 %} {% set time = time|string + '0' %} {% endif %}
+#           {% set time = time|string + states.input_number.heater_minute.state|round(0)|string %}
+#           {{ (as_timestamp(now().strftime("%Y-%m-%d") + ' ' + time) - atime) | timestamp_custom("%H:%M")|string }}
 
-  - platform: time_date
-    display_options:
-      - 'time'
+#   - platform: time_date
+#     display_options:
+#       - 'time'
 
-input_number:
-  ### input sliders for engine heater ###
-  heater_hour:
-    name: Timme
-    icon: mdi:timer
-    #  initial: 07
-    min: 0
-    max: 23
-    step: 1
+# input_number:
+#   ### input sliders for engine heater ###
+#   heater_hour:
+#     name: Timme
+#     icon: mdi:timer
+#     #  initial: 07
+#     min: 0
+#     max: 23
+#     step: 1
 
-  heater_minute:
-    name: Minut
-    icon: mdi:timer
-    #  initial: 00
-    min: 0
-    max: 50
-    step: 10
+#   heater_minute:
+#     name: Minut
+#     icon: mdi:timer
+#     #  initial: 00
+#     min: 0
+#     max: 50
+#     step: 10
 
-  heater_delay:
-    name: Marginal
-    icon: mdi:timer
-    initial: 10
-    min: 0
-    max: 30
-    step: 5
-    unit_of_measurement: min
+#   heater_delay:
+#     name: Marginal
+#     icon: mdi:timer
+#     initial: 10
+#     min: 0
+#     max: 30
+#     step: 5
+#     unit_of_measurement: min
 
-  heater_maxmin:
-    name: Maxtid
-    icon: mdi:timer
-    initial: 90
-    min: 20
-    max: 120
-    step: 15
-    unit_of_measurement: min
+#   heater_maxmin:
+#     name: Maxtid
+#     icon: mdi:timer
+#     initial: 90
+#     min: 20
+#     max: 120
+#     step: 15
+#     unit_of_measurement: min
     
-group:
-  engine_heater:
-    name: Engine heater
-    #control: hidden
-    entities:
-      - sensor.heater_departuretime
-      - sensor.heater_activationtime
-      - sensor.heater_temptime
-      - sensor.heater_forecast
-      - input_number.heater_hour
-      - input_number.heater_minute
-      - input_number.heater_delay
-      - input_number.heater_maxmin
-      - switch.popp_outdoor
+# group:
+#   engine_heater:
+#     name: Engine heater
+#     #control: hidden
+#     entities:
+#       - sensor.heater_departuretime
+#       - sensor.heater_activationtime
+#       - sensor.heater_temptime
+#       - sensor.heater_forecast
+#       - input_number.heater_hour
+#       - input_number.heater_minute
+#       - input_number.heater_delay
+#       - input_number.heater_maxmin
+#       - switch.popp_outdoor
 
 # automation:
   # - alias: Motorvärmare - slå på

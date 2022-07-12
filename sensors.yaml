@@ -29,24 +29,24 @@
 # currency: "SEK"  
 # region: "SE3" # What power regions your are interested in.
 
-- platform: rest
-  resource: http://192.168.2.31/solar_api/v1/GetInverterRealtimeData.cgi?Scope=Device&DeviceId=1&DataCollection=CommonInverterData
-  method: GET
-  name: "Aktuell effekt"
-  value_template: "{{ (value_json.Body.Data.PAC.Value /1000 | float(0))|round(2) }}"
-  unit_of_measurement: 'kW'
-  force_update: true
-  scan_interval: 60
+# - platform: rest
+#   resource: http://192.168.2.31/solar_api/v1/GetInverterRealtimeData.cgi?Scope=Device&DeviceId=1&DataCollection=CommonInverterData
+#   method: GET
+#   name: "Aktuell effekt"
+#   value_template: "{{ (value_json.Body.Data.PAC.Value /1000 | float(0))|round(2) }}"
+#   unit_of_measurement: 'kW'
+#   force_update: true
+#   scan_interval: 60
   
-- platform: rest
-  resource: http://192.168.2.31/solar_api/v1/GetInverterRealtimeData.cgi?Scope=Device&DeviceId=1&DataCollection=CommonInverterData
-  method: GET
-  name: "Total energi idag"
-  unit_of_measurement: 'kWh'
-  force_update: true
-  scan_interval: 600
-  value_template: >-
-    {% set tlen = (value_json.Body.Data.DAY_ENERGY.Value|string)|length - 3 %}
-    {{(value_json.Body.Data.DAY_ENERGY.Value/(10**tlen))|round(0) * (10**tlen)/1000}}
+# - platform: rest
+#   resource: http://192.168.2.31/solar_api/v1/GetInverterRealtimeData.cgi?Scope=Device&DeviceId=1&DataCollection=CommonInverterData
+#   method: GET
+#   name: "Total energi idag"
+#   unit_of_measurement: 'kWh'
+#   force_update: true
+#   scan_interval: 600
+#   value_template: >-
+#     {% set tlen = (value_json.Body.Data.DAY_ENERGY.Value|string)|length - 3 %}
+#     {{(value_json.Body.Data.DAY_ENERGY.Value/(10**tlen))|round(0) * (10**tlen)/1000}}
 
-  #"{{ ((value_json.Body.Data.DAY_ENERGY.Value /1000 | float / 10)|round(2)) * 10}}"
+#   #"{{ ((value_json.Body.Data.DAY_ENERGY.Value /1000 | float / 10)|round(2)) * 10}}"
