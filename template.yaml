@@ -1,0 +1,92 @@
+
+- sensor:
+  - unique_id: fronius_solar_energy
+    unit_of_measurement: "kWh"
+    device_class: energy
+    state_class: measurement
+    state: "{{ states('sensor.last_sp_value') }}"
+    attributes:
+      friendly_name: "Fronius solenergi"
+
+- sensor:
+  - unique_id: last_sp_value
+    unit_of_measurement: 'kWh'
+    # entity_id: sensor.total_energi_idag
+    state: >-
+      {% if is_state('sensor.total_energi_idag', 'unavailable') or is_state('sensor.total_energi_idag', 'unknown') %}
+        {{ states("sensor.last_sp_value") }}
+      {% elif state_attr('sun.sun', 'rising') == true and state_attr('sun.sun', 'elevation')|float > -5 %}
+        {{ states('sensor.total_energi_idag')|float(0) }}
+      {% elif states('sensor.total_energi_idag')|float(0) > states('sensor.last_sp_value')|float(0) %}
+        {{ states('sensor.total_energi_idag')|float(0) }}
+      {% else %}
+        {{ states('sensor.last_sp_value')|float(0) }}
+      {% endif %}
+    # {% set last_sp_value = states('sensor.total_energi_idag') %}
+    # {% elif is_state('sun.sun', 'above_horizon') and (states('sensor.total_energi_idag')|float > states('sensor.last_sp_value')|float) %}
+    attributes:
+      friendly_name: "Senaste energi"
+
+- sensor:
+  - unique_id: last_sp_kw
+    unit_of_measurement: "kW"
+    state: >-
+      {% if is_state('sensor.aktuell_effekt', 'unavailable') or is_state('sensor.aktuell_effekt','unknown') %}
+        0
+      {% else %}
+        {% set last_sp_kw = states("sensor.aktuell_effekt") %}
+        {{ states("sensor.aktuell_effekt") }}
+      {% endif %}
+    attributes:
+      friendly_name: "Senaste effekt"
+
+- sensor:
+  - unique_id: aza_mileage
+    unit_of_measurement: 'mil'
+    icon_template: mdi:counter
+    state: "{{ ((states('sensor.azarel_mileage_sensor') | float(0))/10) | round }}"
+    attributes:
+      friendly_name: "Körsträcka"
+  - unique_id: aza_last_update
+    state: "{{ as_timestamp(states.sensor.azarel_mileage_sensor.last_updated) | timestamp_custom('%H:%M, %d %b') }}"
+    attributes:
+      friendly_name: "Senast uppdaterad"
+
+- sensor:
+  - unique_id: house_net_power_kw
+    unit_of_measurement: "kW"
+    state: "{{ ((states('sensor.hem_gen5_electric_consumed_w') | float(0)) / (-1000)) | round(2) }}"
+    attributes:
+      friendly_name: "Husets nettoeffekt"
+      
+- sensor:
+  - unique_id: house_power_kw
+    unit_of_measurement: "kW"
+    # entity_id: sensor.hem_gen5_electric_consumed_w
+    state: "{{ (states('sensor.last_sp_kw') | float(0) - states('sensor.house_net_power_kw') | float(0)) | round(2) }}"
+    attributes:
+      friendly_name: "Husets effekt"
+
+- sensor:
+  - unique_id: yrwthr
+    value_template: "{%set badWeatherList = 'cloudy','fog','heavyrain','heavyrainandthunder','heavyrainshowers','heavyrainshowersandthunder','heavysleet','heavysleetandthunder','heavysleetshowers','heavysleetshowersandthunder','heavysnow','heavysnowandthunder','heavysnowshowers','heavysnowshowersandthunder','lightrain','lightrainandthunder','lightrainshowers','lightrainshowersandthunder','lightsleet','lightsleetandthunder','lightsleetshowers','lightsnow','lightsnowandthunder','lightsnowshowers','lightssleetshowersandthunder','lightssnowshowersandthunder','rain','rainandthunder','rainshowers','rainshowersandthunder','sleet','sleetandthunder','sleetshowers','sleetshowersandthunder','snow','snowandthunder','snowshowers','snowshowersandthunder'%}{{states('sensor.yr_symbol') in badWeatherList}}"
+    attributes:
+      friendly_name: "Dåligt väder enligt YR"
+
+- sensor: 
+  - unique_id: sunelevation
+    unit_of_measurement: "°"
+    state: "{{ states.sun.sun.attributes.elevation | round(1) }}"
+    attributes:
+      friendly_name: "Solvinkel"
+
+- sensor:
+  - unique_id: car1_charging_rate
+    unit_of_measurement: "kW"
+    state: "{{ (states('sensor.azarel_charging_rate_sensor') | float(0)/1564*230) | round(1) }}"
+    attributes:
+      friendly_name: "Azarel effekt"
+
+
+
+

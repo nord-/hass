@@ -23,6 +23,12 @@
 #- platform: syncthru
 #  resource: http://192.168.1.101
 
+#Nordpool
+# - platform: nordpool  
+# VAT: True     # Should the prices include vat? Default True
+# currency: "SEK"  
+# region: "SE3" # What power regions your are interested in.
+
 - platform: rest
   resource: http://192.168.2.31/solar_api/v1/GetInverterRealtimeData.cgi?Scope=Device&DeviceId=1&DataCollection=CommonInverterData
   method: GET
@@ -44,91 +50,3 @@
     {{(value_json.Body.Data.DAY_ENERGY.Value/(10**tlen))|round(0) * (10**tlen)/1000}}
 
   #"{{ ((value_json.Body.Data.DAY_ENERGY.Value /1000 | float / 10)|round(2)) * 10}}"
-  
-- platform: template
-  sensors:
-    last_sp_value:
-      friendly_name: "Senaste energi"
-      unit_of_measurement: 'kWh'
-#      entity_id: sensor.total_energi_idag
-      value_template: >-
-        {% if is_state('sensor.total_energi_idag', 'unavailable') or is_state('sensor.total_energi_idag', 'unknown') %}
-          {{ states("sensor.last_sp_value") }}
-        {% elif state_attr('sun.sun', 'rising') == true and state_attr('sun.sun', 'elevation')|float > -5 %}
-          {{ states('sensor.total_energi_idag')|float(0) }}
-        {% elif states('sensor.total_energi_idag')|float(0) > states('sensor.last_sp_value')|float(0) %}
-          {{ states('sensor.total_energi_idag')|float(0) }}
-        {% else %}
-          {{ states('sensor.last_sp_value')|float(0) }}
-        {% endif %}
-# {% set last_sp_value = states('sensor.total_energi_idag') %}
-# {% elif is_state('sun.sun', 'above_horizon') and (states('sensor.total_energi_idag')|float > states('sensor.last_sp_value')|float) %}
-          
-- platform: template
-  sensors:
-    last_sp_kw:
-      friendly_name: "Senaste effekt"
-      unit_of_measurement: "kW"
-      value_template: >-
-        {% if is_state('sensor.aktuell_effekt', 'unavailable') or is_state('sensor.aktuell_effekt','unknown') %}
-          0
-        {% else %}
-          {% set last_sp_kw = states("sensor.aktuell_effekt") %}
-          {{ states("sensor.aktuell_effekt") }}
-        {% endif %}
-
-- platform: nordpool  
-  VAT: True     # Should the prices include vat? Default True
-  currency: "SEK"  
-  region: "SE3" # What power regions your are interested in.
-  
-- platform: template
-  sensors:
-    aza_mileage:
-      friendly_name: Körsträcka
-      unit_of_measurement: 'mil'
-      icon_template: mdi:counter
-      value_template: "{{ ((states('sensor.azarel_mileage_sensor') | float(0))/10) | round }}"
-    aza_last_update:
-      friendly_name: Senast uppdaterad
-      value_template: "{{ as_timestamp(states.sensor.azarel_mileage_sensor.last_updated) | timestamp_custom('%H:%M, %d %b') }}"
-
-- platform: template
-  sensors:
-    house_net_power_kw:
-      friendly_name: "Husets nettoeffekt"
-      unit_of_measurement: "kW"
-      value_template: "{{ ((states('sensor.hem_gen5_electric_consumed_w') | float(0)) / (-1000)) | round(2) }}"
-
-- platform: template
-  sensors:
-    house_power_kw:
-      friendly_name: "Husets effekt"
-      unit_of_measurement: "kW"
-#      entity_id: sensor.hem_gen5_electric_consumed_w
-      value_template: "{{ (states('sensor.last_sp_kw') | float(0) - states('sensor.house_net_power_kw') | float(0)) | round(2) }}"
-      
-- platform: template
-  sensors:
-    yrwthr:
-      friendly_name: "Dåligt väder enligt YR"
-      value_template: "{%set badWeatherList = 'cloudy','fog','heavyrain','heavyrainandthunder','heavyrainshowers','heavyrainshowersandthunder','heavysleet','heavysleetandthunder','heavysleetshowers','heavysleetshowersandthunder','heavysnow','heavysnowandthunder','heavysnowshowers','heavysnowshowersandthunder','lightrain','lightrainandthunder','lightrainshowers','lightrainshowersandthunder','lightsleet','lightsleetandthunder','lightsleetshowers','lightsnow','lightsnowandthunder','lightsnowshowers','lightssleetshowersandthunder','lightssnowshowersandthunder','rain','rainandthunder','rainshowers','rainshowersandthunder','sleet','sleetandthunder','sleetshowers','sleetshowersandthunder','snow','snowandthunder','snowshowers','snowshowersandthunder'%}{{states('sensor.yr_symbol') in badWeatherList}}"
-
-- platform: template
-  sensors: 
-    sunelevation:
-      friendly_name: "Solvinkel"
-      unit_of_measurement: "°"
-      value_template: "{{ states.sun.sun.attributes.elevation | round(1) }}"
-      
-- platform: template
-  sensors:
-    car1_charging_rate:
-      friendly_name: "Azarel effekt"
-      unit_of_measurement: "kW"
-      value_template: "{{ (states('sensor.azarel_charging_rate_sensor') | float(0)/1564*230) | round(1) }}"
-
-
-
-
-
