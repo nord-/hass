@@ -1,1453 +1,1527 @@
 {
-    "version": 1,
-    "minor_version": 1,
-    "key": "lovelace",
-    "data": {
-        "config": {
-            "title": "Hem",
-            "views": [
+  "version": 1,
+  "minor_version": 1,
+  "key": "lovelace",
+  "data": {
+    "config": {
+      "title": "Hem",
+      "views": [
+        {
+          "path": "default_view",
+          "title": "Hemma",
+          "icon": "mdi:home",
+          "badges": [
+            {
+              "entity": "binary_sensor.bad_weather",
+              "name": " "
+            },
+            {
+              "entity": "person.rickard_nord",
+              "name": " "
+            },
+            {
+              "entity": "person.frida",
+              "name": " "
+            },
+            {
+              "entity": "person.felix",
+              "name": " "
+            }
+          ],
+          "cards": [
+            {
+              "hours_to_show": 24,
+              "graph": "line",
+              "entity": "sensor.framsidan_temperature",
+              "type": "sensor",
+              "detail": 2,
+              "name": "Trappan"
+            },
+            {
+              "cards": [
                 {
-                    "path": "default_view",
-                    "title": "Hemma",
-                    "icon": "mdi:home",
-                    "badges": [
-                        {
-                            "entity": "binary_sensor.bad_weather",
-                            "name": " "
-                        },
-                        {
-                            "entity": "person.rickard_nord",
-                            "name": " "
-                        },
-                        {
-                            "entity": "person.frida",
-                            "name": " "
-                        },
-                        {
-                            "entity": "person.felix",
-                            "name": " "
-                        }
-                    ],
-                    "cards": [
-                        {
-                            "hours_to_show": 24,
-                            "graph": "line",
-                            "entity": "sensor.framsidan_temperature",
-                            "type": "sensor",
-                            "detail": 2,
-                            "name": "Trappan"
-                        },
-                        {
-                            "cards": [
-                                {
-                                    "cards": [
-                                        {
-                                            "entity": "script.turn_on_general_lights",
-                                            "hold_action": {
-                                                "action": "none"
-                                            },
-                                            "icon": "mdi:brightness-7",
-                                            "tap_action": {
-                                                "action": "toggle"
-                                            },
-                                            "type": "entity-button",
-                                            "show_name": false
-                                        },
-                                        {
-                                            "entity": "script.turn_off_general_lights",
-                                            "hold_action": {
-                                                "action": "none"
-                                            },
-                                            "icon": "mdi:weather-night",
-                                            "tap_action": {
-                                                "action": "toggle"
-                                            },
-                                            "type": "entity-button",
-                                            "show_name": false
-                                        }
-                                    ],
-                                    "type": "horizontal-stack"
-                                },
-                                {
-                                    "cards": [
-                                        {
-                                            "entity": "script.tand_sovrummet",
-                                            "hold_action": {
-                                                "action": "none"
-                                            },
-                                            "name": "God morgon",
-                                            "tap_action": {
-                                                "action": "toggle"
-                                            },
-                                            "type": "entity-button",
-                                            "icon": "mdi:weather-sunset-up"
-                                        },
-                                        {
-                                            "entity": "script.slack_sovrummet",
-                                            "hold_action": {
-                                                "action": "none"
-                                            },
-                                            "icon": "mdi:weather-night",
-                                            "tap_action": {
-                                                "action": "toggle"
-                                            },
-                                            "type": "entity-button",
-                                            "show_name": true,
-                                            "name": "God natt"
-                                        },
-                                        {
-                                            "entity": "script.turn_off_nere",
-                                            "hold_action": {
-                                                "action": "none"
-                                            },
-                                            "icon": "mdi:lightbulb-off",
-                                            "name": "Underv\u00e5n",
-                                            "tap_action": {
-                                                "action": "toggle"
-                                            },
-                                            "type": "entity-button",
-                                            "show_name": true
-                                        },
-                                        {
-                                            "entity": "script.turn_off_uppe",
-                                            "hold_action": {
-                                                "action": "none"
-                                            },
-                                            "icon": "mdi:lightbulb-off",
-                                            "tap_action": {
-                                                "action": "toggle"
-                                            },
-                                            "type": "entity-button",
-                                            "show_name": true,
-                                            "name": "\u00d6verv\u00e5n"
-                                        }
-                                    ],
-                                    "type": "horizontal-stack"
-                                }
-                            ],
-                            "type": "vertical-stack"
-                        },
-                        {
-                            "type": "horizontal-stack",
-                            "cards": [
-                                {
-                                    "type": "gauge",
-                                    "entity": "sensor.house_power_kw",
-                                    "max": 11,
-                                    "name": "Kons",
-                                    "min": 0,
-                                    "severity": {
-                                        "green": 0,
-                                        "yellow": 4,
-                                        "red": 7
-                                    }
-                                },
-                                {
-                                    "type": "gauge",
-                                    "min": 0,
-                                    "entity": "sensor.last_sp_kw",
-                                    "max": 8.2,
-                                    "severity": {
-                                        "green": 7,
-                                        "yellow": 4,
-                                        "red": 0
-                                    },
-                                    "name": "Prod"
-                                },
-                                {
-                                    "type": "gauge",
-                                    "entity": "sensor.house_net_power_kw",
-                                    "max": 11,
-                                    "severity": {
-                                        "green": 2,
-                                        "yellow": -2,
-                                        "red": -11
-                                    },
-                                    "min": -11,
-                                    "name": "Netto",
-                                    "needle": true
-                                },
-                                {
-                                    "type": "gauge",
-                                    "entity": "sensor.nordpool_kwh_se3_sek_2_10_025",
-                                    "min": 0,
-                                    "max": 1.5,
-                                    "severity": {
-                                        "green": 0,
-                                        "yellow": 0.4,
-                                        "red": 0.8
-                                    },
-                                    "unit": "kr",
-                                    "name": "Elpriset"
-                                }
-                            ]
-                        }
-                    ]
+                  "cards": [
+                    {
+                      "entity": "script.turn_on_general_lights",
+                      "hold_action": {
+                        "action": "none"
+                      },
+                      "icon": "mdi:brightness-7",
+                      "tap_action": {
+                        "action": "toggle"
+                      },
+                      "type": "entity-button",
+                      "show_name": false
+                    },
+                    {
+                      "entity": "script.turn_off_general_lights",
+                      "hold_action": {
+                        "action": "none"
+                      },
+                      "icon": "mdi:weather-night",
+                      "tap_action": {
+                        "action": "toggle"
+                      },
+                      "type": "entity-button",
+                      "show_name": false
+                    }
+                  ],
+                  "type": "horizontal-stack"
                 },
                 {
-                    "icon": "mdi:home-heart",
-                    "badges": [],
-                    "cards": [
-                        {
-                            "type": "vertical-stack",
-                            "cards": [
-                                {
-                                    "type": "horizontal-stack",
-                                    "cards": [
-                                        {
-                                            "hours_to_show": 24,
-                                            "graph": "none",
-                                            "type": "sensor",
-                                            "entity": "sensor.framsidan_temperature",
-                                            "name": "Trappan",
-                                            "detail": 1
-                                        },
-                                        {
-                                            "hours_to_show": 24,
-                                            "graph": "none",
-                                            "type": "sensor",
-                                            "entity": "sensor.altan_temperature",
-                                            "name": "Altanen",
-                                            "detail": 1
-                                        },
-                                        {
-                                            "type": "gauge",
-                                            "entity": "sensor.last_sp_kw",
-                                            "min": 0,
-                                            "max": 8.2,
-                                            "name": "\u2600 Solen",
-                                            "severity": {
-                                                "green": 7,
-                                                "yellow": 4,
-                                                "red": 0
-                                            }
-                                        }
-                                    ]
-                                },
-                                {
-                                    "type": "weather-forecast",
-                                    "entity": "weather.home",
-                                    "show_current": false
-                                }
-                            ]
-                        },
-                        {
-                            "type": "horizontal-stack",
-                            "cards": [
-                                {
-                                    "entity": "script.turn_on_general_lights",
-                                    "hold_action": {
-                                        "action": "none"
-                                    },
-                                    "icon": "mdi:lightbulb-on",
-                                    "tap_action": {
-                                        "action": "toggle"
-                                    },
-                                    "type": "entity-button",
-                                    "show_name": false
-                                },
-                                {
-                                    "entity": "script.turn_off_general_lights",
-                                    "hold_action": {
-                                        "action": "none"
-                                    },
-                                    "icon": "mdi:lightbulb-off-outline",
-                                    "tap_action": {
-                                        "action": "toggle"
-                                    },
-                                    "type": "entity-button",
-                                    "show_name": false
-                                }
-                            ]
-                        },
-                        {
-                            "type": "custom:apexcharts-card",
-                            "header": {
-                                "show": true,
-                                "title": "Elpriset",
-                                "show_states": true
-                            },
-                            "graph_span": "2d",
-                            "span": {
-                                "start": "day"
-                            },
-                            "series": [
-                                {
-                                    "entity": "sensor.nordpool_kwh_se3_sek_2_10_025",
-                                    "name": "Idag",
-                                    "stroke_width": 3,
-                                    "color": "deepskyblue",
-                                    "float_precision": 2,
-                                    "data_generator": "return entity.attributes.raw_today.map((p) => {\n  return [new Date(p.start), p.value];\n});\n",
-                                    "type": "column",
-                                    "show": {
-                                        "legend_value": false,
-                                        "in_header": false
-                                    }
-                                },
-                                {
-                                    "entity": "sensor.nordpool_kwh_se3_sek_2_10_025",
-                                    "name": "Imorgon",
-                                    "stroke_width": 3,
-                                    "color": "green",
-                                    "float_precision": 2,
-                                    "data_generator": "return entity.attributes.raw_tomorrow.map((p) => { \n  let d = new Date(p.start);\n  //d.setMinutes(d.getMinutes()+59);\n  return [d, p.value]; });\n",
-                                    "type": "column",
-                                    "show": {
-                                        "legend_value": false,
-                                        "in_header": false
-                                    }
-                                }
-                            ],
-                            "apex_config": {
-                                "yaxis": {
-                                    "min": 0,
-                                    "decimalsInFloat": 2
-                                }
-                            }
-                        },
-                        {
-                            "type": "calendar",
-                            "entities": [
-                                "calendar.family"
-                            ],
-                            "initial_view": "listWeek",
-                            "title": "H\u00e4nder i veckan"
-                        }
-                    ]
-                },
-                {
-                    "theme": "Backend-selected",
-                    "title": "Sovrummet",
-                    "icon": "mdi:bed",
-                    "badges": [
-                        {
-                            "entity": "sensor.op9_pro_battery_level"
-                        },
-                        {
-                            "entity": "sensor.sm_p610_batteriniva",
-                            "name": "Samsung S6 Lite"
-                        },
-                        {
-                            "entity": "sensor.sm_g950f_batteriniva",
-                            "name": "Fridas GS8"
-                        }
-                    ],
-                    "cards": [
-                        {
-                            "type": "horizontal-stack",
-                            "cards": [
-                                {
-                                    "type": "button",
-                                    "tap_action": {
-                                        "action": "toggle"
-                                    },
-                                    "icon": "hass:cellphone-charging",
-                                    "entity": "switch.nexa_5",
-                                    "name": "Laddare"
-                                },
-                                {
-                                    "type": "entity",
-                                    "entity": "binary_sensor.op9_pro_is_charging",
-                                    "name": "OP9"
-                                }
-                            ]
-                        },
-                        {
-                            "entities": [
-                                {
-                                    "entity": "switch.nexa_3"
-                                },
-                                {
-                                    "entity": "switch.nexa_4"
-                                },
-                                {
-                                    "entity": "switch.nexa_1"
-                                }
-                            ],
-                            "show_header_toggle": true,
-                            "type": "entities",
-                            "title": "Belysning",
-                            "state_color": true
-                        },
-                        {
-                            "hours_to_show": 24,
-                            "graph": "line",
-                            "entity": "sensor.sovrummet_temperature",
-                            "type": "sensor",
-                            "detail": 2,
-                            "name": "Sovrummet"
-                        },
-                        {
-                            "entity": "media_player.chromecast5303",
-                            "type": "media-control"
-                        }
-                    ]
-                },
-                {
-                    "title": "Vardagsrummet",
-                    "icon": "mdi:sofa",
-                    "badges": [],
-                    "cards": [
-                        {
-                            "entity": "media_player.vardagsrummet",
-                            "type": "media-control"
-                        },
-                        {
-                            "entities": [
-                                {
-                                    "entity": "switch.rusta15d"
-                                },
-                                {
-                                    "entity": "switch.fibaro_system_fgwpe_f_wall_plug_gen5_switch"
-                                },
-                                {
-                                    "entity": "switch.nexa_2"
-                                },
-                                {
-                                    "entity": "switch.telldus_2"
-                                }
-                            ],
-                            "show_header_toggle": false,
-                            "type": "entities",
-                            "state_color": true
-                        },
-                        {
-                            "entity": "light.fibaro_system_fgd212_dimmer_2_level_2",
-                            "name": "F\u00f6nstret",
-                            "theme": "default",
-                            "type": "light"
-                        },
-                        {
-                            "hours_to_show": 24,
-                            "graph": "line",
-                            "type": "sensor",
-                            "entity": "sensor.vardagsrummet_temperature",
-                            "detail": 2,
-                            "name": "Vardagsrummet"
-                        }
-                    ]
-                },
-                {
-                    "path": "felix",
-                    "title": "Felix",
-                    "icon": "mdi:human-male-child",
-                    "badges": [
-                        {
-                            "entity": "sensor.sm_g960f_batteriniva_2",
-                            "name": "Felix mobil"
-                        }
-                    ],
-                    "cards": [
-                        {
-                            "entities": [
-                                "switch.nexa_6",
-                                "switch.rusta13a",
-                                "switch.rusta13b",
-                                "switch.rusta13c"
-                            ],
-                            "title": "Belysning",
-                            "type": "entities"
-                        }
-                    ]
-                },
-                {
-                    "path": "koket",
-                    "title": "K\u00f6ket",
-                    "icon": "mdi:silverware-fork-knife",
-                    "badges": [],
-                    "cards": [
-                        {
-                            "entity": "media_player.jbl_ute",
-                            "type": "media-control"
-                        },
-                        {
-                            "entity": "light.kitchen_window",
-                            "name": "K\u00f6ksf\u00f6nstret",
-                            "type": "light"
-                        }
-                    ]
-                },
-                {
-                    "title": "Vardagsrummet, uppe",
-                    "icon": "mdi:home-floor-1",
-                    "badges": [],
-                    "cards": [
-                        {
-                            "entity": "media_player.projektorn",
-                            "type": "media-control"
-                        },
-                        {
-                            "entities": [
-                                {
-                                    "entity": "switch.telldus_3"
-                                },
-                                {
-                                    "entity": "switch.rusta25b"
-                                }
-                            ],
-                            "type": "entities",
-                            "state_color": true,
-                            "title": "Belysning"
-                        }
-                    ]
-                },
-                {
-                    "theme": "Backend-selected",
-                    "title": "Kontoret",
-                    "icon": "mdi:desk-lamp",
-                    "badges": [],
-                    "cards": [
-                        {
-                            "type": "media-control",
-                            "entity": "media_player.hk_citation_one_d73a8b_2"
-                        },
-                        {
-                            "type": "horizontal-stack",
-                            "cards": [
-                                {
-                                    "type": "light",
-                                    "entity": "light.office_window",
-                                    "hold_action": {
-                                        "action": "toggle"
-                                    },
-                                    "double_tap_action": {
-                                        "action": "more-info"
-                                    }
-                                },
-                                {
-                                    "show_name": true,
-                                    "show_icon": true,
-                                    "type": "button",
-                                    "tap_action": {
-                                        "action": "toggle"
-                                    },
-                                    "entity": "switch.tz2",
-                                    "name": "Skrivbordet",
-                                    "show_state": false,
-                                    "icon": "mdi:desk-lamp"
-                                }
-                            ]
-                        },
-                        {
-                            "type": "horizontal-stack",
-                            "cards": [
-                                {
-                                    "type": "gauge",
-                                    "entity": "sensor.samsung_c430w_toner_black",
-                                    "min": 0,
-                                    "max": 100,
-                                    "severity": {
-                                        "green": 20,
-                                        "yellow": 10,
-                                        "red": 0
-                                    },
-                                    "name": "Svart"
-                                },
-                                {
-                                    "type": "gauge",
-                                    "entity": "sensor.samsung_c430w_toner_cyan",
-                                    "min": 0,
-                                    "max": 100,
-                                    "name": "Cyan",
-                                    "severity": {
-                                        "green": 20,
-                                        "yellow": 10,
-                                        "red": 0
-                                    }
-                                },
-                                {
-                                    "type": "gauge",
-                                    "entity": "sensor.samsung_c430w_toner_magenta",
-                                    "min": 0,
-                                    "max": 100,
-                                    "name": "Magenta",
-                                    "severity": {
-                                        "green": 20,
-                                        "yellow": 10,
-                                        "red": 0
-                                    }
-                                },
-                                {
-                                    "type": "gauge",
-                                    "entity": "sensor.samsung_c430w_toner_yellow",
-                                    "min": 0,
-                                    "max": 100,
-                                    "name": "Gul",
-                                    "severity": {
-                                        "green": 20,
-                                        "yellow": 10,
-                                        "red": 0
-                                    }
-                                }
-                            ]
-                        },
-                        {
-                            "hours_to_show": 24,
-                            "graph": "line",
-                            "type": "sensor",
-                            "entity": "sensor.kontoret_temperature",
-                            "detail": 1,
-                            "name": "Kontoret"
-                        }
-                    ]
-                },
-                {
-                    "theme": "Backend-selected",
-                    "title": "Ute",
-                    "icon": "mdi:outdoor-lamp",
-                    "badges": [
-                        {
-                            "entity": "sun.sun",
-                            "name": " "
-                        },
-                        {
-                            "entity": "sensor.sunelevation",
-                            "name": " "
-                        },
-                        {
-                            "entity": "sensor.framsidan_temperature",
-                            "name": " "
-                        },
-                        {
-                            "entity": "sensor.framsidan_humidity",
-                            "name": " "
-                        },
-                        {
-                            "entity": "sensor.framsidan_pressure",
-                            "name": " "
-                        }
-                    ],
-                    "cards": [
-                        {
-                            "entities": [
-                                {
-                                    "entity": "switch.an179_1"
-                                },
-                                {
-                                    "entity": "switch.telldusout1"
-                                },
-                                {
-                                    "entity": "switch.nexa_out_1"
-                                },
-                                {
-                                    "entity": "light.shelly1_1"
-                                }
-                            ],
-                            "show_header_toggle": true,
-                            "title": "Utomhus",
-                            "type": "entities"
-                        },
-                        {
-                            "entities": [
-                                {
-                                    "entity": "sensor.framsidan_temperature",
-                                    "name": "Trappan"
-                                },
-                                {
-                                    "entity": "sensor.altan_temperature",
-                                    "name": "Altan"
-                                }
-                            ],
-                            "hours_to_show": 8,
-                            "refresh_interval": 30,
-                            "type": "history-graph"
-                        },
-                        {
-                            "entity": "weather.smhi_home",
-                            "type": "weather-forecast"
-                        },
-                        {
-                            "type": "horizontal-stack",
-                            "cards": [
-                                {
-                                    "type": "glance",
-                                    "entities": [
-                                        {
-                                            "entity": "sensor.yr_symbol",
-                                            "name": "V\u00e4der"
-                                        },
-                                        {
-                                            "entity": "sensor.yr_temperature",
-                                            "name": "Temp"
-                                        },
-                                        {
-                                            "entity": "sensor.yr_cloudiness",
-                                            "name": "Moln",
-                                            "icon": "mdi:weather-cloudy"
-                                        },
-                                        {
-                                            "entity": "sensor.yr_pressure",
-                                            "name": "Lufttryck"
-                                        },
-                                        {
-                                            "entity": "sensor.yr_wind_speed",
-                                            "name": "Vind",
-                                            "icon": "mdi:weather-windy"
-                                        }
-                                    ]
-                                }
-                            ]
-                        },
-                        {
-                            "type": "vertical-stack",
-                            "title": "Wall-E",
-                            "cards": [
-                                {
-                                    "type": "horizontal-stack",
-                                    "cards": [
-                                        {
-                                            "type": "entity",
-                                            "entity": "vacuum.wall_e",
-                                            "icon": "mow"
-                                        },
-                                        {
-                                            "type": "entity",
-                                            "entity": "vacuum.wall_e",
-                                            "name": " Batteri",
-                                            "icon": "mdi:battery-50",
-                                            "attribute": "battery_level",
-                                            "unit": "%"
-                                        }
-                                    ]
-                                },
-                                {
-                                    "type": "horizontal-stack",
-                                    "cards": [
-                                        {
-                                            "show_name": false,
-                                            "show_icon": true,
-                                            "type": "button",
-                                            "tap_action": {
-                                                "action": "call-service",
-                                                "service": "vacuum.start",
-                                                "data": {},
-                                                "target": {
-                                                    "device_id": "04744719de96abcefa75f8ffeeb42a05"
-                                                }
-                                            },
-                                            "entity": "vacuum.wall_e",
-                                            "icon": "mdi:mower",
-                                            "show_state": false
-                                        },
-                                        {
-                                            "show_name": false,
-                                            "show_icon": true,
-                                            "type": "button",
-                                            "tap_action": {
-                                                "action": "call-service",
-                                                "service": "vacuum.return_to_base",
-                                                "data": {},
-                                                "target": {
-                                                    "device_id": "04744719de96abcefa75f8ffeeb42a05"
-                                                }
-                                            },
-                                            "entity": "vacuum.wall_e",
-                                            "icon": "mdi:home-battery"
-                                        }
-                                    ]
-                                }
-                            ]
-                        }
-                    ]
-                },
-                {
-                    "badges": null,
-                    "cards": [
-                        {
-                            "entities": [
-                                {
-                                    "entity": "switch.telldus_1"
-                                },
-                                {
-                                    "entity": "switch.rusta15e"
-                                },
-                                {
-                                    "entity": "switch.tz1",
-                                    "name": "Grovk\u00f6ket"
-                                }
-                            ],
-                            "show_header_toggle": false,
-                            "type": "entities"
-                        }
-                    ],
-                    "title": "\u00d6vriga"
-                },
-                {
-                    "theme": "Backend-selected",
-                    "title": "Tesla",
-                    "path": "tesla",
-                    "icon": "mdi:car",
-                    "badges": [
-                        {
-                            "entity": "sensor.azarel_temperature_sensor_inside",
-                            "name": "Inne"
-                        },
-                        {
-                            "entity": "sensor.azarel_temperature_sensor_outside",
-                            "name": "Ute"
-                        },
-                        {
-                            "entity": "sensor.nordpool_kwh_se3_sek_2_10_025",
-                            "name": "Elpris",
-                            "unit": "kr"
-                        },
-                        {
-                            "entity": "binary_sensor.low_price"
-                        }
-                    ],
-                    "cards": [
-                        {
-                            "type": "vertical-stack",
-                            "title": "Azarel",
-                            "cards": [
-                                {
-                                    "type": "horizontal-stack",
-                                    "cards": [
-                                        {
-                                            "type": "gauge",
-                                            "min": 0,
-                                            "max": 100,
-                                            "entity": "sensor.azarel_battery_sensor",
-                                            "name": "SoC",
-                                            "severity": {
-                                                "green": 40,
-                                                "yellow": 20,
-                                                "red": 0
-                                            },
-                                            "needle": true
-                                        },
-                                        {
-                                            "type": "entity",
-                                            "entity": "binary_sensor.azarel_charger_sensor",
-                                            "name": "Inkopplad"
-                                        },
-                                        {
-                                            "type": "gauge",
-                                            "entity": "sensor.car1_charging_rate",
-                                            "min": 0,
-                                            "max": 11,
-                                            "name": " ",
-                                            "severity": {
-                                                "green": 0,
-                                                "yellow": 5.5,
-                                                "red": 8
-                                            },
-                                            "needle": true
-                                        },
-                                        {
-                                            "type": "gauge",
-                                            "entity": "sensor.azarel_energy_added_sensor",
-                                            "name": "Laddat",
-                                            "max": 50,
-                                            "needle": true,
-                                            "severity": {
-                                                "green": 0.1,
-                                                "yellow": 25,
-                                                "red": 35
-                                            }
-                                        }
-                                    ]
-                                },
-                                {
-                                    "type": "glance",
-                                    "entities": [
-                                        {
-                                            "entity": "sensor.aza_mileage"
-                                        },
-                                        {
-                                            "entity": "binary_sensor.azarel_online_sensor",
-                                            "name": "Online"
-                                        },
-                                        {
-                                            "entity": "sensor.aza_last_update",
-                                            "name": "Uppdaterad"
-                                        }
-                                    ]
-                                },
-                                {
-                                    "type": "horizontal-stack",
-                                    "cards": [
-                                        {
-                                            "type": "button",
-                                            "tap_action": {
-                                                "action": "toggle"
-                                            },
-                                            "entity": "climate.azarel_hvac_climate_system",
-                                            "name": " ",
-                                            "show_name": false,
-                                            "icon": "mdi:radiator"
-                                        },
-                                        {
-                                            "type": "button",
-                                            "tap_action": {
-                                                "action": "toggle"
-                                            },
-                                            "entity": "lock.azarel_charger_door_lock",
-                                            "name": " ",
-                                            "icon": "mdi:connection",
-                                            "show_name": false
-                                        },
-                                        {
-                                            "type": "button",
-                                            "tap_action": {
-                                                "action": "toggle"
-                                            },
-                                            "entity": "lock.azarel_door_lock",
-                                            "icon": "mdi:car-door-lock",
-                                            "name": " ",
-                                            "show_name": false
-                                        },
-                                        {
-                                            "type": "button",
-                                            "tap_action": {
-                                                "action": "call-service",
-                                                "service": "rest_command.cn_add_to_queue",
-                                                "service_data": {},
-                                                "target": {}
-                                            },
-                                            "icon": "mdi:lightning-bolt",
-                                            "show_name": false
-                                        }
-                                    ]
-                                }
-                            ]
-                        },
-                        {
-                            "type": "vertical-stack",
-                            "cards": [
-                                {
-                                    "type": "horizontal-stack",
-                                    "title": "Zoe",
-                                    "cards": [
-                                        {
-                                            "type": "gauge",
-                                            "entity": "sensor.zoe_battery_level",
-                                            "needle": true,
-                                            "severity": {
-                                                "green": 40,
-                                                "yellow": 20,
-                                                "red": 0
-                                            }
-                                        },
-                                        {
-                                            "type": "entity",
-                                            "entity": "sensor.zoe_battery_autonomy",
-                                            "name": "R\u00e4ckvidd",
-                                            "icon": "mdi:gauge"
-                                        },
-                                        {
-                                            "show_name": true,
-                                            "show_icon": true,
-                                            "type": "button",
-                                            "tap_action": {
-                                                "action": "toggle"
-                                            },
-                                            "entity": "button.zoe_start_air_conditioner",
-                                            "name": " "
-                                        }
-                                    ]
-                                },
-                                {
-                                    "type": "glance",
-                                    "entities": [
-                                        {
-                                            "entity": "sensor.zoe_mileage",
-                                            "name": "K\u00f6rstr\u00e4cka"
-                                        },
-                                        {
-                                            "entity": "sensor.zoe_battery_last_activity",
-                                            "name": "Uppdaterad"
-                                        },
-                                        {
-                                            "entity": "sensor.zoe_plug_state",
-                                            "name": "Inkopplad"
-                                        }
-                                    ]
-                                }
-                            ]
-                        },
-                        {
-                            "type": "horizontal-stack",
-                            "cards": [
-                                {
-                                    "show_name": true,
-                                    "show_icon": true,
-                                    "type": "button",
-                                    "tap_action": {
-                                        "action": "call-service",
-                                        "service": "rest_command.cn_add_aza_to_queue",
-                                        "service_data": {},
-                                        "target": {}
-                                    },
-                                    "entity": "switch.azarel_charger_switch",
-                                    "name": "Azarel",
-                                    "show_state": true,
-                                    "icon": "mdi:ev-station"
-                                },
-                                {
-                                    "show_name": true,
-                                    "show_icon": true,
-                                    "type": "button",
-                                    "tap_action": {
-                                        "action": "call-service",
-                                        "service": "rest_command.cn_add_yxx_to_queue",
-                                        "service_data": {},
-                                        "target": {}
-                                    },
-                                    "entity": "binary_sensor.zoe_charging",
-                                    "name": "Zoe",
-                                    "show_state": true,
-                                    "icon": "mdi:ev-station"
-                                }
-                            ]
-                        }
-                    ]
-                },
-                {
-                    "icon": "mdi:weather-sunny",
-                    "title": "Solcellerna",
-                    "badges": [],
-                    "cards": [
-                        {
-                            "type": "horizontal-stack",
-                            "cards": [
-                                {
-                                    "entity": "sensor.last_sp_kw",
-                                    "max": 8.2,
-                                    "min": 0,
-                                    "name": "Effekt",
-                                    "type": "gauge"
-                                },
-                                {
-                                    "entity": "sensor.last_sp_value",
-                                    "max": 70,
-                                    "name": "Energi",
-                                    "type": "gauge"
-                                },
-                                {
-                                    "type": "gauge",
-                                    "entity": "sensor.nordpool_kwh_se3_sek_2_10_025",
-                                    "min": 0,
-                                    "max": 1.5,
-                                    "severity": {
-                                        "green": 0,
-                                        "yellow": 0.4,
-                                        "red": 0.8
-                                    },
-                                    "unit": "kr",
-                                    "name": "Elpriset"
-                                }
-                            ]
-                        },
-                        {
-                            "type": "custom:apexcharts-card",
-                            "header": {
-                                "show": true,
-                                "title": "Aktuell effekt",
-                                "show_states": true,
-                                "colorize_states": true
-                            },
-                            "series": [
-                                {
-                                    "entity": "sensor.last_sp_kw",
-                                    "color": "lightgreen",
-                                    "stroke_width": 2,
-                                    "group_by": {
-                                        "func": "avg",
-                                        "duration": "10m"
-                                    }
-                                }
-                            ]
-                        },
-                        {
-                            "type": "custom:apexcharts-card",
-                            "graph_span": "10d",
-                            "update_interval": "1hour",
-                            "cache": true,
-                            "series": [
-                                {
-                                    "entity": "sensor.last_sp_value",
-                                    "type": "column",
-                                    "show": {
-                                        "datalabels": true
-                                    },
-                                    "group_by": {
-                                        "func": "delta",
-                                        "duration": "1d"
-                                    }
-                                }
-                            ],
-                            "span": {
-                                "end": "day"
-                            },
-                            "apex_config": {
-                                "yaxis": [
-                                    {
-                                        "decimalsInFloat": 0,
-                                        "min": 0
-                                    }
-                                ],
-                                "dataLabels": {
-                                    "background": {
-                                        "foreColor": "rgb(255,255,255)",
-                                        "opacity": 0
-                                    },
-                                    "dropShadow": {
-                                        "enabled": true
-                                    }
-                                }
-                            }
-                        },
-                        {
-                            "type": "custom:apexcharts-card",
-                            "graph_span": "18h",
-                            "update_interval": "5m",
-                            "cache": true,
-                            "series": [
-                                {
-                                    "entity": "sensor.last_sp_value",
-                                    "name": "Effekt",
-                                    "type": "column",
-                                    "show": {
-                                        "datalabels": true
-                                    },
-                                    "group_by": {
-                                        "func": "delta",
-                                        "duration": "1h"
-                                    }
-                                },
-                                {
-                                    "entity": "sensor.nordpool_kwh_se3_sek_2_10_025",
-                                    "name": "Pris",
-                                    "stroke_width": 2,
-                                    "color": "deepskyblue",
-                                    "float_precision": 2,
-                                    "data_generator": "return entity.attributes.raw_today.map((p) => {\n  return [new Date(p.start), p.value];\n});\n",
-                                    "curve": "stepline"
-                                }
-                            ],
-                            "span": {
-                                "end": "hour"
-                            },
-                            "apex_config": {
-                                "yaxis": [
-                                    {
-                                        "seriesName": "Effekt",
-                                        "decimalsInFloat": 1
-                                    },
-                                    {
-                                        "seriesName": "Pris",
-                                        "decimalsInFloat": 2,
-                                        "max": "~3",
-                                        "min": 0,
-                                        "opposite": true
-                                    }
-                                ],
-                                "dataLabels": {
-                                    "background": {
-                                        "foreColor": "rgb(80,80,80)",
-                                        "opacity": 0
-                                    },
-                                    "dropShadow": {
-                                        "enabled": true
-                                    }
-                                }
-                            }
-                        }
-                    ]
-                },
-                {
-                    "title": "Husf\u00f6rbrukning",
-                    "path": "huset",
-                    "icon": "mdi:lightning-bolt-outline",
-                    "badges": [],
-                    "cards": [
-                        {
-                            "type": "entity",
-                            "entity": "sensor.hem_gen5_electric_consumed_kwh",
-                            "name": "F\u00f6rbrukat (04-21)",
-                            "icon": "mdi:power-plug"
-                        },
-                        {
-                            "type": "vertical-stack",
-                            "title": "Str\u00f6m L1-L3 (A)",
-                            "cards": [
-                                {
-                                    "type": "horizontal-stack",
-                                    "cards": [
-                                        {
-                                            "type": "gauge",
-                                            "entity": "sensor.hem_gen5_electric_consumed_1",
-                                            "max": 20,
-                                            "name": "L1",
-                                            "min": -12,
-                                            "needle": true,
-                                            "severity": {
-                                                "green": -12,
-                                                "yellow": 0,
-                                                "red": 10
-                                            }
-                                        },
-                                        {
-                                            "type": "gauge",
-                                            "entity": "sensor.hem_gen5_electric_consumed_2",
-                                            "name": "L2",
-                                            "needle": true,
-                                            "severity": {
-                                                "green": -12,
-                                                "yellow": 0,
-                                                "red": 10
-                                            },
-                                            "min": -12,
-                                            "max": 20
-                                        },
-                                        {
-                                            "type": "gauge",
-                                            "entity": "sensor.hem_gen5_electric_consumed_3",
-                                            "max": 20,
-                                            "name": "L3",
-                                            "min": -12,
-                                            "needle": true,
-                                            "severity": {
-                                                "green": -12,
-                                                "yellow": 0,
-                                                "red": 10
-                                            }
-                                        }
-                                    ]
-                                },
-                                {
-                                    "type": "custom:apexcharts-card",
-                                    "series": [
-                                        {
-                                            "entity": "sensor.hem_gen5_electric_consumed_1",
-                                            "name": "L1"
-                                        }
-                                    ],
-                                    "cache": true,
-                                    "graph_span": "9h",
-                                    "update_interval": "30s",
-                                    "apex_config": {
-                                        "stroke": {
-                                            "show": true,
-                                            "width": 2,
-                                            "curve": "stepline"
-                                        }
-                                    }
-                                },
-                                {
-                                    "type": "custom:apexcharts-card",
-                                    "series": [
-                                        {
-                                            "entity": "sensor.hem_gen5_electric_consumed_2",
-                                            "name": "L2",
-                                            "color": "DeepSkyBlue"
-                                        }
-                                    ],
-                                    "cache": true,
-                                    "graph_span": "9h",
-                                    "update_interval": "30s",
-                                    "apex_config": {
-                                        "stroke": {
-                                            "show": true,
-                                            "width": 2,
-                                            "curve": "stepline"
-                                        }
-                                    }
-                                },
-                                {
-                                    "type": "custom:apexcharts-card",
-                                    "series": [
-                                        {
-                                            "entity": "sensor.hem_gen5_electric_consumed_3",
-                                            "name": "L3",
-                                            "color": "red"
-                                        }
-                                    ],
-                                    "cache": true,
-                                    "graph_span": "9h",
-                                    "update_interval": "30s",
-                                    "apex_config": {
-                                        "stroke": {
-                                            "show": true,
-                                            "width": 2,
-                                            "curve": "stepline"
-                                        }
-                                    }
-                                }
-                            ]
-                        },
-                        {
-                            "type": "custom:apexcharts-card",
-                            "header": {
-                                "show": true,
-                                "title": "Husets f\u00f6rbrukning",
-                                "show_states": true,
-                                "colorize_states": true
-                            },
-                            "series": [
-                                {
-                                    "entity": "sensor.hem_gen5_electric_consumed_kwh",
-                                    "name": " ",
-                                    "type": "column",
-                                    "group_by": {
-                                        "func": "delta",
-                                        "duration": "23h59m"
-                                    }
-                                }
-                            ],
-                            "update_interval": "1h",
-                            "apex_config": {
-                                "yaxis": {
-                                    "min": 0,
-                                    "decimalsInFloat": 0
-                                }
-                            },
-                            "graph_span": "7d",
-                            "cache": true,
-                            "span": {
-                                "end": "day"
-                            }
-                        },
-                        {
-                            "type": "custom:apexcharts-card",
-                            "header": {
-                                "show_states": false
-                            },
-                            "series": [
-                                {
-                                    "entity": "sensor.house_power_kw",
-                                    "name": " ",
-                                    "type": "column",
-                                    "show": {
-                                        "legend_value": false
-                                    },
-                                    "group_by": {
-                                        "func": "avg",
-                                        "duration": "1h"
-                                    }
-                                },
-                                {
-                                    "entity": "sensor.last_sp_kw",
-                                    "name": " ",
-                                    "stroke_width": 3,
-                                    "show": {
-                                        "legend_value": false
-                                    },
-                                    "group_by": {
-                                        "func": "avg",
-                                        "duration": "1h"
-                                    }
-                                }
-                            ],
-                            "update_interval": "1h",
-                            "graph_span": "1d",
-                            "span": {
-                                "end": "day"
-                            },
-                            "apex_config": {
-                                "legend": {
-                                    "show": false
-                                }
-                            }
-                        },
-                        {
-                            "type": "custom:apexcharts-card",
-                            "header": {
-                                "show": true,
-                                "title": "Nordpool Pris",
-                                "show_states": true
-                            },
-                            "graph_span": "1d",
-                            "span": {
-                                "start": "day"
-                            },
-                            "series": [
-                                {
-                                    "entity": "sensor.nordpool_kwh_se3_sek_2_10_025",
-                                    "name": "Idag",
-                                    "stroke_width": 2,
-                                    "color": "deepskyblue",
-                                    "float_precision": 2,
-                                    "data_generator": "return entity.attributes.raw_today.map((p) => {\n  return [new Date(p.start), p.value];\n});\n",
-                                    "curve": "stepline",
-                                    "show": {
-                                        "legend_value": false,
-                                        "in_header": false
-                                    }
-                                },
-                                {
-                                    "entity": "sensor.nordpool_kwh_se3_sek_2_10_025",
-                                    "name": "Imorgon",
-                                    "stroke_width": 2,
-                                    "color": "yellow",
-                                    "float_precision": 2,
-                                    "data_generator": "return entity.attributes.raw_tomorrow.map((p) => { \n  let d = new Date(p.start);\n  d.setDate(d.getDate() - 1);\n  return [d, p.value]; });\n",
-                                    "curve": "stepline",
-                                    "show": {
-                                        "legend_value": false,
-                                        "in_header": false
-                                    }
-                                }
-                            ],
-                            "apex_config": {
-                                "yaxis": {
-                                    "min": 0,
-                                    "decimalsInFloat": 2
-                                }
-                            }
-                        },
-                        {
-                            "type": "custom:apexcharts-card",
-                            "header": {
-                                "show": true,
-                                "title": "Effekt och temperatur"
-                            },
-                            "series": [
-                                {
-                                    "entity": "sensor.house_power_kw",
-                                    "type": "line",
-                                    "name": "effekt",
-                                    "group_by": {
-                                        "func": "avg",
-                                        "duration": "60m"
-                                    }
-                                },
-                                {
-                                    "entity": "sensor.framsidan_temperature",
-                                    "type": "line",
-                                    "name": "temp",
-                                    "color": "SteelBlue"
-                                }
-                            ],
-                            "update_interval": "15m",
-                            "graph_span": "1d",
-                            "apex_config": {
-                                "yaxis": [
-                                    {
-                                        "seriesName": "effekt",
-                                        "decimalsInFloat": 0
-                                    },
-                                    {
-                                        "seriesName": "temp",
-                                        "decimalsInFloat": 0,
-                                        "opposite": true,
-                                        "title": {
-                                            "text": "temp"
-                                        }
-                                    }
-                                ],
-                                "stroke": {
-                                    "show": true,
-                                    "width": 2,
-                                    "curve": "smooth"
-                                }
-                            }
-                        }
-                    ]
+                  "cards": [
+                    {
+                      "entity": "script.tand_sovrummet",
+                      "hold_action": {
+                        "action": "none"
+                      },
+                      "name": "God morgon",
+                      "tap_action": {
+                        "action": "toggle"
+                      },
+                      "type": "entity-button",
+                      "icon": "mdi:weather-sunset-up"
+                    },
+                    {
+                      "entity": "script.slack_sovrummet",
+                      "hold_action": {
+                        "action": "none"
+                      },
+                      "icon": "mdi:weather-night",
+                      "tap_action": {
+                        "action": "toggle"
+                      },
+                      "type": "entity-button",
+                      "show_name": true,
+                      "name": "God natt"
+                    },
+                    {
+                      "entity": "script.turn_off_nere",
+                      "hold_action": {
+                        "action": "none"
+                      },
+                      "icon": "mdi:lightbulb-off",
+                      "name": "Undervån",
+                      "tap_action": {
+                        "action": "toggle"
+                      },
+                      "type": "entity-button",
+                      "show_name": true
+                    },
+                    {
+                      "entity": "script.turn_off_uppe",
+                      "hold_action": {
+                        "action": "none"
+                      },
+                      "icon": "mdi:lightbulb-off",
+                      "tap_action": {
+                        "action": "toggle"
+                      },
+                      "type": "entity-button",
+                      "show_name": true,
+                      "name": "Övervån"
+                    }
+                  ],
+                  "type": "horizontal-stack"
                 }
-            ]
+              ],
+              "type": "vertical-stack"
+            },
+            {
+              "type": "horizontal-stack",
+              "cards": [
+                {
+                  "type": "gauge",
+                  "entity": "sensor.house_power_kw",
+                  "max": 11,
+                  "name": "Kons",
+                  "min": 0,
+                  "severity": {
+                    "green": 0,
+                    "yellow": 4,
+                    "red": 7
+                  }
+                },
+                {
+                  "type": "gauge",
+                  "min": 0,
+                  "entity": "sensor.last_sp_kw",
+                  "max": 8.2,
+                  "severity": {
+                    "green": 7,
+                    "yellow": 4,
+                    "red": 0
+                  },
+                  "name": "Prod"
+                },
+                {
+                  "type": "gauge",
+                  "entity": "sensor.house_net_power_kw",
+                  "max": 11,
+                  "severity": {
+                    "green": 2,
+                    "yellow": -2,
+                    "red": -11
+                  },
+                  "min": -11,
+                  "name": "Netto",
+                  "needle": true
+                },
+                {
+                  "type": "gauge",
+                  "entity": "sensor.nordpool_kwh_se3_sek_2_10_025",
+                  "min": 0,
+                  "max": 1.5,
+                  "severity": {
+                    "green": 0,
+                    "yellow": 0.4,
+                    "red": 0.8
+                  },
+                  "unit": "kr",
+                  "name": "Elpriset"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "icon": "mdi:home-heart",
+          "badges": [],
+          "cards": [
+            {
+              "type": "vertical-stack",
+              "cards": [
+                {
+                  "type": "horizontal-stack",
+                  "cards": [
+                    {
+                      "hours_to_show": 24,
+                      "graph": "none",
+                      "type": "sensor",
+                      "entity": "sensor.framsidan_temperature",
+                      "name": "Trappan",
+                      "detail": 1
+                    },
+                    {
+                      "hours_to_show": 24,
+                      "graph": "none",
+                      "type": "sensor",
+                      "entity": "sensor.altan_temperature",
+                      "name": "Altanen",
+                      "detail": 1
+                    },
+                    {
+                      "type": "gauge",
+                      "entity": "sensor.last_sp_kw",
+                      "min": 0,
+                      "max": 8.2,
+                      "name": "☀ Solen",
+                      "severity": {
+                        "green": 7,
+                        "yellow": 4,
+                        "red": 0
+                      }
+                    }
+                  ]
+                },
+                {
+                  "type": "weather-forecast",
+                  "entity": "weather.home",
+                  "show_current": false
+                }
+              ]
+            },
+            {
+              "type": "horizontal-stack",
+              "cards": [
+                {
+                  "entity": "script.turn_on_general_lights",
+                  "hold_action": {
+                    "action": "none"
+                  },
+                  "icon": "mdi:lightbulb-on",
+                  "tap_action": {
+                    "action": "toggle"
+                  },
+                  "type": "entity-button",
+                  "show_name": false
+                },
+                {
+                  "entity": "script.turn_off_general_lights",
+                  "hold_action": {
+                    "action": "none"
+                  },
+                  "icon": "mdi:lightbulb-off-outline",
+                  "tap_action": {
+                    "action": "toggle"
+                  },
+                  "type": "entity-button",
+                  "show_name": false
+                }
+              ]
+            },
+            {
+              "type": "custom:apexcharts-card",
+              "header": {
+                "show": true,
+                "title": "Elpriset",
+                "show_states": true
+              },
+              "graph_span": "2d",
+              "span": {
+                "start": "day"
+              },
+              "series": [
+                {
+                  "entity": "sensor.nordpool_kwh_se3_sek_2_10_025",
+                  "name": "Idag",
+                  "stroke_width": 3,
+                  "color": "deepskyblue",
+                  "float_precision": 2,
+                  "data_generator": "return entity.attributes.raw_today.map((p) => {\n  return [new Date(p.start), p.value];\n});\n",
+                  "type": "column",
+                  "show": {
+                    "legend_value": false,
+                    "in_header": false
+                  }
+                },
+                {
+                  "entity": "sensor.nordpool_kwh_se3_sek_2_10_025",
+                  "name": "Imorgon",
+                  "stroke_width": 3,
+                  "color": "green",
+                  "float_precision": 2,
+                  "data_generator": "return entity.attributes.raw_tomorrow.map((p) => { \n  let d = new Date(p.start);\n  //d.setMinutes(d.getMinutes()+59);\n  return [d, p.value]; });\n",
+                  "type": "column",
+                  "show": {
+                    "legend_value": false,
+                    "in_header": false
+                  }
+                }
+              ],
+              "apex_config": {
+                "yaxis": {
+                  "min": 0,
+                  "decimalsInFloat": 2
+                }
+              }
+            },
+            {
+              "type": "calendar",
+              "entities": [
+                "calendar.family"
+              ],
+              "initial_view": "listWeek",
+              "title": "Händer i veckan"
+            }
+          ]
+        },
+        {
+          "theme": "Backend-selected",
+          "title": "Sovrummet",
+          "icon": "mdi:bed",
+          "badges": [
+            {
+              "entity": "sensor.op9_pro_battery_level"
+            },
+            {
+              "entity": "sensor.sm_p610_batteriniva",
+              "name": "Samsung S6 Lite"
+            },
+            {
+              "entity": "sensor.sm_g950f_batteriniva",
+              "name": "Fridas GS8"
+            }
+          ],
+          "cards": [
+            {
+              "type": "horizontal-stack",
+              "cards": [
+                {
+                  "type": "button",
+                  "tap_action": {
+                    "action": "toggle"
+                  },
+                  "icon": "hass:cellphone-charging",
+                  "entity": "switch.nexa_5",
+                  "name": "Laddare"
+                },
+                {
+                  "type": "entity",
+                  "entity": "binary_sensor.op9_pro_is_charging",
+                  "name": "OP9"
+                }
+              ]
+            },
+            {
+              "entities": [
+                {
+                  "entity": "switch.nexa_3"
+                },
+                {
+                  "entity": "switch.nexa_4"
+                },
+                {
+                  "entity": "switch.nexa_1"
+                }
+              ],
+              "show_header_toggle": true,
+              "type": "entities",
+              "title": "Belysning",
+              "state_color": true
+            },
+            {
+              "hours_to_show": 24,
+              "graph": "line",
+              "entity": "sensor.sovrummet_temperature",
+              "type": "sensor",
+              "detail": 2,
+              "name": "Sovrummet"
+            },
+            {
+              "entity": "media_player.chromecast5303",
+              "type": "media-control"
+            }
+          ]
+        },
+        {
+          "title": "Vardagsrummet",
+          "icon": "mdi:sofa",
+          "badges": [],
+          "cards": [
+            {
+              "entity": "media_player.vardagsrum",
+              "type": "media-control"
+            },
+            {
+              "entities": [
+                {
+                  "entity": "switch.rusta15d",
+                  "icon": "mdi:lamp"
+                },
+                {
+                  "entity": "switch.fibaro_system_fgwpe_f_wall_plug_gen5_switch",
+                  "icon": "mdi:lamp"
+                },
+                {
+                  "entity": "switch.nexa_2",
+                  "icon": "mdi:lightbulb-spot"
+                },
+                {
+                  "entity": "switch.telldus_2",
+                  "icon": "mdi:string-lights"
+                }
+              ],
+              "show_header_toggle": false,
+              "type": "entities",
+              "state_color": true
+            },
+            {
+              "entity": "light.fibaro_system_fgd212_dimmer_2_level_2",
+              "name": "Fönstret",
+              "theme": "default",
+              "type": "light"
+            },
+            {
+              "hours_to_show": 24,
+              "graph": "line",
+              "type": "sensor",
+              "entity": "sensor.vardagsrummet_temperature",
+              "detail": 2,
+              "name": "Vardagsrummet"
+            }
+          ]
+        },
+        {
+          "path": "felix",
+          "title": "Felix",
+          "icon": "mdi:human-male-child",
+          "badges": [
+            {
+              "entity": "sensor.sm_g960f_batteriniva_2",
+              "name": "Felix mobil"
+            }
+          ],
+          "cards": [
+            {
+              "entities": [
+                {
+                  "entity": "switch.nexa_6",
+                  "icon": "mdi:lamp"
+                },
+                {
+                  "entity": "switch.rusta13a",
+                  "icon": "mdi:wall-sconce"
+                },
+                {
+                  "entity": "switch.rusta13b",
+                  "icon": "mdi:string-lights"
+                },
+                {
+                  "entity": "switch.rusta13c",
+                  "icon": "mdi:lamp"
+                },
+                {
+                  "entity": "switch.rusta15e",
+                  "icon": "mdi:lamp"
+                }
+              ],
+              "title": "Belysning",
+              "type": "entities"
+            },
+            {
+              "type": "history-graph",
+              "entities": [
+                {
+                  "entity": "sensor.felix_rum_temperature",
+                  "name": "Felix rum"
+                },
+                {
+                  "entity": "sensor.spelrummet_temperature",
+                  "name": "Spelrummet"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "path": "koket",
+          "title": "Köket",
+          "icon": "mdi:silverware-fork-knife",
+          "badges": [],
+          "cards": [
+            {
+              "entity": "media_player.jbl_ute",
+              "type": "media-control"
+            },
+            {
+              "entity": "light.kitchen_window",
+              "name": "Köksfönstret",
+              "type": "light"
+            }
+          ]
+        },
+        {
+          "title": "Vardagsrummet, uppe",
+          "icon": "mdi:home-floor-1",
+          "badges": [],
+          "cards": [
+            {
+              "entity": "media_player.projektorn",
+              "type": "media-control"
+            },
+            {
+              "entities": [
+                {
+                  "entity": "switch.telldus_3"
+                },
+                {
+                  "entity": "switch.rusta25b"
+                }
+              ],
+              "type": "entities",
+              "state_color": true,
+              "title": "Belysning"
+            }
+          ]
+        },
+        {
+          "theme": "Backend-selected",
+          "title": "Kontoret",
+          "icon": "mdi:desk-lamp",
+          "badges": [],
+          "cards": [
+            {
+              "type": "media-control",
+              "entity": "media_player.hk_citation_one_d73a8b_2"
+            },
+            {
+              "type": "horizontal-stack",
+              "cards": [
+                {
+                  "type": "light",
+                  "entity": "light.office_window",
+                  "hold_action": {
+                    "action": "toggle"
+                  },
+                  "double_tap_action": {
+                    "action": "more-info"
+                  }
+                },
+                {
+                  "show_name": true,
+                  "show_icon": true,
+                  "type": "button",
+                  "tap_action": {
+                    "action": "toggle"
+                  },
+                  "entity": "switch.tz2",
+                  "name": "Skrivbordet",
+                  "show_state": false,
+                  "icon": "mdi:desk-lamp"
+                }
+              ]
+            },
+            {
+              "type": "horizontal-stack",
+              "cards": [
+                {
+                  "type": "gauge",
+                  "entity": "sensor.samsung_c430w_toner_black",
+                  "min": 0,
+                  "max": 100,
+                  "severity": {
+                    "green": 20,
+                    "yellow": 10,
+                    "red": 0
+                  },
+                  "name": "Svart"
+                },
+                {
+                  "type": "gauge",
+                  "entity": "sensor.samsung_c430w_toner_cyan",
+                  "min": 0,
+                  "max": 100,
+                  "name": "Cyan",
+                  "severity": {
+                    "green": 20,
+                    "yellow": 10,
+                    "red": 0
+                  }
+                },
+                {
+                  "type": "gauge",
+                  "entity": "sensor.samsung_c430w_toner_magenta",
+                  "min": 0,
+                  "max": 100,
+                  "name": "Magenta",
+                  "severity": {
+                    "green": 20,
+                    "yellow": 10,
+                    "red": 0
+                  }
+                },
+                {
+                  "type": "gauge",
+                  "entity": "sensor.samsung_c430w_toner_yellow",
+                  "min": 0,
+                  "max": 100,
+                  "name": "Gul",
+                  "severity": {
+                    "green": 20,
+                    "yellow": 10,
+                    "red": 0
+                  }
+                }
+              ]
+            },
+            {
+              "hours_to_show": 24,
+              "graph": "line",
+              "type": "sensor",
+              "entity": "sensor.kontoret_temperature",
+              "detail": 1,
+              "name": "Kontoret"
+            }
+          ]
+        },
+        {
+          "theme": "Backend-selected",
+          "title": "Ute",
+          "icon": "mdi:outdoor-lamp",
+          "badges": [
+            {
+              "entity": "sun.sun",
+              "name": " "
+            },
+            {
+              "entity": "sensor.sunelevation",
+              "name": " "
+            },
+            {
+              "entity": "sensor.framsidan_temperature",
+              "name": " "
+            },
+            {
+              "entity": "sensor.framsidan_humidity",
+              "name": " "
+            },
+            {
+              "entity": "sensor.framsidan_pressure",
+              "name": " "
+            }
+          ],
+          "cards": [
+            {
+              "entities": [
+                {
+                  "entity": "switch.an179_1"
+                },
+                {
+                  "entity": "switch.telldusout1"
+                },
+                {
+                  "entity": "switch.nexa_out_1"
+                },
+                {
+                  "entity": "light.shelly1_1"
+                }
+              ],
+              "show_header_toggle": true,
+              "title": "Utomhus",
+              "type": "entities"
+            },
+            {
+              "entities": [
+                {
+                  "entity": "sensor.framsidan_temperature",
+                  "name": "Trappan"
+                },
+                {
+                  "entity": "sensor.altan_temperature",
+                  "name": "Altan"
+                }
+              ],
+              "hours_to_show": 8,
+              "refresh_interval": 30,
+              "type": "history-graph"
+            },
+            {
+              "entity": "weather.smhi_home",
+              "type": "weather-forecast"
+            },
+            {
+              "type": "horizontal-stack",
+              "cards": [
+                {
+                  "type": "glance",
+                  "entities": [
+                    {
+                      "entity": "sensor.yr_symbol",
+                      "name": "Väder"
+                    },
+                    {
+                      "entity": "sensor.yr_temperature",
+                      "name": "Temp"
+                    },
+                    {
+                      "entity": "sensor.yr_cloudiness",
+                      "name": "Moln",
+                      "icon": "mdi:weather-cloudy"
+                    },
+                    {
+                      "entity": "sensor.yr_pressure",
+                      "name": "Lufttryck"
+                    },
+                    {
+                      "entity": "sensor.yr_wind_speed",
+                      "name": "Vind",
+                      "icon": "mdi:weather-windy"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "vertical-stack",
+              "title": "Wall-E",
+              "cards": [
+                {
+                  "type": "horizontal-stack",
+                  "cards": [
+                    {
+                      "type": "entity",
+                      "entity": "vacuum.wall_e",
+                      "icon": "mow"
+                    },
+                    {
+                      "type": "entity",
+                      "entity": "vacuum.wall_e",
+                      "name": " Batteri",
+                      "icon": "mdi:battery-50",
+                      "attribute": "battery_level",
+                      "unit": "%"
+                    }
+                  ]
+                },
+                {
+                  "type": "horizontal-stack",
+                  "cards": [
+                    {
+                      "show_name": false,
+                      "show_icon": true,
+                      "type": "button",
+                      "tap_action": {
+                        "action": "call-service",
+                        "service": "vacuum.start",
+                        "data": {},
+                        "target": {
+                          "device_id": "04744719de96abcefa75f8ffeeb42a05"
+                        }
+                      },
+                      "entity": "vacuum.wall_e",
+                      "icon": "mdi:mower",
+                      "show_state": false
+                    },
+                    {
+                      "show_name": false,
+                      "show_icon": true,
+                      "type": "button",
+                      "tap_action": {
+                        "action": "call-service",
+                        "service": "vacuum.return_to_base",
+                        "data": {},
+                        "target": {
+                          "device_id": "04744719de96abcefa75f8ffeeb42a05"
+                        }
+                      },
+                      "entity": "vacuum.wall_e",
+                      "icon": "mdi:home-battery"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "badges": null,
+          "cards": [
+            {
+              "entities": [
+                {
+                  "entity": "switch.telldus_1"
+                },
+                {
+                  "entity": "switch.tz1",
+                  "name": "Grovköket"
+                }
+              ],
+              "show_header_toggle": false,
+              "type": "entities"
+            }
+          ],
+          "title": "Övriga"
+        },
+        {
+          "theme": "Backend-selected",
+          "title": "Tesla",
+          "path": "tesla",
+          "icon": "mdi:car",
+          "badges": [
+            {
+              "entity": "sensor.azarel_temperature_sensor_inside",
+              "name": "Inne"
+            },
+            {
+              "entity": "sensor.azarel_temperature_sensor_outside",
+              "name": "Ute"
+            },
+            {
+              "entity": "sensor.nordpool_kwh_se3_sek_2_10_025",
+              "name": "Elpris",
+              "unit": "kr"
+            },
+            {
+              "entity": "binary_sensor.low_price"
+            }
+          ],
+          "cards": [
+            {
+              "type": "vertical-stack",
+              "title": "Azarel",
+              "cards": [
+                {
+                  "type": "horizontal-stack",
+                  "cards": [
+                    {
+                      "type": "gauge",
+                      "min": 0,
+                      "max": 100,
+                      "entity": "sensor.azarel_battery_sensor",
+                      "name": "SoC",
+                      "severity": {
+                        "green": 40,
+                        "yellow": 20,
+                        "red": 0
+                      },
+                      "needle": true
+                    },
+                    {
+                      "type": "gauge",
+                      "entity": "sensor.car1_charging_rate",
+                      "min": 0,
+                      "max": 11,
+                      "name": " ",
+                      "severity": {
+                        "green": 0,
+                        "yellow": 5.5,
+                        "red": 8
+                      },
+                      "needle": true
+                    },
+                    {
+                      "type": "gauge",
+                      "entity": "sensor.azarel_energy_added_sensor",
+                      "name": "Laddat",
+                      "max": 50,
+                      "needle": true,
+                      "severity": {
+                        "green": 0.1,
+                        "yellow": 25,
+                        "red": 35
+                      }
+                    }
+                  ]
+                },
+                {
+                  "type": "glance",
+                  "entities": [
+                    {
+                      "entity": "sensor.aza_mileage"
+                    },
+                    {
+                      "entity": "binary_sensor.azarel_charger_sensor",
+                      "name": "Inkopplad",
+                      "icon": "mdi:ev-plug-type2"
+                    },
+                    {
+                      "entity": "sensor.aza_last_update",
+                      "name": "Uppdaterad",
+                      "icon": "mdi:clock"
+                    }
+                  ]
+                },
+                {
+                  "type": "horizontal-stack",
+                  "cards": [
+                    {
+                      "type": "button",
+                      "tap_action": {
+                        "action": "toggle"
+                      },
+                      "entity": "climate.azarel_hvac_climate_system",
+                      "name": " ",
+                      "show_name": false,
+                      "icon": "mdi:radiator"
+                    },
+                    {
+                      "type": "button",
+                      "tap_action": {
+                        "action": "toggle"
+                      },
+                      "entity": "lock.azarel_charger_door_lock",
+                      "name": " ",
+                      "icon": "mdi:connection",
+                      "show_name": false
+                    },
+                    {
+                      "type": "button",
+                      "tap_action": {
+                        "action": "toggle"
+                      },
+                      "entity": "lock.azarel_door_lock",
+                      "icon": "mdi:car-door-lock",
+                      "name": " ",
+                      "show_name": false
+                    },
+                    {
+                      "type": "button",
+                      "tap_action": {
+                        "action": "call-service",
+                        "service": "rest_command.cn_add_to_queue",
+                        "service_data": {},
+                        "target": {}
+                      },
+                      "icon": "mdi:lightning-bolt",
+                      "show_name": false
+                    }
+                  ]
+                },
+                {
+                  "type": "horizontal-stack",
+                  "cards": [
+                    {
+                      "type": "entities",
+                      "entities": []
+                    },
+                    {
+                      "type": "button",
+                      "entity": "input_boolean.charge_aza",
+                      "show_name": true,
+                      "show_icon": true,
+                      "tap_action": {
+                        "action": "call-service",
+                        "service": "script.charge_the_tesla"
+                      },
+                      "name": "Starta nu",
+                      "show_state": true
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "vertical-stack",
+              "cards": [
+                {
+                  "type": "horizontal-stack",
+                  "title": "Zoe",
+                  "cards": [
+                    {
+                      "type": "gauge",
+                      "entity": "sensor.zoe_battery_level",
+                      "needle": true,
+                      "severity": {
+                        "green": 40,
+                        "yellow": 20,
+                        "red": 0
+                      },
+                      "name": "SoC"
+                    },
+                    {
+                      "type": "entity",
+                      "entity": "sensor.zoe_battery_autonomy",
+                      "name": "Räckvidd",
+                      "icon": "mdi:gauge"
+                    },
+                    {
+                      "show_name": true,
+                      "show_icon": true,
+                      "type": "button",
+                      "tap_action": {
+                        "action": "toggle"
+                      },
+                      "entity": "button.zoe_start_air_conditioner",
+                      "name": " "
+                    }
+                  ]
+                },
+                {
+                  "type": "glance",
+                  "entities": [
+                    {
+                      "entity": "sensor.zoe_mileage",
+                      "name": "Körsträcka",
+                      "icon": "mdi:counter"
+                    },
+                    {
+                      "entity": "binary_sensor.zoe_plugged_in",
+                      "icon": "mdi:ev-plug-type2",
+                      "name": "Inkopplad"
+                    },
+                    {
+                      "entity": "sensor.zoe_battery_last_activity",
+                      "name": "Uppdaterad"
+                    }
+                  ]
+                },
+                {
+                  "type": "horizontal-stack",
+                  "cards": [
+                    {
+                      "type": "entities",
+                      "entities": [
+                        {
+                          "entity": "input_boolean.zoe_use_clock",
+                          "name": "På klocka"
+                        },
+                        {
+                          "entity": "input_datetime.zoe_hour",
+                          "name": "Timmar"
+                        }
+                      ],
+                      "show_header_toggle": false
+                    },
+                    {
+                      "type": "button",
+                      "show_name": true,
+                      "show_icon": true,
+                      "tap_action": {
+                        "action": "call-service",
+                        "service": "script.ladda_zoe"
+                      },
+                      "entity": "input_boolean.charge_zoe",
+                      "name": "Starta nu",
+                      "show_state": true
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "icon": "mdi:weather-sunny",
+          "title": "Solcellerna",
+          "badges": [],
+          "cards": [
+            {
+              "type": "horizontal-stack",
+              "cards": [
+                {
+                  "entity": "sensor.last_sp_kw",
+                  "max": 8.2,
+                  "min": 0,
+                  "name": "Effekt",
+                  "type": "gauge"
+                },
+                {
+                  "entity": "sensor.last_sp_value",
+                  "max": 70,
+                  "name": "Energi",
+                  "type": "gauge"
+                },
+                {
+                  "type": "gauge",
+                  "entity": "sensor.nordpool_kwh_se3_sek_2_10_025",
+                  "min": 0,
+                  "max": 1.5,
+                  "severity": {
+                    "green": 0,
+                    "yellow": 0.4,
+                    "red": 0.8
+                  },
+                  "unit": "kr",
+                  "name": "Elpriset"
+                }
+              ]
+            },
+            {
+              "type": "custom:apexcharts-card",
+              "header": {
+                "show": true,
+                "title": "Aktuell effekt",
+                "show_states": true,
+                "colorize_states": true
+              },
+              "series": [
+                {
+                  "entity": "sensor.last_sp_kw",
+                  "color": "lightgreen",
+                  "stroke_width": 2,
+                  "group_by": {
+                    "func": "avg",
+                    "duration": "10m"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "custom:apexcharts-card",
+              "graph_span": "10d",
+              "update_interval": "1hour",
+              "cache": true,
+              "series": [
+                {
+                  "entity": "sensor.last_sp_value",
+                  "type": "column",
+                  "show": {
+                    "datalabels": true
+                  },
+                  "group_by": {
+                    "func": "delta",
+                    "duration": "1d"
+                  }
+                }
+              ],
+              "span": {
+                "end": "day"
+              },
+              "apex_config": {
+                "yaxis": [
+                  {
+                    "decimalsInFloat": 0,
+                    "min": 0
+                  }
+                ],
+                "dataLabels": {
+                  "background": {
+                    "foreColor": "rgb(255,255,255)",
+                    "opacity": 0
+                  },
+                  "dropShadow": {
+                    "enabled": true
+                  }
+                }
+              }
+            },
+            {
+              "type": "custom:apexcharts-card",
+              "graph_span": "18h",
+              "update_interval": "5m",
+              "cache": true,
+              "series": [
+                {
+                  "entity": "sensor.last_sp_value",
+                  "name": "Effekt",
+                  "type": "column",
+                  "show": {
+                    "datalabels": true
+                  },
+                  "group_by": {
+                    "func": "delta",
+                    "duration": "1h"
+                  }
+                },
+                {
+                  "entity": "sensor.nordpool_kwh_se3_sek_2_10_025",
+                  "name": "Pris",
+                  "stroke_width": 2,
+                  "color": "deepskyblue",
+                  "float_precision": 2,
+                  "data_generator": "return entity.attributes.raw_today.map((p) => {\n  return [new Date(p.start), p.value];\n});\n",
+                  "curve": "stepline"
+                }
+              ],
+              "span": {
+                "end": "hour"
+              },
+              "apex_config": {
+                "yaxis": [
+                  {
+                    "seriesName": "Effekt",
+                    "decimalsInFloat": 1
+                  },
+                  {
+                    "seriesName": "Pris",
+                    "decimalsInFloat": 2,
+                    "max": "~3",
+                    "min": 0,
+                    "opposite": true
+                  }
+                ],
+                "dataLabels": {
+                  "background": {
+                    "foreColor": "rgb(80,80,80)",
+                    "opacity": 0
+                  },
+                  "dropShadow": {
+                    "enabled": true
+                  }
+                }
+              }
+            }
+          ]
+        },
+        {
+          "title": "Husförbrukning",
+          "path": "huset",
+          "icon": "mdi:lightning-bolt-outline",
+          "badges": [],
+          "cards": [
+            {
+              "type": "entity",
+              "entity": "sensor.hem_gen5_electric_consumed_kwh",
+              "name": "Förbrukat (04-21)",
+              "icon": "mdi:power-plug"
+            },
+            {
+              "type": "vertical-stack",
+              "title": "Ström L1-L3 (A)",
+              "cards": [
+                {
+                  "type": "horizontal-stack",
+                  "cards": [
+                    {
+                      "type": "gauge",
+                      "entity": "sensor.hem_gen5_electric_consumed_1",
+                      "max": 20,
+                      "name": "L1",
+                      "min": -12,
+                      "needle": true,
+                      "severity": {
+                        "green": -12,
+                        "yellow": 0,
+                        "red": 10
+                      }
+                    },
+                    {
+                      "type": "gauge",
+                      "entity": "sensor.hem_gen5_electric_consumed_2",
+                      "name": "L2",
+                      "needle": true,
+                      "severity": {
+                        "green": -12,
+                        "yellow": 0,
+                        "red": 10
+                      },
+                      "min": -12,
+                      "max": 20
+                    },
+                    {
+                      "type": "gauge",
+                      "entity": "sensor.hem_gen5_electric_consumed_3",
+                      "max": 20,
+                      "name": "L3",
+                      "min": -12,
+                      "needle": true,
+                      "severity": {
+                        "green": -12,
+                        "yellow": 0,
+                        "red": 10
+                      }
+                    }
+                  ]
+                },
+                {
+                  "type": "custom:apexcharts-card",
+                  "series": [
+                    {
+                      "entity": "sensor.hem_gen5_electric_consumed_1",
+                      "name": "L1"
+                    }
+                  ],
+                  "cache": true,
+                  "graph_span": "9h",
+                  "update_interval": "30s",
+                  "apex_config": {
+                    "stroke": {
+                      "show": true,
+                      "width": 2,
+                      "curve": "stepline"
+                    }
+                  }
+                },
+                {
+                  "type": "custom:apexcharts-card",
+                  "series": [
+                    {
+                      "entity": "sensor.hem_gen5_electric_consumed_2",
+                      "name": "L2",
+                      "color": "DeepSkyBlue"
+                    }
+                  ],
+                  "cache": true,
+                  "graph_span": "9h",
+                  "update_interval": "30s",
+                  "apex_config": {
+                    "stroke": {
+                      "show": true,
+                      "width": 2,
+                      "curve": "stepline"
+                    }
+                  }
+                },
+                {
+                  "type": "custom:apexcharts-card",
+                  "series": [
+                    {
+                      "entity": "sensor.hem_gen5_electric_consumed_3",
+                      "name": "L3",
+                      "color": "red"
+                    }
+                  ],
+                  "cache": true,
+                  "graph_span": "9h",
+                  "update_interval": "30s",
+                  "apex_config": {
+                    "stroke": {
+                      "show": true,
+                      "width": 2,
+                      "curve": "stepline"
+                    }
+                  }
+                }
+              ]
+            },
+            {
+              "type": "custom:apexcharts-card",
+              "header": {
+                "show": true,
+                "title": "Husets förbrukning",
+                "show_states": true,
+                "colorize_states": true
+              },
+              "series": [
+                {
+                  "entity": "sensor.hem_gen5_electric_consumed_kwh",
+                  "name": " ",
+                  "type": "column",
+                  "group_by": {
+                    "func": "delta",
+                    "duration": "23h59m"
+                  }
+                }
+              ],
+              "update_interval": "1h",
+              "apex_config": {
+                "yaxis": {
+                  "min": 0,
+                  "decimalsInFloat": 0
+                }
+              },
+              "graph_span": "7d",
+              "cache": true,
+              "span": {
+                "end": "day"
+              }
+            },
+            {
+              "type": "custom:apexcharts-card",
+              "header": {
+                "show": true,
+                "title": "Nettoförbrukning",
+                "show_states": true
+              },
+              "series": [
+                {
+                  "entity": "sensor.house_net_power_kw",
+                  "name": " ",
+                  "type": "column",
+                  "show": {
+                    "legend_value": true
+                  },
+                  "group_by": {
+                    "func": "avg",
+                    "duration": "1h"
+                  }
+                }
+              ],
+              "update_interval": "1h",
+              "graph_span": "2d",
+              "span": {
+                "end": "day"
+              }
+            },
+            {
+              "type": "custom:apexcharts-card",
+              "header": {
+                "show_states": false
+              },
+              "series": [
+                {
+                  "entity": "sensor.house_power_kw",
+                  "name": " ",
+                  "type": "column",
+                  "show": {
+                    "legend_value": false
+                  },
+                  "group_by": {
+                    "func": "avg",
+                    "duration": "1h"
+                  }
+                },
+                {
+                  "entity": "sensor.last_sp_kw",
+                  "name": " ",
+                  "stroke_width": 3,
+                  "show": {
+                    "legend_value": false
+                  },
+                  "group_by": {
+                    "func": "avg",
+                    "duration": "1h"
+                  }
+                }
+              ],
+              "update_interval": "1h",
+              "graph_span": "1d",
+              "span": {
+                "end": "day"
+              },
+              "apex_config": {
+                "legend": {
+                  "show": false
+                }
+              }
+            },
+            {
+              "type": "custom:apexcharts-card",
+              "header": {
+                "show": true,
+                "title": "Nordpool Pris",
+                "show_states": true
+              },
+              "graph_span": "1d",
+              "span": {
+                "start": "day"
+              },
+              "series": [
+                {
+                  "entity": "sensor.nordpool_kwh_se3_sek_2_10_025",
+                  "name": "Idag",
+                  "stroke_width": 2,
+                  "color": "deepskyblue",
+                  "float_precision": 2,
+                  "data_generator": "return entity.attributes.raw_today.map((p) => {\n  return [new Date(p.start), p.value];\n});\n",
+                  "curve": "stepline",
+                  "show": {
+                    "legend_value": false,
+                    "in_header": false
+                  }
+                },
+                {
+                  "entity": "sensor.nordpool_kwh_se3_sek_2_10_025",
+                  "name": "Imorgon",
+                  "stroke_width": 2,
+                  "color": "yellow",
+                  "float_precision": 2,
+                  "data_generator": "return entity.attributes.raw_tomorrow.map((p) => { \n  let d = new Date(p.start);\n  d.setDate(d.getDate() - 1);\n  return [d, p.value]; });\n",
+                  "curve": "stepline",
+                  "show": {
+                    "legend_value": false,
+                    "in_header": false
+                  }
+                }
+              ],
+              "apex_config": {
+                "yaxis": {
+                  "min": 0,
+                  "decimalsInFloat": 2
+                }
+              }
+            },
+            {
+              "type": "custom:apexcharts-card",
+              "header": {
+                "show": true,
+                "title": "Effekt och temperatur"
+              },
+              "series": [
+                {
+                  "entity": "sensor.house_power_kw",
+                  "type": "line",
+                  "name": "effekt",
+                  "group_by": {
+                    "func": "avg",
+                    "duration": "60m"
+                  }
+                },
+                {
+                  "entity": "sensor.framsidan_temperature",
+                  "type": "line",
+                  "name": "temp",
+                  "color": "SteelBlue"
+                }
+              ],
+              "update_interval": "15m",
+              "graph_span": "1d",
+              "apex_config": {
+                "yaxis": [
+                  {
+                    "seriesName": "effekt",
+                    "decimalsInFloat": 0
+                  },
+                  {
+                    "seriesName": "temp",
+                    "decimalsInFloat": 0,
+                    "opposite": true,
+                    "title": {
+                      "text": "temp"
+                    }
+                  }
+                ],
+                "stroke": {
+                  "show": true,
+                  "width": 2,
+                  "curve": "smooth"
+                }
+              }
+            }
+          ]
         }
+      ]
     }
+  }
 }

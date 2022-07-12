@@ -226,6 +226,22 @@ start_the_car:
     data:
       entity_id: climate.azarel_hvac_climate_system
   mode: single
+charge_the_tesla:
+  alias: Ladda Teslan
+  sequence:
+  - service: rest_command.cn_add_aza_to_queue
+    data: {}
+  - service: notify.mobile_app_op9_pro
+    data:
+      title: Azarel börjar ladda
+      message: Azarel startar ladda med SoC {{ states("sensor.azarel_battery_sensor")
+        }}% och elpriset är {{ states("sensor.nordpool_kwh_se3_sek_2_10_025") }} kr.
+  - service: input_boolean.turn_on
+    data: {}
+    target:
+      entity_id: input_boolean.charge_aza
+  mode: single
+  icon: mdi:ev-station
 tand_sovrummet:
   sequence:
   - service: switch.turn_on
@@ -268,3 +284,35 @@ slack_inne:
   mode: single
   alias: Släck inne
   icon: mdi:lightbulb-group-off-outline
+ladda_zoe:
+  alias: Ladda Zoe
+  sequence:
+  - service: rest_command.cn_add_yxx_to_queue
+    data: {}
+  - service: notify.mobile_app_op9_pro
+    data:
+      message: Fridas bil börjar ladda med SoC {{ states("sensor.zoe_battery_level")
+        }}% och elpriset {{ states("sensor.nordpool_kwh_se3_sek_2_10_025") }} kr.
+      title: Zoe lagd i kö
+  - service: input_boolean.turn_on
+    data: {}
+    target:
+      entity_id: input_boolean.charge_zoe
+  mode: single
+  icon: mdi:ev-station
+ladda_tesla_stoppa:
+  alias: Ladda Tesla, stoppa
+  sequence:
+  - service: rest_command.cn_remove_aza_from_queue
+    data: {}
+  - service: input_boolean.turn_off
+    data: {}
+    target:
+      entity_id: input_boolean.charge_aza
+  - service: notify.mobile_app_op9_pro
+    data:
+      message: Laddningen av Azarel har stoppats.\nSoC {{ states("sensor.azarel_battery_sensor")
+        }}%.\n({{ states("sensor.nordpool_kwh_se3_sek_2_10_025") }} kr)
+      title: Azarel har slutat ladda
+  mode: single
+  icon: mdi:ev-station

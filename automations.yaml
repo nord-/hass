@@ -397,7 +397,7 @@
     entity_id: switch.nexa_5
   mode: single
 - id: '1610304172777'
-  alias: Ladda bilen när <20%
+  alias: Ladda bilen, SoC <20%
   description: ''
   trigger:
   - platform: state
@@ -407,18 +407,17 @@
   - condition: numeric_state
     entity_id: sensor.azarel_battery_sensor
     below: '20'
+  - condition: state
+    entity_id: input_boolean.charge_aza
+    state: 'off'
   action:
-  - service: notify.mobile_app_op9_pro
-    data:
-      message: Ladda bilen! SoC {{ states("sensor.azarel_battery_sensor") }}%.
-      title: Startar laddning av Azarel
-  - service: rest_command.cn_add_aza_to_queue
-    data: {}
   - service: automation.turn_on
     entity_id: automation.laddat_till_20
+  - service: script.charge_the_tesla
+    data: {}
   mode: single
 - id: '1610304940192'
-  alias: Laddat till 20%
+  alias: Ladda bilen, stoppa, SoC ≥20%
   description: ''
   trigger:
   - platform: numeric_state
@@ -433,18 +432,17 @@
   - condition: state
     entity_id: device_tracker.azarel_location_tracker
     state: home
+  - condition: state
+    entity_id: input_boolean.charge_aza
+    state: 'on'
   action:
   - if:
     - condition: state
       entity_id: binary_sensor.low_price
       state: 'off'
     then:
-    - service: rest_command.cn_remove_aza_from_queue
+    - service: script.ladda_tesla_stoppa
       data: {}
-    - service: notify.mobile_app_op9_pro
-      data:
-        message: Azarel har nått SoC {{ states("sensor.azarel_battery_sensor") }}%
-        title: Azarel har slutat ladda
     else:
     - service: notify.mobile_app_op9_pro
       data:
@@ -579,7 +577,7 @@
       title: Motorvärmaren
       message: Sladden verkar inte sitta i...
 - id: '1643056235541'
-  alias: Ladda bilen när det är billigt
+  alias: Ladda bilen, lågt elpris
   description: ''
   trigger:
   - platform: state
@@ -598,43 +596,32 @@
   - condition: state
     entity_id: binary_sensor.low_price
     state: 'on'
-  - condition: numeric_state
-    entity_id: sensor.azarel_energy_added_sensor
-    below: '0.1'
-    enabled: false
   - condition: state
     entity_id: switch.azarel_charger_switch
     state: 'off'
+    enabled: false
   - condition: numeric_state
     entity_id: sensor.azarel_battery_sensor
     above: '19'
+    below: '80'
+  - condition: state
+    entity_id: input_boolean.charge_aza
+    state: 'off'
   action:
-  - service: rest_command.cn_add_aza_to_queue
+  - service: script.charge_the_tesla
     data: {}
-  - service: notify.mobile_app_op9_pro
-    data:
-      title: Azarel börjar ladda
-      message: Azarel startar ladda med SoC {{ states("sensor.azarel_battery_sensor")
-        }}% och elpriset är {{ states("sensor.nordpool_kwh_se3_sek_2_10_025") }} kr.
   mode: single
 - id: '1643296123979'
-  alias: Stoppa laddning av Azarel
+  alias: Ladda bilen, stoppa
   description: ''
   trigger:
   - platform: state
     entity_id: binary_sensor.low_price
     to: 'off'
-  - platform: numeric_state
-    entity_id: sensor.azarel_battery_sensor
-    above: '20'
   condition:
   - condition: state
     entity_id: device_tracker.azarel_location_tracker
     state: home
-  - condition: state
-    entity_id: binary_sensor.azarel_charger_sensor
-    state: 'on'
-    enabled: false
   - condition: numeric_state
     entity_id: sensor.azarel_battery_sensor
     above: '20'
@@ -642,19 +629,14 @@
     entity_id: binary_sensor.low_price
     state: 'off'
   - condition: state
-    entity_id: switch.azarel_charger_switch
+    entity_id: input_boolean.charge_aza
     state: 'on'
   action:
-  - service: notify.mobile_app_op9_pro
-    data:
-      message: Laddningen av Azarel har stoppats pga högt elpris ({{ states("sensor.nordpool_kwh_se3_sek_2_10_025")
-        }} kr). SoC {{ states("sensor.azarel_battery_sensor") }}%.
-      title: Azarel har slutat ladda
-  - service: rest_command.cn_remove_aza_from_queue
+  - service: script.ladda_tesla_stoppa
     data: {}
   mode: single
 - id: '1647968733347'
-  alias: Ladda Fridas bil
+  alias: Ladda Zoe:n
   description: ''
   trigger:
   - platform: time
@@ -664,38 +646,27 @@
     - binary_sensor.low_price
     to: 'on'
   condition:
-  - condition: time
-    weekday:
-    - mon
-    - tue
-    - wed
-    - thu
-    - fri
-  - condition: state
-    entity_id: sensor.zoe_plug_state
-    state: plugged
-    enabled: false
+  - condition: numeric_state
+    entity_id: sensor.zoe_battery_level
+    below: '95'
   - condition: or
     conditions:
     - condition: state
       entity_id: binary_sensor.low_price
       state: 'on'
-    - condition: numeric_state
-      entity_id: sensor.zoe_battery_level
-      below: '80'
-  - condition: not
-    conditions:
-    - condition: state
-      entity_id: binary_sensor.zoe_charging
-      state: 'on'
+    - condition: time
+      weekday:
+      - mon
+      - tue
+      - wed
+      - thu
+      - fri
+  - condition: state
+    entity_id: input_boolean.charge_zoe
+    state: 'off'
   action:
-  - service: rest_command.cn_add_yxx_to_queue
+  - service: script.ladda_zoe
     data: {}
-  - service: notify.mobile_app_op9_pro
-    data:
-      message: Fridas bil börjar ladda med SoC {{ states("sensor.zoe_battery_level")
-        }}% och elpriset {{ states("sensor.nordpool_kwh_se3_sek_2_10_025") }} kr.
-      title: Zoe lagd i kö
   mode: single
 - id: '1652813052285'
   alias: Wall-E fellarm
@@ -713,7 +684,7 @@
       hours: 0
       minutes: 30
       seconds: 0
-    to: Återgår till docka
+    to: returning
   condition:
   - condition: not
     conditions:
@@ -724,7 +695,110 @@
   action:
   - service: notify.mobile_app_op9_pro
     data:
-      message: Fel på gräsklipparen. Batteri {{ state_attr("vacuum.wall_e", "battery_level")
-        }}%.
+      message: Fel på gräsklipparen ({{states("vacuum.wall_e")}}). Batteri {{ state_attr("vacuum.wall_e",
+        "battery_level") }}%.
       title: Wall-E larm
+  mode: single
+- id: '1656709628350'
+  alias: Ladda Zoe:n, klocka
+  description: ''
+  trigger:
+  - platform: time
+    at: input_datetime.zoe_hour
+  condition:
+  - condition: state
+    entity_id: input_boolean.charge_zoe
+    state: 'off'
+  action:
+  - service: script.ladda_zoe
+    data: {}
+  mode: single
+- id: '1657529930391'
+  alias: Morgondagens priser
+  description: ''
+  trigger:
+  - platform: state
+    entity_id:
+    - sensor.nordpool_kwh_se3_sek_2_10_025
+    attribute: tomorrow_valid
+    to: true
+  condition: []
+  action:
+  - service: notify.mobile_app_op9_pro
+    data:
+      message: Nu är morgondagens priser uppdaterade.\n{{ state_attr("sensor.nordpool_kwh_se3_sek_2_10_025","tomorrow")
+        }}
+      title: Elpriset uppdaterat
+  mode: single
+- id: '1657534080615'
+  alias: Ladda Zoe:n, stoppa (uppdatera state)
+  description: ''
+  trigger:
+  - platform: state
+    entity_id:
+    - binary_sensor.zoe_charging
+    from: 'on'
+    to: 'off'
+  condition: []
+  action:
+  - service: input_boolean.turn_off
+    data: {}
+    target:
+      entity_id: input_boolean.charge_zoe
+  mode: single
+- id: '1657535291798'
+  alias: Ladda bilen, stoppa (uppdatera state)
+  description: ''
+  trigger:
+  - platform: state
+    entity_id:
+    - binary_sensor.azarel_charger_sensor
+    from: 'on'
+    to: 'off'
+  condition: []
+  action:
+  - service: input_boolean.turn_off
+    data: {}
+    target:
+      entity_id: input_boolean.charge_aza
+  mode: single
+- id: '1657551301274'
+  alias: Ladda Zoe, aktivera klocka
+  description: ''
+  trigger:
+  - platform: state
+    entity_id:
+    - input_boolean.zoe_use_clock
+    to: 'on'
+  condition: []
+  action:
+  - service: automation.turn_off
+    data: {}
+    target:
+      entity_id: automation.ladda_fridas_bil
+  - service: automation.turn_on
+    data: {}
+    target:
+      entity_id: automation.ladda_zoe_pa_tid
+  mode: single
+- id: '1657551360151'
+  alias: Ladda Zoe, deaktivera klocka
+  description: ''
+  trigger:
+  - platform: state
+    entity_id:
+    - input_boolean.zoe_use_clock
+    to: 'off'
+  condition: []
+  action:
+  - service: automation.turn_off
+    data: {}
+    target:
+      entity_id:
+      - automation.ladda_zoe_pa_tid
+  - service: automation.turn_on
+    data: {}
+    target:
+      entity_id:
+      - automation.ladda_fridas_bil
   mode: single

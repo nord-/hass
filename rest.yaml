@@ -22,7 +22,7 @@ cn_add_yxx_to_queue:
     authorization: !secret cn_rest_authorization
     accept: 'text/plain, application/json, text/json'
   content_type:  'application/json; charset=utf-8'
-  payload: '{ "portId": 511, "userCarId": 423, "departureTime": "{% if (now() > today_at("06:30")) %} {{ int(as_timestamp((now() + timedelta(days=1)).date()) + 6*60*60+1800) | timestamp_local() }} {% else %} {{ as_timestamp(today_at("06:30")) | timestamp_local() }}{% endif %}", "startChargePercentage": {{ states("sensor.zoe_battery_level") | int - 3 }}, "targetChargePercentage": 100 }'
+  payload: '{ "portId": 511, "userCarId": 423, "departureTime": "{% if (now() > today_at("06:30")) %} {{ int(as_timestamp((now() + timedelta(days=1)).date()) + 6*60*60+1800) | timestamp_local() }} {% else %} {{ as_timestamp(today_at("06:30")) | timestamp_local() }}{% endif %}", "startChargePercentage": {{ states("sensor.zoe_battery_level") | int - 6 }}, "targetChargePercentage": 100 }'
 
 cn_remove_yxx_from_queue:
   url: "https://dev-app-cn.azurewebsites.net/chargingbox/site/37/car/423/stop"
