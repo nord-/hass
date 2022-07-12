@@ -132,7 +132,7 @@
               "cards": [
                 {
                   "type": "gauge",
-                  "entity": "sensor.house_power_kw",
+                  "entity": "sensor.template_house_power_kw",
                   "max": 11,
                   "name": "Kons",
                   "min": 0,
@@ -145,7 +145,7 @@
                 {
                   "type": "gauge",
                   "min": 0,
-                  "entity": "sensor.last_sp_kw",
+                  "entity": "sensor.template_last_sp_kw",
                   "max": 8.2,
                   "severity": {
                     "green": 7,
@@ -156,7 +156,7 @@
                 },
                 {
                   "type": "gauge",
-                  "entity": "sensor.house_net_power_kw",
+                  "entity": "sensor.template_house_net_power_kw",
                   "max": 11,
                   "severity": {
                     "green": 2,
@@ -212,7 +212,7 @@
                     },
                     {
                       "type": "gauge",
-                      "entity": "sensor.last_sp_kw",
+                      "entity": "sensor.template_last_sp_kw",
                       "min": 0,
                       "max": 8.2,
                       "name": "☀ Solen",
@@ -635,7 +635,7 @@
               "name": " "
             },
             {
-              "entity": "sensor.sunelevation",
+              "entity": "sensor.template_sunelevation",
               "name": " "
             },
             {
@@ -849,7 +849,7 @@
                     },
                     {
                       "type": "gauge",
-                      "entity": "sensor.car1_charging_rate",
+                      "entity": "sensor.template_car1_charging_rate",
                       "min": 0,
                       "max": 11,
                       "name": " ",
@@ -878,7 +878,7 @@
                   "type": "glance",
                   "entities": [
                     {
-                      "entity": "sensor.aza_mileage"
+                      "entity": "sensor.template_aza_mileage"
                     },
                     {
                       "entity": "binary_sensor.azarel_charger_sensor",
@@ -886,7 +886,7 @@
                       "icon": "mdi:ev-plug-type2"
                     },
                     {
-                      "entity": "sensor.aza_last_update",
+                      "entity": "sensor.template_aza_last_update",
                       "name": "Uppdaterad",
                       "icon": "mdi:clock"
                     }
@@ -1060,14 +1060,14 @@
               "type": "horizontal-stack",
               "cards": [
                 {
-                  "entity": "sensor.last_sp_kw",
+                  "entity": "sensor.template_last_sp_kw",
                   "max": 8.2,
                   "min": 0,
                   "name": "Effekt",
                   "type": "gauge"
                 },
                 {
-                  "entity": "sensor.last_sp_value",
+                  "entity": "sensor.template_last_sp_value",
                   "max": 70,
                   "name": "Energi",
                   "type": "gauge"
@@ -1097,7 +1097,7 @@
               },
               "series": [
                 {
-                  "entity": "sensor.last_sp_kw",
+                  "entity": "sensor.template_last_sp_kw",
                   "color": "lightgreen",
                   "stroke_width": 2,
                   "group_by": {
@@ -1114,7 +1114,7 @@
               "cache": true,
               "series": [
                 {
-                  "entity": "sensor.last_sp_value",
+                  "entity": "sensor.template_last_sp_value",
                   "type": "column",
                   "show": {
                     "datalabels": true
@@ -1153,7 +1153,7 @@
               "cache": true,
               "series": [
                 {
-                  "entity": "sensor.last_sp_value",
+                  "entity": "sensor.template_last_sp_value",
                   "name": "Effekt",
                   "type": "column",
                   "show": {
@@ -1366,7 +1366,7 @@
               },
               "series": [
                 {
-                  "entity": "sensor.house_net_power_kw",
+                  "entity": "sensor.template_house_net_power_kw",
                   "name": " ",
                   "type": "column",
                   "show": {
@@ -1391,7 +1391,7 @@
               },
               "series": [
                 {
-                  "entity": "sensor.house_power_kw",
+                  "entity": "sensor.template_house_power_kw",
                   "name": " ",
                   "type": "column",
                   "show": {
@@ -1403,7 +1403,7 @@
                   }
                 },
                 {
-                  "entity": "sensor.last_sp_kw",
+                  "entity": "sensor.template_last_sp_kw",
                   "name": " ",
                   "stroke_width": 3,
                   "show": {
@@ -1480,7 +1480,7 @@
               },
               "series": [
                 {
-                  "entity": "sensor.house_power_kw",
+                  "entity": "sensor.template_house_power_kw",
                   "type": "line",
                   "name": "effekt",
                   "group_by": {

@@ -4,7 +4,7 @@
     unit_of_measurement: "kWh"
     device_class: energy
     state_class: measurement
-    state: "{{ states('sensor.last_sp_value') }}"
+    state: "{{ states('sensor.template_last_sp_value') }}"
     attributes:
       friendly_name: "Fronius solenergi"
 
