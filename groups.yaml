@@ -23,7 +23,8 @@ gastrummet:
 hallen:
   name: Hallen
   entities:
-    - switch.telldus_1
+#    - switch.telldus_1
+    - switch.cleverio_zw_plug_1
     
 koket:
   name: Köket

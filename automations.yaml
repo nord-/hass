@@ -666,11 +666,9 @@
   action:
   - service: notify.mobile_app_op9_pro
     data:
-      message: 'Nu är morgondagens priser uppdaterade.\nPriset, genomsnitt: {{state_attr("sensor.nordpool_kwh_se3_sek_2_10_025",
-        "average") | float | round(2) }}, min: {{state_attr("sensor.nordpool_kwh_se3_sek_2_10_025",
-        "min") | float | round(2) }}, max: {{state_attr("sensor.nordpool_kwh_se3_sek_2_10_025",
-        "max") | float | round(2) }}\n{{ state_attr("sensor.nordpool_kwh_se3_sek_2_10_025","tomorrow")
-        }}'
+      message: 'Nu är morgondagens priser uppdaterade.\nPriset, genomsnitt: {{states("sensor.template_nordpool_tomorrow_avg")}},
+        min: {{states("sensor.template_nordpool_tomorrow_min")}}, max: {{states("sensor.template_nordpool_tomorrow_max")}}\n
+        {{state_attr("sensor.nordpool_kwh_se3_sek_2_10_025","tomorrow")}}'
       title: Elpriset uppdaterat
   mode: single
 - id: '1657534080615'

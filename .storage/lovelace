@@ -1149,7 +1149,7 @@
                   "cards": [
                     {
                       "type": "gauge",
-                      "entity": "sensor.hem_gen5_electric_consumed_1",
+                      "entity": "sensor.template_net_current_l1",
                       "max": 20,
                       "name": "L1",
                       "min": -12,
@@ -1162,7 +1162,7 @@
                     },
                     {
                       "type": "gauge",
-                      "entity": "sensor.hem_gen5_electric_consumed_2",
+                      "entity": "sensor.template_net_current_l2",
                       "name": "L2",
                       "needle": true,
                       "severity": {
@@ -1175,7 +1175,7 @@
                     },
                     {
                       "type": "gauge",
-                      "entity": "sensor.hem_gen5_electric_consumed_3",
+                      "entity": "sensor.template_net_current_l3",
                       "max": 20,
                       "name": "L3",
                       "min": -12,
@@ -1192,7 +1192,7 @@
                   "type": "custom:apexcharts-card",
                   "series": [
                     {
-                      "entity": "sensor.hem_gen5_electric_consumed_1",
+                      "entity": "sensor.template_net_current_l1",
                       "name": "L1"
                     }
                   ],
@@ -1211,7 +1211,7 @@
                   "type": "custom:apexcharts-card",
                   "series": [
                     {
-                      "entity": "sensor.hem_gen5_electric_consumed_2",
+                      "entity": "sensor.template_net_current_l2",
                       "name": "L2",
                       "color": "DeepSkyBlue"
                     }
@@ -1231,7 +1231,7 @@
                   "type": "custom:apexcharts-card",
                   "series": [
                     {
-                      "entity": "sensor.hem_gen5_electric_consumed_3",
+                      "entity": "sensor.template_net_current_l3",
                       "name": "L3",
                       "color": "red"
                     }
