@@ -319,33 +319,38 @@
       hours: 0
       minutes: 1
       seconds: 0
-      milliseconds: 0
   - platform: state
-    entity_id: sensor.yrwthr
+    entity_id:
+    - sensor.template_yrwthr
     to: 'True'
   - platform: numeric_state
-    entity_id: sensor.aktuell_effekt
+    entity_id: sensor.template_fronius_solar_power
     below: '0.4'
-    for: 00:05:00
+    for:
+      hours: 0
+      minutes: 5
+      seconds: 0
+      milliseconds: 0
   condition:
   - condition: numeric_state
     entity_id: sun.sun
-    value_template: '{{ state.attributes.elevation }}'
     above: 5
+    attribute: elevation
   - condition: state
     entity_id: group.my_people
     state: home
   - condition: numeric_state
-    entity_id: sensor.aktuell_effekt
+    entity_id: sensor.template_fronius_solar_power
     below: 0.4
   - condition: state
-    entity_id: sensor.yrwthr
+    entity_id: sensor.template_yrwthr
     state: 'True'
   - condition: numeric_state
     entity_id: sensor.yr_cloudiness
     above: '79'
   action:
   - service: script.turn_on_general_lights
+    data: {}
   mode: single
 - id: '1603878294613'
   alias: Mulet (släck)
@@ -361,17 +366,22 @@
     below: 80
     for: 00:10:00
   - platform: state
-    entity_id: sensor.yrwthr
+    entity_id:
+    - sensor.template_yrwthr
     to: 'False'
   - platform: numeric_state
-    entity_id: sensor.aktuell_effekt
+    entity_id: sensor.template_fronius_solar_power
     above: '0.5'
-    for: 00:05:00
+    for:
+      hours: 0
+      minutes: 5
+      seconds: 0
+      milliseconds: 0
   condition:
   - condition: numeric_state
     entity_id: sun.sun
-    value_template: '{{ state.attributes.elevation }}'
     above: 5
+    attribute: elevation
   action:
   - data: {}
     service: script.turn_off_general_lights
@@ -410,6 +420,9 @@
   - condition: state
     entity_id: input_boolean.charge_aza
     state: 'off'
+  - condition: state
+    entity_id: device_tracker.azarel_location_tracker
+    state: home
   action:
   - service: automation.turn_on
     entity_id: automation.laddat_till_20
@@ -504,78 +517,6 @@
   - service: script.early_morning_lights_on
     data: {}
   mode: single
-- alias: Motorvärmare - slå på
-  id: '20220118091401'
-  trigger:
-    platform: template
-    value_template: '{{ (states.sensor.time.state >= states.sensor.heater_activationtime.state)
-      and (states.sensor.time.state <= states.sensor.heater_departuretime.state) and
-      (states.switch.popp_outdoor.state == "off") }}'
-  action:
-  - service: homeassistant.turn_on
-    entity_id: switch.popp_outdoor
-  condition:
-  - condition: time
-    weekday:
-    - mon
-    - tue
-    - wed
-    - thu
-    - fri
-- alias: Motorvärmare - slå av
-  id: '20220118091400'
-  trigger:
-    platform: template
-    value_template: '{{ states.sensor.heater_departuretime.state == states.sensor.time.state
-      }}'
-  action:
-  - delay:
-      minutes: '{{ states(''input_number.heater_delay'') | int }}'
-  - service: homeassistant.turn_off
-    entity_id: switch.popp_outdoor
-- id: '20220118091300'
-  alias: Motorvärmare - precheck activate
-  trigger:
-  - platform: time
-    at: '21:00'
-  condition:
-  - condition: state
-    entity_id: automation.motorvarmare_sla_pa
-    state: 'on'
-  - condition: time
-    weekday:
-    - mon
-    - tue
-    - wed
-    - thu
-    - fri
-  action:
-  - service: homeassistant.turn_on
-    entity_id: switch.popp_outdoor
-  - delay:
-      seconds: 10
-  - service: homeassistant.turn_off
-    entity_id: switch.popp_outdoor
-- id: '20220118091301'
-  alias: Motorvärmare - precheck measure
-  trigger:
-  - platform: state
-    entity_id: switch.popp_outdoor
-    to: 'on'
-    for:
-      seconds: 5
-  condition:
-  - condition: template
-    value_template: '{{ states.sensor.popp_outdoor_power.state|int < 100 }}'
-  action:
-  - service: notify.mobile_app_op9pro
-    data:
-      message: Sladden sitter inte i...
-      title: Motorvärmaren
-  - service: notify.mobile_app_sm_g950f
-    data:
-      title: Motorvärmaren
-      message: Sladden verkar inte sitta i...
 - id: '1643056235541'
   alias: Ladda bilen, lågt elpris
   description: ''
@@ -719,15 +660,17 @@
   trigger:
   - platform: state
     entity_id:
-    - sensor.nordpool_kwh_se3_sek_2_10_025
-    attribute: tomorrow_valid
-    to: true
+    - binary_sensor.template_nordpool_tomorrow_valid
+    to: 'on'
   condition: []
   action:
   - service: notify.mobile_app_op9_pro
     data:
-      message: Nu är morgondagens priser uppdaterade.\n{{ state_attr("sensor.nordpool_kwh_se3_sek_2_10_025","tomorrow")
-        }}
+      message: 'Nu är morgondagens priser uppdaterade.\nPriset, genomsnitt: {{state_attr("sensor.nordpool_kwh_se3_sek_2_10_025",
+        "average") | float | round(2) }}, min: {{state_attr("sensor.nordpool_kwh_se3_sek_2_10_025",
+        "min") | float | round(2) }}, max: {{state_attr("sensor.nordpool_kwh_se3_sek_2_10_025",
+        "max") | float | round(2) }}\n{{ state_attr("sensor.nordpool_kwh_se3_sek_2_10_025","tomorrow")
+        }}'
       title: Elpriset uppdaterat
   mode: single
 - id: '1657534080615'
@@ -738,6 +681,10 @@
     entity_id:
     - binary_sensor.zoe_charging
     from: 'on'
+    to: 'off'
+  - platform: state
+    entity_id:
+    - binary_sensor.zoe_plugged_in
     to: 'off'
   condition: []
   action:
@@ -801,4 +748,56 @@
     target:
       entity_id:
       - automation.ladda_fridas_bil
+  mode: single
+- id: '1657732972960'
+  alias: Ladda Zoe, inkopplad
+  description: ''
+  trigger:
+  - platform: state
+    entity_id:
+    - binary_sensor.zoe_plugged_in
+    to: 'on'
+  condition: []
+  action:
+  - if:
+    - condition: state
+      entity_id: input_boolean.zoe_use_clock
+      state: 'on'
+    then:
+    - service: automation.turn_on
+      data: {}
+      target:
+        entity_id: automation.ladda_zoe_pa_tid
+    - service: automation.turn_off
+      data: {}
+      target:
+        entity_id: automation.ladda_fridas_bil
+    else:
+    - service: automation.turn_on
+      data: {}
+      target:
+        entity_id: automation.ladda_fridas_bil
+    - service: automation.turn_off
+      data: {}
+      target:
+        entity_id: automation.ladda_zoe_pa_tid
+  mode: single
+- id: '1657734004303'
+  alias: Ladda Zoe, bilen kör
+  description: ''
+  trigger:
+  - platform: state
+    entity_id:
+    - sensor.zoe_battery_level
+  condition:
+  - condition: template
+    value_template: '{{ trigger.to_state.state | int < trigger.from_state.state |
+      int }}'
+  action:
+  - service: automation.turn_off
+    data: {}
+    target:
+      entity_id:
+      - automation.ladda_fridas_bil
+      - automation.ladda_zoe_pa_tid
   mode: single

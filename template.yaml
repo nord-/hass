@@ -116,3 +116,6 @@
     attributes:
       friendly_name: "Solvinkel"
 
+- binary_sensor:
+  - unique_id: nordpool_tomorrow_valid
+    state: "{{ state_attr('sensor.nordpool_kwh_se3_sek_2_10_025', 'tomorrow_valid') }}"

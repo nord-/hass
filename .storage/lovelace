@@ -30,14 +30,6 @@
           ],
           "cards": [
             {
-              "hours_to_show": 24,
-              "graph": "line",
-              "entity": "sensor.framsidan_temperature",
-              "type": "sensor",
-              "detail": 2,
-              "name": "Trappan"
-            },
-            {
               "cards": [
                 {
                   "cards": [
@@ -128,67 +120,6 @@
               "type": "vertical-stack"
             },
             {
-              "type": "horizontal-stack",
-              "cards": [
-                {
-                  "type": "gauge",
-                  "entity": "sensor.template_house_power_kw",
-                  "max": 11,
-                  "name": "Kons",
-                  "min": 0,
-                  "severity": {
-                    "green": 0,
-                    "yellow": 4,
-                    "red": 7
-                  }
-                },
-                {
-                  "type": "gauge",
-                  "min": 0,
-                  "entity": "sensor.template_fronius_solar_power",
-                  "max": 8.2,
-                  "severity": {
-                    "green": 7,
-                    "yellow": 4,
-                    "red": 0
-                  },
-                  "name": "Prod"
-                },
-                {
-                  "type": "gauge",
-                  "entity": "sensor.template_house_net_power_kw",
-                  "max": 11,
-                  "severity": {
-                    "green": 2,
-                    "yellow": -2,
-                    "red": -11
-                  },
-                  "min": -11,
-                  "name": "Netto",
-                  "needle": true
-                },
-                {
-                  "type": "gauge",
-                  "entity": "sensor.nordpool_kwh_se3_sek_2_10_025",
-                  "min": 0,
-                  "max": 1.5,
-                  "severity": {
-                    "green": 0,
-                    "yellow": 0.4,
-                    "red": 0.8
-                  },
-                  "unit": "kr",
-                  "name": "Elpriset"
-                }
-              ]
-            }
-          ]
-        },
-        {
-          "icon": "mdi:home-heart",
-          "badges": [],
-          "cards": [
-            {
               "type": "vertical-stack",
               "cards": [
                 {
@@ -196,31 +127,19 @@
                   "cards": [
                     {
                       "hours_to_show": 24,
-                      "graph": "none",
+                      "graph": "line",
                       "type": "sensor",
                       "entity": "sensor.framsidan_temperature",
                       "name": "Trappan",
-                      "detail": 1
+                      "detail": 2
                     },
                     {
                       "hours_to_show": 24,
-                      "graph": "none",
+                      "graph": "line",
                       "type": "sensor",
                       "entity": "sensor.altan_temperature",
                       "name": "Altanen",
-                      "detail": 1
-                    },
-                    {
-                      "type": "gauge",
-                      "entity": "sensor.template_fronius_solar_power",
-                      "min": 0,
-                      "max": 8.2,
-                      "name": "☀ Solen",
-                      "severity": {
-                        "green": 7,
-                        "yellow": 4,
-                        "red": 0
-                      }
+                      "detail": 2
                     }
                   ]
                 },
@@ -232,87 +151,75 @@
               ]
             },
             {
-              "type": "horizontal-stack",
-              "cards": [
-                {
-                  "entity": "script.turn_on_general_lights",
-                  "hold_action": {
-                    "action": "none"
-                  },
-                  "icon": "mdi:lightbulb-on",
-                  "tap_action": {
-                    "action": "toggle"
-                  },
-                  "type": "entity-button",
-                  "show_name": false
-                },
-                {
-                  "entity": "script.turn_off_general_lights",
-                  "hold_action": {
-                    "action": "none"
-                  },
-                  "icon": "mdi:lightbulb-off-outline",
-                  "tap_action": {
-                    "action": "toggle"
-                  },
-                  "type": "entity-button",
-                  "show_name": false
-                }
-              ]
-            },
-            {
-              "type": "custom:apexcharts-card",
-              "header": {
-                "show": true,
-                "title": "Elpriset",
-                "show_states": true
-              },
-              "graph_span": "2d",
-              "span": {
-                "start": "day"
-              },
-              "series": [
-                {
-                  "entity": "sensor.nordpool_kwh_se3_sek_2_10_025",
-                  "name": "Idag",
-                  "stroke_width": 3,
-                  "color": "deepskyblue",
-                  "float_precision": 2,
-                  "data_generator": "return entity.attributes.raw_today.map((p) => {\n  return [new Date(p.start), p.value];\n});\n",
-                  "type": "column",
-                  "show": {
-                    "legend_value": false,
-                    "in_header": false
-                  }
-                },
-                {
-                  "entity": "sensor.nordpool_kwh_se3_sek_2_10_025",
-                  "name": "Imorgon",
-                  "stroke_width": 3,
-                  "color": "green",
-                  "float_precision": 2,
-                  "data_generator": "return entity.attributes.raw_tomorrow.map((p) => { \n  let d = new Date(p.start);\n  //d.setMinutes(d.getMinutes()+59);\n  return [d, p.value]; });\n",
-                  "type": "column",
-                  "show": {
-                    "legend_value": false,
-                    "in_header": false
-                  }
-                }
-              ],
-              "apex_config": {
-                "yaxis": {
-                  "min": 0,
-                  "decimalsInFloat": 2
-                }
-              }
-            },
-            {
               "type": "calendar",
               "entities": [
                 "calendar.family"
               ],
               "initial_view": "listWeek",
               "title": "Händer i veckan"
+            },
+            {
+              "type": "vertical-stack",
+              "cards": [
+                {
+                  "type": "entity",
+                  "entity": "sensor.template_nordpool_current_price"
+                },
+                {
+                  "type": "custom:apexcharts-card",
+                  "header": {
+                    "show": false,
+                    "title": "Nordpool Pris",
+                    "show_states": true
+                  },
+                  "graph_span": "1d",
+                  "span": {
+                    "start": "day"
+                  },
+                  "series": [
+                    {
+                      "entity": "sensor.nordpool_kwh_se3_sek_2_10_025",
+                      "name": "Idag",
+                      "stroke_width": 2,
+                      "color": "deepskyblue",
+                      "float_precision": 2,
+                      "data_generator": "return entity.attributes.raw_today.map((p) => {\n  return [new Date(p.start), p.value];\n});\n",
+                      "curve": "stepline",
+                      "show": {
+                        "legend_value": false,
+                        "in_header": false
+                      }
+                    },
+                    {
+                      "entity": "sensor.nordpool_kwh_se3_sek_2_10_025",
+                      "name": "Imorgon",
+                      "stroke_width": 2,
+                      "color": "yellow",
+                      "float_precision": 2,
+                      "data_generator": "return entity.attributes.raw_tomorrow.map((p) => { \n  let d = new Date(p.start);\n  d.setDate(d.getDate() - 1);\n  return [d, p.value]; });\n",
+                      "curve": "stepline",
+                      "show": {
+                        "legend_value": false,
+                        "in_header": false
+                      }
+                    }
+                  ],
+                  "apex_config": {
+                    "yaxis": {
+                      "min": 0,
+                      "decimalsInFloat": 2
+                    }
+                  }
+                },
+                {
+                  "type": "custom:power-flow-card",
+                  "entities": {
+                    "solar": "sensor.template_fronius_solar_power",
+                    "grid": "sensor.template_house_net_power_kw"
+                  },
+                  "inverted_entities": "grid"
+                }
+              ]
             }
           ]
         },
@@ -356,13 +263,18 @@
             {
               "entities": [
                 {
-                  "entity": "switch.nexa_3"
+                  "entity": "switch.nexa_3",
+                  "name": "Rickard",
+                  "icon": "mdi:wall-sconce"
                 },
                 {
-                  "entity": "switch.nexa_4"
+                  "entity": "switch.nexa_4",
+                  "name": "Frida",
+                  "icon": "mdi:wall-sconce"
                 },
                 {
-                  "entity": "switch.nexa_1"
+                  "entity": "switch.nexa_1",
+                  "icon": "mdi:led-strip-variant"
                 }
               ],
               "show_header_toggle": true,
@@ -513,10 +425,13 @@
             {
               "entities": [
                 {
-                  "entity": "switch.telldus_3"
+                  "entity": "switch.telldus_3",
+                  "icon": "mdi:lamp"
                 },
                 {
-                  "entity": "switch.rusta25b"
+                  "entity": "switch.rusta25b",
+                  "icon": "mdi:lamp",
+                  "name": "Byrån"
                 }
               ],
               "type": "entities",
@@ -655,13 +570,18 @@
             {
               "entities": [
                 {
-                  "entity": "switch.an179_1"
+                  "entity": "switch.an179_1",
+                  "name": "Vindskyddet",
+                  "icon": "mdi:wall-sconce-round"
                 },
                 {
-                  "entity": "switch.telldusout1"
+                  "entity": "switch.telldusout1",
+                  "name": "Altanväggen",
+                  "icon": "mdi:string-lights"
                 },
                 {
-                  "entity": "switch.nexa_out_1"
+                  "entity": "switch.nexa_out_1",
+                  "icon": "mdi:string-lights"
                 },
                 {
                   "entity": "light.shelly1_1"
@@ -790,11 +710,14 @@
             {
               "entities": [
                 {
-                  "entity": "switch.telldus_1"
+                  "entity": "switch.cleverio_zw_plug_1",
+                  "name": "Hallbyrån",
+                  "icon": "mdi:lamp"
                 },
                 {
                   "entity": "switch.tz1",
-                  "name": "Grovköket"
+                  "name": "Grovköket",
+                  "icon": "mdi:desk-lamp"
                 }
               ],
               "show_header_toggle": false,
@@ -1067,7 +990,7 @@
                   "type": "gauge"
                 },
                 {
-                  "entity": "sensor.template_fronius_solar_energy",
+                  "entity": "sensor.template_fronius_solar_daily_energy",
                   "max": 70,
                   "name": "Energi",
                   "type": "gauge"
@@ -1098,6 +1021,7 @@
               "series": [
                 {
                   "entity": "sensor.template_fronius_solar_power",
+                  "name": " ",
                   "color": "lightgreen",
                   "stroke_width": 2,
                   "group_by": {
@@ -1114,7 +1038,7 @@
               "cache": true,
               "series": [
                 {
-                  "entity": "sensor.template_fronius_solar_energy",
+                  "entity": "sensor.template_fronius_solar_daily_energy",
                   "type": "column",
                   "show": {
                     "datalabels": true
@@ -1423,52 +1347,6 @@
               "apex_config": {
                 "legend": {
                   "show": false
-                }
-              }
-            },
-            {
-              "type": "custom:apexcharts-card",
-              "header": {
-                "show": true,
-                "title": "Nordpool Pris",
-                "show_states": true
-              },
-              "graph_span": "1d",
-              "span": {
-                "start": "day"
-              },
-              "series": [
-                {
-                  "entity": "sensor.nordpool_kwh_se3_sek_2_10_025",
-                  "name": "Idag",
-                  "stroke_width": 2,
-                  "color": "deepskyblue",
-                  "float_precision": 2,
-                  "data_generator": "return entity.attributes.raw_today.map((p) => {\n  return [new Date(p.start), p.value];\n});\n",
-                  "curve": "stepline",
-                  "show": {
-                    "legend_value": false,
-                    "in_header": false
-                  }
-                },
-                {
-                  "entity": "sensor.nordpool_kwh_se3_sek_2_10_025",
-                  "name": "Imorgon",
-                  "stroke_width": 2,
-                  "color": "yellow",
-                  "float_precision": 2,
-                  "data_generator": "return entity.attributes.raw_tomorrow.map((p) => { \n  let d = new Date(p.start);\n  d.setDate(d.getDate() - 1);\n  return [d, p.value]; });\n",
-                  "curve": "stepline",
-                  "show": {
-                    "legend_value": false,
-                    "in_header": false
-                  }
-                }
-              ],
-              "apex_config": {
-                "yaxis": {
-                  "min": 0,
-                  "decimalsInFloat": 2
                 }
               }
             },
