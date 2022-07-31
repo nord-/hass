@@ -91,7 +91,6 @@
     state: "{{ ((states('sensor.hem_gen5_electric_consumed_w') | float(0)) / (-1000)) | round(2) }}"
     attributes:
       friendly_name: "Husets nettoeffekt"
-      
 - sensor:
   - unique_id: house_power_kw
     unit_of_measurement: "kW"
@@ -103,37 +102,47 @@
     attributes:
       friendly_name: "Husets effekt"
 - sensor:
-  - unique_id: solar_current_per_phase
-    unit_of_measurement: "A"
-    device_class: current
-    state_class: measurement
-    state: "{{states('sensor.current_ac_fronius_inverter_1_192_168_2_31') | float(default=0.0) / 3}}"
+  - unique_id: house_net_energy_kwh
+    unit_of_measurement: "kWh"
+    device_class: energy
+    state_class: total_increasing
+    state: >-
+      {{ states('sensor.hem_gen5_electric_consumed_kwh') | float + ((states('sensor.energy_total_fronius_inverter_1_192_168_2_31') | float(default=0.0) / 1000.0) | float) }}
     attributes:
-      friendly_name: "Fronius, ström per fas"
-- sensor:
-  - unique_id: net_current_l1
-    unit_of_measurement: "A"
-    device_class: current
-    state_class: measurement
-    state: "{{states('sensor.hem_gen5_electric_consumed_1') | float - states('sensor.template_solar_current_per_phase') | float}}"
-    attributes:
-      friendly_name: "Nettoström L1"
-- sensor:
-  - unique_id: net_current_l2
-    unit_of_measurement: "A"
-    device_class: current
-    state_class: measurement
-    state: "{{states('sensor.hem_gen5_electric_consumed_2') | float - states('sensor.template_solar_current_per_phase') | float}}"
-    attributes:
-      friendly_name: "Nettoström L2"
-- sensor:
-  - unique_id: net_current_l3
-    unit_of_measurement: "A"
-    device_class: current
-    state_class: measurement
-    state: "{{states('sensor.hem_gen5_electric_consumed_3') | float - states('sensor.template_solar_current_per_phase') | float}}"
-    attributes:
-      friendly_name: "Nettoström L3"
+      friendly_name: "Husets nettoenergi"
+
+# - sensor:
+#   - unique_id: solar_current_per_phase
+#     unit_of_measurement: "A"
+#     device_class: current
+#     state_class: measurement
+#     state: "{{states('sensor.current_ac_fronius_inverter_1_192_168_2_31') | float(default=0.0) / 3}}"
+#     attributes:
+#       friendly_name: "Fronius, ström per fas"
+# - sensor:
+#   - unique_id: net_current_l1
+#     unit_of_measurement: "A"
+#     device_class: current
+#     state_class: measurement
+#     state: "{{states('sensor.hem_gen5_electric_consumed_1') | float - states('sensor.template_solar_current_per_phase') | float}}"
+#     attributes:
+#       friendly_name: "Nettoström L1"
+# - sensor:
+#   - unique_id: net_current_l2
+#     unit_of_measurement: "A"
+#     device_class: current
+#     state_class: measurement
+#     state: "{{states('sensor.hem_gen5_electric_consumed_2') | float - states('sensor.template_solar_current_per_phase') | float}}"
+#     attributes:
+#       friendly_name: "Nettoström L2"
+# - sensor:
+#   - unique_id: net_current_l3
+#     unit_of_measurement: "A"
+#     device_class: current
+#     state_class: measurement
+#     state: "{{states('sensor.hem_gen5_electric_consumed_3') | float - states('sensor.template_solar_current_per_phase') | float}}"
+#     attributes:
+#       friendly_name: "Nettoström L3"
 
 
 - sensor:

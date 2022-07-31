@@ -215,9 +215,8 @@
                   "type": "custom:power-flow-card",
                   "entities": {
                     "solar": "sensor.template_fronius_solar_power",
-                    "grid": "sensor.template_house_net_power_kw"
-                  },
-                  "inverted_entities": "grid"
+                    "grid": "sensor.hem_gen5_electric_consumed_w"
+                  }
                 }
               ]
             }
@@ -1084,7 +1083,7 @@
                     "datalabels": true
                   },
                   "group_by": {
-                    "func": "delta",
+                    "func": "avg",
                     "duration": "1h"
                   }
                 },
@@ -1149,7 +1148,7 @@
                   "cards": [
                     {
                       "type": "gauge",
-                      "entity": "sensor.template_net_current_l1",
+                      "entity": "sensor.hem_gen5_electric_consumed_1",
                       "max": 20,
                       "name": "L1",
                       "min": -12,
@@ -1162,7 +1161,7 @@
                     },
                     {
                       "type": "gauge",
-                      "entity": "sensor.template_net_current_l2",
+                      "entity": "sensor.hem_gen5_electric_consumed_2",
                       "name": "L2",
                       "needle": true,
                       "severity": {
@@ -1175,7 +1174,7 @@
                     },
                     {
                       "type": "gauge",
-                      "entity": "sensor.template_net_current_l3",
+                      "entity": "sensor.hem_gen5_electric_consumed_3",
                       "max": 20,
                       "name": "L3",
                       "min": -12,
@@ -1192,7 +1191,7 @@
                   "type": "custom:apexcharts-card",
                   "series": [
                     {
-                      "entity": "sensor.template_net_current_l1",
+                      "entity": "sensor.hem_gen5_electric_consumed_1",
                       "name": "L1"
                     }
                   ],
@@ -1211,7 +1210,7 @@
                   "type": "custom:apexcharts-card",
                   "series": [
                     {
-                      "entity": "sensor.template_net_current_l2",
+                      "entity": "sensor.hem_gen5_electric_consumed_2",
                       "name": "L2",
                       "color": "DeepSkyBlue"
                     }
@@ -1231,7 +1230,7 @@
                   "type": "custom:apexcharts-card",
                   "series": [
                     {
-                      "entity": "sensor.template_net_current_l3",
+                      "entity": "sensor.hem_gen5_electric_consumed_3",
                       "name": "L3",
                       "color": "red"
                     }
@@ -1259,12 +1258,12 @@
               },
               "series": [
                 {
-                  "entity": "sensor.hem_gen5_electric_consumed_kwh",
+                  "entity": "sensor.template_house_net_energy_kwh",
                   "name": " ",
                   "type": "column",
                   "group_by": {
                     "func": "delta",
-                    "duration": "23h59m"
+                    "duration": "1d"
                   }
                 }
               ],
@@ -1327,7 +1326,7 @@
                   }
                 },
                 {
-                  "entity": "sensor.template_last_sp_kw",
+                  "entity": "sensor.template_fronius_solar_power",
                   "name": " ",
                   "stroke_width": 3,
                   "show": {

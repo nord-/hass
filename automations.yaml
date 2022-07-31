@@ -610,7 +610,7 @@
     data: {}
   mode: single
 - id: '1652813052285'
-  alias: Wall-E fellarm
+  alias: Wall-E, fellarm
   description: ''
   trigger:
   - platform: state
@@ -798,4 +798,20 @@
       entity_id:
       - automation.ladda_fridas_bil
       - automation.ladda_zoe_pa_tid
+  mode: single
+- id: '1659106208657'
+  alias: Wall-E, dags att byta blad
+  description: ''
+  trigger:
+  - platform: numeric_state
+    entity_id: vacuum.wall_e
+    attribute: current_blade_time
+    above: '10000'
+  condition: []
+  action:
+  - service: notify.mobile_app_op9_pro
+    data:
+      title: Dags att byta knivar på Wall-E
+      message: Bladen har använts i {{ (state_attr("vacuum.wall_e","current_blade_time")
+        | int / 60) | round(0) }} timmar.
   mode: single
