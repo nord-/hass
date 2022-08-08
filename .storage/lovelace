@@ -373,7 +373,7 @@
                   "icon": "mdi:lamp"
                 },
                 {
-                  "entity": "switch.rusta15e",
+                  "entity": "switch.telldus_1",
                   "icon": "mdi:lamp"
                 }
               ],
@@ -1258,7 +1258,7 @@
               },
               "series": [
                 {
-                  "entity": "sensor.template_house_net_energy_kwh",
+                  "entity": "sensor.hem_gen5_electric_consumed_kwh",
                   "name": " ",
                   "type": "column",
                   "group_by": {

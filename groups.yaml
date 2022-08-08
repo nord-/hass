@@ -18,7 +18,7 @@ gastrummet:
   name: Spelrummet
   entities:
 #    - switch.tz1
-    - switch.Rusta15E
+    - switch.telldus_1
     
 hallen:
   name: Hallen

@@ -35,23 +35,19 @@
       friendly_name: "Aktuellt elpris"
     
 - sensor:
-  - unique_id: last_sp_value
+  - unique_id: last_solarenergy_value
     unit_of_measurement: 'kWh'
-    # entity_id: sensor.total_energi_idag
+    device_class: energy
+    state_class: total_increasing
     state: >-
-      {% if is_state('sensor.total_energi_idag', 'unavailable') or is_state('sensor.total_energi_idag', 'unknown') %}
-        {{ states("sensor.last_sp_value") }}
-      {% elif state_attr('sun.sun', 'rising') == true and state_attr('sun.sun', 'elevation')|float > -5 %}
-        {{ states('sensor.total_energi_idag')|float(0) }}
-      {% elif states('sensor.total_energi_idag')|float(0) > states('sensor.last_sp_value')|float(0) %}
-        {{ states('sensor.total_energi_idag')|float(0) }}
+      {% if is_state('sensor.energy_total_fronius_inverter_1_192_168_2_31', 'unavailable') or is_state('sensor.energy_total_fronius_inverter_1_192_168_2_31', 'unknown') %}
+        {{ states('sensor.last_solarenergy_value') }}
       {% else %}
-        {{ states('sensor.last_sp_value')|float(0) }}
+        {% set last_solarenergy_value = ((states('sensor.energy_total_fronius_inverter_1_192_168_2_31') | float / 1000) | float) %}
+        {{ (states('sensor.energy_total_fronius_inverter_1_192_168_2_31')|float / 1000) | float }}
       {% endif %}
-    # {% set last_sp_value = states('sensor.total_energi_idag') %}
-    # {% elif is_state('sun.sun', 'above_horizon') and (states('sensor.total_energi_idag')|float > states('sensor.last_sp_value')|float) %}
     attributes:
-      friendly_name: "Senaste energi"
+      friendly_name: "Solpanelerna, senaste energi"
 
 - sensor:
   - unique_id: last_sp_kw
@@ -96,54 +92,43 @@
     unit_of_measurement: "kW"
     device_class: power
     state_class: measurement
-    # entity_id: sensor.hem_gen5_electric_consumed_w
-    # state: "{{ (states('sensor.template_last_sp_kw') | float(0) - states('sensor.template_house_net_power_kw') | float(0)) | round(2) }}"
     state: "{{ ((states('sensor.power_ac_fronius_inverter_1_192_168_2_31') | float(default=0.0) + states('sensor.hem_gen5_electric_consumed_w') | float) / 1000) | round(2) }}"
     attributes:
-      friendly_name: "Husets effekt"
+      friendly_name: "Husets effekt (kW)"
 - sensor:
   - unique_id: house_net_energy_kwh
     unit_of_measurement: "kWh"
     device_class: energy
-    state_class: total_increasing
+    state_class: total
     state: >-
-      {{ states('sensor.hem_gen5_electric_consumed_kwh') | float + ((states('sensor.energy_total_fronius_inverter_1_192_168_2_31') | float(default=0.0) / 1000.0) | float) }}
+      {{ (states('sensor.hem_gen5_electric_consumed_kwh') | float) + states('sensor.template_last_solarenergy_value') | float }}
     attributes:
       friendly_name: "Husets nettoenergi"
 
-# - sensor:
-#   - unique_id: solar_current_per_phase
-#     unit_of_measurement: "A"
-#     device_class: current
-#     state_class: measurement
-#     state: "{{states('sensor.current_ac_fronius_inverter_1_192_168_2_31') | float(default=0.0) / 3}}"
-#     attributes:
-#       friendly_name: "Fronius, ström per fas"
-# - sensor:
-#   - unique_id: net_current_l1
-#     unit_of_measurement: "A"
-#     device_class: current
-#     state_class: measurement
-#     state: "{{states('sensor.hem_gen5_electric_consumed_1') | float - states('sensor.template_solar_current_per_phase') | float}}"
-#     attributes:
-#       friendly_name: "Nettoström L1"
-# - sensor:
-#   - unique_id: net_current_l2
-#     unit_of_measurement: "A"
-#     device_class: current
-#     state_class: measurement
-#     state: "{{states('sensor.hem_gen5_electric_consumed_2') | float - states('sensor.template_solar_current_per_phase') | float}}"
-#     attributes:
-#       friendly_name: "Nettoström L2"
-# - sensor:
-#   - unique_id: net_current_l3
-#     unit_of_measurement: "A"
-#     device_class: current
-#     state_class: measurement
-#     state: "{{states('sensor.hem_gen5_electric_consumed_3') | float - states('sensor.template_solar_current_per_phase') | float}}"
-#     attributes:
-#       friendly_name: "Nettoström L3"
+# house load, positive=buying, negative=selling
+- sensor:
+  - unique_id: house_power_w
+    unit_of_measurement: "W"
+    device_class: power
+    state_class: measurement
+    attributes:
+      friendly_name: "Husets effekt (W)"
+    state: "{{ (states('sensor.power_ac_fronius_inverter_1_192_168_2_31') | float(0) + states('sensor.hem_gen5_electric_consumed_w') | float) | float }}"
 
+# sold to grid
+- sensor:
+  - unique_id: current_sold_grid
+    device_class: power
+    state_class: measurement
+    unit_of_measurement: "W"
+    state: >-
+      {% if states("sensor.hem_gen5_electric_consumed_w") | float < 0 -%}
+      {{ states("sensor.hem_gen5_electric_consumed_w") | float * -1 }}
+      {%- else -%}
+      {{ 0 | float }}
+      {%- endif %}
+    attributes:
+      friendly_name: "Såld effekt"
 
 - sensor:
   - unique_id: yrwthr
@@ -165,24 +150,30 @@
 - sensor:
   - unique_id: nordpool_tomorrow_avg
     state: >-
-      {% set nordpool = namespace(tomorrow = []) %}
-      {% for num in state_attr("sensor.nordpool_kwh_se3_sek_2_10_025","tomorrow") %}
-          {% set nordpool.tomorrow = nordpool.tomorrow + [num] %}
-      {% endfor %}
-      {{ (nordpool.tomorrow | sum / nordpool.tomorrow | count) | float | round(2) }}
+      {% set nordpool = namespace(tomorrow = []) -%}
+      {%- if not is_state("binary_sensor.template_nordpool_tomorrow_valid","off") -%}
+        {%- for num in state_attr("sensor.nordpool_kwh_se3_sek_2_10_025","tomorrow") -%}
+            {%- set nordpool.tomorrow = nordpool.tomorrow + [num] -%}
+        {%- endfor -%}
+        {{ (nordpool.tomorrow | sum / nordpool.tomorrow | count) | float | round(2) }}
+      {%- endif %}
 - sensor:
   - unique_id: nordpool_tomorrow_max
     state: >-
       {% set nordpool = namespace(tomorrow = []) %}
-      {% for num in state_attr("sensor.nordpool_kwh_se3_sek_2_10_025","tomorrow") %}
-          {% set nordpool.tomorrow = nordpool.tomorrow + [num] %}
-      {% endfor %}
-      {{ nordpool.tomorrow | max | float | round(2) }}
+      {% if not is_state("binary_sensor.template_nordpool_tomorrow_valid","off") %}
+        {% for num in state_attr("sensor.nordpool_kwh_se3_sek_2_10_025","tomorrow") %}
+            {% set nordpool.tomorrow = nordpool.tomorrow + [num] %}
+        {% endfor %}
+        {{ nordpool.tomorrow | max | float | round(2) }}
+      {% endif %}
 - sensor:
   - unique_id: nordpool_tomorrow_min
     state: >-
       {% set nordpool = namespace(tomorrow = []) %}
-      {% for num in state_attr("sensor.nordpool_kwh_se3_sek_2_10_025","tomorrow") %}
-          {% set nordpool.tomorrow = nordpool.tomorrow + [num] %}
-      {% endfor %}
-      {{ nordpool.tomorrow | min | float | round(2) }}
+      {% if not is_state("binary_sensor.template_nordpool_tomorrow_valid","off") %}
+        {% for num in state_attr("sensor.nordpool_kwh_se3_sek_2_10_025","tomorrow") %}
+            {% set nordpool.tomorrow = nordpool.tomorrow + [num] %}
+        {% endfor %}
+        {{ nordpool.tomorrow | min | float | round(2) }}
+      {% endif %}

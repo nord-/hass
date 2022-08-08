@@ -423,6 +423,9 @@
   - condition: state
     entity_id: device_tracker.azarel_location_tracker
     state: home
+  - condition: numeric_state
+    entity_id: sensor.framsidan_temperature
+    below: '13'
   action:
   - service: automation.turn_on
     entity_id: automation.laddat_till_20

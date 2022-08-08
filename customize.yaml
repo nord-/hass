@@ -42,7 +42,7 @@ switch.nexa_out_1:
 switch.an179_1:
   friendly_name: Altan, söder
 switch.telldus_1:
-  friendly_name: Hallbyrån
+  friendly_name: Spelrummet, fönstret
 switch.telldus_2:
   friendly_name: Flörtkulorna
 switch.telldus_3:
@@ -59,8 +59,8 @@ switch.tz1:
   friendly_name: Telldus TZ1
 switch.tz2:
   friendly_name: Skrivbordslampan
-switch.rusta15e:
-  friendly_name: Spelrumsfönstret
+#switch.rusta15e:
+#  friendly_name: Spelrumsfönstret
 switch.rusta13a:
   friendly_name: Sänglampan
 switch.rusta13b:

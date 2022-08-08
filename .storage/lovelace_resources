@@ -33,6 +33,11 @@
         "url": "/hacsfiles/power-flow-card/power-flow-card.js?hacstag=484538222251",
         "type": "module",
         "id": "b77b48adf6114b1ebdc4f8b2b51875e5"
+      },
+      {
+        "url": "/hacsfiles/mini-graph-card/mini-graph-card-bundle.js?hacstag=1512800620110",
+        "type": "module",
+        "id": "841836c87b5b4e13ad1cbff6fd63e45c"
       }
     ]
   }
