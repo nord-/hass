@@ -105,7 +105,7 @@
     attributes:
       friendly_name: "Husets nettoenergi"
 
-# house load, positive=buying, negative=selling
+# house consumed from grid
 - sensor:
   - unique_id: house_power_w
     unit_of_measurement: "W"
@@ -113,7 +113,19 @@
     state_class: measurement
     attributes:
       friendly_name: "Husets effekt (W)"
-    state: "{{ (states('sensor.power_ac_fronius_inverter_1_192_168_2_31') | float(0) + states('sensor.hem_gen5_electric_consumed_w') | float) | float }}"
+#    state: "{{ (states('sensor.power_ac_fronius_inverter_1_192_168_2_31') | float(0) + states('sensor.hem_gen5_electric_consumed_w') | float) | float }}"
+    state: >-
+      {% set pwr = 0.0 -%}
+      {%- if states('sensor.hem_gen5_electric_consumed_w_1') | float > 0 -%}
+        {%- set pwr = states('sensor.hem_gen5_electric_consumed_w_1') | float -%}
+      {%- endif -%}
+      {%- if states('sensor.hem_gen5_electric_consumed_w_2') | float > 0 -%}
+        {%- set pwr = states('sensor.hem_gen5_electric_consumed_w_2') | float + pwr -%}
+      {%- endif -%}
+      {%- if states('sensor.hem_gen5_electric_consumed_w_3') | float > 0 -%}
+        {%- set pwr = states('sensor.hem_gen5_electric_consumed_w_3') | float + pwr -%}
+      {%- endif %}
+      {{pwr}}
 
 # sold to grid
 - sensor:
@@ -122,11 +134,24 @@
     state_class: measurement
     unit_of_measurement: "W"
     state: >-
-      {% if states("sensor.hem_gen5_electric_consumed_w") | float < 0 -%}
-      {{ states("sensor.hem_gen5_electric_consumed_w") | float * -1 }}
-      {%- else -%}
-      {{ 0 | float }}
+      {% set sold = 0.0 -%}
+      {%- if states('sensor.hem_gen5_electric_consumed_w_1') | float < 0 -%}
+        {%- set sold = states('sensor.hem_gen5_electric_consumed_w_1') | float -%}
+      {%- endif -%}
+      {%- if states('sensor.hem_gen5_electric_consumed_w_2') | float < 0 -%}
+        {%- set sold = states('sensor.hem_gen5_electric_consumed_w_2') | float + sold -%}
+      {%- endif -%}
+      {%- if states('sensor.hem_gen5_electric_consumed_w_3') | float < 0 -%}
+        {%- set sold = states('sensor.hem_gen5_electric_consumed_w_3') | float + sold -%}
       {%- endif %}
+      {{sold | float * -1}}
+
+    # state: >-
+    #   {% if states("sensor.hem_gen5_electric_consumed_w") | float < 0 -%}
+    #   {{ states("sensor.hem_gen5_electric_consumed_w") | float * -1 }}
+    #   {%- else -%}
+    #   {{ 0 | float }}
+    #   {%- endif %}
     attributes:
       friendly_name: "Såld effekt"
 

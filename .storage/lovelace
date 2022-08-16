@@ -151,19 +151,31 @@
               ]
             },
             {
-              "type": "calendar",
-              "entities": [
-                "calendar.family"
-              ],
-              "initial_view": "listWeek",
-              "title": "Händer i veckan"
-            },
-            {
               "type": "vertical-stack",
               "cards": [
                 {
-                  "type": "entity",
-                  "entity": "sensor.template_nordpool_current_price"
+                  "type": "custom:bignumber-card",
+                  "entity": "sensor.template_nordpool_current_price",
+                  "title": "Aktuellt elpris",
+                  "scale": "30px",
+                  "hideunit": false,
+                  "min": 0,
+                  "max": 3,
+                  "severity": [
+                    {
+                      "value": 0.2,
+                      "bnStyle": "var(--label-badge-green)"
+                    },
+                    {
+                      "value": 0.8,
+                      "bnStyle": "var(--label-badge-yellow)"
+                    },
+                    {
+                      "value": 40,
+                      "bnStyle": "#FF0000",
+                      "color": "#FFFFFF"
+                    }
+                  ]
                 },
                 {
                   "type": "custom:apexcharts-card",
@@ -215,10 +227,19 @@
                   "type": "custom:power-flow-card",
                   "entities": {
                     "solar": "sensor.template_fronius_solar_power",
-                    "grid": "sensor.hem_gen5_electric_consumed_w"
-                  }
+                    "grid": "sensor.template_house_net_power_kw"
+                  },
+                  "inverted_entities": "grid"
                 }
               ]
+            },
+            {
+              "type": "calendar",
+              "entities": [
+                "calendar.family"
+              ],
+              "initial_view": "listWeek",
+              "title": "Händer i veckan"
             }
           ]
         },
@@ -698,6 +719,13 @@
                       "icon": "mdi:home-battery"
                     }
                   ]
+                },
+                {
+                  "type": "entity",
+                  "entity": "vacuum.wall_e",
+                  "attribute": "next_scheduled_start",
+                  "icon": "mdi:timer-check-outline",
+                  "name": "Nästa start"
                 }
               ]
             }
@@ -1124,6 +1152,27 @@
                   }
                 }
               }
+            },
+            {
+              "type": "custom:mini-graph-card",
+              "decimals": 0,
+              "icon": "mdi:solar-panel",
+              "hour24": true,
+              "entities": [
+                {
+                  "entity": "sensor.energy_grid_sold_hour",
+                  "name": "Sålt",
+                  "color": "green"
+                },
+                {
+                  "entity": "sensor.solarenergy_produced_hour",
+                  "name": "Producerat"
+                }
+              ],
+              "show": {
+                "legend": false,
+                "labels": false
+              }
             }
           ]
         },
@@ -1258,7 +1307,7 @@
               },
               "series": [
                 {
-                  "entity": "sensor.hem_gen5_electric_consumed_kwh",
+                  "entity": "sensor.house_energy_day",
                   "name": " ",
                   "type": "column",
                   "group_by": {

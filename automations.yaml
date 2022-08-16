@@ -544,13 +544,23 @@
     entity_id: switch.azarel_charger_switch
     state: 'off'
     enabled: false
-  - condition: numeric_state
-    entity_id: sensor.azarel_battery_sensor
-    above: '19'
-    below: '80'
   - condition: state
     entity_id: input_boolean.charge_aza
     state: 'off'
+  - condition: or
+    conditions:
+    - condition: numeric_state
+      entity_id: sensor.azarel_battery_sensor
+      above: '19'
+      below: '80'
+    - condition: and
+      conditions:
+      - condition: numeric_state
+        entity_id: sensor.framsidan_temperature
+        above: '12'
+      - condition: numeric_state
+        entity_id: sensor.azarel_battery_sensor
+        below: '20'
   action:
   - service: script.charge_the_tesla
     data: {}

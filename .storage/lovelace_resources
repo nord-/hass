@@ -38,6 +38,11 @@
         "url": "/hacsfiles/mini-graph-card/mini-graph-card-bundle.js?hacstag=1512800620110",
         "type": "module",
         "id": "841836c87b5b4e13ad1cbff6fd63e45c"
+      },
+      {
+        "url": "/hacsfiles/bignumber-card/bignumber-card.js?hacstag=187245418006",
+        "type": "module",
+        "id": "f76d69ebe321418a8afd3925e9bb7028"
       }
     ]
   }
