@@ -15,6 +15,14 @@
     - windSpeed
     - pressure
     - cloudiness
+
+# - platform: rest
+#   resource: "https://dev-app-cn.azurewebsites.net/user/1/car/{{ states("input_number.aza_usercar_id") }}?withLogos=false"
+#   method: GET
+#   name: "AZA CN status"
+#   scan_interval: {{}}
+
+
 #pushbullet
 #  - platform: pushbullet
 #    api_key: !secret pushbullet_token

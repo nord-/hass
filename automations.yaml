@@ -1,35 +1,57 @@
 - id: '1515525794372'
-  alias: Felix rum vardag, tänd
+  alias: Felix rum, tänd
   trigger:
   - platform: time
     at: 07:00:00
   - platform: numeric_state
     entity_id: sun.sun
     value_template: '{{ state.attributes.elevation }}'
-    below: 5.0
+    below: 5
+  - platform: time
+    at: 09:30:00
+  - platform: state
+    entity_id:
+    - group.my_people
+    to: home
   condition:
-    condition: and
+  - condition: or
     conditions:
-    - condition: template
-      value_template: '{{ state_attr("sun.sun", "elevation") < 5 }}'
-    - condition: time
-      weekday:
-      - mon
-      - tue
-      - wed
-      - thu
-      - fri
+    - condition: and
+      conditions:
+      - condition: template
+        value_template: '{{ state_attr("sun.sun", "elevation") < 5 }}'
+      - condition: time
+        weekday:
+        - mon
+        - tue
+        - wed
+        - thu
+        - fri
+        after: 07:00:00
+    - condition: and
+      conditions:
+      - condition: template
+        value_template: '{{ state_attr("sun.sun", "elevation") < 5 }}'
+      - condition: time
+        weekday:
+        - sat
+        - sun
+        after: 09:30:00
+  - condition: state
+    entity_id: group.my_people
+    state: home
   action:
   - service: script.turn_on_felix_rum
+    data: {}
 - id: '180109204500'
-  alias: Felix rum vardag, släck
+  alias: Felix rum, släck
   trigger:
   - platform: time
-    at: '22:10:00'
+    at: '23:00:00'
   - platform: numeric_state
     entity_id: sun.sun
     value_template: '{{ state.attributes.elevation }}'
-    above: 5.0
+    above: 5
   condition:
   - condition: time
     weekday:
@@ -38,8 +60,10 @@
     - wed
     - thu
     - sun
+    enabled: false
   action:
   - service: script.turn_off_felix_rum
+    data: {}
   mode: single
 - id: '180109204000'
   alias: Felix rum helg, tänd
@@ -64,23 +88,6 @@
     state: home
   action:
   - service: script.turn_on_felix_rum
-- id: '180109204700'
-  alias: Felix rum helg, släck
-  trigger:
-  - platform: time
-    at: '23:00:00'
-  - platform: numeric_state
-    entity_id: sun.sun
-    value_template: '{{ state.attributes.elevation }}'
-    above: 5.0
-  condition:
-  - condition: time
-    weekday:
-    - fri
-    - sat
-  action:
-  - service: script.turn_off_felix_rum
-  mode: single
 - id: '1515522028713'
   alias: Felix rum lov, tänd
   trigger:
@@ -521,7 +528,7 @@
     data: {}
   mode: single
 - id: '1643056235541'
-  alias: Ladda bilen, lågt elpris
+  alias: 'Ladda Azarel: lågt elpris'
   description: ''
   trigger:
   - platform: state
@@ -544,9 +551,6 @@
     entity_id: switch.azarel_charger_switch
     state: 'off'
     enabled: false
-  - condition: state
-    entity_id: input_boolean.charge_aza
-    state: 'off'
   - condition: or
     conditions:
     - condition: numeric_state
@@ -615,9 +619,6 @@
       - wed
       - thu
       - fri
-  - condition: state
-    entity_id: input_boolean.charge_zoe
-    state: 'off'
   action:
   - service: script.ladda_zoe
     data: {}
@@ -659,10 +660,7 @@
   trigger:
   - platform: time
     at: input_datetime.zoe_hour
-  condition:
-  - condition: state
-    entity_id: input_boolean.charge_zoe
-    state: 'off'
+  condition: []
   action:
   - service: script.ladda_zoe
     data: {}
@@ -681,28 +679,8 @@
     data:
       message: 'Nu är morgondagens priser uppdaterade.\nPriset, genomsnitt: {{states("sensor.template_nordpool_tomorrow_avg")}},
         min: {{states("sensor.template_nordpool_tomorrow_min")}}, max: {{states("sensor.template_nordpool_tomorrow_max")}}\n
-        {{state_attr("sensor.nordpool_kwh_se3_sek_2_10_025","tomorrow")}}'
+        {{state_attr("sensor.nordpool_kwh_se3_sek_3_095_0","tomorrow")}}'
       title: Elpriset uppdaterat
-  mode: single
-- id: '1657534080615'
-  alias: Ladda Zoe:n, stoppa (uppdatera state)
-  description: ''
-  trigger:
-  - platform: state
-    entity_id:
-    - binary_sensor.zoe_charging
-    from: 'on'
-    to: 'off'
-  - platform: state
-    entity_id:
-    - binary_sensor.zoe_plugged_in
-    to: 'off'
-  condition: []
-  action:
-  - service: input_boolean.turn_off
-    data: {}
-    target:
-      entity_id: input_boolean.charge_zoe
   mode: single
 - id: '1657535291798'
   alias: Ladda bilen, stoppa (uppdatera state)
@@ -827,4 +805,25 @@
       title: Dags att byta knivar på Wall-E
       message: Bladen har använts i {{ (state_attr("vacuum.wall_e","current_blade_time")
         | int / 60) | round(0) }} timmar.
+  mode: single
+- id: '1661109418803'
+  alias: 'Ladda Azarel: på klocka'
+  description: ''
+  trigger:
+  - platform: time
+    at: input_datetime.azarel_hour
+  condition:
+  - condition: state
+    entity_id: device_tracker.azarel_location_tracker
+    state: home
+  - condition: state
+    entity_id: binary_sensor.azarel_charger_sensor
+    state: 'on'
+  - condition: state
+    entity_id: binary_sensor.low_price
+    state: 'on'
+    enabled: false
+  action:
+  - service: script.charge_the_tesla
+    data: {}
   mode: single

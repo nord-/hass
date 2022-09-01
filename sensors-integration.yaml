@@ -1,0 +1,6 @@
+- platform: integration
+  unique_id: diskmaskinen_kr
+  name: Diskmaskinen (kr)
+  source: sensor.template_dishwasher_machine_cost
+  method: left
+  unit_of_measurement: kr

@@ -1,0 +1,18 @@
+# - platform: utility_meter
+#   unique_id: diskmaskinen_kostnad
+#   name: Diskmaskinen, kostnad
+#   source: sensor.diskmaskinen_kr
+#   cycle: monthly
+#   state_class: total_increasing
+#   unit_of_measurement: kr
+#   icon: mdi:cash
+
+# - platform: utility_meter
+#   unique_id: diskmaskinen_kostnad
+#   name: Diskmaskinen, kostnad
+#   source: sensor.diskmaskinen_kr
+#   state_class: total_increasing
+#   unit_of_measurement: kr
+#   icon: mdi:cash
+#   meter_period: monthly
+#   cron pattern: 0 0 1 * *

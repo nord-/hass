@@ -155,7 +155,7 @@
               "cards": [
                 {
                   "type": "custom:bignumber-card",
-                  "entity": "sensor.template_nordpool_current_price",
+                  "entity": "sensor.template_nordpool_current_price_vat",
                   "title": "Aktuellt elpris",
                   "scale": "30px",
                   "hideunit": false,
@@ -190,12 +190,12 @@
                   },
                   "series": [
                     {
-                      "entity": "sensor.nordpool_kwh_se3_sek_2_10_025",
+                      "entity": "sensor.nordpool_kwh_se3_sek_3_095_0",
                       "name": "Idag",
                       "stroke_width": 2,
                       "color": "deepskyblue",
                       "float_precision": 2,
-                      "data_generator": "return entity.attributes.raw_today.map((p) => {\n  return [new Date(p.start), p.value];\n});\n",
+                      "data_generator": "return entity.attributes.raw_today.map((p) => {\n  return [new Date(p.start), p.value*1.25];\n});\n",
                       "curve": "stepline",
                       "show": {
                         "legend_value": false,
@@ -203,12 +203,12 @@
                       }
                     },
                     {
-                      "entity": "sensor.nordpool_kwh_se3_sek_2_10_025",
+                      "entity": "sensor.nordpool_kwh_se3_sek_3_095_0",
                       "name": "Imorgon",
                       "stroke_width": 2,
                       "color": "yellow",
                       "float_precision": 2,
-                      "data_generator": "return entity.attributes.raw_tomorrow.map((p) => { \n  let d = new Date(p.start);\n  d.setDate(d.getDate() - 1);\n  return [d, p.value]; });\n",
+                      "data_generator": "return entity.attributes.raw_tomorrow.map((p) => { \n  let d = new Date(p.start);\n  d.setDate(d.getDate() - 1);\n  return [d, p.value*1.25]; });\n",
                       "curve": "stepline",
                       "show": {
                         "legend_value": false,
@@ -430,6 +430,38 @@
               "entity": "light.kitchen_window",
               "name": "Köksfönstret",
               "type": "light"
+            },
+            {
+              "title": "Diskmaskinen",
+              "type": "entities",
+              "entities": [
+                {
+                  "entity": "sensor.clever_spz3_electric_consumption_kwh",
+                  "icon": "mdi:dishwasher",
+                  "name": "Förbrukning"
+                },
+                {
+                  "entity": "sensor.diskmaskinen_kostnad",
+                  "name": "Kostnad",
+                  "icon": "mdi:cash"
+                },
+                {
+                  "type": "divider"
+                },
+                {
+                  "entity": "sensor.diskmaskinen_kostnad",
+                  "type": "attribute",
+                  "attribute": "last_period",
+                  "suffix": "kr",
+                  "name": "Förra mån",
+                  "icon": "mdi:cash"
+                }
+              ],
+              "footer": {
+                "type": "graph",
+                "entity": "sensor.clever_spz3_electric_consumption_w",
+                "detail": 2
+              }
             }
           ]
         },
@@ -749,6 +781,38 @@
               ],
               "show_header_toggle": false,
               "type": "entities"
+            },
+            {
+              "title": "Tvättmaskinen",
+              "type": "entities",
+              "entities": [
+                {
+                  "entity": "sensor.clever_spz2_electric_consumption_kwh",
+                  "icon": "mdi:washing-machine",
+                  "name": "Förbrukning"
+                },
+                {
+                  "entity": "sensor.tvattmaskinen_kostnad",
+                  "name": "Kostnad",
+                  "icon": "mdi:cash"
+                },
+                {
+                  "type": "divider"
+                },
+                {
+                  "entity": "sensor.tvattmaskinen_kostnad",
+                  "type": "attribute",
+                  "attribute": "last_period",
+                  "suffix": "kr",
+                  "name": "Förra mån",
+                  "icon": "mdi:cash"
+                }
+              ],
+              "footer": {
+                "type": "graph",
+                "entity": "sensor.clever_spz2_electric_consumption_w",
+                "detail": 2
+              }
             }
           ],
           "title": "Övriga"
@@ -768,7 +832,7 @@
               "name": "Ute"
             },
             {
-              "entity": "sensor.nordpool_kwh_se3_sek_2_10_025",
+              "entity": "sensor.template_nordpool_current_price_vat",
               "name": "Elpris",
               "unit": "kr"
             },
@@ -893,19 +957,25 @@
                   "cards": [
                     {
                       "type": "entities",
-                      "entities": []
+                      "entities": [
+                        {
+                          "entity": "input_datetime.azarel_hour"
+                        }
+                      ],
+                      "title": "Starta klockan"
                     },
                     {
-                      "type": "button",
-                      "entity": "input_boolean.charge_aza",
                       "show_name": true,
                       "show_icon": true,
+                      "type": "button",
+                      "entity": "switch.azarel_charger_switch",
                       "tap_action": {
                         "action": "call-service",
                         "service": "script.charge_the_tesla"
                       },
                       "name": "Starta nu",
-                      "show_state": true
+                      "show_state": false,
+                      "icon": "mdi:ev-station"
                     }
                   ]
                 }
@@ -984,18 +1054,118 @@
                       "show_header_toggle": false
                     },
                     {
-                      "type": "button",
                       "show_name": true,
                       "show_icon": true,
+                      "type": "button",
                       "tap_action": {
                         "action": "call-service",
                         "service": "script.ladda_zoe"
                       },
-                      "entity": "input_boolean.charge_zoe",
+                      "entity": "binary_sensor.zoe_charging",
                       "name": "Starta nu",
-                      "show_state": true
+                      "show_state": false,
+                      "icon": "mdi:ev-station"
                     }
                   ]
+                }
+              ]
+            },
+            {
+              "type": "vertical-stack",
+              "title": "Azarel laddgräns",
+              "cards": [
+                {
+                  "type": "entities",
+                  "entities": [
+                    {
+                      "entity": "input_number.aza_charge_limit",
+                      "name": "SoC gräns"
+                    }
+                  ]
+                },
+                {
+                  "type": "horizontal-stack",
+                  "cards": [
+                    {
+                      "type": "entity",
+                      "name": "Inställd",
+                      "entity": "sensor.azarel_energy_added_sensor",
+                      "attribute": "charge_limit_soc",
+                      "icon": "mdi:gauge",
+                      "unit": "%"
+                    },
+                    {
+                      "show_name": true,
+                      "show_icon": true,
+                      "type": "button",
+                      "tap_action": {
+                        "action": "call-service",
+                        "service": "script.1661376120898",
+                        "data": {},
+                        "target": {}
+                      },
+                      "entity": "script.1661376120898",
+                      "name": "Sätt gräns",
+                      "icon": "mdi:gauge"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "vertical-stack",
+              "cards": [
+                {
+                  "type": "entities",
+                  "entities": [
+                    {
+                      "entity": "sensor.aza_kostnad",
+                      "name": "Azarel, mån",
+                      "icon": "mdi:car-sports"
+                    },
+                    {
+                      "entity": "sensor.zoe_kostnad",
+                      "name": "Zoe, mån",
+                      "icon": "mdi:car-side"
+                    },
+                    {
+                      "type": "divider"
+                    },
+                    {
+                      "type": "attribute",
+                      "entity": "sensor.aza_kostnad",
+                      "attribute": "last_period",
+                      "name": "Azarel, förra mån",
+                      "icon": "mdi:car-sports",
+                      "suffix": "kr"
+                    },
+                    {
+                      "type": "attribute",
+                      "entity": "sensor.zoe_kostnad",
+                      "attribute": "last_period",
+                      "name": "Zoe, förra mån",
+                      "icon": "mdi:car-side",
+                      "suffix": "kr"
+                    }
+                  ]
+                },
+                {
+                  "hours_to_show": 24,
+                  "graph": "line",
+                  "type": "sensor",
+                  "entity": "sensor.template_aza_charging_rate",
+                  "detail": 2,
+                  "name": "Azarel",
+                  "icon": "mdi:car-sports"
+                },
+                {
+                  "hours_to_show": 24,
+                  "graph": "line",
+                  "type": "sensor",
+                  "entity": "sensor.template_zoe_power_kw",
+                  "detail": 2,
+                  "name": "Zoe",
+                  "icon": "mdi:car-side"
                 }
               ]
             }
@@ -1024,13 +1194,13 @@
                 },
                 {
                   "type": "gauge",
-                  "entity": "sensor.nordpool_kwh_se3_sek_2_10_025",
+                  "entity": "sensor.template_nordpool_current_price",
                   "min": 0,
                   "max": 1.5,
                   "severity": {
-                    "green": 0,
-                    "yellow": 0.4,
-                    "red": 0.8
+                    "red": 0,
+                    "yellow": 0.5,
+                    "green": 0.8
                   },
                   "unit": "kr",
                   "name": "Elpriset"
@@ -1116,7 +1286,7 @@
                   }
                 },
                 {
-                  "entity": "sensor.nordpool_kwh_se3_sek_2_10_025",
+                  "entity": "sensor.nordpool_kwh_se3_sek_3_095_0",
                   "name": "Pris",
                   "stroke_width": 2,
                   "color": "deepskyblue",
@@ -1183,10 +1353,45 @@
           "badges": [],
           "cards": [
             {
-              "type": "entity",
-              "entity": "sensor.hem_gen5_electric_consumed_kwh",
-              "name": "Förbrukat (04-21)",
-              "icon": "mdi:power-plug"
+              "type": "vertical-stack",
+              "cards": [
+                {
+                  "type": "entity",
+                  "entity": "sensor.hem_gen5_electric_consumed_kwh",
+                  "name": "Förbrukat (04-21)",
+                  "icon": "mdi:power-plug"
+                },
+                {
+                  "type": "horizontal-stack",
+                  "cards": [
+                    {
+                      "type": "gauge",
+                      "entity": "sensor.template_grid_power_kw",
+                      "name": "Effekt",
+                      "needle": true,
+                      "min": -8,
+                      "max": 14,
+                      "severity": {
+                        "green": -8,
+                        "yellow": 0,
+                        "red": 7
+                      }
+                    },
+                    {
+                      "type": "gauge",
+                      "entity": "sensor.template_house_power_kw",
+                      "name": "Huset",
+                      "min": 0,
+                      "max": 9.2,
+                      "severity": {
+                        "green": 0,
+                        "yellow": 1,
+                        "red": 2.3
+                      }
+                    }
+                  ]
+                }
+              ]
             },
             {
               "type": "vertical-stack",
@@ -1406,7 +1611,7 @@
               },
               "series": [
                 {
-                  "entity": "sensor.template_house_power_kw",
+                  "entity": "sensor.template_grid_power_kw",
                   "type": "line",
                   "name": "effekt",
                   "group_by": {
@@ -1421,7 +1626,6 @@
                   "color": "SteelBlue"
                 }
               ],
-              "update_interval": "15m",
               "graph_span": "1d",
               "apex_config": {
                 "yaxis": [

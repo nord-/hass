@@ -30,10 +30,18 @@
     device_class: monetary
     state_class: measurement
     unit_of_measurement: "SEK/kWh"
-    state: "{{ states('sensor.nordpool_kwh_se3_sek_2_10_025') | float }}"
+    state: "{{ states('sensor.nordpool_kwh_se3_sek_3_095_0') | float | round(2) }}"
     attributes:
-      friendly_name: "Aktuellt elpris"
-    
+      friendly_name: "Aktuellt elpris (ex. moms)"
+- sensor: 
+  - unique_id: nordpool_current_price_vat
+    device_class: monetary
+    state_class: measurement
+    unit_of_measurement: "SEK/kWh"
+    state: "{{ (states('sensor.nordpool_kwh_se3_sek_3_095_0') | float * 1.25) | round(2) }}"
+    attributes:
+      friendly_name: "Aktuellt elpris (inkl. moms)"    
+          
 - sensor:
   - unique_id: last_solarenergy_value
     unit_of_measurement: 'kWh'
@@ -95,6 +103,14 @@
     state: "{{ ((states('sensor.power_ac_fronius_inverter_1_192_168_2_31') | float(default=0.0) + states('sensor.hem_gen5_electric_consumed_w') | float) / 1000) | round(2) }}"
     attributes:
       friendly_name: "Husets effekt (kW)"
+- sensor:
+  - unique_id: grid_power_kw
+    state: "{{ (states('sensor.hem_gen5_electric_consumed_w') | float / 1000) | round(2) }}"
+    unit_of_measurement: "kW"
+    device_class: power
+    state_class: measurement
+    attributes:
+      friendly_name: "Näteffekt (kW)"
 - sensor:
   - unique_id: house_net_energy_kwh
     unit_of_measurement: "kWh"
@@ -170,14 +186,14 @@
 
 - binary_sensor:
   - unique_id: nordpool_tomorrow_valid
-    state: "{{ state_attr('sensor.nordpool_kwh_se3_sek_2_10_025', 'tomorrow_valid') }}"
+    state: "{{ state_attr('sensor.nordpool_kwh_se3_sek_3_095_0', 'tomorrow_valid') }}"
 
 - sensor:
   - unique_id: nordpool_tomorrow_avg
     state: >-
       {% set nordpool = namespace(tomorrow = []) -%}
       {%- if not is_state("binary_sensor.template_nordpool_tomorrow_valid","off") -%}
-        {%- for num in state_attr("sensor.nordpool_kwh_se3_sek_2_10_025","tomorrow") -%}
+        {%- for num in state_attr("sensor.nordpool_kwh_se3_sek_3_095_0","tomorrow") -%}
             {%- set nordpool.tomorrow = nordpool.tomorrow + [num] -%}
         {%- endfor -%}
         {{ (nordpool.tomorrow | sum / nordpool.tomorrow | count) | float | round(2) }}
@@ -187,7 +203,7 @@
     state: >-
       {% set nordpool = namespace(tomorrow = []) %}
       {% if not is_state("binary_sensor.template_nordpool_tomorrow_valid","off") %}
-        {% for num in state_attr("sensor.nordpool_kwh_se3_sek_2_10_025","tomorrow") %}
+        {% for num in state_attr("sensor.nordpool_kwh_se3_sek_3_095_0","tomorrow") %}
             {% set nordpool.tomorrow = nordpool.tomorrow + [num] %}
         {% endfor %}
         {{ nordpool.tomorrow | max | float | round(2) }}
@@ -197,8 +213,53 @@
     state: >-
       {% set nordpool = namespace(tomorrow = []) %}
       {% if not is_state("binary_sensor.template_nordpool_tomorrow_valid","off") %}
-        {% for num in state_attr("sensor.nordpool_kwh_se3_sek_2_10_025","tomorrow") %}
+        {% for num in state_attr("sensor.nordpool_kwh_se3_sek_3_095_0","tomorrow") %}
             {% set nordpool.tomorrow = nordpool.tomorrow + [num] %}
         {% endfor %}
         {{ nordpool.tomorrow | min | float | round(2) }}
       {% endif %}
+
+- sensor:
+  - unique_id: washing_machine_cost
+    state: "{{ states('sensor.clever_spz2_electric_consumption_w') | float * ((states('sensor.template_nordpool_current_price_vat') | float / 1000) + 0.57 + 0.075) }}"
+    unit_of_measurement: kr
+    device_class: monetary
+    
+- sensor:
+  - unique_id: dishwasher_machine_cost
+    state: "{{ states('sensor.clever_spz3_electric_consumption_w') | float * ((states('sensor.template_nordpool_current_price_vat') | float / 1000) + 0.57 + 0.075) }}"
+    unit_of_measurement: kr
+    device_class: monetary
+    
+- sensor:
+  - unique_id: zoe_charging_cost
+    state: "{{ states('sensor.zoe_charging_power') | float(0) * states('sensor.template_nordpool_current_price_vat') | float }}"
+    device_class: monetary
+- sensor:
+  - unique_id: zoe_power_kw
+    state: "{{ states('sensor.zoe_charging_power') | float(0) }}"
+    unit_of_measurement: "kW"
+    device_class: power
+    state_class: measurement
+    
+- sensor:
+  - unique_id: aza_charging_cost
+    unit_of_measurement: kr
+    device_class: monetary
+    state: >-
+      {% if is_state('device_tracker.azarel_location_tracker','home') -%}
+        {{ states('sensor.template_aza_charging_rate') | float(0) * states('sensor.template_nordpool_current_price_vat') | float }}
+      {%- else -%}
+        {{ 0 | float }}
+      {%- endif %}
+- sensor:
+  - unique_id: aza_energy_home
+    unit_of_measurement: "kW"
+    device_class: power
+    state_class: measurement
+    state: >-
+      {% if is_state('device_tracker.azarel_location_tracker','home') -%}
+        {{ states('sensor.template_aza_charging_rate') | float(0) }}
+      {%- else -%}
+        {{ 0 | float }}
+      {%- endif -%}

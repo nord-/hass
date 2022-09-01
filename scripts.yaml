@@ -235,11 +235,8 @@ charge_the_tesla:
     data:
       title: Azarel börjar ladda
       message: Azarel startar ladda med SoC {{ states("sensor.azarel_battery_sensor")
-        }}% och elpriset är {{ states("sensor.nordpool_kwh_se3_sek_2_10_025") }} kr.
-  - service: input_boolean.turn_on
-    data: {}
-    target:
-      entity_id: input_boolean.charge_aza
+        }}% och elpriset är {{ states("sensor.template_nordpool_current_price_vat")
+        }} kr.\n{{ now().strftime('%H:%M den %d/%m') }}
   mode: single
   icon: mdi:ev-station
 tand_sovrummet:
@@ -292,12 +289,9 @@ ladda_zoe:
   - service: notify.mobile_app_op9_pro
     data:
       message: Fridas bil börjar ladda med SoC {{ states("sensor.zoe_battery_level")
-        }}% och elpriset {{ states("sensor.nordpool_kwh_se3_sek_2_10_025") }} kr.
+        }}% och elpriset {{ states("sensor.template_nordpool_current_price_vat") }}
+        kr.\n{{ now().strftime('%H:%M den %d/%m') }}
       title: Zoe lagd i kö
-  - service: input_boolean.turn_on
-    data: {}
-    target:
-      entity_id: input_boolean.charge_zoe
   mode: single
   icon: mdi:ev-station
 ladda_tesla_stoppa:
@@ -305,14 +299,23 @@ ladda_tesla_stoppa:
   sequence:
   - service: rest_command.cn_remove_aza_from_queue
     data: {}
-  - service: input_boolean.turn_off
-    data: {}
-    target:
-      entity_id: input_boolean.charge_aza
   - service: notify.mobile_app_op9_pro
     data:
       message: Laddningen av Azarel har stoppats.\nSoC {{ states("sensor.azarel_battery_sensor")
-        }}%.\n({{ states("sensor.nordpool_kwh_se3_sek_2_10_025") }} kr)
+        }}%.\n({{ states("sensor.template_nordpool_current_price_vat") }} kr)
       title: Azarel har slutat ladda
   mode: single
   icon: mdi:ev-station
+'1661376120898':
+  alias: Azarel Set Charge Limit SOC
+  mode: restart
+  sequence:
+  - service: tesla_custom.api
+    data:
+      command: CHANGE_CHARGE_LIMIT
+      parameters:
+        path_vars:
+          vehicle_id: '{{ state_attr(''binary_sensor.azarel_online_sensor'', ''id'')
+            }}'
+        percent: '{{ states(''input_number.aza_charge_limit'') | int(default=80) }}'
+        wake_if_asleep: true

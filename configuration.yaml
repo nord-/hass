@@ -60,9 +60,11 @@ map:
 sun:
 
 # Nordpool Electric Spot Price
-nordpool:
+# nordpool:
 
 sensor: !include sensors.yaml
+sensor: !include sensors-integration.yaml
+sensor: !include sensors-utility.yaml
 template: !include template.yaml
 binary_sensor: !include binary_sensors.yaml
 
@@ -107,13 +109,9 @@ device_tracker: !include device_tracker.yaml
 # Example configuration.yaml entry
 google_assistant: !include gassistant.yaml
   
-google:
-  client_id: 406236313752-db7bm79q1n3v77s4cf5j9qfvv7961tic.apps.googleusercontent.com
-  client_secret: !secret gcal_api
-#notify:
-#  - platform: pushbullet
-#    name: pushbullet
-#    api_key: !secret pushbullet_token
+#google:
+#  client_id: 406236313752-db7bm79q1n3v77s4cf5j9qfvv7961tic.apps.googleusercontent.com
+#  client_secret: !secret gcal_api
 
 landroid_cloud:
   - email: rickard@nord.cc
