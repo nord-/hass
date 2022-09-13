@@ -43,6 +43,11 @@
         "url": "/hacsfiles/bignumber-card/bignumber-card.js?hacstag=187245418006",
         "type": "module",
         "id": "f76d69ebe321418a8afd3925e9bb7028"
+      },
+      {
+        "url": "/hacsfiles/lovelace-collapsable-cards/collapsable-cards.js?hacstag=364978303050",
+        "type": "module",
+        "id": "59120cd8cb0f45ad837dd0a4ea4bb53d"
       }
     ]
   }

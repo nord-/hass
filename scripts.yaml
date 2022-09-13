@@ -177,17 +177,17 @@ turn_on_all_lights:
 turn_on_morning_lights:
   alias: Tänd morgonbelysning
   sequence:
-  - data:
+  - data: {}
+    service: switch.turn_on
+    target:
       entity_id:
       - group.grovkoket
       - group.koket
       - group.vrum_nere
       - group.hallen
-      - group.gastrummet
       - group.kontoret
       - switch.nexa_1
       - switch.rusta25b
-    service: switch.turn_on
   - data:
       entity_id:
       - group.vrum_nere
@@ -231,12 +231,12 @@ charge_the_tesla:
   sequence:
   - service: rest_command.cn_add_aza_to_queue
     data: {}
-  - service: notify.mobile_app_op9_pro
+  - service: notify.rickards_devices
     data:
       title: Azarel börjar ladda
-      message: Azarel startar ladda med SoC {{ states("sensor.azarel_battery_sensor")
-        }}% och elpriset är {{ states("sensor.template_nordpool_current_price_vat")
-        }} kr.\n{{ now().strftime('%H:%M den %d/%m') }}
+      message: 'Laddningen av Azarel har startat.\n SoC:     {{ states("sensor.azarel_battery_sensor")
+        }}%.\n Priset:  {{ states("sensor.template_nordpool_current_price_vat") }}
+        kr\n Klockan: {{ now().strftime(''%H:%M den %d/%m'') }}'
   mode: single
   icon: mdi:ev-station
 tand_sovrummet:
@@ -286,11 +286,11 @@ ladda_zoe:
   sequence:
   - service: rest_command.cn_add_yxx_to_queue
     data: {}
-  - service: notify.mobile_app_op9_pro
+  - service: notify.rickards_devices
     data:
-      message: Fridas bil börjar ladda med SoC {{ states("sensor.zoe_battery_level")
-        }}% och elpriset {{ states("sensor.template_nordpool_current_price_vat") }}
-        kr.\n{{ now().strftime('%H:%M den %d/%m') }}
+      message: 'Laddningen av Zoe har startat.\n SoC:     {{ states("sensor.zoe_battery_level")
+        }}%.\n Priset:  {{ states("sensor.template_nordpool_current_price_vat") }}
+        kr\n Klockan: {{ now().strftime(''%H:%M den %d/%m'') }}'
       title: Zoe lagd i kö
   mode: single
   icon: mdi:ev-station
@@ -299,10 +299,11 @@ ladda_tesla_stoppa:
   sequence:
   - service: rest_command.cn_remove_aza_from_queue
     data: {}
-  - service: notify.mobile_app_op9_pro
+  - service: notify.rickards_devices
     data:
-      message: Laddningen av Azarel har stoppats.\nSoC {{ states("sensor.azarel_battery_sensor")
-        }}%.\n({{ states("sensor.template_nordpool_current_price_vat") }} kr)
+      message: 'Laddningen av Azarel har stoppats.\n SoC:     {{ states("sensor.azarel_battery_sensor")
+        }}%.\n Priset:  {{ states("sensor.template_nordpool_current_price_vat") }}
+        kr\n Klockan: {{ now().strftime(''%H:%M den %d/%m'') }}'
       title: Azarel har slutat ladda
   mode: single
   icon: mdi:ev-station
@@ -319,3 +320,16 @@ ladda_tesla_stoppa:
             }}'
         percent: '{{ states(''input_number.aza_charge_limit'') | int(default=80) }}'
         wake_if_asleep: true
+'1662626875831':
+  alias: Ladda Zoe, stoppa
+  sequence:
+  - service: rest_command.cn_remove_zoe_from_queue
+    data: {}
+  - service: notify.rickards_devices
+    data:
+      message: 'Laddningen av Zoe har stoppats.\n SoC:     {{ states("sensor.zoe_battery_level")
+        }}%.\n Priset:  {{ states("sensor.template_nordpool_current_price_vat") }}
+        kr\n Klockan: {{ now().strftime(''%H:%M den %d/%m'') }}'
+      title: Zoe har slutat ladda
+  mode: single
+  icon: mdi:ev-station

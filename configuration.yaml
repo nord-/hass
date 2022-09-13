@@ -63,8 +63,8 @@ sun:
 # nordpool:
 
 sensor: !include sensors.yaml
-sensor: !include sensors-integration.yaml
-sensor: !include sensors-utility.yaml
+# sensor: !include sensors-integration.yaml
+# sensor: !include sensors-utility.yaml
 template: !include template.yaml
 binary_sensor: !include binary_sensors.yaml
 
@@ -92,9 +92,10 @@ cloud:
 switch:
   platform: tellstick
 
-light: !include mqttlights.yaml
+# light: !include mqttlights.yaml
 
 group: !include groups.yaml
+notify: !include groups_notify.yaml
 automation: !include automations.yaml
 script: !include scripts.yaml
 

@@ -16,6 +16,14 @@
     - pressure
     - cloudiness
 
+### INTEGRATIONS 
+- platform: integration
+  unique_id: diskmaskinen_kr
+  name: Diskmaskinen (kr)
+  source: sensor.template_dishwasher_machine_cost
+  method: left
+  round: 2
+  
 # - platform: rest
 #   resource: "https://dev-app-cn.azurewebsites.net/user/1/car/{{ states("input_number.aza_usercar_id") }}?withLogos=false"
 #   method: GET

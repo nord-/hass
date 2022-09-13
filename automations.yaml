@@ -425,9 +425,6 @@
     entity_id: sensor.azarel_battery_sensor
     below: '20'
   - condition: state
-    entity_id: input_boolean.charge_aza
-    state: 'off'
-  - condition: state
     entity_id: device_tracker.azarel_location_tracker
     state: home
   - condition: numeric_state
@@ -445,7 +442,7 @@
   trigger:
   - platform: numeric_state
     entity_id: sensor.azarel_battery_sensor
-    above: '19'
+    above: '20'
     below: '23'
   condition:
   - condition: state
@@ -455,9 +452,6 @@
   - condition: state
     entity_id: device_tracker.azarel_location_tracker
     state: home
-  - condition: state
-    entity_id: input_boolean.charge_aza
-    state: 'on'
   action:
   - if:
     - condition: state
@@ -488,24 +482,10 @@
     entity_id: binary_sensor.sm_p610_laddar
     domain: binary_sensor
   action:
-  - service: notify.mobile_app_op9pro
+  - service: notify.rickards_devices
     data:
       message: Samsung-plattan har mindre än 25% laddning.
       title: Dags att ladda plattan
-  mode: single
-- id: '1629725493407'
-  alias: Publicera husets ström
-  description: ''
-  trigger:
-  - platform: state
-    entity_id: sensor.hem_gen5_electric_consumed_1, sensor.hem_gen5_electric_consumed_2,
-      sensor.hem_gen5_electric_consumed_3
-  condition: []
-  action:
-  - service: mqtt.publish
-    data:
-      topic: ha/sensor/hem/current/{{trigger.to_state.object_id}}
-      payload: '{{trigger.to_state.state}}'
   mode: single
 - id: '1633032752936'
   alias: Tänd tidig morgon
@@ -547,24 +527,6 @@
   - condition: state
     entity_id: binary_sensor.low_price
     state: 'on'
-  - condition: state
-    entity_id: switch.azarel_charger_switch
-    state: 'off'
-    enabled: false
-  - condition: or
-    conditions:
-    - condition: numeric_state
-      entity_id: sensor.azarel_battery_sensor
-      above: '19'
-      below: '80'
-    - condition: and
-      conditions:
-      - condition: numeric_state
-        entity_id: sensor.framsidan_temperature
-        above: '12'
-      - condition: numeric_state
-        entity_id: sensor.azarel_battery_sensor
-        below: '20'
   action:
   - service: script.charge_the_tesla
     data: {}
@@ -675,28 +637,12 @@
     to: 'on'
   condition: []
   action:
-  - service: notify.mobile_app_op9_pro
+  - service: notify.rickards_devices
     data:
-      message: 'Nu är morgondagens priser uppdaterade.\nPriset, genomsnitt: {{states("sensor.template_nordpool_tomorrow_avg")}},
-        min: {{states("sensor.template_nordpool_tomorrow_min")}}, max: {{states("sensor.template_nordpool_tomorrow_max")}}\n
-        {{state_attr("sensor.nordpool_kwh_se3_sek_3_095_0","tomorrow")}}'
+      message: 'Nu är morgondagens priser uppdaterade.\n avg: {{states("sensor.template_nordpool_tomorrow_avg")}}
+        kr\n min: {{states("sensor.template_nordpool_tomorrow_min")}} kr\n max: {{states("sensor.template_nordpool_tomorrow_max")}}
+        kr\n (inkl. moms)\n {{state_attr("sensor.nordpool_kwh_se3_sek_3_095_0","tomorrow")}}'
       title: Elpriset uppdaterat
-  mode: single
-- id: '1657535291798'
-  alias: Ladda bilen, stoppa (uppdatera state)
-  description: ''
-  trigger:
-  - platform: state
-    entity_id:
-    - binary_sensor.azarel_charger_sensor
-    from: 'on'
-    to: 'off'
-  condition: []
-  action:
-  - service: input_boolean.turn_off
-    data: {}
-    target:
-      entity_id: input_boolean.charge_aza
   mode: single
 - id: '1657551301274'
   alias: Ladda Zoe, aktivera klocka
@@ -826,4 +772,180 @@
   action:
   - service: script.charge_the_tesla
     data: {}
+  mode: single
+- id: '1662395114345'
+  alias: Värmepumpen, tillåt elpatron
+  description: ''
+  trigger:
+  - platform: state
+    entity_id:
+    - sensor.nordpool_kwh_se3_sek_3_095_0
+    attribute: low price
+    to: true
+  - platform: time
+    at: 02:00:00
+  condition:
+  - condition: and
+    conditions:
+    - condition: state
+      entity_id: sensor.nordpool_kwh_se3_sek_3_095_0
+      attribute: low price
+      state: true
+    - condition: not
+      conditions:
+      - condition: time
+        after: 01:00:00
+        before: 02:00:00
+  action:
+  - service: switch.turn_off
+    data: {}
+    target:
+      entity_id: switch.varmepumpen
+  - service: notify.rickards_devices
+    data:
+      message: apa
+  mode: single
+- id: '1662395326862'
+  alias: Värmepumpen, blockera elpatron
+  description: ''
+  trigger:
+  - platform: state
+    entity_id:
+    - sensor.nordpool_kwh_se3_sek_3_095_0
+    attribute: low price
+    to: false
+  - platform: time
+    at: 01:00:00
+  condition: []
+  action:
+  - service: switch.turn_on
+    data: {}
+    target:
+      entity_id: switch.varmepumpen
+  - service: notify.rickards_devices
+    data:
+      message: 'Elpatron av.\nKlockan: {{ now().strftime(''%H:%M den %d/%m'') }}'
+  mode: single
+- id: '1662572482443'
+  alias: Diskmaskinen, starta på klocka
+  description: ''
+  trigger:
+  - platform: time
+    at: input_datetime.diskmaskinen_timme
+  condition: []
+  action:
+  - service: switch.turn_on
+    data: {}
+    target:
+      entity_id: switch.clever_spz3
+  mode: single
+- id: '1662626703155'
+  alias: Ladda Zoe, stoppa
+  description: ''
+  trigger:
+  - platform: template
+    value_template: '{{ states(''sensor.zoe_battery_level'')|int >= states(''input_number.zoe_soc_upper_limit'')|int
+      }}'
+  condition:
+  - condition: and
+    conditions:
+    - condition: state
+      entity_id: input_boolean.zoe_upper_limit
+      state: 'on'
+    - condition: or
+      conditions:
+      - condition: state
+        entity_id: automation.ladda_fridas_bil
+        state: 'on'
+      - condition: state
+        entity_id: automation.ladda_zoe_pa_tid
+        state: 'on'
+  action:
+  - service: script.1662626875831
+    data: {}
+  mode: single
+- id: '1662635649004'
+  alias: Tesla set polling time short
+  description: 'We adjust the Polling Interval down from the configured value if we:
+
+    * are driving
+
+    * are charging'
+  trigger:
+  - platform: homeassistant
+    event: start
+  - platform: state
+    entity_id:
+    - binary_sensor.azarel_parking_brake_sensor
+    to: 'off'
+  - platform: state
+    entity_id:
+    - switch.azarel_charger_switch
+    to: 'on'
+  condition:
+  - condition: or
+    conditions:
+    - condition: state
+      entity_id: switch.azarel_charger_switch
+      state: 'on'
+    - condition: state
+      entity_id: binary_sensor.azarel_parking_brake_sensor
+      state: 'off'
+  action:
+  - delay: 00:01:00
+  - service: tesla_custom.polling_interval
+    data:
+      vin: '{{ state_attr(''binary_sensor.azarel_online_sensor'',''vin'') }}'
+      scan_interval: 30
+- id: '1662635944830'
+  alias: Tesla set polling time long
+  description: We adjust the Polling Interval up to the configured value when we stop
+    charging or car is parked without charging
+  trigger:
+  - platform: state
+    entity_id:
+    - switch.azarel_charger_switch
+    to: 'off'
+    for:
+      hours: 0
+      minutes: 15
+      seconds: 0
+  - platform: state
+    entity_id:
+    - binary_sensor.azarel_parking_brake_sensor
+    to: 'on'
+  condition:
+  - condition: state
+    entity_id: binary_sensor.azarel_parking_brake_sensor
+    state: 'on'
+  - condition: state
+    entity_id: switch.azarel_charger_switch
+    state: 'off'
+  action:
+  - service: tesla_custom.polling_interval
+    data:
+      vin: '{{ state_attr(''binary_sensor.azarel_online_sensor'',''vin'') }}'
+      scan_interval: 660
+- id: '1663015641931'
+  alias: Tvättmaskinen, starta på klockslag
+  description: ''
+  trigger:
+  - platform: time
+    at: input_datetime.tvattmaskinen_timme
+  condition: []
+  action:
+  - service: switch.turn_on
+    data: {}
+    target:
+      entity_id: switch.clever_spz2
+  - delay:
+      hours: 0
+      minutes: 5
+      seconds: 0
+      milliseconds: 0
+  - service: automation.turn_off
+    data:
+      stop_actions: false
+    target:
+      entity_id: automation.tvattmaskinen_starta_pa_klockslag
   mode: single
