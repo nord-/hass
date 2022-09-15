@@ -48,6 +48,11 @@
         "url": "/hacsfiles/lovelace-collapsable-cards/collapsable-cards.js?hacstag=364978303050",
         "type": "module",
         "id": "59120cd8cb0f45ad837dd0a4ea4bb53d"
+      },
+      {
+        "url": "/hacsfiles/uptime-card/uptime-card.js?hacstag=3505098670111",
+        "type": "module",
+        "id": "8cf36aeb921648b69a5a602f7652d9e9"
       }
     ]
   }

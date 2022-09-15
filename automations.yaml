@@ -803,7 +803,7 @@
       entity_id: switch.varmepumpen
   - service: notify.rickards_devices
     data:
-      message: apa
+      message: 'Elpatron på.\nKlockan: {{ now().strftime(''%H:%M den %d/%m'') }}'
   mode: single
 - id: '1662395326862'
   alias: Värmepumpen, blockera elpatron
@@ -948,4 +948,81 @@
       stop_actions: false
     target:
       entity_id: automation.tvattmaskinen_starta_pa_klockslag
+  mode: single
+- id: '1663084425465'
+  alias: 'Tvättmaskinen klar '
+  description: ''
+  trigger:
+  - platform: numeric_state
+    entity_id: sensor.clever_spz2_electric_consumption_w
+    above: 1000
+  condition: []
+  action:
+  - wait_for_trigger:
+    - platform: numeric_state
+      entity_id: sensor.clever_spz2_electric_consumption_w
+      for:
+        hours: 0
+        minutes: 2
+        seconds: 0
+      below: 5
+  - service: notify.fridas_devices
+    data:
+      title: Tvättmaskinen är klar
+      message: Tvättmaskinen blev färdig kl. {{ now().strftime('%H:%M den %d/%m')
+        }}
+  - service: notify.rickards_devices
+    data:
+      title: Tvättmaskinen är klar
+      message: Tvättmaskinen blev färdig kl. {{ now().strftime('%H:%M den %d/%m')
+        }}
+  mode: single
+- id: '1663103501093'
+  alias: Spelrummet, on-off
+  description: ''
+  trigger:
+  - device_id: c53b352f8a5c574b8c18e8cc9b371448
+    domain: zha
+    platform: device
+    type: remote_button_short_press
+    subtype: turn_on
+  condition: []
+  action:
+  - type: toggle
+    device_id: d28a6511fb054b24bae3ad0163a59379
+    entity_id: light.spelrummet_taket_light
+    domain: light
+  mode: single
+- id: '1663105406145'
+  alias: Spelrummet, LED
+  description: ''
+  use_blueprint:
+    path: niro1987/zha_ikea_tradfri_5button_remote_preset.yaml
+    input:
+      remote: c53b352f8a5c574b8c18e8cc9b371448
+      light: light.spelrummet_taket_light
+      preset: input_select.helper_spelrummet_led
+- id: '1663141580671'
+  alias: ALARM, ChargeNode offline
+  description: ''
+  trigger:
+  - platform: state
+    entity_id:
+    - binary_sensor.chargenode_pie
+    to: 'off'
+  condition: []
+  action:
+  - service: notify.rickards_devices
+    data:
+      title: Laddaren offline!
+      message: Det går inte att nå ChargeNode-laddaren!
+      data:
+        push:
+          sound:
+            name: default
+            critical: 1
+            volume: 1
+        channel: Alarm
+        ttl: 0
+        priority: high
   mode: single

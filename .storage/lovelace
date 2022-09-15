@@ -415,12 +415,23 @@
                   "icon": "mdi:lamp"
                 },
                 {
+                  "entity": "light.spelrummet_taket_light",
+                  "name": "Taket",
+                  "icon": "mdi:ceiling-light"
+                },
+                {
                   "entity": "switch.telldus_1",
-                  "icon": "mdi:lamp"
+                  "icon": "mdi:lamp",
+                  "name": "Fönstret"
                 }
               ],
               "title": "Belysning",
               "type": "entities"
+            },
+            {
+              "type": "light",
+              "entity": "light.spelrummet_taket_light",
+              "name": "Taket"
             },
             {
               "type": "history-graph",
@@ -712,34 +723,71 @@
               "type": "weather-forecast"
             },
             {
-              "show_name": false,
-              "show_icon": true,
-              "show_state": true,
-              "type": "glance",
-              "entities": [
+              "type": "vertical-stack",
+              "cards": [
                 {
-                  "entity": "sensor.yr_symbol",
-                  "name": "Väder"
+                  "type": "custom:uptime-card",
+                  "entity": "sun.sun",
+                  "title_template": "Solen",
+                  "icon": "mdi:weather-sunny",
+                  "ko_icon": "mdi:weather-sunny-off",
+                  "ko": "below_horizon",
+                  "icon_adaptive_color": true,
+                  "title_adaptive_color": true,
+                  "color": {
+                    "ok": "#F9d71C",
+                    "ko": "#053752",
+                    "half": "#EF810E"
+                  },
+                  "bar": {
+                    "spacing": 4,
+                    "height": 10,
+                    "round": 4
+                  },
+                  "show": {
+                    "average": false,
+                    "status": false
+                  },
+                  "alignment": {
+                    "status": "spaced",
+                    "header": "left",
+                    "icon_first": true
+                  },
+                  "tap_action": {
+                    "action": "more-info"
+                  }
                 },
                 {
-                  "entity": "sensor.yr_temperature",
-                  "name": "Temp",
-                  "icon": "mdi:temperature-celsius"
-                },
-                {
-                  "entity": "sensor.yr_cloudiness",
-                  "name": "Moln",
-                  "icon": "mdi:weather-cloudy"
-                },
-                {
-                  "entity": "sensor.yr_pressure",
-                  "name": "Lufttryck",
-                  "icon": "mdi:gauge-low"
-                },
-                {
-                  "entity": "sensor.yr_wind_speed",
-                  "name": "Vind",
-                  "icon": "mdi:weather-windy"
+                  "show_name": false,
+                  "show_icon": true,
+                  "show_state": true,
+                  "type": "glance",
+                  "entities": [
+                    {
+                      "entity": "sensor.yr_symbol",
+                      "name": "Väder"
+                    },
+                    {
+                      "entity": "sensor.yr_temperature",
+                      "name": "Temp",
+                      "icon": "mdi:temperature-celsius"
+                    },
+                    {
+                      "entity": "sensor.yr_cloudiness",
+                      "name": "Moln",
+                      "icon": "mdi:weather-cloudy"
+                    },
+                    {
+                      "entity": "sensor.yr_pressure",
+                      "name": "Lufttryck",
+                      "icon": "mdi:gauge-low"
+                    },
+                    {
+                      "entity": "sensor.yr_wind_speed",
+                      "name": "Vind",
+                      "icon": "mdi:weather-windy"
+                    }
+                  ]
                 }
               ]
             },
@@ -1826,6 +1874,28 @@
                   "width": 2,
                   "curve": "smooth"
                 }
+              }
+            }
+          ]
+        },
+        {
+          "theme": "Backend-selected",
+          "icon": "mdi:access-point-network",
+          "type": "panel",
+          "badges": [],
+          "cards": [
+            {
+              "type": "custom:uptime-card",
+              "entity": "binary_sensor.chargenode_pie",
+              "title_template": "ChargeNode",
+              "icon": "mdi:ev-station",
+              "status_adaptive_color": true,
+              "show": {
+                "footer": false
+              },
+              "update_interval": 60,
+              "tooltip": {
+                "hour24": true
               }
             }
           ]
