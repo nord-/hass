@@ -435,6 +435,8 @@
     entity_id: automation.laddat_till_20
   - service: script.charge_the_tesla
     data: {}
+  - service: script.ladda_bilen_uppstart
+    data: {}
   mode: single
 - id: '1610304940192'
   alias: Ladda bilen, stoppa, SoC ≥20%
@@ -530,6 +532,8 @@
   action:
   - service: script.charge_the_tesla
     data: {}
+  - service: script.ladda_bilen_uppstart
+    data: {}
   mode: single
 - id: '1643296123979'
   alias: Ladda bilen, stoppa
@@ -584,6 +588,8 @@
   action:
   - service: script.ladda_zoe
     data: {}
+  - service: script.ladda_bilen_uppstart
+    data: {}
   mode: single
 - id: '1652813052285'
   alias: Wall-E, fellarm
@@ -625,6 +631,8 @@
   condition: []
   action:
   - service: script.ladda_zoe
+    data: {}
+  - service: script.ladda_bilen_uppstart
     data: {}
   mode: single
 - id: '1657529930391'
@@ -772,6 +780,8 @@
   action:
   - service: script.charge_the_tesla
     data: {}
+  - service: script.ladda_bilen_uppstart
+    data: {}
   mode: single
 - id: '1662395114345'
   alias: Värmepumpen, tillåt elpatron
@@ -784,26 +794,37 @@
     to: true
   - platform: time
     at: 02:00:00
+    enabled: false
+  - platform: numeric_state
+    entity_id: sensor.template_spabadet_l2_current_a
+    for:
+      hours: 0
+      minutes: 0
+      seconds: 30
+    below: 10
   condition:
-  - condition: and
-    conditions:
-    - condition: state
-      entity_id: sensor.nordpool_kwh_se3_sek_3_095_0
-      attribute: low price
-      state: true
-    - condition: not
-      conditions:
-      - condition: time
-        after: 01:00:00
-        before: 02:00:00
+  - condition: state
+    entity_id: sensor.nordpool_kwh_se3_sek_3_095_0
+    attribute: low price
+    state: true
+  - condition: numeric_state
+    entity_id: sensor.template_spabadet_l2_current_a
+    below: 10
   action:
   - service: switch.turn_off
     data: {}
     target:
-      entity_id: switch.varmepumpen
+      entity_id:
+      - switch.varmepumpen_b
+      - switch.varmepumpen_a
   - service: notify.rickards_devices
     data:
       message: 'Elpatron på.\nKlockan: {{ now().strftime(''%H:%M den %d/%m'') }}'
+  - service: switch.turn_on
+    data: {}
+    target:
+      entity_id: switch.spabadet_l2
+    enabled: false
   mode: single
 - id: '1662395326862'
   alias: Värmepumpen, blockera elpatron
@@ -816,15 +837,26 @@
     to: false
   - platform: time
     at: 01:00:00
+    enabled: false
+  - platform: numeric_state
+    entity_id: sensor.template_spabadet_l2_current_a
+    above: 10
   condition: []
   action:
   - service: switch.turn_on
     data: {}
     target:
-      entity_id: switch.varmepumpen
+      entity_id:
+      - switch.varmepumpen_a
+      - switch.varmepumpen_b
   - service: notify.rickards_devices
     data:
       message: 'Elpatron av.\nKlockan: {{ now().strftime(''%H:%M den %d/%m'') }}'
+  - service: switch.turn_off
+    data: {}
+    target:
+      entity_id: switch.spabadet_l2
+    enabled: false
   mode: single
 - id: '1662572482443'
   alias: Diskmaskinen, starta på klocka
@@ -838,6 +870,15 @@
     data: {}
     target:
       entity_id: switch.clever_spz3
+  - delay:
+      hours: 0
+      minutes: 5
+      seconds: 0
+      milliseconds: 0
+  - service: automation.turn_off
+    data: {}
+    target:
+      entity_id: automation.diskmaskinen_starta_pa_klocka
   mode: single
 - id: '1662626703155'
   alias: Ladda Zoe, stoppa
@@ -1025,4 +1066,69 @@
         channel: Alarm
         ttl: 0
         priority: high
+  mode: single
+- id: '1663512131780'
+  alias: Spabadet, slå på värmen
+  description: ''
+  trigger:
+  - platform: state
+    entity_id:
+    - sensor.nordpool_kwh_se3_sek_3_095_0
+    attribute: low price
+    to: true
+  - platform: state
+    entity_id:
+    - binary_sensor.l2_overcurrent
+    to: 'off'
+    for:
+      hours: 0
+      minutes: 0
+      seconds: 30
+    enabled: true
+  - platform: numeric_state
+    entity_id: sensor.hem_gen5_electric_consumed_2
+    for:
+      hours: 0
+      minutes: 0
+      seconds: 30
+    below: 9
+    enabled: false
+  condition:
+  - condition: state
+    entity_id: binary_sensor.l2_overcurrent
+    state: 'off'
+    enabled: false
+  - condition: numeric_state
+    entity_id: sensor.hem_gen5_electric_consumed_2
+    below: 9
+    enabled: false
+  - condition: state
+    entity_id: sensor.nordpool_kwh_se3_sek_3_095_0
+    attribute: low price
+    state: true
+  action:
+  - service: switch.turn_on
+    data: {}
+    target:
+      entity_id: switch.spabadet_l2
+  mode: single
+- id: '1663512583705'
+  alias: Spabadet, stäng av värmaren
+  description: ''
+  trigger:
+  - platform: state
+    entity_id:
+    - sensor.nordpool_kwh_se3_sek_3_095_0
+    attribute: low price
+    to: false
+  - platform: state
+    entity_id:
+    - binary_sensor.l2_overcurrent
+    to: 'on'
+  condition: []
+  action:
+  - service: switch.turn_off
+    data: {}
+    target:
+      entity_id: switch.spabadet_l2
   mode: single

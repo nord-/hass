@@ -121,9 +121,9 @@ landroid_cloud:
 hacs:
   token: !secret git_token
 
-mqtt:
-  certificate: /ssl/ca_mqtt.crt
-  tls_insecure: true
+# mqtt:
+#   certificate: /ssl/ca_mqtt.crt
+#   tls_insecure: true
   # broker: dev-vm-mqtt.westeurope.cloudapp.azure.com
   # port: 8883
   # username: !secret MQTT_user

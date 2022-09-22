@@ -333,3 +333,39 @@ ladda_tesla_stoppa:
       title: Zoe har slutat ladda
   mode: single
   icon: mdi:ev-station
+ladda_bilen_uppstart:
+  alias: Ladda bilarna, uppstart
+  sequence:
+  - service: switch.turn_off
+    data: {}
+    target:
+      entity_id: switch.spabadet_l2
+  - service: switch.turn_on
+    data: {}
+    target:
+      entity_id:
+      - switch.varmepumpen_a
+      - switch.varmepumpen_b
+  - delay:
+      hours: 0
+      minutes: 5
+      seconds: 0
+      milliseconds: 0
+  - if:
+    - condition: state
+      entity_id: sensor.nordpool_kwh_se3_sek_3_095_0
+      attribute: low price
+      state: true
+    then:
+    - service: switch.turn_on
+      data: {}
+      target:
+        entity_id: switch.spabadet_l2
+    - service: switch.turn_off
+      data: {}
+      target:
+        entity_id:
+        - switch.varmepumpen_a
+        - switch.varmepumpen_b
+  mode: single
+  icon: mdi:ev-station
