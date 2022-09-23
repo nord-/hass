@@ -1110,7 +1110,9 @@
   - service: switch.turn_on
     data: {}
     target:
-      entity_id: switch.spabadet_l2
+      entity_id:
+      - switch.spabadet_l2
+      - switch.spabadet_l3
   mode: single
 - id: '1663512583705'
   alias: Spabadet, stäng av värmaren
@@ -1131,4 +1133,44 @@
     data: {}
     target:
       entity_id: switch.spabadet_l2
+    alias: Turn off heater
+  - if:
+    - condition: and
+      conditions:
+      - condition: numeric_state
+        entity_id: sensor.framsidan_temperature
+        above: 5
+      - condition: state
+        entity_id: binary_sensor.l2_overcurrent
+        state: 'off'
+      - condition: state
+        entity_id: script.spabadet_control_pumps
+        state: 'off'
+        alias: Pumps should not be running
+      - condition: state
+        entity_id: script.spabadet_pause_control
+        state: 'off'
+        alias: When using bath, do not turn off
+      alias: Temp >5°, no overcurrent and pumps should not be running
+    then:
+    - service: switch.turn_off
+      data: {}
+      target:
+        entity_id: switch.spabadet_l3
+      alias: Turn off pumps
+    alias: Turn off pumps if temp >5° and no overcurrent
+  mode: single
+- id: '1663922858212'
+  alias: Spabadet, run pumps for 2 hours
+  description: ''
+  trigger:
+  - platform: time_pattern
+    hours: /8
+    minutes: '0'
+    seconds: '0'
+    alias: Every eight hours
+  condition: []
+  action:
+  - service: script.spabadet_control_pumps
+    data: {}
   mode: single

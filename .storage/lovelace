@@ -140,6 +140,14 @@
                       "entity": "sensor.altan_temperature",
                       "name": "Altanen",
                       "detail": 2
+                    },
+                    {
+                      "hours_to_show": 24,
+                      "graph": "line",
+                      "type": "sensor",
+                      "entity": "sensor.badet_temperature",
+                      "name": "Spabadet",
+                      "detail": 2
                     }
                   ]
                 },
@@ -737,6 +745,192 @@
           ],
           "cards": [
             {
+              "type": "vertical-stack",
+              "title": "Spabadet",
+              "cards": [
+                {
+                  "type": "horizontal-stack",
+                  "cards": [
+                    {
+                      "type": "gauge",
+                      "entity": "sensor.badet_temperature",
+                      "min": 30,
+                      "max": 40,
+                      "needle": true,
+                      "severity": {
+                        "green": 36,
+                        "red": 38
+                      },
+                      "name": " ",
+                      "unit": "°"
+                    },
+                    {
+                      "type": "button",
+                      "show_name": true,
+                      "show_icon": true,
+                      "tap_action": {
+                        "action": "call-service",
+                        "service": "script.spabadet_pause_control",
+                        "data": {},
+                        "target": {}
+                      },
+                      "entity": "script.spabadet_pause_control",
+                      "show_state": false,
+                      "name": "Bada",
+                      "icon_height": "50px"
+                    }
+                  ]
+                },
+                {
+                  "type": "horizontal-stack",
+                  "cards": [
+                    {
+                      "type": "gauge",
+                      "entity": "sensor.template_spabadet_l1_current_a",
+                      "max": 10,
+                      "name": "Jets"
+                    },
+                    {
+                      "type": "gauge",
+                      "entity": "sensor.template_spabadet_l2_current_a",
+                      "max": 13,
+                      "name": "Värmare"
+                    },
+                    {
+                      "type": "gauge",
+                      "entity": "sensor.template_spabadet_l3_current_a",
+                      "max": 10,
+                      "name": "Pump"
+                    }
+                  ]
+                },
+                {
+                  "type": "entities",
+                  "entities": [
+                    {
+                      "entity": "switch.spabadet_l1",
+                      "name": "Jets L1",
+                      "icon": "mdi:turbine",
+                      "secondary_info": "last-changed"
+                    },
+                    {
+                      "entity": "switch.spabadet_l2",
+                      "icon": "mdi:pool-thermometer",
+                      "name": "Värmaren L2",
+                      "secondary_info": "last-changed"
+                    },
+                    {
+                      "entity": "switch.spabadet_l3",
+                      "name": "Pumpen L3",
+                      "secondary_info": "last-changed",
+                      "icon": "mdi:pump"
+                    }
+                  ]
+                },
+                {
+                  "type": "entities",
+                  "entities": [
+                    {
+                      "entity": "sensor.spabadet_kr_man",
+                      "name": "Kostnad (mån)",
+                      "icon": "mdi:cash"
+                    },
+                    {
+                      "entity": "sensor.spabadet_kwh_man",
+                      "name": "Energi (mån)",
+                      "icon": "mdi:lightning-bolt"
+                    },
+                    {
+                      "type": "divider"
+                    },
+                    {
+                      "entity": "sensor.spabadet_kr_man",
+                      "type": "attribute",
+                      "attribute": "last_period",
+                      "suffix": "kr",
+                      "name": "Förra mån",
+                      "icon": "mdi:cash"
+                    },
+                    {
+                      "entity": "sensor.spabadet_kwh_man",
+                      "type": "attribute",
+                      "attribute": "last_period",
+                      "suffix": "kWh",
+                      "name": "Förra mån",
+                      "icon": "mdi:lightning-bolt"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "vertical-stack",
+              "title": "Wall-E",
+              "cards": [
+                {
+                  "type": "horizontal-stack",
+                  "cards": [
+                    {
+                      "type": "entity",
+                      "entity": "vacuum.wall_e",
+                      "icon": "mow"
+                    },
+                    {
+                      "type": "entity",
+                      "entity": "vacuum.wall_e",
+                      "name": " Batteri",
+                      "icon": "mdi:battery-50",
+                      "attribute": "battery_level",
+                      "unit": "%"
+                    }
+                  ]
+                },
+                {
+                  "type": "horizontal-stack",
+                  "cards": [
+                    {
+                      "show_name": false,
+                      "show_icon": true,
+                      "type": "button",
+                      "tap_action": {
+                        "action": "call-service",
+                        "service": "vacuum.start",
+                        "data": {},
+                        "target": {
+                          "device_id": "04744719de96abcefa75f8ffeeb42a05"
+                        }
+                      },
+                      "entity": "vacuum.wall_e",
+                      "icon": "mdi:mower",
+                      "show_state": false
+                    },
+                    {
+                      "show_name": false,
+                      "show_icon": true,
+                      "type": "button",
+                      "tap_action": {
+                        "action": "call-service",
+                        "service": "vacuum.return_to_base",
+                        "data": {},
+                        "target": {
+                          "device_id": "04744719de96abcefa75f8ffeeb42a05"
+                        }
+                      },
+                      "entity": "vacuum.wall_e",
+                      "icon": "mdi:home-battery"
+                    }
+                  ]
+                },
+                {
+                  "type": "entity",
+                  "entity": "vacuum.wall_e",
+                  "icon": "mdi:timer-check-outline",
+                  "name": "Uppdaterad",
+                  "attribute": "state_updated_at"
+                }
+              ]
+            },
+            {
               "entities": [
                 {
                   "entity": "switch.an179_1",
@@ -843,147 +1037,6 @@
                       "entity": "sensor.yr_wind_speed",
                       "name": "Vind",
                       "icon": "mdi:weather-windy"
-                    }
-                  ]
-                }
-              ]
-            },
-            {
-              "type": "vertical-stack",
-              "title": "Wall-E",
-              "cards": [
-                {
-                  "type": "horizontal-stack",
-                  "cards": [
-                    {
-                      "type": "entity",
-                      "entity": "vacuum.wall_e",
-                      "icon": "mow"
-                    },
-                    {
-                      "type": "entity",
-                      "entity": "vacuum.wall_e",
-                      "name": " Batteri",
-                      "icon": "mdi:battery-50",
-                      "attribute": "battery_level",
-                      "unit": "%"
-                    }
-                  ]
-                },
-                {
-                  "type": "horizontal-stack",
-                  "cards": [
-                    {
-                      "show_name": false,
-                      "show_icon": true,
-                      "type": "button",
-                      "tap_action": {
-                        "action": "call-service",
-                        "service": "vacuum.start",
-                        "data": {},
-                        "target": {
-                          "device_id": "04744719de96abcefa75f8ffeeb42a05"
-                        }
-                      },
-                      "entity": "vacuum.wall_e",
-                      "icon": "mdi:mower",
-                      "show_state": false
-                    },
-                    {
-                      "show_name": false,
-                      "show_icon": true,
-                      "type": "button",
-                      "tap_action": {
-                        "action": "call-service",
-                        "service": "vacuum.return_to_base",
-                        "data": {},
-                        "target": {
-                          "device_id": "04744719de96abcefa75f8ffeeb42a05"
-                        }
-                      },
-                      "entity": "vacuum.wall_e",
-                      "icon": "mdi:home-battery"
-                    }
-                  ]
-                },
-                {
-                  "type": "entity",
-                  "entity": "vacuum.wall_e",
-                  "icon": "mdi:timer-check-outline",
-                  "name": "Uppdaterad",
-                  "attribute": "state_updated_at"
-                }
-              ]
-            },
-            {
-              "type": "vertical-stack",
-              "title": "Spabadet",
-              "cards": [
-                {
-                  "type": "horizontal-stack",
-                  "cards": [
-                    {
-                      "type": "gauge",
-                      "entity": "sensor.template_spabadet_l1_current_a",
-                      "max": 10,
-                      "name": "Jets"
-                    },
-                    {
-                      "type": "gauge",
-                      "entity": "sensor.template_spabadet_l2_current_a",
-                      "max": 13,
-                      "name": "Värmare"
-                    },
-                    {
-                      "type": "gauge",
-                      "entity": "sensor.template_spabadet_l3_current_a",
-                      "max": 10,
-                      "name": "Pump"
-                    }
-                  ]
-                },
-                {
-                  "type": "entities",
-                  "entities": [
-                    {
-                      "entity": "sensor.spabadet_kr_man",
-                      "name": "Kostnad (mån)",
-                      "icon": "mdi:cash"
-                    },
-                    {
-                      "entity": "sensor.spabadet_kwh_man",
-                      "name": "Energi (mån)",
-                      "icon": "mdi:lightning-bolt"
-                    },
-                    {
-                      "type": "divider"
-                    },
-                    {
-                      "entity": "sensor.spabadet_kr_man",
-                      "type": "attribute",
-                      "attribute": "last_period",
-                      "suffix": "kr",
-                      "name": "Förra mån",
-                      "icon": "mdi:cash"
-                    },
-                    {
-                      "entity": "sensor.spabadet_kwh_man",
-                      "type": "attribute",
-                      "attribute": "last_period",
-                      "suffix": "kWh",
-                      "name": "Förra mån",
-                      "icon": "mdi:lightning-bolt"
-                    }
-                  ]
-                },
-                {
-                  "type": "entities",
-                  "entities": [
-                    {
-                      "entity": "switch.spabadet_l2",
-                      "icon": "mdi:pool-thermometer",
-                      "name": "Värmaren",
-                      "secondary_info": "last-changed"
                     }
                   ]
                 }

@@ -7,6 +7,8 @@
     name: Sovrummet
   - id: 199
     name: Kontoret
+  - id: 247
+    name: Badet
 # Weather prediction
 - platform: weather_data
   monitored_conditions:
