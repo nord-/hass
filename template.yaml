@@ -282,7 +282,14 @@
       {%- else -%}
         {{ 0 | float }}
       {%- endif -%}
-
+- sensor:
+  - unique_id: aza_charging_required_time
+    state: >-
+      {%- set time = (states('input_number.aza_charge_limit')|float(0) - states('sensor.azarel_battery_sensor')|float(0)) /100*51/11 -%}
+      {%- set hours = time|int -%}
+      {%- set minutes = ((time - hours)*60)|int -%}
+      {{ '{:02}:{:02}'.format(hours, minutes) }}
+    
 - sensor:
   - unique_id: spabadet_energy_kwh
     unit_of_measurement: "kWh"

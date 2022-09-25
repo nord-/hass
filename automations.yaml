@@ -1171,6 +1171,17 @@
     alias: Every eight hours
   condition: []
   action:
-  - service: script.spabadet_control_pumps
+  - service: script.turn_on
+    target:
+      entity_id: script.spabadet_control_pumps
     data: {}
   mode: single
+- id: '1664118673084'
+  alias: Tvättstugan, LED
+  description: ''
+  use_blueprint:
+    path: niro1987/zha_ikea_tradfri_5button_remote_preset.yaml
+    input:
+      remote: 6a70347d6c5f0791963cff2b5e01c92b
+      light: light.tvattstugan_banken_light
+      preset: input_select.helper_spelrummet_led

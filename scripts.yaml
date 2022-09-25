@@ -420,8 +420,8 @@ spabadet_pause_control:
       - switch.spabadet_l2
       - switch.spabadet_l3
   - delay:
-      hours: 2
-      minutes: 0
+      hours: 1
+      minutes: 15
       seconds: 0
       milliseconds: 0
   - service: automation.turn_on

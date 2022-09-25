@@ -770,9 +770,10 @@
                       "show_icon": true,
                       "tap_action": {
                         "action": "call-service",
-                        "service": "script.spabadet_pause_control",
-                        "data": {},
-                        "target": {}
+                        "service": "script.turn_on",
+                        "target": {
+                          "entity_id": "script.spabadet_pause_control"
+                        }
                       },
                       "entity": "script.spabadet_pause_control",
                       "show_state": false,
@@ -1058,6 +1059,12 @@
                   "entity": "switch.tz1",
                   "name": "Grovköket",
                   "icon": "mdi:desk-lamp"
+                },
+                {
+                  "entity": "light.tvattstugan_banken_light",
+                  "name": "Tvättstugan",
+                  "icon": "mdi:led-strip",
+                  "secondary_info": "brightness"
                 }
               ],
               "show_header_toggle": false,
@@ -1337,6 +1344,11 @@
                             {
                               "entity": "input_number.aza_charge_limit",
                               "name": "SoC gräns"
+                            },
+                            {
+                              "entity": "sensor.template_aza_charging_required_time",
+                              "name": "Laddtid",
+                              "icon": "mdi:clock"
                             }
                           ]
                         },
