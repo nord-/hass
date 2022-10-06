@@ -2,30 +2,32 @@ vrum_nere:
   name: Vardagsrummet, nere
   entities:
     - switch.rusta15d
-    - switch.fibaro_system_fgwpe_f_wall_plug_gen5_switch
+    - switch.nexa_6
     - light.fibaro_system_fgd212_dimmer_2_level_2
     - switch.rusta14c # julgranen
     - switch.rusta15b # röda julgranen
     - switch.telldus_2 # flörtkulorna
+    #    - switch.fibaro_system_fgwpe_f_wall_plug_gen5_switch
 
 felix_rum:
   name: Felix rum
   entities:
-    - switch.nexa_6
-    - switch.rusta13b
+    - light.felix_fonster
+    - switch.felix_ljusslinga
     
 gastrummet:
   name: Spelrummet
   entities:
 #    - switch.tz1
-    - switch.telldus_1
-    
+    - light.spelrummet_fonstret
+    - switch.spelrummet_ljusslingan
+
 hallen:
   name: Hallen
   entities:
 #    - switch.telldus_1
-    - switch.cleverio_zw_plug_1
-    
+#    - switch.cleverio_zw_plug_1
+    - switch.tz1   
 koket:
   name: Köket
   entities:
@@ -36,7 +38,8 @@ grovkoket:
   name: Grovköket
   entities:
 #    - switch.rusta15b
-    - switch.tz1
+    - switch.telldus_1
+    
     
 vrum_uppe:
   name: Vardagsrummet, uppe

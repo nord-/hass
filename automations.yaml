@@ -569,6 +569,7 @@
     entity_id:
     - binary_sensor.low_price
     to: 'on'
+    enabled: false
   condition:
   - condition: numeric_state
     entity_id: sensor.zoe_battery_level
@@ -792,15 +793,12 @@
     - sensor.nordpool_kwh_se3_sek_3_095_0
     attribute: low price
     to: true
-  - platform: time
-    at: 02:00:00
-    enabled: false
   - platform: numeric_state
     entity_id: sensor.template_spabadet_l2_current_a
     for:
       hours: 0
       minutes: 0
-      seconds: 30
+      seconds: 40
     below: 10
   condition:
   - condition: state
@@ -820,6 +818,7 @@
   - service: notify.rickards_devices
     data:
       message: 'Elpatron på.\nKlockan: {{ now().strftime(''%H:%M den %d/%m'') }}'
+    enabled: false
   - service: switch.turn_on
     data: {}
     target:
@@ -852,6 +851,7 @@
   - service: notify.rickards_devices
     data:
       message: 'Elpatron av.\nKlockan: {{ now().strftime(''%H:%M den %d/%m'') }}'
+    enabled: false
   - service: switch.turn_off
     data: {}
     target:
@@ -1073,39 +1073,49 @@
   trigger:
   - platform: state
     entity_id:
-    - sensor.nordpool_kwh_se3_sek_3_095_0
-    attribute: low price
-    to: true
-  - platform: state
-    entity_id:
     - binary_sensor.l2_overcurrent
     to: 'off'
     for:
       hours: 0
-      minutes: 0
-      seconds: 30
+      minutes: 1
+      seconds: 0
     enabled: true
+    alias: When low load L2 for 60 sec
   - platform: numeric_state
     entity_id: sensor.hem_gen5_electric_consumed_2
     for:
       hours: 0
-      minutes: 0
-      seconds: 30
+      minutes: 1
+      seconds: 0
     below: 9
-    enabled: false
+    enabled: true
+    alias: When total load L2 <9A for 60 sec
   condition:
-  - condition: state
-    entity_id: binary_sensor.l2_overcurrent
-    state: 'off'
-    enabled: false
   - condition: numeric_state
     entity_id: sensor.hem_gen5_electric_consumed_2
     below: 9
-    enabled: false
+    enabled: true
+    alias: If total load L2 <9A
   - condition: state
     entity_id: sensor.nordpool_kwh_se3_sek_3_095_0
     attribute: low price
     state: true
+    alias: If low price
+  - condition: or
+    conditions:
+    - condition: state
+      entity_id: script.spabadet_pump_and_heater
+      state: 'on'
+      alias: If spabadet should be running
+    - condition: state
+      entity_id: script.spabadet_pause_control
+      state: 'on'
+      alias: If manual control of spabadet
+    alias: If spabadet should be running
+  - condition: state
+    entity_id: input_boolean.overcurrent_l2
+    state: 'on'
+    alias: If heater stopped because high load
   action:
   - service: switch.turn_on
     data: {}
@@ -1113,6 +1123,12 @@
       entity_id:
       - switch.spabadet_l2
       - switch.spabadet_l3
+    alias: Turn on pumps and heater
+  - service: input_boolean.turn_off
+    data: {}
+    target:
+      entity_id: input_boolean.overcurrent_l2
+    alias: Turn off high load flag
   mode: single
 - id: '1663512583705'
   alias: Spabadet, stäng av värmaren
@@ -1123,58 +1139,55 @@
     - sensor.nordpool_kwh_se3_sek_3_095_0
     attribute: low price
     to: false
+    alias: When expensive
   - platform: state
     entity_id:
     - binary_sensor.l2_overcurrent
     to: 'on'
-  condition: []
+    id: overcurrent_l2
+    alias: When high load L2
+  condition:
+  - condition: or
+    conditions:
+    - condition: state
+      entity_id: script.spabadet_pump_and_heater
+      state: 'on'
+    - condition: state
+      entity_id: script.spabadet_pause_control
+      state: 'on'
+    alias: If any Spabadet script are running
   action:
   - service: switch.turn_off
     data: {}
     target:
       entity_id: switch.spabadet_l2
     alias: Turn off heater
-  - if:
-    - condition: and
-      conditions:
-      - condition: numeric_state
-        entity_id: sensor.framsidan_temperature
-        above: 5
-      - condition: state
-        entity_id: binary_sensor.l2_overcurrent
-        state: 'off'
-      - condition: state
-        entity_id: script.spabadet_control_pumps
-        state: 'off'
-        alias: Pumps should not be running
-      - condition: state
-        entity_id: script.spabadet_pause_control
-        state: 'off'
-        alias: When using bath, do not turn off
-      alias: Temp >5°, no overcurrent and pumps should not be running
-    then:
-    - service: switch.turn_off
-      data: {}
-      target:
-        entity_id: switch.spabadet_l3
-      alias: Turn off pumps
-    alias: Turn off pumps if temp >5° and no overcurrent
+  - choose:
+    - conditions:
+      - condition: trigger
+        id: overcurrent_l2
+      sequence:
+      - service: input_boolean.turn_on
+        data: {}
+        target:
+          entity_id: input_boolean.overcurrent_l2
+    alias: If high load set overcurrent-flag
   mode: single
 - id: '1663922858212'
-  alias: Spabadet, run pumps for 2 hours
+  alias: Spabadet, run pumps and heater
   description: ''
   trigger:
   - platform: time_pattern
-    hours: /8
+    hours: /4
     minutes: '0'
     seconds: '0'
-    alias: Every eight hours
+    alias: Every four hours
   condition: []
   action:
   - service: script.turn_on
-    target:
-      entity_id: script.spabadet_control_pumps
     data: {}
+    target:
+      entity_id: script.spabadet_pump_and_heater
   mode: single
 - id: '1664118673084'
   alias: Tvättstugan, LED
@@ -1185,3 +1198,33 @@
       remote: 6a70347d6c5f0791963cff2b5e01c92b
       light: light.tvattstugan_banken_light
       preset: input_select.helper_spelrummet_led
+- id: '1664611841028'
+  alias: Check Cleverio status
+  description: ''
+  trigger:
+  - platform: time_pattern
+    hours: /1
+  condition: []
+  action:
+  - service: zwave_js.ping
+    data: {}
+    target:
+      entity_id:
+      - switch.cleverio_zw_plug_1
+      - switch.clever_spz2
+      - switch.clever_spz3
+  mode: single
+- id: '1664994425706'
+  alias: iGrill alarm
+  description: ''
+  trigger:
+  - platform: template
+    value_template: '{{ states(''sensor.igrill_probe_1'')|int >= states(''input_number.igrill_target_temp'')|int
+      }}'
+  condition: []
+  action:
+  - service: notify.rickards_devices
+    data:
+      title: iGrill alarm
+      message: Temperaturen är {{ states.sensor.igrill_probe_1.state|int }}°C.
+  mode: single

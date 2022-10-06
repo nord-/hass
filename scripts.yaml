@@ -42,7 +42,7 @@ turn_off_uppe:
 turn_on_nere:
   alias: Tänd undervån
   sequence:
-  - service: switch.turn_on
+  - service: homeassistant.turn_on
     data:
       entity_id:
       - group.grovkoket
@@ -56,10 +56,12 @@ turn_on_nere:
       entity_id:
       - group.vrum_nere
       - group.koket
+    enabled: false
+  mode: single
 turn_off_nere:
   alias: Släck undervån
   sequence:
-  - service: switch.turn_off
+  - service: homeassistant.turn_off
     data:
       entity_id:
       - group.grovkoket
@@ -73,10 +75,12 @@ turn_off_nere:
       entity_id:
       - group.vrum_nere
       - group.koket
+    enabled: false
+  mode: single
 turn_on_general_lights:
   alias: Tänd allmän belysning
   sequence:
-  - service: switch.turn_on
+  - service: homeassistant.turn_on
     data:
       entity_id:
       - group.grovkoket
@@ -93,10 +97,12 @@ turn_on_general_lights:
       - group.vrum_nere
       - group.koket
       - group.kontoret
+    enabled: false
+  mode: single
 turn_off_general_lights:
   alias: Släck allmän belysning
   sequence:
-  - service: switch.turn_off
+  - service: homeassistant.turn_off
     data: {}
     target:
       entity_id:
@@ -108,21 +114,24 @@ turn_off_general_lights:
       - group.vrum_uppe
       - group.kontoret
       - switch.rusta13a
-      - switch.rusta13b
       - switch.rusta13c
-      - switch.nexa_1
+      - group.sovrummet
   - service: light.turn_off
     data:
       entity_id:
       - group.vrum_nere
       - group.koket
       - group.kontoret
+      - group.gastrummet
+    enabled: false
   - service: script.slack_sovrummet
+    data: {}
+    enabled: false
   mode: single
 turn_off_all:
   alias: Stäng av allt
   sequence:
-  - service: switch.turn_off
+  - service: homeassistant.turn_off
     data:
       entity_id:
       - group.grovkoket
@@ -141,6 +150,8 @@ turn_off_all:
       - group.vrum_nere
       - group.koket
       - group.kontoret
+    enabled: false
+  mode: single
 turn_on_outdoor:
   alias: Slå på utomhusbelysning
   sequence:
@@ -156,7 +167,7 @@ turn_off_outdoor:
 turn_on_all_lights:
   alias: Tänd belysning
   sequence:
-  - service: switch.turn_on
+  - service: homeassistant.turn_on
     data:
       entity_id:
       - group.grovkoket
@@ -174,6 +185,8 @@ turn_on_all_lights:
       - group.vrum_nere
       - group.koket
       - group.kontoret
+    enabled: false
+  mode: single
 turn_on_morning_lights:
   alias: Tänd morgonbelysning
   sequence:
@@ -198,7 +211,7 @@ turn_on_morning_lights:
 early_morning_lights_on:
   alias: Tänd tidig morgon
   sequence:
-  - service: switch.turn_on
+  - service: homeassistant.turn_on
     data: {}
     target:
       entity_id:
@@ -207,12 +220,12 @@ early_morning_lights_on:
       - group.hallen
       - switch.nexa_1
       - switch.rusta25b
-      - switch.tz1
   - service: light.turn_on
     data: {}
     target:
       entity_id:
       - group.koket
+    enabled: false
   mode: single
 start_the_car:
   alias: Starta bilen
@@ -246,10 +259,14 @@ tand_sovrummet:
       entity_id:
       - switch.nexa_3
       - switch.nexa_4
+      - switch.spelrummet_ljusslingan
+    data: {}
   - service: script.early_morning_lights_on
+    data: {}
   - service: light.turn_on
     target:
       entity_id: light.office_window
+    data: {}
   mode: single
   alias: Tänd sovrummet
 slack_sovrummet:
@@ -257,23 +274,27 @@ slack_sovrummet:
   - service: switch.turn_off
     target:
       entity_id: switch.nexa_4
-  - wait_template: ''
-    timeout: 00:00:03
+    data: {}
+  - delay:
+      hours: 0
+      minutes: 0
+      seconds: 3
+      milliseconds: 0
   - service: switch.turn_off
     target:
       entity_id: switch.nexa_3
+    data: {}
   mode: single
   alias: Släck sovrummet
 slack_inne:
   sequence:
-  - service: switch.turn_off
+  - service: homeassistant.turn_off
     data: {}
     target:
       entity_id:
       - group.hallen
       - switch.rusta13c
       - switch.rusta13a
-      - switch.rusta13b
       - group.gastrummet
       - group.grovkoket
       - switch.nexa_1
@@ -323,7 +344,7 @@ ladda_tesla_stoppa:
 '1662626875831':
   alias: Ladda Zoe, stoppa
   sequence:
-  - service: rest_command.cn_remove_zoe_from_queue
+  - service: rest_command.cn_remove_yxx_from_queue
     data: {}
   - service: notify.rickards_devices
     data:
@@ -369,56 +390,36 @@ ladda_bilen_uppstart:
         - switch.varmepumpen_b
   mode: single
   icon: mdi:ev-station
-spabadet_control_pumps:
-  alias: Spabadet, control pumps
-  sequence:
-  - service: switch.turn_on
-    data: {}
-    target:
-      entity_id: switch.spabadet_l3
-    alias: Turn on pumps
-  - delay:
-      hours: 2
-      minutes: 0
-      seconds: 0
-      milliseconds: 0
-    alias: Let them be on for 2 hours
-  - if:
-    - condition: and
-      conditions:
-      - condition: numeric_state
-        entity_id: sensor.framsidan_temperature
-        above: 5
-      - condition: state
-        entity_id: switch.spabadet_l2
-        state: 'off'
-      alias: Temp >5° and heater is off
-    then:
-    - service: switch.turn_off
-      data: {}
-      target:
-        entity_id: switch.spabadet_l3
-      alias: Turn off pumps
-    alias: 'Turn off pumps if: Temp >5° and heater is off'
-  mode: single
-  icon: mdi:pump
 spabadet_pause_control:
   alias: Spabadet, pause control
   sequence:
   - service: script.turn_off
     data: {}
     target:
-      entity_id: script.spabadet_control_pumps
+      entity_id:
+      - script.spabadet_pump_and_heater
+    alias: Take manual control of pumps and heater
   - service: automation.turn_off
     data: {}
     target:
-      entity_id: automation.spabadet_run_pumps_for_2_hours
+      entity_id:
+      - automation.spabadet_run_pumps_for_2_hours
   - service: switch.turn_on
     data: {}
     target:
       entity_id:
-      - switch.spabadet_l2
       - switch.spabadet_l3
+    alias: Turn on pumps
+  - if:
+    - condition: state
+      entity_id: input_boolean.overcurrent_l2
+      state: 'off'
+    then:
+    - service: switch.turn_on
+      data: {}
+      target:
+        entity_id: switch.spabadet_l2
+    alias: If heater not stopped by high load, turn on heater
   - delay:
       hours: 1
       minutes: 15
@@ -428,5 +429,82 @@ spabadet_pause_control:
     data: {}
     target:
       entity_id: automation.spabadet_run_pumps_for_2_hours
+    alias: Release manual control of pumps and heater
   mode: single
   icon: mdi:swim
+spabadet_pump_and_heater:
+  alias: Spabadet, pump and heater
+  sequence:
+  - if:
+    - condition: or
+      conditions:
+      - condition: time
+        after: 00:00:00
+        before: 02:00:00
+      - condition: time
+        after: 08:00:00
+        before: '10:00:00'
+      - condition: time
+        after: '16:00:00'
+        before: '18:00:00'
+      alias: Time 00, 08, 16
+    then:
+    - service: switch.turn_on
+      data: {}
+      target:
+        entity_id: switch.spabadet_l3
+      alias: Turn on pumps
+  - delay:
+      hours: 1
+      minutes: 0
+      seconds: 0
+      milliseconds: 0
+  - if:
+    - condition: state
+      entity_id: sensor.nordpool_kwh_se3_sek_3_095_0
+      attribute: low price
+      state: true
+      alias: Low price
+    then:
+    - service: switch.turn_on
+      data: {}
+      target:
+        entity_id:
+        - switch.spabadet_l3
+        - switch.spabadet_l2
+      alias: Turn on pumps and heater
+    - service: notify.rickards_devices
+      data:
+        message: Värmen har slagits på.
+    alias: Turn on heater if low price
+  - delay:
+      hours: 1
+      minutes: 0
+      seconds: 0
+      milliseconds: 0
+  - if:
+    - condition: or
+      conditions:
+      - condition: numeric_state
+        entity_id: sensor.framsidan_temperature
+        above: 5
+      - condition: numeric_state
+        entity_id: sensor.badet_temperature
+        above: 32
+      alias: Temp is >5° or spabadet >32°
+    then:
+    - service: switch.turn_off
+      data: {}
+      target:
+        entity_id:
+        - switch.spabadet_l3
+        - switch.spabadet_l2
+      alias: Turn off pumps and heater
+    alias: If temp is >5° or spabadet >32° turn off
+  - service: input_boolean.turn_off
+    data: {}
+    target:
+      entity_id: input_boolean.overcurrent_l2
+    alias: Turn off high load flag
+  mode: single
+  icon: mdi:pump
