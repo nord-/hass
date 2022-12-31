@@ -67,6 +67,7 @@ sensor: !include sensors.yaml
 # sensor: !include sensors-utility.yaml
 template: !include template.yaml
 binary_sensor: !include binary_sensors.yaml
+mqtt: !include mqtt.yaml
 
 rest_command: !include rest.yaml
 # zwave:
@@ -128,3 +129,5 @@ hacs:
   # port: 8883
   # username: !secret MQTT_user
   # password: !secret MQTT_passwd
+
+var: !include vars.yaml

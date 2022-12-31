@@ -44,15 +44,18 @@ grovkoket:
 vrum_uppe:
   name: Vardagsrummet, uppe
   entities:
-    - switch.rusta25b
+#    - switch.nexa_4
     - switch.telldus_3
+    - light.byran_uppe_light
 
 sovrummet:
   # id: 202111222351
   name: Sovrummet
   entities:
-    - switch.nexa_4
-    - switch.nexa_3
+    - light.tuya_sovrum_rickard
+    - light.tuya_sovrum_frida
+    - switch.nexa_3 # rickards sida
+    - switch.nexa_4 # fridas sida
     - switch.nexa_1 # klädkammaren
 
 kontoret:

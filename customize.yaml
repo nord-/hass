@@ -29,10 +29,10 @@ switch.nexa_1:
   friendly_name: Klädkammaren
 switch.nexa_2:
   friendly_name: Vedstapeln
-switch.nexa_3:
-  friendly_name: Sovrummet Rickard
+# switch.nexa_3:
+#   friendly_name: Sovrummet Rickard
 switch.nexa_4:
-  friendly_name: Sovrummet Frida
+  friendly_name: Skåpet uppe
 switch.nexa_5:
   friendly_name: Telefonladdare
 # switch.nexa_6:
@@ -53,8 +53,8 @@ switch.telldusout2:
   friendly_name: Norra altanväggen
 switch.rusta15d:
   friendly_name: TV-bänken
-switch.rusta25b:
-  friendly_name: Skåpet uppe
+# switch.rusta25b:
+#   friendly_name: Skåpet uppe
 # switch.tz1:
 #   friendly_name: Hallen
 switch.tz2:

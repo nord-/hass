@@ -13,31 +13,24 @@ turn_off_felix_rum:
 turn_on_uppe:
   alias: Tänd övervån
   sequence:
-  - service: switch.turn_on
-    data:
-      entity_id:
-      - group.vrum_uppe
-      - group.sovrummet
-      - group.kontoret
-  - service: light.turn_on
-    data:
-      entity_id:
-      - group.kontoret
-turn_off_uppe:
-  alias: Släck övervån
-  sequence:
-  - service: script.slack_sovrummet
-  - service: switch.turn_off
+  - service: homeassistant.turn_on
     data: {}
     target:
       entity_id:
       - group.vrum_uppe
+      - group.sovrummet
       - group.kontoret
-      - switch.nexa_1
-  - service: light.turn_off
-    data:
+  mode: single
+turn_off_uppe:
+  alias: Släck övervån
+  sequence:
+  - service: homeassistant.turn_off
+    data: {}
+    target:
       entity_id:
+      - group.sovrummet
       - group.kontoret
+      - group.vrum_uppe
   mode: single
 turn_on_nere:
   alias: Tänd undervån
@@ -70,12 +63,6 @@ turn_off_nere:
       - group.hallen
       - group.gastrummet
       - group.felix_rum
-  - service: light.turn_off
-    data:
-      entity_id:
-      - group.vrum_nere
-      - group.koket
-    enabled: false
   mode: single
 turn_on_general_lights:
   alias: Tänd allmän belysning
@@ -93,11 +80,14 @@ turn_on_general_lights:
       - group.kontoret
   - service: light.turn_on
     data:
-      entity_id:
-      - group.vrum_nere
-      - group.koket
-      - group.kontoret
-    enabled: false
+      brightness_pct: 35
+    target:
+      entity_id: light.spelrummet_fonstret
+  - service: light.turn_on
+    data:
+      brightness_pct: 55
+    target:
+      entity_id: light.byran_uppe_light
   mode: single
 turn_off_general_lights:
   alias: Släck allmän belysning
@@ -116,17 +106,6 @@ turn_off_general_lights:
       - switch.rusta13a
       - switch.rusta13c
       - group.sovrummet
-  - service: light.turn_off
-    data:
-      entity_id:
-      - group.vrum_nere
-      - group.koket
-      - group.kontoret
-      - group.gastrummet
-    enabled: false
-  - service: script.slack_sovrummet
-    data: {}
-    enabled: false
   mode: single
 turn_off_all:
   alias: Stäng av allt
@@ -144,13 +123,6 @@ turn_off_all:
       - group.kontoret
       - group.felix_rum
       - group.ute
-  - service: light.turn_off
-    data:
-      entity_id:
-      - group.vrum_nere
-      - group.koket
-      - group.kontoret
-    enabled: false
   mode: single
 turn_on_outdoor:
   alias: Slå på utomhusbelysning
@@ -158,6 +130,7 @@ turn_on_outdoor:
   - service: switch.turn_on
     data:
       entity_id: group.ute
+  mode: single
 turn_off_outdoor:
   alias: Slå av utomhusbelysning
   sequence:
@@ -179,34 +152,25 @@ turn_on_all_lights:
       - group.vrum_uppe
       - group.kontoret
       - group.felix_rum
-  - service: light.turn_on
-    data:
-      entity_id:
-      - group.vrum_nere
-      - group.koket
-      - group.kontoret
-    enabled: false
   mode: single
 turn_on_morning_lights:
   alias: Tänd morgonbelysning
   sequence:
-  - data: {}
-    service: switch.turn_on
+  - service: homeassistant.turn_on
+    data: {}
     target:
       entity_id:
       - group.grovkoket
       - group.koket
-      - group.vrum_nere
       - group.hallen
-      - group.kontoret
-      - switch.nexa_1
-      - switch.rusta25b
-  - data:
-      entity_id:
-      - group.vrum_nere
-      - group.koket
-      - group.kontoret
-    service: light.turn_on
+      - light.office_window
+      - light.fibaro_system_fgd212_dimmer_2_level_2
+      - group.sovrummet
+  - service: light.turn_on
+    data:
+      brightness_pct: 1
+    target:
+      entity_id: light.spelrummet_fonstret
   mode: single
 early_morning_lights_on:
   alias: Tänd tidig morgon
@@ -219,13 +183,12 @@ early_morning_lights_on:
       - group.koket
       - group.hallen
       - switch.nexa_1
-      - switch.rusta25b
   - service: light.turn_on
-    data: {}
+    data:
+      brightness_pct: 10
     target:
-      entity_id:
-      - group.koket
-    enabled: false
+      entity_id: light.byran_uppe_light
+    alias: Turn on Byrån uppe, low light
   mode: single
 start_the_car:
   alias: Starta bilen
@@ -252,40 +215,6 @@ charge_the_tesla:
         kr\n Klockan: {{ now().strftime(''%H:%M den %d/%m'') }}'
   mode: single
   icon: mdi:ev-station
-tand_sovrummet:
-  sequence:
-  - service: switch.turn_on
-    target:
-      entity_id:
-      - switch.nexa_3
-      - switch.nexa_4
-      - switch.spelrummet_ljusslingan
-    data: {}
-  - service: script.early_morning_lights_on
-    data: {}
-  - service: light.turn_on
-    target:
-      entity_id: light.office_window
-    data: {}
-  mode: single
-  alias: Tänd sovrummet
-slack_sovrummet:
-  sequence:
-  - service: switch.turn_off
-    target:
-      entity_id: switch.nexa_4
-    data: {}
-  - delay:
-      hours: 0
-      minutes: 0
-      seconds: 3
-      milliseconds: 0
-  - service: switch.turn_off
-    target:
-      entity_id: switch.nexa_3
-    data: {}
-  mode: single
-  alias: Släck sovrummet
 slack_inne:
   sequence:
   - service: homeassistant.turn_off
@@ -339,7 +268,9 @@ ladda_tesla_stoppa:
         path_vars:
           vehicle_id: '{{ state_attr(''binary_sensor.azarel_online_sensor'', ''id'')
             }}'
-        percent: '{{ states(''input_number.aza_charge_limit'') | int(default=80) }}'
+        percent: "{% if (states('input_number.aza_charge_limit') | int(default=80))
+          < 100 -%}\n  {{ states('input_number.aza_charge_limit') | int(default=80)
+          + 1 }}\n{%- else -%}\n  {{ 100 }}\n{%- endif %}"
         wake_if_asleep: true
 '1662626875831':
   alias: Ladda Zoe, stoppa
@@ -409,20 +340,18 @@ spabadet_pause_control:
     target:
       entity_id:
       - switch.spabadet_l3
-    alias: Turn on pumps
-  - if:
-    - condition: state
-      entity_id: input_boolean.overcurrent_l2
-      state: 'off'
-    then:
-    - service: switch.turn_on
-      data: {}
-      target:
-        entity_id: switch.spabadet_l2
-    alias: If heater not stopped by high load, turn on heater
+      - switch.spabadet_l2
+    alias: Turn on pumps and heater
+  - service: notify.rickards_devices
+    data:
+      title: Spabadet
+      message: 'Uppvärmningen av spabadet har slagits på manuellt och automatiken
+        pausats.\n Priset:  {{ states("sensor.template_nordpool_current_price_vat")
+        }} kr\n Klockan: {{ now().strftime(''%H:%M'') }}'
+    alias: Notify Rickard that manual control is turned on
   - delay:
-      hours: 1
-      minutes: 15
+      hours: 2
+      minutes: 0
       seconds: 0
       milliseconds: 0
   - service: automation.turn_on
@@ -430,6 +359,13 @@ spabadet_pause_control:
     target:
       entity_id: automation.spabadet_run_pumps_for_2_hours
     alias: Release manual control of pumps and heater
+  - service: notify.rickards_devices
+    data:
+      title: Spabadet
+      message: 'Uppvärmningen av spabadet går nu på automatik igen.\n Priset:  {{
+        states("sensor.template_nordpool_current_price_vat") }} kr\n Klockan: {{ now().strftime(''%H:%M'')
+        }}'
+    alias: Notify Rickard that manual control is turned off
   mode: single
   icon: mdi:swim
 spabadet_pump_and_heater:
@@ -438,22 +374,67 @@ spabadet_pump_and_heater:
   - if:
     - condition: or
       conditions:
-      - condition: time
-        after: 00:00:00
-        before: 02:00:00
-      - condition: time
-        after: 08:00:00
-        before: '10:00:00'
-      - condition: time
-        after: '16:00:00'
-        before: '18:00:00'
-      alias: Time 00, 08, 16
+      - condition: or
+        conditions:
+        - condition: time
+          after: 00:00:00
+          before: 02:00:00
+        - condition: time
+          after: 08:00:00
+          before: '10:00:00'
+        - condition: time
+          after: '16:00:00'
+          before: '18:00:00'
+        alias: Time 00, 08, 16
+      - condition: numeric_state
+        entity_id: sensor.template_spabadet_temperature
+        below: 34
+        alias: Spabadet < 34°
+      alias: At 00, 08 or 16 or if temp < 34°
     then:
     - service: switch.turn_on
       data: {}
       target:
-        entity_id: switch.spabadet_l3
-      alias: Turn on pumps
+        entity_id:
+        - switch.spabadet_l3
+        - switch.spabadet_l2
+      alias: Turn on pumps and heater
+    - service: notify.rickards_devices
+      data:
+        title: Spabadet, värmare
+        message: 'Uppvärmningen av spabadet har startat.\n Priset:  {{ states("sensor.template_nordpool_current_price_vat")
+          }} kr\n Klockan: {{ now().strftime(''%H:%M'') }}'
+      enabled: false
+    - delay:
+        hours: 0
+        minutes: 7
+        seconds: 0
+        milliseconds: 0
+    - if:
+      - condition: and
+        conditions:
+        - condition: state
+          entity_id: sensor.nordpool_kwh_se3_sek_3_095_0
+          attribute: low price
+          state: false
+          alias: High price
+        - condition: numeric_state
+          entity_id: sensor.template_spabadet_temperature
+          above: 34
+        alias: If expensive and temp >34°
+      then:
+      - service: switch.turn_off
+        data: {}
+        target:
+          entity_id: switch.spabadet_l2
+        alias: Turn off heater
+      - service: notify.rickards_devices
+        data:
+          title: Spabadet, värmare
+          message: 'Uppvärmningen av spabadet har stängts av.\n Priset:  {{ states("sensor.template_nordpool_current_price_vat")
+            }} kr\n Klockan: {{ now().strftime(''%H:%M'') }}'
+        enabled: false
+      alias: If expensive turn off heater
   - delay:
       hours: 1
       minutes: 0
@@ -475,23 +456,40 @@ spabadet_pump_and_heater:
       alias: Turn on pumps and heater
     - service: notify.rickards_devices
       data:
-        message: Värmen har slagits på.
+        title: Spabadet, värmare
+        message: 'Uppvärmningen av spabadet har slagits på.\n Priset:  {{ states("sensor.template_nordpool_current_price_vat")
+          }} kr\n Klockan: {{ now().strftime(''%H:%M'') }}'
+      enabled: false
     alias: Turn on heater if low price
+    else:
+    - if:
+      - condition: numeric_state
+        entity_id: sensor.template_spabadet_temperature
+        above: 34
+        alias: If temp > 34°
+      then:
+      - service: switch.turn_off
+        data: {}
+        target:
+          entity_id: switch.spabadet_l2
+        alias: Turn off heater
+      - service: notify.rickards_devices
+        data:
+          title: Spabadet, värmare
+          message: 'Uppvärmningen av spabadet har stängts av.\n Priset:  {{ states("sensor.template_nordpool_current_price_vat")
+            }} kr\n Klockan: {{ now().strftime(''%H:%M'') }}'
+        enabled: false
+      alias: If temp > 34° turn off heater
   - delay:
       hours: 1
       minutes: 0
       seconds: 0
       milliseconds: 0
   - if:
-    - condition: or
-      conditions:
-      - condition: numeric_state
-        entity_id: sensor.framsidan_temperature
-        above: 5
-      - condition: numeric_state
-        entity_id: sensor.badet_temperature
-        above: 32
-      alias: Temp is >5° or spabadet >32°
+    - condition: numeric_state
+      entity_id: sensor.framsidan_temperature
+      above: 0
+      alias: Temp >0°
     then:
     - service: switch.turn_off
       data: {}
@@ -500,11 +498,23 @@ spabadet_pump_and_heater:
         - switch.spabadet_l3
         - switch.spabadet_l2
       alias: Turn off pumps and heater
-    alias: If temp is >5° or spabadet >32° turn off
+    alias: If temp is >0°
+    else:
+    - service: switch.turn_off
+      data: {}
+      target:
+        entity_id: switch.spabadet_l2
+      alias: Turn off heater
   - service: input_boolean.turn_off
     data: {}
     target:
       entity_id: input_boolean.overcurrent_l2
     alias: Turn off high load flag
+  - service: notify.rickards_devices
+    data:
+      title: Spabadet, värmare
+      message: 'Uppvärmningen av spabadet har stängts av.\n Priset:  {{ states("sensor.template_nordpool_current_price_vat")
+        }} kr\n Klockan: {{ now().strftime(''%H:%M'') }}'
+    enabled: false
   mode: single
   icon: mdi:pump

@@ -1,14 +1,14 @@
 # Tellstick Duo temp
 - platform: tellstick
-  only_named:
-  - id: 231
-    name: Altan
-  - id: 215
-    name: Sovrummet
-  - id: 199
-    name: Kontoret
-  - id: 247
-    name: Badet
+#  only_named:
+#  - id: 231
+#    name: Altan
+#  - id: 215
+#    name: Sovrummet
+#  - id: 199
+#    name: Kontoret
+#  - id: 247
+#    name: Badet
 # Weather prediction
 - platform: weather_data
   monitored_conditions:
@@ -19,16 +19,16 @@
     - cloudiness
 
 # iGrill (mini)
-- platform: mqtt
-  state_topic: "cooking/grill/probe1"
-  name: "iGrill Probe 1"
-  qos: 0
-  unit_of_measurement: "°C"
-- platform: mqtt
-  state_topic: "cooking/grill/battery"
-  name: "iGrill Battery"
-  qos: 0
-  unit_of_measurement: "%"
+# - platform: mqtt
+#   state_topic: "cooking/grill/probe1"
+#   name: "iGrill Probe 1"
+#   qos: 0
+#   unit_of_measurement: "°C"
+# - platform: mqtt
+#   state_topic: "cooking/grill/battery"
+#   name: "iGrill Battery"
+#   qos: 0
+#   unit_of_measurement: "%"
 
 
 
@@ -46,20 +46,6 @@
 #   name: "AZA CN status"
 #   scan_interval: {{}}
 
-
-#pushbullet
-#  - platform: pushbullet
-#    api_key: !secret pushbullet_token
-
-# Samsung printer
-#- platform: syncthru
-#  resource: http://192.168.1.101
-
-#Nordpool
-# - platform: nordpool  
-# VAT: True     # Should the prices include vat? Default True
-# currency: "SEK"  
-# region: "SE3" # What power regions your are interested in.
 
 # - platform: rest
 #   resource: http://192.168.2.31/solar_api/v1/GetInverterRealtimeData.cgi?Scope=Device&DeviceId=1&DataCollection=CommonInverterData

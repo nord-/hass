@@ -1,0 +1,9 @@
+sensor:
+  - state_topic: "cooking/grill/probe1"
+    name: "iGrill Probe 1"
+    qos: 0
+    unit_of_measurement: "°C"
+  - state_topic: "cooking/grill/battery"
+    name: "iGrill Battery"
+    qos: 0
+    unit_of_measurement: "%"

@@ -25,12 +25,12 @@
         "id": "027afde645d5409481c48cab755a8c31"
       },
       {
-        "url": "/hacsfiles/apexcharts-card/apexcharts-card.js?hacstag=331701152201",
+        "url": "/hacsfiles/apexcharts-card/apexcharts-card.js?hacstag=331701152202",
         "type": "module",
         "id": "efe9a700ad09414fa032d32726aee801"
       },
       {
-        "url": "/hacsfiles/power-flow-card/power-flow-card.js?hacstag=484538222251",
+        "url": "/hacsfiles/power-flow-card/power-flow-card.js?hacstag=484538222261",
         "type": "module",
         "id": "b77b48adf6114b1ebdc4f8b2b51875e5"
       },
@@ -45,12 +45,12 @@
         "id": "f76d69ebe321418a8afd3925e9bb7028"
       },
       {
-        "url": "/hacsfiles/lovelace-collapsable-cards/collapsable-cards.js?hacstag=364978303050",
+        "url": "/hacsfiles/lovelace-collapsable-cards/collapsable-cards.js?hacstag=364978303070",
         "type": "module",
         "id": "59120cd8cb0f45ad837dd0a4ea4bb53d"
       },
       {
-        "url": "/hacsfiles/uptime-card/uptime-card.js?hacstag=3505098670111",
+        "url": "/hacsfiles/uptime-card/uptime-card.js?hacstag=3505098670130",
         "type": "module",
         "id": "8cf36aeb921648b69a5a602f7652d9e9"
       }

@@ -63,7 +63,9 @@
                 {
                   "cards": [
                     {
-                      "entity": "script.tand_sovrummet",
+                      "show_name": true,
+                      "show_icon": true,
+                      "entity": "script.turn_on_morning_lights",
                       "hold_action": {
                         "action": "more-info"
                       },
@@ -73,19 +75,6 @@
                       },
                       "type": "entity-button",
                       "icon": "mdi:weather-sunset-up"
-                    },
-                    {
-                      "entity": "script.slack_sovrummet",
-                      "hold_action": {
-                        "action": "more-info"
-                      },
-                      "icon": "mdi:weather-night",
-                      "tap_action": {
-                        "action": "toggle"
-                      },
-                      "type": "entity-button",
-                      "show_name": true,
-                      "name": "God natt"
                     },
                     {
                       "entity": "script.turn_off_nere",
@@ -130,23 +119,23 @@
                       "graph": "line",
                       "type": "sensor",
                       "entity": "sensor.framsidan_temperature",
-                      "name": "Trappan",
-                      "detail": 2
+                      "detail": 2,
+                      "name": "Ute (entré)"
                     },
                     {
                       "hours_to_show": 24,
                       "graph": "line",
                       "type": "sensor",
-                      "entity": "sensor.altan_temperature",
-                      "name": "Altanen",
-                      "detail": 2
+                      "name": "Vrum",
+                      "detail": 2,
+                      "entity": "sensor.vardagsrummet_temperature"
                     },
                     {
                       "hours_to_show": 24,
                       "graph": "line",
                       "type": "sensor",
-                      "entity": "sensor.badet_temperature",
-                      "name": "Spabadet",
+                      "entity": "sensor.247_temperature",
+                      "name": "Spa",
                       "detail": 2
                     }
                   ]
@@ -799,11 +788,12 @@
                 },
                 {
                   "type": "horizontal-stack",
+                  "title": "Effekt",
                   "cards": [
                     {
                       "type": "gauge",
                       "entity": "sensor.template_grid_power_kw",
-                      "name": "Effekt",
+                      "name": "Netto",
                       "needle": true,
                       "min": -8,
                       "max": 14,
@@ -823,6 +813,18 @@
                         "green": 0,
                         "yellow": 1,
                         "red": 2.3
+                      }
+                    },
+                    {
+                      "entity": "sensor.template_fronius_solar_power",
+                      "max": 8.2,
+                      "min": 0,
+                      "name": "Solen",
+                      "type": "gauge",
+                      "severity": {
+                        "green": 0,
+                        "yellow": 10,
+                        "red": 10
                       }
                     }
                   ]
@@ -906,42 +908,12 @@
                     {
                       "entity": "sensor.hem_gen5_electric_consumed_1",
                       "name": "L1"
-                    }
-                  ],
-                  "cache": true,
-                  "graph_span": "9h",
-                  "update_interval": "30s",
-                  "apex_config": {
-                    "stroke": {
-                      "show": true,
-                      "width": 2,
-                      "curve": "stepline"
-                    }
-                  }
-                },
-                {
-                  "type": "custom:apexcharts-card",
-                  "series": [
+                    },
                     {
                       "entity": "sensor.hem_gen5_electric_consumed_2",
                       "name": "L2",
                       "color": "DeepSkyBlue"
-                    }
-                  ],
-                  "cache": true,
-                  "graph_span": "9h",
-                  "update_interval": "30s",
-                  "apex_config": {
-                    "stroke": {
-                      "show": true,
-                      "width": 2,
-                      "curve": "stepline"
-                    }
-                  }
-                },
-                {
-                  "type": "custom:apexcharts-card",
-                  "series": [
+                    },
                     {
                       "entity": "sensor.hem_gen5_electric_consumed_3",
                       "name": "L3",
@@ -1112,8 +1084,7 @@
         },
         {
           "theme": "Backend-selected",
-          "title": "Ute",
-          "icon": "mdi:outdoor-lamp",
+          "icon": "mdi:hot-tub",
           "badges": [],
           "cards": [
             {
@@ -1125,16 +1096,15 @@
                   "cards": [
                     {
                       "type": "gauge",
-                      "entity": "sensor.badet_temperature",
-                      "min": 30,
+                      "entity": "sensor.template_spabadet_temperature",
+                      "min": 34,
                       "max": 40,
                       "needle": true,
                       "severity": {
-                        "green": 36,
-                        "red": 38
+                        "green": 36.5,
+                        "red": 38.5
                       },
-                      "name": " ",
-                      "unit": "°"
+                      "name": " "
                     },
                     {
                       "type": "button",
@@ -1237,182 +1207,85 @@
               ]
             },
             {
-              "type": "vertical-stack",
-              "title": "Wall-E",
-              "cards": [
+              "type": "custom:apexcharts-card",
+              "series": [
                 {
-                  "type": "horizontal-stack",
-                  "cards": [
-                    {
-                      "type": "entity",
-                      "entity": "vacuum.wall_e",
-                      "icon": "mow"
-                    },
-                    {
-                      "type": "entity",
-                      "entity": "vacuum.wall_e",
-                      "name": " Batteri",
-                      "icon": "mdi:battery-50",
-                      "attribute": "battery_level",
-                      "unit": "%"
-                    }
-                  ]
-                },
-                {
-                  "type": "horizontal-stack",
-                  "cards": [
-                    {
-                      "show_name": false,
-                      "show_icon": true,
-                      "type": "button",
-                      "tap_action": {
-                        "action": "call-service",
-                        "service": "vacuum.start",
-                        "data": {},
-                        "target": {
-                          "device_id": "04744719de96abcefa75f8ffeeb42a05"
-                        }
-                      },
-                      "entity": "vacuum.wall_e",
-                      "icon": "mdi:mower",
-                      "show_state": false
-                    },
-                    {
-                      "show_name": false,
-                      "show_icon": true,
-                      "type": "button",
-                      "tap_action": {
-                        "action": "call-service",
-                        "service": "vacuum.return_to_base",
-                        "data": {},
-                        "target": {
-                          "device_id": "04744719de96abcefa75f8ffeeb42a05"
-                        }
-                      },
-                      "entity": "vacuum.wall_e",
-                      "icon": "mdi:home-battery"
-                    }
-                  ]
-                },
-                {
-                  "type": "entity",
-                  "entity": "vacuum.wall_e",
-                  "icon": "mdi:timer-check-outline",
-                  "name": "Uppdaterad",
-                  "attribute": "state_updated_at"
-                }
-              ]
-            },
-            {
-              "entities": [
-                {
-                  "entity": "switch.an179_1",
-                  "name": "Vindskyddet",
-                  "icon": "mdi:wall-sconce-round"
-                },
-                {
-                  "entity": "switch.telldusout1",
-                  "name": "Södra altanväggen",
-                  "icon": "mdi:string-lights"
-                },
-                {
-                  "entity": "switch.nexa_out_1",
-                  "icon": "mdi:string-lights"
-                },
-                {
-                  "entity": "switch.utebaren"
-                }
-              ],
-              "show_header_toggle": true,
-              "title": "Utomhus",
-              "type": "entities"
-            },
-            {
-              "type": "horizontal-stack",
-              "cards": [
-                {
-                  "hours_to_show": 24,
-                  "graph": "line",
-                  "type": "sensor",
-                  "entity": "sensor.framsidan_temperature",
-                  "detail": 1,
-                  "name": "Framsidan"
-                },
-                {
-                  "hours_to_show": 24,
-                  "graph": "line",
-                  "type": "sensor",
-                  "entity": "sensor.altan_temperature",
-                  "detail": 1,
-                  "name": "Altan"
-                }
-              ]
-            },
-            {
-              "entity": "weather.smhi_home",
-              "type": "weather-forecast"
-            },
-            {
-              "type": "vertical-stack",
-              "cards": [
-                {
-                  "type": "custom:uptime-card",
-                  "entity": "sun.sun",
-                  "title_template": "Solen",
-                  "icon": "mdi:weather-sunny",
-                  "ko_icon": "mdi:weather-sunny-off",
-                  "ko": "below_horizon",
-                  "icon_adaptive_color": true,
-                  "title_adaptive_color": true,
-                  "color": {
-                    "ok": "#F9d71C",
-                    "ko": "#053752",
-                    "half": "#EF810E"
-                  },
-                  "bar": {
-                    "spacing": 4,
-                    "height": 10,
-                    "round": 4
-                  },
-                  "show": {
-                    "average": false,
-                    "status": false
-                  },
-                  "alignment": {
-                    "status": "spaced",
-                    "header": "left",
-                    "icon_first": true
-                  },
-                  "tap_action": {
-                    "action": "more-info"
+                  "name": "kr",
+                  "entity": "sensor.spabadet_kr",
+                  "type": "column",
+                  "color": "DarkGreen",
+                  "group_by": {
+                    "func": "delta",
+                    "duration": "1d"
                   }
                 },
                 {
-                  "show_name": false,
-                  "show_icon": true,
-                  "show_state": true,
-                  "type": "glance",
+                  "name": "kWh",
+                  "entity": "sensor.template_spabadet_energy_kwh",
+                  "type": "column",
+                  "color": "FireBrick",
+                  "group_by": {
+                    "func": "delta",
+                    "duration": "1d"
+                  }
+                }
+              ],
+              "update_interval": "1h",
+              "apex_config": {
+                "stroke": {
+                  "width": 2
+                },
+                "yaxis": [
+                  {
+                    "seriesName": "kr",
+                    "decimalsInFloat": 0
+                  },
+                  {
+                    "seriesName": "kr",
+                    "show": false
+                  }
+                ]
+              },
+              "graph_span": "7d",
+              "cache": true,
+              "span": {
+                "end": "day"
+              }
+            },
+            {
+              "type": "custom:collapsable-cards",
+              "title": "Temperatur",
+              "cards": [
+                {
+                  "chart_type": "line",
+                  "period": "5minute",
+                  "days_to_show": 0.5,
+                  "type": "statistics-graph",
                   "entities": [
                     {
-                      "entity": "sensor.yr_symbol",
-                      "name": "Väder"
-                    },
-                    {
-                      "entity": "sensor.yr_cloudiness",
-                      "name": "Moln",
-                      "icon": "mdi:weather-cloudy"
-                    },
-                    {
-                      "entity": "sensor.framsidan_pressure"
-                    },
-                    {
-                      "entity": "sensor.yr_wind_speed",
-                      "name": "Vind",
-                      "icon": "mdi:weather-windy"
-                    },
-                    {
-                      "entity": "sensor.framsidan_humidity"
+                      "entity": "sensor.template_spabadet_temperature",
+                      "name": " "
                     }
+                  ],
+                  "stat_types": [
+                    "mean"
+                  ]
+                },
+                {
+                  "chart_type": "line",
+                  "period": "day",
+                  "days_to_show": 10,
+                  "type": "statistics-graph",
+                  "entities": [
+                    {
+                      "entity": "sensor.template_spabadet_temperature",
+                      "name": " "
+                    }
+                  ],
+                  "stat_types": [
+                    "mean",
+                    "min",
+                    "max"
                   ]
                 }
               ]
@@ -1459,18 +1332,29 @@
             {
               "entities": [
                 {
-                  "entity": "switch.nexa_3",
+                  "entity": "light.tuya_sovrum_rickard",
                   "name": "Rickard",
-                  "icon": "mdi:wall-sconce"
+                  "icon": "mdi:wall-sconce",
+                  "secondary_info": "none"
                 },
                 {
-                  "entity": "switch.nexa_4",
+                  "entity": "light.tuya_sovrum_frida",
                   "name": "Frida",
                   "icon": "mdi:wall-sconce"
                 },
                 {
                   "entity": "switch.nexa_1",
                   "icon": "mdi:led-strip-variant"
+                },
+                {
+                  "entity": "switch.nexa_3",
+                  "name": "Frida",
+                  "icon": "mdi:candelabra-fire"
+                },
+                {
+                  "entity": "switch.nexa_4",
+                  "icon": "mdi:candelabra-fire",
+                  "name": "Rickard"
                 }
               ],
               "show_header_toggle": true,
@@ -1481,7 +1365,7 @@
             {
               "hours_to_show": 24,
               "graph": "line",
-              "entity": "sensor.sovrummet_temperature",
+              "entity": "sensor.215_temperature",
               "type": "sensor",
               "detail": 2,
               "name": "Sovrummet"
@@ -1512,6 +1396,9 @@
             {
               "entities": [
                 {
+                  "entity": "light.fibaro_system_fgd212_dimmer_2_level_2"
+                },
+                {
                   "entity": "switch.rusta15d",
                   "icon": "mdi:lamp"
                 },
@@ -1529,15 +1416,10 @@
                   "icon": "mdi:string-lights"
                 }
               ],
-              "show_header_toggle": false,
+              "show_header_toggle": true,
               "type": "entities",
-              "state_color": true
-            },
-            {
-              "entity": "light.fibaro_system_fgd212_dimmer_2_level_2",
-              "name": "Fönstret",
-              "theme": "default",
-              "type": "light"
+              "state_color": true,
+              "title": "Belysning"
             }
           ]
         },
@@ -1778,7 +1660,7 @@
                   "icon": "mdi:lamp"
                 },
                 {
-                  "entity": "switch.rusta25b",
+                  "entity": "light.byran_uppe_light",
                   "icon": "mdi:lamp",
                   "name": "Byrån"
                 }
@@ -1878,14 +1760,220 @@
                   }
                 }
               ]
+            }
+          ]
+        },
+        {
+          "theme": "Backend-selected",
+          "title": "Ute",
+          "icon": "mdi:outdoor-lamp",
+          "badges": [],
+          "cards": [
+            {
+              "type": "horizontal-stack",
+              "cards": [
+                {
+                  "hours_to_show": 24,
+                  "graph": "line",
+                  "type": "sensor",
+                  "entity": "sensor.framsidan_temperature",
+                  "detail": 1,
+                  "name": "Framsidan"
+                },
+                {
+                  "hours_to_show": 24,
+                  "graph": "line",
+                  "type": "sensor",
+                  "entity": "sensor.231_temperature",
+                  "detail": 1,
+                  "name": "Altan"
+                },
+                {
+                  "hours_to_show": 24,
+                  "graph": "line",
+                  "type": "sensor",
+                  "entity": "sensor.199_temperature",
+                  "detail": 1,
+                  "name": "Förrådet"
+                }
+              ]
             },
             {
-              "hours_to_show": 24,
-              "graph": "line",
-              "type": "sensor",
-              "entity": "sensor.kontoret_temperature",
-              "detail": 1,
-              "name": "Kontoret"
+              "entities": [
+                {
+                  "entity": "switch.an179_1",
+                  "name": "Vindskyddet",
+                  "icon": "mdi:wall-sconce-round"
+                },
+                {
+                  "entity": "switch.telldusout1",
+                  "name": "Södra altanväggen",
+                  "icon": "mdi:string-lights"
+                },
+                {
+                  "entity": "switch.nexa_out_1",
+                  "icon": "mdi:string-lights"
+                },
+                {
+                  "entity": "switch.utebaren"
+                }
+              ],
+              "show_header_toggle": true,
+              "title": "Utomhus",
+              "type": "entities"
+            },
+            {
+              "entity": "weather.smhi_home",
+              "type": "weather-forecast"
+            },
+            {
+              "type": "vertical-stack",
+              "cards": [
+                {
+                  "type": "custom:uptime-card",
+                  "entity": "sun.sun",
+                  "title_template": "Solen",
+                  "icon": "mdi:weather-sunny",
+                  "ko_icon": "mdi:weather-sunny-off",
+                  "ko": "below_horizon",
+                  "icon_adaptive_color": true,
+                  "title_adaptive_color": true,
+                  "color": {
+                    "ok": "#F9d71C",
+                    "ko": "#053752",
+                    "half": "#EF810E"
+                  },
+                  "bar": {
+                    "spacing": 4,
+                    "height": 10,
+                    "round": 4
+                  },
+                  "show": {
+                    "average": false,
+                    "status": false
+                  },
+                  "alignment": {
+                    "status": "spaced",
+                    "header": "left",
+                    "icon_first": true
+                  },
+                  "tap_action": {
+                    "action": "more-info"
+                  }
+                },
+                {
+                  "show_name": false,
+                  "show_icon": true,
+                  "show_state": true,
+                  "type": "glance",
+                  "entities": [
+                    {
+                      "entity": "sensor.yr_symbol",
+                      "name": "Väder"
+                    },
+                    {
+                      "entity": "sensor.yr_cloudiness",
+                      "name": "Moln",
+                      "icon": "mdi:weather-cloudy"
+                    },
+                    {
+                      "entity": "sensor.framsidan_pressure"
+                    },
+                    {
+                      "entity": "sensor.yr_wind_speed",
+                      "name": "Vind",
+                      "icon": "mdi:weather-windy"
+                    },
+                    {
+                      "entity": "sensor.framsidan_humidity"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "chart_type": "line",
+              "period": "day",
+              "days_to_show": 10,
+              "type": "statistics-graph",
+              "entities": [
+                {
+                  "entity": "sensor.framsidan_temperature",
+                  "name": " "
+                }
+              ],
+              "stat_types": [
+                "mean",
+                "min",
+                "max"
+              ]
+            },
+            {
+              "type": "vertical-stack",
+              "title": "Wall-E",
+              "cards": [
+                {
+                  "type": "horizontal-stack",
+                  "cards": [
+                    {
+                      "type": "entity",
+                      "entity": "vacuum.wall_e",
+                      "icon": "mow"
+                    },
+                    {
+                      "type": "entity",
+                      "entity": "vacuum.wall_e",
+                      "name": " Batteri",
+                      "icon": "mdi:battery-50",
+                      "attribute": "battery_level",
+                      "unit": "%"
+                    }
+                  ]
+                },
+                {
+                  "type": "horizontal-stack",
+                  "cards": [
+                    {
+                      "show_name": false,
+                      "show_icon": true,
+                      "type": "button",
+                      "tap_action": {
+                        "action": "call-service",
+                        "service": "vacuum.start",
+                        "data": {},
+                        "target": {
+                          "device_id": "04744719de96abcefa75f8ffeeb42a05"
+                        }
+                      },
+                      "entity": "vacuum.wall_e",
+                      "icon": "mdi:mower",
+                      "show_state": false
+                    },
+                    {
+                      "show_name": false,
+                      "show_icon": true,
+                      "type": "button",
+                      "tap_action": {
+                        "action": "call-service",
+                        "service": "vacuum.return_to_base",
+                        "data": {},
+                        "target": {
+                          "device_id": "04744719de96abcefa75f8ffeeb42a05"
+                        }
+                      },
+                      "entity": "vacuum.wall_e",
+                      "icon": "mdi:home-battery"
+                    }
+                  ]
+                },
+                {
+                  "type": "entity",
+                  "entity": "vacuum.wall_e",
+                  "icon": "mdi:timer-check-outline",
+                  "name": "Uppdaterad",
+                  "attribute": "state_updated_at"
+                }
+              ]
             }
           ]
         },
@@ -1979,12 +2067,16 @@
               "type": "entities",
               "entities": [
                 {
+                  "entity": "switch.popp_outdoor",
+                  "icon": "mdi:radiator"
+                },
+                {
                   "entity": "sensor.garage_energi_man",
                   "icon": "mdi:garage-open",
                   "name": "Förbrukning"
                 },
                 {
-                  "entity": "sensor.garage_kostnad_man",
+                  "entity": "sensor.garage_kr_man",
                   "name": "Kostnad",
                   "icon": "mdi:cash"
                 },
@@ -1992,12 +2084,16 @@
                   "type": "divider"
                 },
                 {
-                  "entity": "sensor.garage_kostnad_man",
+                  "entity": "sensor.garage_kr_man",
                   "type": "attribute",
                   "attribute": "last_period",
                   "suffix": "kr",
                   "name": "Förra mån",
                   "icon": "mdi:cash"
+                },
+                {
+                  "entity": "sensor.popp_outdoor_power",
+                  "name": "Effekt"
                 }
               ],
               "footer": {
@@ -2005,6 +2101,14 @@
                 "entity": "sensor.popp_outdoor_power",
                 "detail": 2
               }
+            },
+            {
+              "hours_to_show": 24,
+              "graph": "line",
+              "type": "sensor",
+              "detail": 1,
+              "entity": "sensor.199_temperature",
+              "name": "Förrådet"
             }
           ],
           "title": "Övriga"
@@ -2214,7 +2318,7 @@
                   "name": "Cleverio 1"
                 },
                 {
-                  "entity": "sensor.node_16_node_status",
+                  "entity": "sensor.node_18_node_status",
                   "name": "Tvättmaskinen"
                 },
                 {
@@ -2228,12 +2332,12 @@
               "type": "history-graph",
               "entities": [
                 {
-                  "entity": "input_boolean.overcurrent_l2",
+                  "entity": "binary_sensor.l2_overcurrent",
                   "name": "Överström"
                 },
                 {
                   "entity": "switch.spabadet_l2",
-                  "name": "Heater"
+                  "name": "Spaheater"
                 },
                 {
                   "entity": "switch.spabadet_l3",
@@ -2248,7 +2352,14 @@
                   "name": "Manual"
                 },
                 {
+                  "entity": "binary_sensor.heatpump_immersion_heater"
+                },
+                {
                   "entity": "binary_sensor.low_price"
+                },
+                {
+                  "entity": "sensor.template_nordpool_current_price",
+                  "name": "Elpriset"
                 }
               ]
             },

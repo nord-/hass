@@ -38,3 +38,9 @@
       friendly_name: "Överström, L2"
       value_template: >-
         {{ states('sensor.hem_gen5_electric_consumed_2') | float(0) >= 20 and states('sensor.template_spabadet_l2_current_a') | float(0) > 0 }}
+
+- platform: template
+  sensors:
+    heatpump_immersion_heater:
+      friendly_name: "Elpatron"
+      value_template: "{{ not (states('switch.varmepumpen_a')|bool) and not (states('switch.varmepumpen_b')|bool) }}" 

@@ -1,0 +1,15 @@
+# electric fees 
+electric_tax:
+  friendly_name: 'Elskatt (öre)'
+  initial_value: 45
+  icon: mdi:hand-coin
+
+electric_transfer_cost: 
+  friendly_name: 'Överföringsavgift (öre)'
+  initial_value: 12
+  icon: mdi:bank-transfer-out
+    
+electric_fee: 
+  friendly_name: 'Elavgift (öre)'
+  initial_value: 7.5
+  icon: mdi:cash-minus

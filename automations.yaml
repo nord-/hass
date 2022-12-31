@@ -429,7 +429,7 @@
     state: home
   - condition: numeric_state
     entity_id: sensor.framsidan_temperature
-    below: '13'
+    below: 5
   action:
   - service: automation.turn_on
     entity_id: automation.laddat_till_20
@@ -733,10 +733,15 @@
   - platform: state
     entity_id:
     - sensor.zoe_battery_level
+    enabled: false
+  - platform: state
+    entity_id:
+    - sensor.zoe_mileage
   condition:
   - condition: template
     value_template: '{{ trigger.to_state.state | int < trigger.from_state.state |
       int }}'
+    enabled: false
   action:
   - service: automation.turn_off
     data: {}
@@ -793,6 +798,7 @@
     - sensor.nordpool_kwh_se3_sek_3_095_0
     attribute: low price
     to: true
+    alias: When cheap
   - platform: numeric_state
     entity_id: sensor.template_spabadet_l2_current_a
     for:
@@ -800,14 +806,22 @@
       minutes: 0
       seconds: 40
     below: 10
+    alias: 'When spabadet is not heating '
+    enabled: false
+  - platform: numeric_state
+    entity_id: sensor.hem_gen5_electric_consumed_2
+    below: 16
   condition:
   - condition: state
     entity_id: sensor.nordpool_kwh_se3_sek_3_095_0
     attribute: low price
     state: true
+    alias: Confirm low price
   - condition: numeric_state
     entity_id: sensor.template_spabadet_l2_current_a
     below: 10
+    alias: Confirm spabadet not heating
+    enabled: false
   action:
   - service: switch.turn_off
     data: {}
@@ -815,15 +829,6 @@
       entity_id:
       - switch.varmepumpen_b
       - switch.varmepumpen_a
-  - service: notify.rickards_devices
-    data:
-      message: 'Elpatron på.\nKlockan: {{ now().strftime(''%H:%M den %d/%m'') }}'
-    enabled: false
-  - service: switch.turn_on
-    data: {}
-    target:
-      entity_id: switch.spabadet_l2
-    enabled: false
   mode: single
 - id: '1662395326862'
   alias: Värmepumpen, blockera elpatron
@@ -834,29 +839,47 @@
     - sensor.nordpool_kwh_se3_sek_3_095_0
     attribute: low price
     to: false
-  - platform: time
-    at: 01:00:00
-    enabled: false
+    alias: When expensive
   - platform: numeric_state
     entity_id: sensor.template_spabadet_l2_current_a
     above: 10
+    alias: 'When spabadet is heating '
+    enabled: false
+  - platform: numeric_state
+    entity_id: sensor.hem_gen5_electric_consumed_2
+    above: 20
   condition: []
   action:
   - service: switch.turn_on
     data: {}
     target:
       entity_id:
-      - switch.varmepumpen_a
       - switch.varmepumpen_b
-  - service: notify.rickards_devices
-    data:
-      message: 'Elpatron av.\nKlockan: {{ now().strftime(''%H:%M den %d/%m'') }}'
-    enabled: false
-  - service: switch.turn_off
-    data: {}
-    target:
-      entity_id: switch.spabadet_l2
-    enabled: false
+  - if:
+    - condition: state
+      entity_id: sensor.nordpool_kwh_se3_sek_3_095_0
+      attribute: low price
+      state: false
+    then:
+    - service: switch.turn_on
+      data: {}
+      target:
+        entity_id: switch.varmepumpen_a
+    alias: If expensive block completely
+  - delay:
+      hours: 0
+      minutes: 0
+      seconds: 6
+      milliseconds: 0
+  - if:
+    - condition: numeric_state
+      entity_id: sensor.hem_gen5_electric_consumed_2
+      above: 21
+    then:
+    - service: switch.turn_on
+      data: {}
+      target:
+        entity_id: switch.varmepumpen_a
   mode: single
 - id: '1662572482443'
   alias: Diskmaskinen, starta på klocka
@@ -995,13 +1018,13 @@
   description: ''
   trigger:
   - platform: numeric_state
-    entity_id: sensor.clever_spz2_electric_consumption_w
+    entity_id: sensor.clever_spz2_electric_consumption_w_2
     above: 1000
   condition: []
   action:
   - wait_for_trigger:
     - platform: numeric_state
-      entity_id: sensor.clever_spz2_electric_consumption_w
+      entity_id: sensor.clever_spz2_electric_consumption_w_2
       for:
         hours: 0
         minutes: 2
@@ -1154,7 +1177,7 @@
       state: 'on'
     - condition: state
       entity_id: script.spabadet_pause_control
-      state: 'on'
+      state: 'off'
     alias: If any Spabadet script are running
   action:
   - service: switch.turn_off
@@ -1227,4 +1250,20 @@
     data:
       title: iGrill alarm
       message: Temperaturen är {{ states.sensor.igrill_probe_1.state|int }}°C.
+  mode: single
+- id: '1671363832692'
+  alias: 'ALARM: Enheter offline'
+  description: ''
+  trigger:
+  - platform: state
+    entity_id:
+    - sensor.node_18_node_status
+    - sensor.node_17_node_status
+    from: alive
+  condition: []
+  action:
+  - service: notify.rickards_devices
+    data:
+      message: Tvätt- eller diskmaskinen är offline.
+      title: Enheter är offline
   mode: single
