@@ -293,7 +293,7 @@
                       "entity": "sensor.nordpool_kwh_se3_sek_3_095_0",
                       "name": "NP lågt",
                       "icon": "mdi:chart-bell-curve",
-                      "attribute": "low price"
+                      "attribute": "low_price"
                     }
                   ]
                 }

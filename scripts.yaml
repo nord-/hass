@@ -306,7 +306,7 @@ ladda_bilen_uppstart:
   - if:
     - condition: state
       entity_id: sensor.nordpool_kwh_se3_sek_3_095_0
-      attribute: low price
+      attribute: low_price
       state: true
     then:
     - service: switch.turn_on
@@ -415,7 +415,7 @@ spabadet_pump_and_heater:
         conditions:
         - condition: state
           entity_id: sensor.nordpool_kwh_se3_sek_3_095_0
-          attribute: low price
+          attribute: low_price
           state: false
           alias: High price
         - condition: numeric_state
@@ -443,7 +443,7 @@ spabadet_pump_and_heater:
   - if:
     - condition: state
       entity_id: sensor.nordpool_kwh_se3_sek_3_095_0
-      attribute: low price
+      attribute: low_price
       state: true
       alias: Low price
     then:

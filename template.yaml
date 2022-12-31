@@ -230,7 +230,7 @@
       {{ states('sensor.template_nordpool_current_price_vat') | float(0) 
           + ((states('var.electric_tax') | float / 100.0)|float) 
           + ((states('var.electric_transfer_cost') | float / 100.0)|float) 
-          + ((states('var.electric_fee') | float / 100.0)|float) }}"
+          + ((states('var.electric_fee') | float / 100.0)|float) }}
 #    state: "{{ states('sensor.template_nordpool_current_price_vat') | float(0) + 0.57 + 0.075 }}"
     unit_of_measurement: kr
     device_class: monetary
