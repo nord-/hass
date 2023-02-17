@@ -29,7 +29,13 @@
 #   name: "iGrill Battery"
 #   qos: 0
 #   unit_of_measurement: "%"
-
+  
+- platform: average
+  name: 'Elpriset [kr] (avg 3)'
+  duration:
+    days: 3
+  entities:
+    - sensor.template_nordpool_current_price
 
 
 ### INTEGRATIONS 
@@ -39,7 +45,16 @@
   source: sensor.template_dishwasher_machine_cost
   method: left
   round: 2
-  
+
+- platform: integration
+  unique_id: aza_energy_home_kwh
+  name: "Azarel, energi (kWh)"
+  source: sensor.template_aza_energy_home
+  method: left
+  round: 2
+
+
+    
 # - platform: rest
 #   resource: "https://dev-app-cn.azurewebsites.net/user/1/car/{{ states("input_number.aza_usercar_id") }}?withLogos=false"
 #   method: GET

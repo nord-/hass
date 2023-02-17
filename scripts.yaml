@@ -207,10 +207,15 @@ charge_the_tesla:
   sequence:
   - service: rest_command.cn_add_aza_to_queue
     data: {}
+  - service: tesla_custom.polling_interval
+    data:
+      vin: '{{ state_attr(''binary_sensor.azarel_online'',''vin'') }}'
+      scan_interval: 30
+    alias: Set Polling interval to short
   - service: notify.rickards_devices
     data:
       title: Azarel börjar ladda
-      message: 'Laddningen av Azarel har startat.\n SoC:     {{ states("sensor.azarel_battery_sensor")
+      message: 'Laddningen av Azarel har startat.\n SoC:     {{ states("sensor.azarel_battery")
         }}%.\n Priset:  {{ states("sensor.template_nordpool_current_price_vat") }}
         kr\n Klockan: {{ now().strftime(''%H:%M den %d/%m'') }}'
   mode: single
@@ -249,6 +254,11 @@ ladda_tesla_stoppa:
   sequence:
   - service: rest_command.cn_remove_aza_from_queue
     data: {}
+  - service: tesla_custom.polling_interval
+    data:
+      vin: '{{ state_attr(''binary_sensor.azarel_online'',''vin'') }}'
+      scan_interval: 660
+    alias: Set polling interval to long
   - service: notify.rickards_devices
     data:
       message: 'Laddningen av Azarel har stoppats.\n SoC:     {{ states("sensor.azarel_battery_sensor")
@@ -330,11 +340,14 @@ spabadet_pause_control:
       entity_id:
       - script.spabadet_pump_and_heater
     alias: Take manual control of pumps and heater
+    enabled: false
   - service: automation.turn_off
-    data: {}
+    data:
+      stop_actions: true
     target:
       entity_id:
-      - automation.spabadet_run_pumps_for_2_hours
+      - automation.spabadet_pump_and_heater
+    enabled: false
   - service: switch.turn_on
     data: {}
     target:
@@ -342,6 +355,7 @@ spabadet_pause_control:
       - switch.spabadet_l3
       - switch.spabadet_l2
     alias: Turn on pumps and heater
+    enabled: false
   - service: notify.rickards_devices
     data:
       title: Spabadet
@@ -349,16 +363,20 @@ spabadet_pause_control:
         pausats.\n Priset:  {{ states("sensor.template_nordpool_current_price_vat")
         }} kr\n Klockan: {{ now().strftime(''%H:%M'') }}'
     alias: Notify Rickard that manual control is turned on
+    enabled: false
   - delay:
       hours: 2
       minutes: 0
       seconds: 0
       milliseconds: 0
+    enabled: false
   - service: automation.turn_on
     data: {}
     target:
-      entity_id: automation.spabadet_run_pumps_for_2_hours
+      entity_id:
+      - automation.spabadet_pump_and_heater
     alias: Release manual control of pumps and heater
+    enabled: false
   - service: notify.rickards_devices
     data:
       title: Spabadet
@@ -366,6 +384,51 @@ spabadet_pause_control:
         states("sensor.template_nordpool_current_price_vat") }} kr\n Klockan: {{ now().strftime(''%H:%M'')
         }}'
     alias: Notify Rickard that manual control is turned off
+    enabled: false
+  - if:
+    - condition: state
+      entity_id: automation.spabadet_pump_and_heater
+      state: 'on'
+    then:
+    - service: automation.turn_off
+      data:
+        stop_actions: true
+      target:
+        entity_id:
+        - automation.spabadet_pump_and_heater
+    - service: switch.turn_on
+      data: {}
+      target:
+        entity_id:
+        - switch.spabadet_l3
+        - switch.spabadet_l2
+      alias: Turn on pumps and heater
+    - service: notify.rickards_devices
+      data:
+        title: Spabadet
+        message: 'Uppvärmningen av spabadet har slagits på manuellt och automatiken
+          pausats.\n Priset:  {{ states("sensor.template_nordpool_current_price_vat")
+          }} kr\n Klockan: {{ now().strftime(''%H:%M'') }}\n Badet:   {{ states("sensor.231_temperature")
+          }}°C'
+      alias: Notify Rickard that manual control is turned on
+    else:
+    - service: automation.turn_on
+      target:
+        entity_id: automation.spabadet_pump_and_heater
+      data: {}
+    - service: notify.rickards_devices
+      data:
+        title: Spabadet
+        message: 'Uppvärmningen av spabadet går nu på automatik igen.\n Priset:  {{
+          states("sensor.template_nordpool_current_price_vat") }} kr\n Klockan: {{
+          now().strftime(''%H:%M'') }}\n Badet:   {{ states("sensor.231_temperature")
+          }}°C'
+      alias: Notify Rickard that manual control is turned off
+  - service: input_boolean.toggle
+    data: {}
+    target:
+      entity_id: input_boolean.spabadet_manual
+    alias: Toggle Spabadet, manual
   mode: single
   icon: mdi:swim
 spabadet_pump_and_heater:
@@ -414,10 +477,9 @@ spabadet_pump_and_heater:
       - condition: and
         conditions:
         - condition: state
-          entity_id: sensor.nordpool_kwh_se3_sek_3_095_0
-          attribute: low_price
-          state: false
+          entity_id: binary_sensor.low_price
           alias: High price
+          state: 'off'
         - condition: numeric_state
           entity_id: sensor.template_spabadet_temperature
           above: 34
@@ -442,10 +504,9 @@ spabadet_pump_and_heater:
       milliseconds: 0
   - if:
     - condition: state
-      entity_id: sensor.nordpool_kwh_se3_sek_3_095_0
-      attribute: low_price
-      state: true
+      entity_id: binary_sensor.low_price
       alias: Low price
+      state: 'on'
     then:
     - service: switch.turn_on
       data: {}
@@ -505,16 +566,77 @@ spabadet_pump_and_heater:
       target:
         entity_id: switch.spabadet_l2
       alias: Turn off heater
-  - service: input_boolean.turn_off
-    data: {}
-    target:
-      entity_id: input_boolean.overcurrent_l2
-    alias: Turn off high load flag
   - service: notify.rickards_devices
     data:
       title: Spabadet, värmare
       message: 'Uppvärmningen av spabadet har stängts av.\n Priset:  {{ states("sensor.template_nordpool_current_price_vat")
         }} kr\n Klockan: {{ now().strftime(''%H:%M'') }}'
     enabled: false
+  mode: single
+  icon: mdi:pump
+spabadet_pump_and_heater_v2:
+  alias: Spabadet, pump and heater (V2)
+  sequence:
+  - if:
+    - condition: or
+      conditions:
+      - condition: numeric_state
+        entity_id: sensor.template_spabadet_temperature
+        alias: Spabadet < 30°
+        below: 30
+      - condition: state
+        entity_id: binary_sensor.low_price
+        state: 'on'
+        alias: Low price
+      alias: Spabadet < 30° or Low price
+    then:
+    - service: switch.turn_on
+      data: {}
+      target:
+        entity_id:
+        - switch.spabadet_l2
+      alias: Turn on heater
+    alias: Control heater
+    else:
+    - service: switch.turn_off
+      data: {}
+      target:
+        entity_id:
+        - switch.spabadet_l2
+      alias: Turn off heater
+  - if:
+    - condition: or
+      conditions:
+      - condition: numeric_state
+        entity_id: sensor.231_temperature
+        below: 0
+        alias: Temp < 0°
+      - condition: numeric_state
+        entity_id: sensor.template_spabadet_temperature
+        alias: Spabadet < 30°
+        below: 30
+      - condition: state
+        entity_id: binary_sensor.low_price
+        state: 'on'
+        alias: Low price
+      - condition: template
+        value_template: '{{now().hour % 4 == 0}}'
+        alias: Every four hours
+      alias: Every four hours, Low price, Spabadet < 30° or Temp < 0°
+    then:
+    - service: switch.turn_on
+      data: {}
+      target:
+        entity_id:
+        - switch.spabadet_l3
+      alias: Turn on pump
+    alias: Control pump
+    else:
+    - service: switch.turn_off
+      data: {}
+      target:
+        entity_id:
+        - switch.spabadet_l3
+      alias: Turn off pump
   mode: single
   icon: mdi:pump

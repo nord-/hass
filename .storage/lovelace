@@ -141,9 +141,8 @@
                   ]
                 },
                 {
-                  "type": "weather-forecast",
-                  "entity": "weather.home",
-                  "show_current": false
+                  "entity": "weather.smhi_home",
+                  "type": "weather-forecast"
                 }
               ]
             },
@@ -152,24 +151,32 @@
               "cards": [
                 {
                   "type": "custom:bignumber-card",
-                  "entity": "sensor.template_nordpool_current_price_vat",
-                  "title": "Aktuellt elpris",
+                  "entity": "sensor.template_elpris_kr",
+                  "title": "Elpriset (totalt)",
                   "scale": "30px",
                   "hideunit": false,
                   "min": 0,
-                  "max": 2,
+                  "max": 3,
                   "severity": [
                     {
-                      "value": 0.2,
-                      "bnStyle": "var(--label-badge-green)"
-                    },
-                    {
-                      "value": 0.8,
-                      "bnStyle": "var(--label-badge-yellow)"
+                      "value": 1.2,
+                      "bnStyle": "#00FF00"
                     },
                     {
                       "value": 1.5,
-                      "bnStyle": "#ff9e89"
+                      "bnStyle": "#90EE90"
+                    },
+                    {
+                      "value": 1.7,
+                      "bnStyle": "#FFFF00"
+                    },
+                    {
+                      "value": 2.5,
+                      "bnStyle": "#FFA500"
+                    },
+                    {
+                      "value": 3.5,
+                      "bnStyle": "#FF8A8A"
                     },
                     {
                       "value": 40,
@@ -193,6 +200,17 @@
                     "start": "day"
                   },
                   "series": [
+                    {
+                      "entity": "sensor.elpriset_kr_avg_3",
+                      "name": "avg",
+                      "stroke_width": 1,
+                      "transform": "return x * 1.25;",
+                      "float_precision": 2,
+                      "show": {
+                        "legend_value": true,
+                        "in_header": false
+                      }
+                    },
                     {
                       "entity": "sensor.nordpool_kwh_se3_sek_3_095_0",
                       "name": "Idag",
@@ -223,7 +241,11 @@
                           "color": "orange"
                         },
                         {
-                          "value": 1.3,
+                          "value": 1.5,
+                          "color": "#FF8A8A"
+                        },
+                        {
+                          "value": 2.5,
                           "color": "red"
                         }
                       ]
@@ -234,6 +256,8 @@
                     "color": "#ff0000",
                     "label": "Nu"
                   },
+                  "update_interval": "1h",
+                  "cache": true,
                   "apex_config": {
                     "yaxis": {
                       "min": 0,
@@ -243,40 +267,17 @@
                 },
                 {
                   "type": "horizontal-stack",
-                  "title": "Lågt pris (ex. moms)",
                   "cards": [
                     {
                       "type": "entity",
-                      "entity": "sensor.template_nordpool_current_price",
+                      "entity": "sensor.template_nordpool_current_price_vat",
                       "name": "Nu",
                       "unit": "kr",
                       "icon": "mdi:cash-marker"
                     },
                     {
                       "type": "entity",
-                      "entity": "sensor.nordpool_kwh_se3_sek_3_095_0",
-                      "attribute": "off_peak_1",
-                      "icon": "mdi:summit",
-                      "unit": "kr",
-                      "name": "Off peak 1"
-                    },
-                    {
-                      "type": "entity",
-                      "entity": "sensor.nordpool_kwh_se3_sek_3_095_0",
-                      "attribute": "off_peak_2",
-                      "icon": "mdi:summit",
-                      "unit": "kr",
-                      "name": "Off peak 2"
-                    }
-                  ]
-                },
-                {
-                  "type": "horizontal-stack",
-                  "cards": [
-                    {
-                      "type": "entity",
-                      "entity": "sensor.nordpool_kwh_se3_sek_3_095_0",
-                      "attribute": "average",
+                      "entity": "sensor.template_nordpool_avg_price_vat",
                       "unit": "kr",
                       "name": "Avg",
                       "icon": "mdi:cash-minus"
@@ -287,13 +288,6 @@
                       "icon": "mdi:chart-bell-curve",
                       "state_color": true,
                       "name": "Lågt"
-                    },
-                    {
-                      "type": "entity",
-                      "entity": "sensor.nordpool_kwh_se3_sek_3_095_0",
-                      "name": "NP lågt",
-                      "icon": "mdi:chart-bell-curve",
-                      "attribute": "low_price"
                     }
                   ]
                 }
@@ -322,24 +316,7 @@
           "title": "Tesla",
           "path": "tesla",
           "icon": "mdi:car",
-          "badges": [
-            {
-              "entity": "sensor.azarel_temperature_sensor_inside",
-              "name": "Inne"
-            },
-            {
-              "entity": "sensor.azarel_temperature_sensor_outside",
-              "name": "Ute"
-            },
-            {
-              "entity": "sensor.template_nordpool_current_price_vat",
-              "name": "Elpris",
-              "unit": "kr"
-            },
-            {
-              "entity": "binary_sensor.low_price"
-            }
-          ],
+          "badges": [],
           "cards": [
             {
               "type": "vertical-stack",
@@ -352,7 +329,7 @@
                       "type": "gauge",
                       "min": 0,
                       "max": 100,
-                      "entity": "sensor.azarel_battery_sensor",
+                      "entity": "sensor.azarel_battery",
                       "name": "SoC",
                       "severity": {
                         "green": 40,
@@ -376,7 +353,7 @@
                     },
                     {
                       "type": "gauge",
-                      "entity": "sensor.azarel_energy_added_sensor",
+                      "entity": "sensor.azarel_energy_added",
                       "name": "Laddat",
                       "max": 50,
                       "needle": true,
@@ -395,7 +372,7 @@
                       "entity": "sensor.template_aza_mileage"
                     },
                     {
-                      "entity": "binary_sensor.azarel_charger_sensor",
+                      "entity": "binary_sensor.azarel_charger",
                       "name": "Inkopplad",
                       "icon": "mdi:ev-plug-type2"
                     },
@@ -410,34 +387,38 @@
                   "type": "horizontal-stack",
                   "cards": [
                     {
+                      "show_name": false,
+                      "show_icon": true,
                       "type": "button",
                       "tap_action": {
                         "action": "toggle"
                       },
                       "entity": "climate.azarel_hvac_climate_system",
                       "name": " ",
+                      "icon": "mdi:radiator",
+                      "show_state": false
+                    },
+                    {
                       "show_name": false,
-                      "icon": "mdi:radiator"
-                    },
-                    {
+                      "show_icon": true,
                       "type": "button",
                       "tap_action": {
                         "action": "toggle"
                       },
-                      "entity": "lock.azarel_charger_door_lock",
+                      "entity": "cover.azarel_charger_door",
                       "name": " ",
-                      "icon": "mdi:connection",
-                      "show_name": false
+                      "icon": "mdi:connection"
                     },
                     {
+                      "show_name": false,
+                      "show_icon": true,
                       "type": "button",
                       "tap_action": {
                         "action": "toggle"
                       },
-                      "entity": "lock.azarel_door_lock",
+                      "entity": "lock.azarel_doors",
                       "icon": "mdi:car-door-lock",
-                      "name": " ",
-                      "show_name": false
+                      "name": " "
                     },
                     {
                       "show_name": false,
@@ -451,7 +432,17 @@
                       },
                       "icon": "mdi:ev-station",
                       "show_state": false,
-                      "entity": "switch.azarel_charger_switch"
+                      "entity": "switch.azarel_charger"
+                    },
+                    {
+                      "show_name": false,
+                      "show_icon": true,
+                      "type": "button",
+                      "tap_action": {
+                        "action": "toggle"
+                      },
+                      "entity": "button.azarel_force_data_update",
+                      "icon": "mdi:refresh-circle"
                     }
                   ]
                 },
@@ -488,48 +479,17 @@
                   "title": "Laddgräns",
                   "cards": [
                     {
-                      "type": "vertical-stack",
-                      "cards": [
+                      "type": "entities",
+                      "entities": [
                         {
-                          "type": "entities",
-                          "entities": [
-                            {
-                              "entity": "input_number.aza_charge_limit",
-                              "name": "SoC gräns"
-                            },
-                            {
-                              "entity": "sensor.template_aza_charging_required_time",
-                              "name": "Laddtid",
-                              "icon": "mdi:clock"
-                            }
-                          ]
+                          "entity": "number.azarel_charge_limit",
+                          "name": "SoC gräns",
+                          "icon": "mdi:gauge"
                         },
                         {
-                          "type": "horizontal-stack",
-                          "cards": [
-                            {
-                              "type": "entity",
-                              "name": "Inställd",
-                              "entity": "sensor.azarel_energy_added_sensor",
-                              "attribute": "charge_limit_soc",
-                              "icon": "mdi:gauge",
-                              "unit": "%"
-                            },
-                            {
-                              "show_name": true,
-                              "show_icon": true,
-                              "type": "button",
-                              "tap_action": {
-                                "action": "call-service",
-                                "service": "script.1661376120898",
-                                "data": {},
-                                "target": {}
-                              },
-                              "entity": "script.1661376120898",
-                              "name": "Sätt gräns",
-                              "icon": "mdi:gauge"
-                            }
-                          ]
+                          "entity": "sensor.template_aza_charging_required_time",
+                          "name": "Laddtid",
+                          "icon": "mdi:clock"
                         }
                       ]
                     }
@@ -589,8 +549,9 @@
                       "name": "Inkopplad"
                     },
                     {
-                      "entity": "sensor.zoe_battery_last_activity",
-                      "name": "Uppdaterad"
+                      "entity": "sensor.template_zoe_last_update",
+                      "name": "Uppdaterad",
+                      "icon": "mdi:clock"
                     }
                   ]
                 },
@@ -606,7 +567,7 @@
                       },
                       "entity": "button.zoe_start_air_conditioner",
                       "name": " ",
-                      "icon_height": "35px"
+                      "icon_height": "25px"
                     },
                     {
                       "show_name": false,
@@ -619,7 +580,7 @@
                       "entity": "binary_sensor.zoe_charging",
                       "show_state": false,
                       "icon": "mdi:ev-station",
-                      "icon_height": "35px"
+                      "icon_height": "25px"
                     }
                   ]
                 },
@@ -689,7 +650,7 @@
                       "icon": "mdi:car-side"
                     },
                     {
-                      "entity": "sensor.azarel_energi_man",
+                      "entity": "sensor.azarel_kwh_man",
                       "name": "Azarel",
                       "icon": "mdi:car-sports"
                     },
@@ -781,10 +742,30 @@
               "type": "vertical-stack",
               "cards": [
                 {
-                  "type": "entity",
-                  "entity": "sensor.hem_gen5_electric_consumed_kwh",
-                  "name": "Förbrukat (04-21)",
-                  "icon": "mdi:power-plug"
+                  "type": "horizontal-stack",
+                  "cards": [
+                    {
+                      "type": "entity",
+                      "entity": "sensor.template_nordpool_current_price_vat",
+                      "name": "Elpriset",
+                      "unit": "kr",
+                      "icon": "mdi:cash"
+                    },
+                    {
+                      "type": "entity",
+                      "entity": "binary_sensor.low_price",
+                      "icon": "mdi:chart-bell-curve",
+                      "state_color": true,
+                      "name": "Lågt"
+                    },
+                    {
+                      "type": "entity",
+                      "entity": "binary_sensor.low_price_off_peak",
+                      "state_color": true,
+                      "name": "Billigt",
+                      "icon": "mdi:chart-timeline-variant-shimmer"
+                    }
+                  ]
                 },
                 {
                   "type": "horizontal-stack",
@@ -1107,9 +1088,9 @@
                       "name": " "
                     },
                     {
-                      "type": "button",
                       "show_name": true,
                       "show_icon": true,
+                      "type": "button",
                       "tap_action": {
                         "action": "call-service",
                         "service": "script.turn_on",
@@ -1117,10 +1098,27 @@
                           "entity_id": "script.spabadet_pause_control"
                         }
                       },
-                      "entity": "script.spabadet_pause_control",
+                      "entity": "input_boolean.spabadet_manual",
                       "show_state": false,
                       "name": "Bada",
-                      "icon_height": "50px"
+                      "icon_height": "50px",
+                      "icon": "mdi:swim",
+                      "hold_action": {
+                        "action": "more-info"
+                      }
+                    },
+                    {
+                      "type": "gauge",
+                      "entity": "sensor.231_temperature",
+                      "name": " ",
+                      "min": -15,
+                      "max": 35,
+                      "needle": true,
+                      "severity": {
+                        "green": 15,
+                        "yellow": 0,
+                        "red": 25
+                      }
                     }
                   ]
                 },
@@ -1295,7 +1293,7 @@
         {
           "theme": "Backend-selected",
           "title": "Sovrummet",
-          "icon": "mdi:bed",
+          "icon": "mdi:lightbulb-group",
           "badges": [
             {
               "entity": "sensor.op9_pro_battery_level"
@@ -1307,28 +1305,13 @@
             {
               "entity": "sensor.sm_g950f_batteriniva",
               "name": "Fridas GS8"
+            },
+            {
+              "entity": "sensor.sm_g960f_batteriniva_2",
+              "name": "Felix GS9"
             }
           ],
           "cards": [
-            {
-              "type": "horizontal-stack",
-              "cards": [
-                {
-                  "type": "button",
-                  "tap_action": {
-                    "action": "toggle"
-                  },
-                  "icon": "hass:cellphone-charging",
-                  "entity": "switch.nexa_5",
-                  "name": "Laddare"
-                },
-                {
-                  "type": "entity",
-                  "entity": "binary_sensor.op9_pro_is_charging",
-                  "name": "OP9"
-                }
-              ]
-            },
             {
               "entities": [
                 {
@@ -1347,6 +1330,10 @@
                   "icon": "mdi:led-strip-variant"
                 },
                 {
+                  "entity": "switch.nexa_5",
+                  "icon": "mdi:cellphone-charging"
+                },
+                {
                   "entity": "switch.nexa_3",
                   "name": "Frida",
                   "icon": "mdi:candelabra-fire"
@@ -1359,39 +1346,13 @@
               ],
               "show_header_toggle": true,
               "type": "entities",
-              "title": "Belysning",
-              "state_color": true
-            },
-            {
-              "hours_to_show": 24,
-              "graph": "line",
-              "entity": "sensor.215_temperature",
-              "type": "sensor",
-              "detail": 2,
-              "name": "Sovrummet"
-            },
-            {
-              "entity": "media_player.chromecast5303",
-              "type": "media-control"
-            }
-          ]
-        },
-        {
-          "title": "Vardagsrummet",
-          "icon": "mdi:sofa",
-          "badges": [],
-          "cards": [
-            {
-              "entity": "media_player.vardagsrum",
-              "type": "media-control"
-            },
-            {
-              "hours_to_show": 24,
-              "graph": "line",
-              "type": "sensor",
-              "entity": "sensor.vardagsrummet_temperature",
-              "detail": 2,
-              "name": "Vardagsrummet"
+              "title": "Sovrummet",
+              "state_color": true,
+              "footer": {
+                "type": "graph",
+                "entity": "sensor.215_temperature",
+                "detail": 2
+              }
             },
             {
               "entities": [
@@ -1419,21 +1380,13 @@
               "show_header_toggle": true,
               "type": "entities",
               "state_color": true,
-              "title": "Belysning"
-            }
-          ]
-        },
-        {
-          "path": "felix",
-          "title": "Felix",
-          "icon": "mdi:human-male-child",
-          "badges": [
-            {
-              "entity": "sensor.sm_g960f_batteriniva_2",
-              "name": "Felix mobil"
-            }
-          ],
-          "cards": [
+              "title": "Vardagsrummet",
+              "footer": {
+                "type": "graph",
+                "entity": "sensor.vardagsrummet_temperature",
+                "detail": 2
+              }
+            },
             {
               "entities": [
                 {
@@ -1460,7 +1413,7 @@
               "footer": {
                 "type": "graph",
                 "entity": "sensor.felix_rum_temperature",
-                "detail": 1
+                "detail": 2
               }
             },
             {
@@ -1485,34 +1438,100 @@
               "title": "Spelrummet",
               "footer": {
                 "type": "graph",
-                "entity": "sensor.spelrummet_temperature"
+                "entity": "sensor.spelrummet_temperature",
+                "detail": 2
               }
             },
             {
-              "type": "light",
-              "entity": "light.spelrummet_taket_light",
-              "name": "Taket"
+              "type": "entities",
+              "entities": [
+                {
+                  "entity": "switch.kitchen_window",
+                  "icon": "mdi:lamp",
+                  "secondary_info": "none"
+                }
+              ],
+              "title": "Köket"
             },
             {
-              "type": "horizontal-stack",
-              "cards": [
+              "entities": [
                 {
-                  "hours_to_show": 24,
-                  "graph": "line",
-                  "type": "sensor",
-                  "entity": "sensor.felix_rum_temperature",
-                  "detail": 1,
-                  "name": "Felix rum"
+                  "entity": "switch.telldus_3",
+                  "icon": "mdi:lamp"
                 },
                 {
-                  "hours_to_show": 24,
-                  "graph": "line",
-                  "type": "sensor",
-                  "entity": "sensor.spelrummet_temperature",
-                  "detail": 1,
-                  "name": "Spelrummet "
+                  "entity": "light.byran_uppe_light",
+                  "icon": "mdi:lamp",
+                  "name": "Byrån"
                 }
-              ]
+              ],
+              "type": "entities",
+              "state_color": true,
+              "title": "Övervåning"
+            },
+            {
+              "entities": [
+                {
+                  "entity": "switch.tz2",
+                  "icon": "mdi:lamp",
+                  "name": "Skrivbordet"
+                },
+                {
+                  "entity": "light.office_window",
+                  "icon": "mdi:lamp",
+                  "name": "Fönstret"
+                }
+              ],
+              "type": "entities",
+              "state_color": true,
+              "title": "Kontoret"
+            },
+            {
+              "entities": [
+                {
+                  "entity": "switch.an179_1",
+                  "name": "Vindskyddet",
+                  "icon": "mdi:wall-sconce-round"
+                },
+                {
+                  "entity": "switch.telldusout1",
+                  "name": "Södra altanväggen",
+                  "icon": "mdi:string-lights"
+                },
+                {
+                  "entity": "switch.nexa_out_1",
+                  "icon": "mdi:string-lights"
+                },
+                {
+                  "entity": "switch.utebaren"
+                }
+              ],
+              "show_header_toggle": true,
+              "title": "Utomhus",
+              "type": "entities"
+            },
+            {
+              "entities": [
+                {
+                  "entity": "switch.tz1",
+                  "name": "Hallbyrån",
+                  "icon": "mdi:lamp"
+                },
+                {
+                  "entity": "switch.telldus_1",
+                  "name": "Grovköket",
+                  "icon": "mdi:desk-lamp"
+                },
+                {
+                  "entity": "light.tvattstugan_banken_light",
+                  "name": "Tvättstugan",
+                  "icon": "mdi:led-strip",
+                  "secondary_info": "brightness"
+                }
+              ],
+              "show_header_toggle": true,
+              "type": "entities",
+              "title": "Hallen & Grovköket"
             }
           ]
         },
@@ -1522,15 +1541,6 @@
           "icon": "mdi:silverware-fork-knife",
           "badges": [],
           "cards": [
-            {
-              "entity": "media_player.jbl_ute",
-              "type": "media-control"
-            },
-            {
-              "entity": "light.kitchen_window",
-              "name": "Köksfönstret",
-              "type": "light"
-            },
             {
               "type": "vertical-stack",
               "title": "Diskmaskinen",
@@ -1555,7 +1565,8 @@
                     {
                       "entity": "switch.clever_spz3",
                       "name": "På/av",
-                      "icon": "mdi:dishwasher"
+                      "icon": "mdi:dishwasher",
+                      "secondary_info": "last-updated"
                     }
                   ]
                 },
@@ -1583,12 +1594,130 @@
                       "name": "Förra mån",
                       "icon": "mdi:cash"
                     }
-                  ],
-                  "footer": {
-                    "type": "graph",
-                    "entity": "sensor.clever_spz3_electric_consumption_w",
-                    "detail": 2
-                  }
+                  ]
+                },
+                {
+                  "type": "horizontal-stack",
+                  "cards": [
+                    {
+                      "type": "gauge",
+                      "entity": "sensor.clever_spz3_electric_consumption_w",
+                      "name": " ",
+                      "max": 2000
+                    },
+                    {
+                      "type": "custom:apexcharts-card",
+                      "header": {
+                        "show": false
+                      },
+                      "series": [
+                        {
+                          "entity": "sensor.clever_spz3_electric_consumption_w"
+                        }
+                      ],
+                      "graph_span": "3h",
+                      "apex_config": {
+                        "yaxis": [
+                          {
+                            "decimalsInFloat": 0
+                          }
+                        ],
+                        "stroke": {
+                          "show": true,
+                          "width": 1
+                        }
+                      }
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "vertical-stack",
+              "title": "Tvättmaskinen",
+              "cards": [
+                {
+                  "type": "entities",
+                  "entities": [
+                    {
+                      "entity": "automation.tvattmaskinen_starta_pa_klockslag",
+                      "icon": "mdi:clock-check-outline",
+                      "name": "Starta på timer"
+                    },
+                    {
+                      "entity": "input_datetime.tvattmaskinen_timme",
+                      "name": "Klockan"
+                    },
+                    {
+                      "type": "divider"
+                    },
+                    {
+                      "entity": "switch.clever_spz2",
+                      "name": "På/av",
+                      "icon": "mdi:washing-machine",
+                      "secondary_info": "last-updated"
+                    }
+                  ]
+                },
+                {
+                  "type": "entities",
+                  "entities": [
+                    {
+                      "entity": "sensor.tvattmaskinen_kwh_man",
+                      "icon": "mdi:washing-machine",
+                      "name": "Förbrukning (mån)"
+                    },
+                    {
+                      "entity": "sensor.tvattmaskinen_kostnad",
+                      "name": "Kostnad (mån)",
+                      "icon": "mdi:cash"
+                    },
+                    {
+                      "type": "divider"
+                    },
+                    {
+                      "entity": "sensor.tvattmaskinen_kostnad",
+                      "type": "attribute",
+                      "attribute": "last_period",
+                      "suffix": "kr",
+                      "name": "Förra mån",
+                      "icon": "mdi:cash"
+                    }
+                  ]
+                },
+                {
+                  "type": "horizontal-stack",
+                  "cards": [
+                    {
+                      "type": "gauge",
+                      "entity": "sensor.clever_spz2_electric_consumption_w_2",
+                      "name": " ",
+                      "max": 2000
+                    },
+                    {
+                      "type": "custom:apexcharts-card",
+                      "header": {
+                        "show": false
+                      },
+                      "series": [
+                        {
+                          "entity": "sensor.clever_spz2_electric_consumption_w_2"
+                        }
+                      ],
+                      "graph_span": "3h",
+                      "apex_config": {
+                        "yaxis": [
+                          {
+                            "decimalsInFloat": 0
+                          }
+                        ],
+                        "stroke": {
+                          "show": true,
+                          "width": 1
+                        }
+                      }
+                    }
+                  ]
                 }
               ]
             },
@@ -1641,75 +1770,10 @@
                   ]
                 }
               ]
-            }
-          ]
-        },
-        {
-          "title": "Vardagsrummet, uppe",
-          "icon": "mdi:home-floor-1",
-          "badges": [],
-          "cards": [
-            {
-              "entity": "media_player.projektorn",
-              "type": "media-control"
-            },
-            {
-              "entities": [
-                {
-                  "entity": "switch.telldus_3",
-                  "icon": "mdi:lamp"
-                },
-                {
-                  "entity": "light.byran_uppe_light",
-                  "icon": "mdi:lamp",
-                  "name": "Byrån"
-                }
-              ],
-              "type": "entities",
-              "state_color": true,
-              "title": "Belysning"
-            }
-          ]
-        },
-        {
-          "theme": "Backend-selected",
-          "title": "Kontoret",
-          "icon": "mdi:desk-lamp",
-          "badges": [],
-          "cards": [
-            {
-              "type": "media-control",
-              "entity": "media_player.hk_citation_one_d73a8b_2"
             },
             {
               "type": "horizontal-stack",
-              "cards": [
-                {
-                  "type": "light",
-                  "entity": "light.office_window",
-                  "hold_action": {
-                    "action": "toggle"
-                  },
-                  "double_tap_action": {
-                    "action": "more-info"
-                  }
-                },
-                {
-                  "show_name": true,
-                  "show_icon": true,
-                  "type": "button",
-                  "tap_action": {
-                    "action": "toggle"
-                  },
-                  "entity": "switch.tz2",
-                  "name": "Skrivbordet",
-                  "show_state": false,
-                  "icon": "mdi:desk-lamp"
-                }
-              ]
-            },
-            {
-              "type": "horizontal-stack",
+              "title": "Skrivaren",
               "cards": [
                 {
                   "type": "gauge",
@@ -1766,61 +1830,93 @@
         {
           "theme": "Backend-selected",
           "title": "Ute",
-          "icon": "mdi:outdoor-lamp",
+          "icon": "mdi:home-thermometer-outline",
           "badges": [],
           "cards": [
             {
-              "type": "horizontal-stack",
+              "type": "vertical-stack",
               "cards": [
                 {
-                  "hours_to_show": 24,
-                  "graph": "line",
-                  "type": "sensor",
-                  "entity": "sensor.framsidan_temperature",
-                  "detail": 1,
-                  "name": "Framsidan"
+                  "type": "horizontal-stack",
+                  "cards": [
+                    {
+                      "hours_to_show": 24,
+                      "graph": "line",
+                      "type": "sensor",
+                      "entity": "sensor.vardagsrummet_temperature",
+                      "detail": 1,
+                      "name": "Vardagsrummet"
+                    },
+                    {
+                      "hours_to_show": 24,
+                      "graph": "line",
+                      "type": "sensor",
+                      "entity": "sensor.lumi_lumi_sen_ill_agl01_illuminance",
+                      "detail": 1,
+                      "name": "Kontoret",
+                      "icon": "mdi:white-balance-sunny"
+                    }
+                  ]
                 },
                 {
-                  "hours_to_show": 24,
-                  "graph": "line",
-                  "type": "sensor",
-                  "entity": "sensor.231_temperature",
-                  "detail": 1,
-                  "name": "Altan"
+                  "type": "horizontal-stack",
+                  "cards": [
+                    {
+                      "hours_to_show": 24,
+                      "graph": "line",
+                      "entity": "sensor.215_temperature",
+                      "type": "sensor",
+                      "detail": 1,
+                      "name": "Sovrummet"
+                    },
+                    {
+                      "hours_to_show": 24,
+                      "graph": "line",
+                      "type": "sensor",
+                      "entity": "sensor.spelrummet_temperature",
+                      "detail": 1,
+                      "name": "Spelrummet"
+                    },
+                    {
+                      "hours_to_show": 24,
+                      "graph": "line",
+                      "type": "sensor",
+                      "entity": "sensor.felix_rum_temperature",
+                      "detail": 1,
+                      "name": "Felix rum"
+                    }
+                  ]
                 },
                 {
-                  "hours_to_show": 24,
-                  "graph": "line",
-                  "type": "sensor",
-                  "entity": "sensor.199_temperature",
-                  "detail": 1,
-                  "name": "Förrådet"
+                  "type": "horizontal-stack",
+                  "cards": [
+                    {
+                      "hours_to_show": 24,
+                      "graph": "line",
+                      "type": "sensor",
+                      "entity": "sensor.framsidan_temperature",
+                      "detail": 1,
+                      "name": "Framsidan"
+                    },
+                    {
+                      "hours_to_show": 24,
+                      "graph": "line",
+                      "type": "sensor",
+                      "entity": "sensor.231_temperature",
+                      "detail": 1,
+                      "name": "Altan"
+                    },
+                    {
+                      "hours_to_show": 24,
+                      "graph": "line",
+                      "type": "sensor",
+                      "entity": "sensor.199_temperature",
+                      "detail": 1,
+                      "name": "Förrådet"
+                    }
+                  ]
                 }
               ]
-            },
-            {
-              "entities": [
-                {
-                  "entity": "switch.an179_1",
-                  "name": "Vindskyddet",
-                  "icon": "mdi:wall-sconce-round"
-                },
-                {
-                  "entity": "switch.telldusout1",
-                  "name": "Södra altanväggen",
-                  "icon": "mdi:string-lights"
-                },
-                {
-                  "entity": "switch.nexa_out_1",
-                  "icon": "mdi:string-lights"
-                },
-                {
-                  "entity": "switch.utebaren"
-                }
-              ],
-              "show_header_toggle": true,
-              "title": "Utomhus",
-              "type": "entities"
             },
             {
               "entity": "weather.smhi_home",
@@ -1860,6 +1956,15 @@
                   "tap_action": {
                     "action": "more-info"
                   }
+                },
+                {
+                  "type": "history-graph",
+                  "entities": [
+                    "sensor.template_sunelevation"
+                  ]
+                },
+                {
+                  "type": "custom:sun-card"
                 },
                 {
                   "show_name": false,
@@ -1974,93 +2079,6 @@
                   "attribute": "state_updated_at"
                 }
               ]
-            }
-          ]
-        },
-        {
-          "badges": null,
-          "cards": [
-            {
-              "entities": [
-                {
-                  "entity": "switch.tz1",
-                  "name": "Hallbyrån",
-                  "icon": "mdi:lamp"
-                },
-                {
-                  "entity": "switch.telldus_1",
-                  "name": "Grovköket",
-                  "icon": "mdi:desk-lamp"
-                },
-                {
-                  "entity": "light.tvattstugan_banken_light",
-                  "name": "Tvättstugan",
-                  "icon": "mdi:led-strip",
-                  "secondary_info": "brightness"
-                }
-              ],
-              "show_header_toggle": false,
-              "type": "entities"
-            },
-            {
-              "type": "vertical-stack",
-              "title": "Tvättmaskinen",
-              "cards": [
-                {
-                  "type": "entities",
-                  "entities": [
-                    {
-                      "entity": "automation.tvattmaskinen_starta_pa_klockslag",
-                      "icon": "mdi:clock-check-outline",
-                      "name": "Starta på timer"
-                    },
-                    {
-                      "entity": "input_datetime.tvattmaskinen_timme",
-                      "name": "Klockan"
-                    },
-                    {
-                      "type": "divider"
-                    },
-                    {
-                      "entity": "switch.clever_spz2",
-                      "name": "På/av",
-                      "icon": "mdi:washing-machine",
-                      "secondary_info": "last-updated"
-                    }
-                  ]
-                },
-                {
-                  "type": "entities",
-                  "entities": [
-                    {
-                      "entity": "sensor.tvattmaskinen_kwh_man",
-                      "icon": "mdi:washing-machine",
-                      "name": "Förbrukning (mån)"
-                    },
-                    {
-                      "entity": "sensor.tvattmaskinen_kostnad",
-                      "name": "Kostnad (mån)",
-                      "icon": "mdi:cash"
-                    },
-                    {
-                      "type": "divider"
-                    },
-                    {
-                      "entity": "sensor.tvattmaskinen_kostnad",
-                      "type": "attribute",
-                      "attribute": "last_period",
-                      "suffix": "kr",
-                      "name": "Förra mån",
-                      "icon": "mdi:cash"
-                    }
-                  ],
-                  "footer": {
-                    "type": "graph",
-                    "entity": "sensor.clever_spz2_electric_consumption_w",
-                    "detail": 2
-                  }
-                }
-              ]
             },
             {
               "title": "Uteförrådet",
@@ -2101,17 +2119,36 @@
                 "entity": "sensor.popp_outdoor_power",
                 "detail": 2
               }
-            },
-            {
-              "hours_to_show": 24,
-              "graph": "line",
-              "type": "sensor",
-              "detail": 1,
-              "entity": "sensor.199_temperature",
-              "name": "Förrådet"
             }
-          ],
-          "title": "Övriga"
+          ]
+        },
+        {
+          "theme": "Backend-selected",
+          "icon": "mdi:multimedia",
+          "badges": [],
+          "cards": [
+            {
+              "type": "vertical-stack",
+              "cards": [
+                {
+                  "entity": "media_player.vardagsrum",
+                  "type": "media-control"
+                },
+                {
+                  "entity": "media_player.chromecast5303",
+                  "type": "media-control"
+                },
+                {
+                  "entity": "media_player.hk_citation_one_d73a8b_2",
+                  "type": "media-control"
+                },
+                {
+                  "entity": "media_player.jbl_ute",
+                  "type": "media-control"
+                }
+              ]
+            }
+          ]
         },
         {
           "icon": "mdi:weather-sunny",
@@ -2266,25 +2303,32 @@
               }
             },
             {
-              "type": "custom:mini-graph-card",
-              "decimals": 0,
-              "icon": "mdi:solar-panel",
-              "hour24": true,
+              "type": "entities",
               "entities": [
                 {
-                  "entity": "sensor.energy_grid_sold_hour",
-                  "name": "Sålt",
-                  "color": "green"
+                  "entity": "sensor.solenergi_kwh_man_2",
+                  "name": "Månad",
+                  "icon": "mdi:weather-sunny"
                 },
                 {
-                  "entity": "sensor.solarenergy_produced_hour",
-                  "name": "Producerat"
+                  "entity": "sensor.solenergi_kwh_ar_2",
+                  "name": "År",
+                  "icon": "mdi:weather-sunny"
+                },
+                {
+                  "entity": "sensor.template_fronius_solar_energy",
+                  "name": "Totalt",
+                  "icon": "mdi:weather-sunny"
+                },
+                {
+                  "type": "divider"
+                },
+                {
+                  "entity": "sensor.solenergi_salt_manad",
+                  "name": "Sålt (mån)",
+                  "icon": "mdi:hand-coin-outline"
                 }
-              ],
-              "show": {
-                "legend": false,
-                "labels": false
-              }
+              ]
             }
           ]
         },
@@ -2332,10 +2376,6 @@
               "type": "history-graph",
               "entities": [
                 {
-                  "entity": "binary_sensor.l2_overcurrent",
-                  "name": "Överström"
-                },
-                {
                   "entity": "switch.spabadet_l2",
                   "name": "Spaheater"
                 },
@@ -2344,11 +2384,7 @@
                   "name": "Pumps"
                 },
                 {
-                  "entity": "script.spabadet_pump_and_heater",
-                  "name": "Automatic"
-                },
-                {
-                  "entity": "script.spabadet_pause_control",
+                  "entity": "input_boolean.spabadet_manual",
                   "name": "Manual"
                 },
                 {
@@ -2360,6 +2396,10 @@
                 {
                   "entity": "sensor.template_nordpool_current_price",
                   "name": "Elpriset"
+                },
+                {
+                  "entity": "sensor.231_temperature",
+                  "name": "Altan"
                 }
               ]
             },
@@ -2371,7 +2411,7 @@
                   "name": "Framsidan"
                 },
                 {
-                  "entity": "sensor.felix_rum_power",
+                  "entity": "sensor.lumi_lumi_weather_battery",
                   "name": "Felix rum"
                 },
                 {

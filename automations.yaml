@@ -154,8 +154,10 @@
   condition:
   - condition: and
     conditions:
-    - condition: template
-      value_template: '{{ state_attr("sun.sun", "elevation") < 5 }}'
+    - condition: numeric_state
+      entity_id: sun.sun
+      below: 5
+      attribute: elevation
     - condition: time
       weekday:
       - mon
@@ -163,11 +165,15 @@
       - wed
       - thu
       - fri
+    - condition: numeric_state
+      entity_id: sensor.lumi_lumi_sen_ill_agl01_illuminance
+      below: 250
   - condition: state
     entity_id: group.my_people
     state: home
   action:
   - service: script.turn_on_morning_lights
+    data: {}
 - id: 0b1073dedfa245b2835600cf6972b74a
   alias: Morgonbelysning, tänd, helg
   trigger:
@@ -176,17 +182,23 @@
   condition:
   - condition: and
     conditions:
-    - condition: template
-      value_template: '{{ state_attr("sun.sun", "elevation") < 5 }}'
+    - condition: numeric_state
+      entity_id: sun.sun
+      below: 5
+      attribute: elevation
     - condition: time
       weekday:
       - sat
       - sun
+    - condition: numeric_state
+      entity_id: sensor.lumi_lumi_sen_ill_agl01_illuminance
+      below: 250
   - condition: state
     entity_id: group.my_people
     state: home
   action:
   - service: script.turn_on_morning_lights
+    data: {}
 - id: '1515530983853'
   alias: Allmän belysning, tänd, helg
   trigger:
@@ -234,24 +246,30 @@
       hours: 0
       minutes: 5
       seconds: 0
-      milliseconds: 0
   condition:
   - condition: or
     conditions:
     - condition: and
       conditions:
-      - condition: sun
-        after: sunrise
       - condition: numeric_state
-        entity_id: sensor.yr_cloudiness
-        below: '80'
+        entity_id: sun.sun
+        above: 5
+        attribute: elevation
+        alias: Sun above 5°
+      - condition: numeric_state
+        entity_id: sensor.lumi_lumi_sen_ill_agl01_illuminance
+        above: 250
+        alias: Bright
+      alias: Is Bright and Sun > 5°
     - condition: sun
       after: sunset
     - condition: state
       entity_id: group.my_people
       state: not_home
+    alias: Bright day, after sunset or nobody home
   action:
   - service: script.turn_off_general_lights
+    data: {}
   mode: single
 - id: '180109222801'
   alias: Utomhusbelysning, tänd på morgonen
@@ -319,6 +337,7 @@
     entity_id: sensor.yr_cloudiness
     above: 80
     for: 00:10:00
+    enabled: false
   - platform: state
     entity_id: group.my_people
     to: home
@@ -330,6 +349,7 @@
     entity_id:
     - sensor.template_yrwthr
     to: 'True'
+    enabled: false
   - platform: numeric_state
     entity_id: sensor.template_fronius_solar_power
     below: '0.4'
@@ -338,6 +358,14 @@
       minutes: 5
       seconds: 0
       milliseconds: 0
+    enabled: false
+  - platform: numeric_state
+    entity_id: sensor.lumi_lumi_sen_ill_agl01_illuminance
+    for:
+      hours: 0
+      minutes: 5
+      seconds: 0
+    below: 250
   condition:
   - condition: numeric_state
     entity_id: sun.sun
@@ -349,12 +377,18 @@
   - condition: numeric_state
     entity_id: sensor.template_fronius_solar_power
     below: 0.4
+    enabled: false
   - condition: state
     entity_id: sensor.template_yrwthr
     state: 'True'
+    enabled: false
   - condition: numeric_state
     entity_id: sensor.yr_cloudiness
     above: '79'
+    enabled: false
+  - condition: numeric_state
+    entity_id: sensor.lumi_lumi_sen_ill_agl01_illuminance
+    below: 250
   action:
   - service: script.turn_on_general_lights
     data: {}
@@ -372,10 +406,12 @@
     entity_id: sensor.yr_cloudiness
     below: 80
     for: 00:10:00
+    enabled: false
   - platform: state
     entity_id:
     - sensor.template_yrwthr
     to: 'False'
+    enabled: false
   - platform: numeric_state
     entity_id: sensor.template_fronius_solar_power
     above: '0.5'
@@ -384,6 +420,14 @@
       minutes: 5
       seconds: 0
       milliseconds: 0
+    enabled: false
+  - platform: numeric_state
+    entity_id: sensor.lumi_lumi_sen_ill_agl01_illuminance
+    for:
+      hours: 0
+      minutes: 5
+      seconds: 0
+    above: 250
   condition:
   - condition: numeric_state
     entity_id: sun.sun
@@ -418,11 +462,12 @@
   description: ''
   trigger:
   - platform: state
-    entity_id: binary_sensor.azarel_charger_sensor
+    entity_id:
+    - binary_sensor.azarel_charger
     to: 'on'
   condition:
   - condition: numeric_state
-    entity_id: sensor.azarel_battery_sensor
+    entity_id: sensor.azarel_battery
     below: '20'
   - condition: state
     entity_id: device_tracker.azarel_location_tracker
@@ -443,12 +488,12 @@
   description: ''
   trigger:
   - platform: numeric_state
-    entity_id: sensor.azarel_battery_sensor
+    entity_id: sensor.azarel_battery
     above: '20'
     below: '23'
   condition:
   - condition: state
-    entity_id: binary_sensor.azarel_charger_sensor
+    entity_id: binary_sensor.azarel_charger
     attribute: charging_state
     state: Charging
   - condition: state
@@ -465,7 +510,7 @@
     else:
     - service: notify.mobile_app_op9_pro
       data:
-        message: Azarel har nått SoC {{ states("sensor.azarel_battery_sensor") }}%
+        message: Azarel har nått SoC {{ states("sensor.azarel_battery") }}%
         title: Azarel laddar fortfarande pga. lågt elpris.
   - service: automation.turn_off
     entity_id: automation.laddat_till_20
@@ -514,20 +559,22 @@
   description: ''
   trigger:
   - platform: state
-    entity_id: binary_sensor.low_price
+    entity_id:
+    - binary_sensor.low_price_off_peak
     to: 'on'
   - platform: state
-    entity_id: binary_sensor.azarel_charger_sensor
+    entity_id:
+    - binary_sensor.azarel_charger
     to: 'on'
   condition:
   - condition: state
     entity_id: device_tracker.azarel_location_tracker
     state: home
   - condition: state
-    entity_id: binary_sensor.azarel_charger_sensor
+    entity_id: binary_sensor.azarel_charger
     state: 'on'
   - condition: state
-    entity_id: binary_sensor.low_price
+    entity_id: binary_sensor.low_price_off_peak
     state: 'on'
   action:
   - service: script.charge_the_tesla
@@ -547,14 +594,18 @@
     entity_id: device_tracker.azarel_location_tracker
     state: home
   - condition: numeric_state
-    entity_id: sensor.azarel_battery_sensor
+    entity_id: sensor.azarel_battery
     above: '20'
   - condition: state
     entity_id: binary_sensor.low_price
     state: 'off'
   - condition: state
-    entity_id: input_boolean.charge_aza
+    entity_id: binary_sensor.azarel_charging
     state: 'on'
+  - condition: state
+    entity_id: automation.ladda_bilen_nar_det_ar_billigt
+    state: 'on'
+    alias: Confirm automation Ladda vid lågt pris is on
   action:
   - service: script.ladda_tesla_stoppa
     data: {}
@@ -567,9 +618,14 @@
     at: 00:00:00
   - platform: state
     entity_id:
-    - binary_sensor.low_price
+    - binary_sensor.low_price_off_peak
     to: 'on'
     enabled: false
+  - platform: state
+    entity_id:
+    - binary_sensor.zoe_plugged_in
+    from: 'off'
+    to: 'on'
   condition:
   - condition: numeric_state
     entity_id: sensor.zoe_battery_level
@@ -586,6 +642,8 @@
       - wed
       - thu
       - fri
+      after: 00:00:00
+      before: 00:00:05
   action:
   - service: script.ladda_zoe
     data: {}
@@ -648,9 +706,12 @@
   action:
   - service: notify.rickards_devices
     data:
-      message: 'Nu är morgondagens priser uppdaterade.\n avg: {{states("sensor.template_nordpool_tomorrow_avg")}}
-        kr\n min: {{states("sensor.template_nordpool_tomorrow_min")}} kr\n max: {{states("sensor.template_nordpool_tomorrow_max")}}
-        kr\n (inkl. moms)\n {{state_attr("sensor.nordpool_kwh_se3_sek_3_095_0","tomorrow")}}'
+      message: "Nu är morgondagens priser uppdaterade.\\n avg: {{states(\"sensor.template_nordpool_tomorrow_avg\")}}
+        kr\\n min: {{states(\"sensor.template_nordpool_tomorrow_min\")}} kr\\n max:
+        {{states(\"sensor.template_nordpool_tomorrow_max\")}} kr\\n{% for price in
+        state_attr('sensor.nordpool_kwh_se3_sek_3_095_0', 'tomorrow') -%}\n  {{ '{:02d}:
+        {:.1f}'.format((loop.index-1), price|float(0) * 125) -}}\n  {{ \", \" if not
+        loop.last else \"\" -}}\n{% endfor %}"
       title: Elpriset uppdaterat
   mode: single
 - id: '1657551301274'
@@ -777,7 +838,7 @@
     entity_id: device_tracker.azarel_location_tracker
     state: home
   - condition: state
-    entity_id: binary_sensor.azarel_charger_sensor
+    entity_id: binary_sensor.azarel_charger
     state: 'on'
   - condition: state
     entity_id: binary_sensor.low_price
@@ -795,33 +856,16 @@
   trigger:
   - platform: state
     entity_id:
-    - sensor.nordpool_kwh_se3_sek_3_095_0
-    attribute: low_price
-    to: true
-    alias: When cheap
-  - platform: numeric_state
-    entity_id: sensor.template_spabadet_l2_current_a
-    for:
-      hours: 0
-      minutes: 0
-      seconds: 40
-    below: 10
-    alias: 'When spabadet is not heating '
-    enabled: false
+    - binary_sensor.low_price
+    alias: When Cheap
+    to: 'on'
   - platform: numeric_state
     entity_id: sensor.hem_gen5_electric_consumed_2
     below: 16
   condition:
   - condition: state
-    entity_id: sensor.nordpool_kwh_se3_sek_3_095_0
-    attribute: low_price
-    state: true
-    alias: Confirm low price
-  - condition: numeric_state
-    entity_id: sensor.template_spabadet_l2_current_a
-    below: 10
-    alias: Confirm spabadet not heating
-    enabled: false
+    entity_id: binary_sensor.low_price
+    state: 'on'
   action:
   - service: switch.turn_off
     data: {}
@@ -836,15 +880,9 @@
   trigger:
   - platform: state
     entity_id:
-    - sensor.nordpool_kwh_se3_sek_3_095_0
-    attribute: low_price
-    to: false
+    - binary_sensor.low_price
     alias: When expensive
-  - platform: numeric_state
-    entity_id: sensor.template_spabadet_l2_current_a
-    above: 10
-    alias: 'When spabadet is heating '
-    enabled: false
+    to: 'off'
   - platform: numeric_state
     entity_id: sensor.hem_gen5_electric_consumed_2
     above: 20
@@ -857,9 +895,8 @@
       - switch.varmepumpen_b
   - if:
     - condition: state
-      entity_id: sensor.nordpool_kwh_se3_sek_3_095_0
-      attribute: low_price
-      state: false
+      entity_id: binary_sensor.low_price
+      state: 'off'
     then:
     - service: switch.turn_on
       data: {}
@@ -940,26 +977,26 @@
     event: start
   - platform: state
     entity_id:
-    - binary_sensor.azarel_parking_brake_sensor
+    - binary_sensor.azarel_parking_brake
     to: 'off'
   - platform: state
     entity_id:
-    - switch.azarel_charger_switch
+    - switch.azarel_charger
     to: 'on'
   condition:
   - condition: or
     conditions:
     - condition: state
-      entity_id: switch.azarel_charger_switch
+      entity_id: switch.azarel_charger
       state: 'on'
     - condition: state
-      entity_id: binary_sensor.azarel_parking_brake_sensor
+      entity_id: binary_sensor.azarel_parking_brake
       state: 'off'
   action:
   - delay: 00:01:00
   - service: tesla_custom.polling_interval
     data:
-      vin: '{{ state_attr(''binary_sensor.azarel_online_sensor'',''vin'') }}'
+      vin: '{{ state_attr(''binary_sensor.azarel_online'',''vin'') }}'
       scan_interval: 30
 - id: '1662635944830'
   alias: Tesla set polling time long
@@ -968,7 +1005,7 @@
   trigger:
   - platform: state
     entity_id:
-    - switch.azarel_charger_switch
+    - switch.azarel_charger
     to: 'off'
     for:
       hours: 0
@@ -976,19 +1013,19 @@
       seconds: 0
   - platform: state
     entity_id:
-    - binary_sensor.azarel_parking_brake_sensor
+    - binary_sensor.azarel_parking_brake
     to: 'on'
   condition:
   - condition: state
-    entity_id: binary_sensor.azarel_parking_brake_sensor
+    entity_id: binary_sensor.azarel_parking_brake
     state: 'on'
   - condition: state
-    entity_id: switch.azarel_charger_switch
+    entity_id: switch.azarel_charger
     state: 'off'
   action:
   - service: tesla_custom.polling_interval
     data:
-      vin: '{{ state_attr(''binary_sensor.azarel_online_sensor'',''vin'') }}'
+      vin: '{{ state_attr(''binary_sensor.azarel_online'',''vin'') }}'
       scan_interval: 660
 - id: '1663015641931'
   alias: Tvättmaskinen, starta på klockslag
@@ -1266,4 +1303,94 @@
     data:
       message: Tvätt- eller diskmaskinen är offline.
       title: Enheter är offline
+  mode: single
+- id: '1672646126224'
+  alias: 'Förrådet: slå på värmen'
+  description: ''
+  trigger:
+  - platform: numeric_state
+    entity_id: sensor.199_temperature
+    below: 10
+    alias: When Förrådet temp <10
+  - platform: state
+    entity_id:
+    - binary_sensor.low_price_off_peak
+    to: 'on'
+  condition:
+  - condition: state
+    entity_id: binary_sensor.low_price_off_peak
+    state: 'on'
+  - condition: numeric_state
+    entity_id: sensor.199_temperature
+    below: 10
+  action:
+  - service: homeassistant.turn_on
+    data: {}
+    target:
+      entity_id: switch.popp_outdoor
+  mode: single
+- id: '1672652238394'
+  alias: 'Förrådet: stäng av'
+  description: ''
+  trigger:
+  - platform: numeric_state
+    entity_id: sensor.199_temperature
+    alias: When Förrådet temp >11
+    above: 11
+  - platform: state
+    entity_id:
+    - binary_sensor.low_price
+    to: 'off'
+  condition:
+  - condition: numeric_state
+    entity_id: sensor.199_temperature
+    above: 11
+  action:
+  - service: homeassistant.turn_off
+    data: {}
+    target:
+      entity_id: switch.popp_outdoor
+  mode: single
+- id: '1673507757148'
+  alias: Belysning, arbetsdagar, slå på
+  description: ''
+  trigger:
+  - platform: time
+    at: 08:00:00
+  condition:
+  - condition: time
+    weekday:
+    - thu
+    - fri
+    - mon
+    alias: On Mon, Thu, Fri
+  - condition: template
+    value_template: '{{ state_attr("sun.sun", "elevation") < 5 }}'
+    alias: Before Sunrise
+  action:
+  - service: homeassistant.turn_on
+    data: {}
+    target:
+      entity_id: group.kontoret
+    alias: Turn on Kontoret
+  mode: single
+- id: '1675949713517'
+  alias: Spabadet, pump and heater
+  description: ''
+  trigger:
+  - platform: time_pattern
+    hours: /1
+    alias: Every hour
+  condition: []
+  action:
+  - delay:
+      hours: 0
+      minutes: 0
+      seconds: 5
+      milliseconds: 0
+  - service: script.turn_on
+    data: {}
+    target:
+      entity_id: script.spabadet_pump_and_heater_v2
+    alias: Run Spabadet, pump and heater (V2)
   mode: single

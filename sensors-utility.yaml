@@ -16,3 +16,18 @@
 #   icon: mdi:cash
 #   meter_period: monthly
 #   cron pattern: 0 0 1 * *
+
+# solenergi_kwh_man_2:
+#   source: sensor.template_fronius_solar_energy
+#   name: Solenergi [kWh] (mån)
+#   cycle: monthly
+
+# solenergi_kwh_ar_2:
+#   source: sensor.template_fronius_solar_energy
+#   name: Solenergi [kWh] (år)
+#   cycle: yearly
+
+# azarel_energy_man:
+#   source: sensor.template_aza_energy_home
+#   name: Azarel [kWh] (mån)
+#   cycle: monthly

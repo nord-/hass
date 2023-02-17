@@ -11,6 +11,7 @@ default_config:
 # Redirect output to Synology NAS Maria DB
 recorder:
   db_url: !secret recorder_db_url
+  purge_keep_days: 3
 
 #system health component
 system_health: 
@@ -64,10 +65,10 @@ sun:
 
 sensor: !include sensors.yaml
 # sensor: !include sensors-integration.yaml
-# sensor: !include sensors-utility.yaml
 template: !include template.yaml
 binary_sensor: !include binary_sensors.yaml
 mqtt: !include mqtt.yaml
+# utility_meter: !include sensors-utility.yaml
 
 rest_command: !include rest.yaml
 # zwave:
