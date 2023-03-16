@@ -53,8 +53,25 @@
   method: left
   round: 2
 
+### STATISTICS
+- platform: statistics
+  unique_id: energy_used_24_hrs
+  name: "Energy Used (24 hrs)"
+  entity_id: sensor.template_house_net_energy_kwh
+  state_characteristic: change
+  max_age:
+    hours: 24
+  sampling_size: 1440
 
-    
+- platform: statistics
+  unique_id: energycost_24hrs
+  name: "Energy × Cost (24 hrs)"
+  entity_id: sensor.house_cost_real
+  state_characteristic: change
+  max_age:
+    hours: 24
+  sampling_size: 1440
+
 # - platform: rest
 #   resource: "https://dev-app-cn.azurewebsites.net/user/1/car/{{ states("input_number.aza_usercar_id") }}?withLogos=false"
 #   method: GET

@@ -521,7 +521,7 @@
   trigger:
   - platform: numeric_state
     entity_id: sensor.sm_p610_batteriniva
-    below: '25'
+    below: 15
   condition:
   - condition: device
     type: is_not_plugged_in
@@ -562,10 +562,14 @@
     entity_id:
     - binary_sensor.low_price_off_peak
     to: 'on'
+    enabled: false
   - platform: state
     entity_id:
     - binary_sensor.azarel_charger
     to: 'on'
+  - platform: time_pattern
+    hours: /1
+    alias: Every hour
   condition:
   - condition: state
     entity_id: device_tracker.azarel_location_tracker
@@ -576,6 +580,11 @@
   - condition: state
     entity_id: binary_sensor.low_price_off_peak
     state: 'on'
+    enabled: false
+  - condition: template
+    value_template: '{{ now() >= as_datetime(states("sensor.template_next_charge"))
+      }}'
+    alias: Passed Start time
   action:
   - service: script.charge_the_tesla
     data: {}
@@ -614,36 +623,22 @@
   alias: Ladda Zoe:n
   description: ''
   trigger:
-  - platform: time
-    at: 00:00:00
-  - platform: state
-    entity_id:
-    - binary_sensor.low_price_off_peak
-    to: 'on'
-    enabled: false
   - platform: state
     entity_id:
     - binary_sensor.zoe_plugged_in
     from: 'off'
     to: 'on'
+  - platform: time_pattern
+    hours: /1
+    alias: Every hour
   condition:
   - condition: numeric_state
     entity_id: sensor.zoe_battery_level
-    below: '95'
-  - condition: or
-    conditions:
-    - condition: state
-      entity_id: binary_sensor.low_price
-      state: 'on'
-    - condition: time
-      weekday:
-      - mon
-      - tue
-      - wed
-      - thu
-      - fri
-      after: 00:00:00
-      before: 00:00:05
+    below: 90
+  - condition: template
+    value_template: '{{ now() >= as_datetime(states("sensor.template_next_charge"))
+      }}'
+    alias: Passed Start time
   action:
   - service: script.ladda_zoe
     data: {}
@@ -713,103 +708,6 @@
         {:.1f}'.format((loop.index-1), price|float(0) * 125) -}}\n  {{ \", \" if not
         loop.last else \"\" -}}\n{% endfor %}"
       title: Elpriset uppdaterat
-  mode: single
-- id: '1657551301274'
-  alias: Ladda Zoe, aktivera klocka
-  description: ''
-  trigger:
-  - platform: state
-    entity_id:
-    - input_boolean.zoe_use_clock
-    to: 'on'
-  condition: []
-  action:
-  - service: automation.turn_off
-    data: {}
-    target:
-      entity_id: automation.ladda_fridas_bil
-  - service: automation.turn_on
-    data: {}
-    target:
-      entity_id: automation.ladda_zoe_pa_tid
-  mode: single
-- id: '1657551360151'
-  alias: Ladda Zoe, deaktivera klocka
-  description: ''
-  trigger:
-  - platform: state
-    entity_id:
-    - input_boolean.zoe_use_clock
-    to: 'off'
-  condition: []
-  action:
-  - service: automation.turn_off
-    data: {}
-    target:
-      entity_id:
-      - automation.ladda_zoe_pa_tid
-  - service: automation.turn_on
-    data: {}
-    target:
-      entity_id:
-      - automation.ladda_fridas_bil
-  mode: single
-- id: '1657732972960'
-  alias: Ladda Zoe, inkopplad
-  description: ''
-  trigger:
-  - platform: state
-    entity_id:
-    - binary_sensor.zoe_plugged_in
-    to: 'on'
-  condition: []
-  action:
-  - if:
-    - condition: state
-      entity_id: input_boolean.zoe_use_clock
-      state: 'on'
-    then:
-    - service: automation.turn_on
-      data: {}
-      target:
-        entity_id: automation.ladda_zoe_pa_tid
-    - service: automation.turn_off
-      data: {}
-      target:
-        entity_id: automation.ladda_fridas_bil
-    else:
-    - service: automation.turn_on
-      data: {}
-      target:
-        entity_id: automation.ladda_fridas_bil
-    - service: automation.turn_off
-      data: {}
-      target:
-        entity_id: automation.ladda_zoe_pa_tid
-  mode: single
-- id: '1657734004303'
-  alias: Ladda Zoe, bilen kör
-  description: ''
-  trigger:
-  - platform: state
-    entity_id:
-    - sensor.zoe_battery_level
-    enabled: false
-  - platform: state
-    entity_id:
-    - sensor.zoe_mileage
-  condition:
-  - condition: template
-    value_template: '{{ trigger.to_state.state | int < trigger.from_state.state |
-      int }}'
-    enabled: false
-  action:
-  - service: automation.turn_off
-    data: {}
-    target:
-      entity_id:
-      - automation.ladda_fridas_bil
-      - automation.ladda_zoe_pa_tid
   mode: single
 - id: '1659106208657'
   alias: Wall-E, dags att byta blad
@@ -947,6 +845,10 @@
   - platform: template
     value_template: '{{ states(''sensor.zoe_battery_level'')|int >= states(''input_number.zoe_soc_upper_limit'')|int
       }}'
+    enabled: false
+  - platform: numeric_state
+    entity_id: sensor.zoe_battery_level
+    above: input_number.zoe_soc_upper_limit
   condition:
   - condition: and
     conditions:
@@ -961,6 +863,9 @@
       - condition: state
         entity_id: automation.ladda_zoe_pa_tid
         state: 'on'
+    - condition: numeric_state
+      entity_id: sensor.zoe_battery_level
+      above: input_number.zoe_soc_upper_limit
   action:
   - service: script.1662626875831
     data: {}
@@ -1341,10 +1246,7 @@
     entity_id:
     - binary_sensor.low_price
     to: 'off'
-  condition:
-  - condition: numeric_state
-    entity_id: sensor.199_temperature
-    above: 11
+  condition: []
   action:
   - service: homeassistant.turn_off
     data: {}
@@ -1393,4 +1295,31 @@
     target:
       entity_id: script.spabadet_pump_and_heater_v2
     alias: Run Spabadet, pump and heater (V2)
+  mode: single
+- id: '1677244066232'
+  alias: Spabadet, larm om värmen
+  description: ''
+  trigger:
+  - platform: numeric_state
+    entity_id: sensor.spabadet_l3_power
+    for:
+      hours: 0
+      minutes: 5
+      seconds: 0
+    above: 0.5
+  condition:
+  - condition: numeric_state
+    entity_id: sensor.spabadet_l2_power
+    below: 1
+  - condition: state
+    entity_id: switch.spabadet_l2
+    state: 'on'
+  - condition: numeric_state
+    entity_id: sensor.template_spabadet_temperature
+    below: 35.7
+  action:
+  - service: notify.rickards_devices
+    data:
+      message: Värmen är på men drar ingen ström.
+      title: Spabadet
   mode: single

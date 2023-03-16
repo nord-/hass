@@ -408,7 +408,7 @@ spabadet_pause_control:
         title: Spabadet
         message: 'Uppvärmningen av spabadet har slagits på manuellt och automatiken
           pausats.\n Priset:  {{ states("sensor.template_nordpool_current_price_vat")
-          }} kr\n Klockan: {{ now().strftime(''%H:%M'') }}\n Badet:   {{ states("sensor.231_temperature")
+          }} kr\n Klockan: {{ now().strftime(''%H:%M'') }}\n Badet:   {{ states("sensor.template_spabadet_temperature")
           }}°C'
       alias: Notify Rickard that manual control is turned on
     else:
@@ -421,7 +421,7 @@ spabadet_pause_control:
         title: Spabadet
         message: 'Uppvärmningen av spabadet går nu på automatik igen.\n Priset:  {{
           states("sensor.template_nordpool_current_price_vat") }} kr\n Klockan: {{
-          now().strftime(''%H:%M'') }}\n Badet:   {{ states("sensor.231_temperature")
+          now().strftime(''%H:%M'') }}\n Badet:   {{ states("sensor.template_spabadet_temperature")
           }}°C'
       alias: Notify Rickard that manual control is turned off
   - service: input_boolean.toggle

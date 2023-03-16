@@ -132,3 +132,8 @@ hacs:
   # password: !secret MQTT_passwd
 
 var: !include vars.yaml
+
+logger:
+  default: error
+  logs:
+    custom_components.peaqev: debug
