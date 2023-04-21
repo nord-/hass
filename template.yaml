@@ -64,6 +64,14 @@
     attributes:
       friendly_name: "Aktuellt elpris (ex. moms)"
 
+  - unique_id: nordpool_avg_price_vat
+    device_class: monetary
+    state_class: measurement
+    unit_of_measurement: "SEK/kWh"
+    state: "{{ (state_attr('sensor.nordpool_kwh_se3_sek_3_095_0', 'average')|float*1.25)|round(2) }}"
+    attributes:
+      friendly_name: "Genomsnittligt elpris (inkl. moms)"
+
 - sensor: 
   - unique_id: nordpool_current_price_vat
     device_class: monetary
@@ -72,14 +80,7 @@
     state: "{{ (states('sensor.nordpool_kwh_se3_sek_3_095_0') | float * 1.25) | round(2) }}"
     attributes:
       friendly_name: "Aktuellt elpris (inkl. moms)"    
-- sensor: 
-  - unique_id: nordpool_avg_price_vat
-    device_class: monetary
-    state_class: measurement
-    unit_of_measurement: "SEK/kWh"
-    state: "{{ (state_attr('sensor.nordpool_kwh_se3_sek_3_095_0','average')|float*1.25)|round(2) }}"
-    attributes:
-      friendly_name: "Genomsnittligt elpris (inkl. moms)"
+
 - binary_sensor:
   - unique_id: nordpool_tomorrow_valid
     state: "{{ state_attr('sensor.nordpool_kwh_se3_sek_3_095_0', 'tomorrow_valid') and state_attr('sensor.nordpool_kwh_se3_sek_3_095_0', 'tomorrow')|length > 23 }}"
@@ -127,17 +128,17 @@
     attributes:
       friendly_name: "Elpris, totalt (kr)"
 
-- sensor:
-  - unique_id: elpris_avg_kr
-    state: >-
-      {{ states('sensor.template_nordpool_avg_price_vat') | float(0) 
-          + ((states('var.electric_tax') | float / 100.0)|float) 
-          + ((states('var.electric_transfer_cost') | float / 100.0)|float) 
-          + ((states('var.electric_fee') | float / 100.0)|float) }}
-    unit_of_measurement: kr
-    device_class: monetary
-    attributes:
-      friendly_name: "Elpris, genomsnitt (kr)"
+# - sensor:
+#   - unique_id: elpris_avg_kr
+#     state: >-
+#       {{ states('sensor.template_nordpool_avg_price_vat') | float(0) 
+#           + ((states('var.electric_tax') | float / 100.0)|float) 
+#           + ((states('var.electric_transfer_cost') | float / 100.0)|float) 
+#           + ((states('var.electric_fee') | float / 100.0)|float) }}
+#     unit_of_measurement: kr
+#     device_class: monetary
+#     attributes:
+#       friendly_name: "Elpris, genomsnitt (kr)"
       
 # elförbrukning, huset
 - sensor:
@@ -258,7 +259,7 @@
 
 - sensor:
   - unique_id: spot_gain_loss_daily
-    state: "{{ ((states('sensor.energy_x_cost_24_hrs')|float / (states('sensor.energy_used_24_hrs')|float * states('sensor.template_elpris_avg_kr')|float)-1)*100)|round }}"
+    state: "{{ ((states('sensor.energy_x_cost_24_hrs')|float / (states('sensor.energy_used_24_hrs')|float * states('sensor.elpriset_kr_avg')|float)-1)*100)|round }}"
     unit_of_measurement: '%'
 
 - sensor:
@@ -271,73 +272,73 @@
 
 # bilar
 ## Teslan
-- sensor:
-  - unique_id: aza_mileage
-    unit_of_measurement: 'mil'
-    icon: mdi:counter
-    state: "{{ ((states('sensor.azarel_odometer') | float(0))/10) | round }}"
-    attributes:
-      friendly_name: "Körsträcka"
+# - sensor:
+#   - unique_id: aza_mileage
+#     unit_of_measurement: 'mil'
+#     icon: mdi:counter
+#     state: "{{ ((states('sensor.azarel_odometer') | float(0))/10) | round }}"
+#     attributes:
+#       friendly_name: "Körsträcka"
 
-- sensor:
-  - unique_id: aza_last_update
-    state: "{{ as_timestamp(states.sensor.azarel_battery.last_updated) | timestamp_custom('%H:%M, %d %b') }}"
-    attributes:
-      friendly_name: "Senast uppdaterad"
+# - sensor:
+#   - unique_id: aza_last_update
+#     state: "{{ as_timestamp(states.sensor.azarel_battery.last_updated) | timestamp_custom('%H:%M, %d %b') }}"
+#     attributes:
+#       friendly_name: "Senast uppdaterad"
 
-- sensor:
-  - unique_id: aza_charging_rate
-    unit_of_measurement: "kW"
-    device_class: power
-    state_class: measurement
-    state: "{{ (states('sensor.azarel_charging_rate') | float(0)/1564*230) | round(1) }}"
-    attributes:
-      friendly_name: "Azarel effekt"
+# - sensor:
+#   - unique_id: aza_charging_rate
+#     unit_of_measurement: "kW"
+#     device_class: power
+#     state_class: measurement
+#     state: "{{ (states('sensor.azarel_charging_rate') | float(0)/1564*230) | round(1) }}"
+#     attributes:
+#       friendly_name: "Azarel effekt"
     
-- sensor:
-  - unique_id: aza_charging_cost
-    unit_of_measurement: kr
-    device_class: monetary
-    state_class: total_increasing
-    state: >-
-      {{ states('sensor.template_aza_energy_home') | float(0) * states('sensor.template_elpris_kr') | float }}
+# - sensor:
+#   - unique_id: aza_charging_cost
+#     unit_of_measurement: kr
+#     device_class: monetary
+#     state_class: total_increasing
+#     state: >-
+#       {{ states('sensor.template_aza_energy_home') | float(0) * states('sensor.template_elpris_kr') | float }}
 
-- sensor:
-  - unique_id: aza_power_home
-    unit_of_measurement: "kW"
-    device_class: power
-    state_class: measurement
-    state: >-
-      {% if is_state('device_tracker.azarel_location_tracker','home') -%}
-        {{ states('sensor.template_aza_charging_rate') | float(0) }}
-      {%- else -%}
-        {{ 0 | float }}
-      {%- endif -%}
+# - sensor:
+#   - unique_id: aza_power_home
+#     unit_of_measurement: "kW"
+#     device_class: power
+#     state_class: measurement
+#     state: >-
+#       {% if is_state('device_tracker.azarel_location_tracker','home') -%}
+#         {{ states('sensor.template_aza_charging_rate') | float(0) }}
+#       {%- else -%}
+#         {{ 0 | float }}
+#       {%- endif -%}
 
-- sensor:
-  - unique_id: aza_energy_home
-    unit_of_measurement: "kWh"
-    device_class: energy
-    state_class: total_increasing
-    state: "{{ states('var.aza_energy_last_session') }}"
-      # {% if is_state('device_tracker.azarel_location_tracker','home') -%}
-      #   {{ states('sensor.azarel_energy_added') | float(0) }}
-      # {%- else -%}
-      #   {{ 0 | float }}
-      # {%- endif -%}
+# - sensor:
+#   - unique_id: aza_energy_home
+#     unit_of_measurement: "kWh"
+#     device_class: energy
+#     state_class: total_increasing
+#     state: "{{ states('var.aza_energy_last_session') }}"
+#       # {% if is_state('device_tracker.azarel_location_tracker','home') -%}
+#       #   {{ states('sensor.azarel_energy_added') | float(0) }}
+#       # {%- else -%}
+#       #   {{ 0 | float }}
+#       # {%- endif -%}
 
-- sensor:
-  - unique_id: aza_charging_required_time
-    state: >-
-      {%- set time = (states('number.azarel_charge_limit')|float(0) - states('sensor.azarel_battery')|float(0)) /100*51/11 -%}
-      {%- set hours = time|int -%}
-      {%- set minutes = ((time - hours)*60)|int -%}
-      {{ '{:02}:{:02}'.format(hours, minutes) }}
+# - sensor:
+#   - unique_id: aza_charging_required_time
+#     state: >-
+#       {%- set time = (states('number.azarel_charge_limit')|float(0) - states('sensor.azarel_battery')|float(0)) /100*51/11 -%}
+#       {%- set hours = time|int -%}
+#       {%- set minutes = ((time - hours)*60)|int -%}
+#       {{ '{:02}:{:02}'.format(hours, minutes) }}
 
-- sensor:
-  - unique_id: aza_req_hours
-    state: >-
-      {{ ((states('number.azarel_charge_limit')|float(0) - states('sensor.azarel_battery')|float(0)) /100*51/8) | round(0, 'ceil') if is_state('binary_sensor.azarel_charger','on') and is_state('automation.ladda_bilen_nar_det_ar_billigt','on') else 0 }}
+# - sensor:
+#   - unique_id: aza_req_hours
+#     state: >-
+#       {{ ((states('number.azarel_charge_limit')|float(0) - states('sensor.azarel_battery')|float(0)) /100*51/8) | round(0, 'ceil') if is_state('binary_sensor.azarel_charger','on') and is_state('automation.ladda_bilen_nar_det_ar_billigt','on') else 0 }}
 
 ## Zoe:n
 - sensor:
@@ -355,14 +356,14 @@
 
 - sensor:
   - unique_id: zoe_last_update
-    state: "{{ as_timestamp(states('sensor.zoe_battery_last_activity')) | timestamp_custom('%H:%M, %d %b') }}"
+    state: "{{ as_timestamp(states('sensor.zoe_last_battery_activity')) | timestamp_custom('%H:%M, %d %b') }}"
     attributes:
       friendly_name: "Senast uppdaterad"
 
 - sensor:
   - unique_id: zoe_req_hours
     state: >-
-      {{ ((100-states("sensor.zoe_battery_level")|int) /100*40/8)|round(0, 'ceil') if is_state('automation.ladda_fridas_bil','on') or is_state('automation.ladda_zoe_pa_tid','on') else 0 }}
+      {{ ((100-states("sensor.zoe_battery_level")|int) /100*40/6)|round(0, 'ceil') if is_state('automation.ladda_fridas_bil','on') or is_state('automation.ladda_zoe_pa_tid','on') else 0 }}
 
 ## Spabadet
 - sensor:
@@ -434,61 +435,60 @@
     - platform: time_pattern
       hours: "/1"
     - platform: state
-      entity_id: sensor.template_aza_req_hours
-      to:
-    - platform: state
       entity_id: sensor.template_zoe_req_hours
       to:
+    - platform: state
+      entity_id: input_datetime.zoe_before
+      to:
+    # - platform: state
+    #   entity_id: sensor.template_aza_req_hours
+    #   to:
   sensor:
   - unique_id: next_charge
     device_class: timestamp
     state: >-
-      {%set duration = states('sensor.template_aza_req_hours')|int + states('sensor.template_zoe_req_hours')|int%}
+      {#%set duration = states('sensor.template_aza_req_hours')|int + states('sensor.template_zoe_req_hours')|int%#}
+      {% set duration = states('sensor.template_zoe_req_hours')|int%}
+      {% set before = today_at(states('input_datetime.zoe_before'))+timedelta(minutes=5) 
+          if now() < today_at(states('input_datetime.zoe_before')) 
+          else today_at(states('input_datetime.zoe_before'))+timedelta(days=1,minutes=5) %}
       {% if not duration -%}
         unavailable
       {% else %}
         {% set grow = namespace(value=0) %}
         {% set priceDict = namespace(value = []) %}
-        {% set prices = state_attr('sensor.nordpool_kwh_se3_sek_3_095_0','today')|list %}
-        {% set tomorrow = state_attr('sensor.nordpool_kwh_se3_sek_3_095_0','tomorrow')|list%}
+        {% set prices = state_attr('sensor.nordpool_kwh_se3_sek_3_095_0','raw_today')|list %}
+        {% set tomorrow = state_attr('sensor.nordpool_kwh_se3_sek_3_095_0','raw_tomorrow')|list%}
         {% if tomorrow | length > 1%}
           {% set prices = prices + tomorrow%}
         {% endif%}
         {% for p in prices%}
-          {%set priceDict.value = priceDict.value + [(loop.index-1, p)]%}
+          {%set priceDict.value = priceDict.value + [(loop.index, (p.start, p.value))] %}
         {% endfor%}
-
+      
         {% set dataDict = dict.from_keys(priceDict.value) %}
-
+      
         {% set priceDict.value = [] %}
-        {% for p in dataDict.items() %}
-          {% set outerIndex = loop.index %}
-          {% if loop.index+duration-1 <= dataDict|length %}
+        {% for p in dataDict.items() -%}
+          {% set outerIndex = loop.index -%}
+          {% if loop.index+duration-1 <= dataDict|length 
+              and p[1][0]+timedelta(hours=duration) <= before -%}
             {% for i in range(duration) %}
-              {% set grow.value = grow.value + dataDict[i+outerIndex-1] %}
+              {% set grow.value = grow.value + dataDict[i+outerIndex][1] %}
             {% endfor %}
             {%- set val = (grow.value|float/duration)|round(3) %}
             {%- set grow.value = 0 %}
-            {%- set priceDict.value = priceDict.value + [(p[0], val)] %}
+            {%- set priceDict.value = priceDict.value + [(p[1][0], val)] %}
           {% else %}
-            {% set priceDict.value = priceDict.value + [(p[0], 999.9)] %}
+            {% set priceDict.value = priceDict.value + [(p[1][0], 999.9)] %}
           {% endif %}
         {% endfor %}
-        {% set data = dict.from_values(priceDict.value).items()|sort(attribute='1') %}
-        {% set priceDict.value = [] %}
-        {% for d in data %}
-          {% if d[0] >= now().hour %}
-            {% set hour = d[0] if d[0] < 24 else d[0]-24 %}
-            {% set t = (hour|string if hour > 9 else '0'+hour|string)+':00' %}
-            {% set priceDict.value = priceDict.value + [today_at(t) if (now() < (today_at(t)+timedelta(minutes=5))) else today_at(t) + timedelta(days=1)] %}    
-          {% endif %}
-        {% endfor %}
-        {{ priceDict.value|list|first }}
+        {{ (priceDict.value|sort(attribute='1'))|map(attribute='0')|select('ge',now()-timedelta(minutes=55))|first }}
       {% endif %}
     attributes:
       friendly_name: "Charge period"
-      all: >
-        {%set duration = states('sensor.template_aza_req_hours')|int + states('sensor.template_zoe_req_hours')|int%}
+      all: >-
+        {%set duration = states('sensor.template_zoe_req_hours')|int%}
         {% set grow = namespace(value=0) %}
         {% set priceDict = namespace(value = []) %}
         {% set prices = state_attr('sensor.nordpool_kwh_se3_sek_3_095_0','today')|list %}
@@ -499,9 +499,9 @@
         {% for p in prices%}
           {%set priceDict.value = priceDict.value + [(loop.index-1, p)]%}
         {% endfor%}
-        
+    
         {% set dataDict = dict.from_keys(priceDict.value) %}
-        
+    
         {% set priceDict.value = [] %}
         {% for p in dataDict.items() %}
           {% set outerIndex = loop.index %}
@@ -519,11 +519,34 @@
         {% set data = dict.from_values(priceDict.value).items()|sort(attribute='1') %}
         {% set priceDict.value = [] %}
         {% for d in data -%}
-          {#% if d[0] >= now().hour -%#}
-            {% set t1 = '%02d:00' % (d[0] if d[0]<24 else d[0]-24) -%}
-            {% set time1 = '%02d:00' % d[0] if d[0]<24 else '%02d:00⁺¹' % (d[0]-24) -%}
-            {% set time2 = '%02d:00' % (d[0]+duration) if (d[0]+duration)<24 else '%02d:00⁺¹' % (d[0]+duration-24) -%}
-            {% set priceDict.value = priceDict.value + [time1 ~ '-' ~ time2 ~ ', ' ~ d[1]|round(2)] %}
-          {#% endif -%#}
+          {% set t1 = '%02d:00' % (d[0] if d[0]<24 else d[0]-24) -%}
+          {% set time1 = '%02d:00' % d[0] if d[0]<24 else '%02d:00⁺¹' % (d[0]-24) -%}
+          {% set time2 = '%02d:00' % (d[0]+duration) if (d[0]+duration)<24 else '%02d:00⁺¹' % (d[0]+duration-24) -%}
+          {% set priceDict.value = priceDict.value + [time1 ~ '-' ~ time2 ~ ', ' ~ d[1]|round(2)] %}
         {% endfor -%}
-        {{ priceDict.value }}      
+        {{ priceDict.value }}
+
+  - unique_id: next_low_price
+    device_class: timestamp
+    state: >-
+      {% set priceDict = namespace(value = []) %}
+      {% set prices = state_attr('sensor.nordpool_kwh_se3_sek_3_095_0','raw_today')|list %}
+      {% set tomorrow = state_attr('sensor.nordpool_kwh_se3_sek_3_095_0','raw_tomorrow')|list%}
+      {% if tomorrow | length > 1%}
+        {% set prices = prices + tomorrow%}
+      {% endif%}
+      {% for p in prices%}
+        {% set priceDict.value = priceDict.value + [(loop.index, (p.start, p.value))] %}
+      {% endfor%}
+      {% set dataDict = dict.from_keys(priceDict.value) %}
+      {% set priceDict.value = [] %}
+      {% for p in dataDict.items() -%}
+        {% if (dataDict[loop.index][0] >= now() and (dataDict[loop.index][1]|float) < state_attr('sensor.nordpool_kwh_se3_sek_3_095_0', 'average')|float) -%}
+          {% set priceDict.value = priceDict.value + [dataDict[loop.index][0]] %}
+        {% endif -%}
+      {% endfor %}
+      {% if priceDict.value %}
+        {{ priceDict.value|first }}
+      {% else %}
+        undefined
+      {% endif %}

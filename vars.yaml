@@ -40,18 +40,18 @@ solarenergy_daily:
     - sensor.energy_day_fronius_inverter_1_192_168_2_31
 
 # cars
-aza_energy_last_session:
-  friendly_name: 'Azarel, laddat (kWh)'
-  initial_value: 0.0
-  value_template: >-
-    {% if is_state('device_tracker.azarel_location_tracker','home') and is_state('cover.azarel_charger_door','open') -%}
-      {%- if states('binary_sensor.azarel_charging') -%}
-        {{ states('sensor.azarel_energy_added') | float(0) }}
-      {%- else -%}
-        {{ states('var.aza_energy_last_session') }}
-      {%- endif -%}
-    {%- else -%}
-      {{ 0 | float }}
-    {%- endif %}
-  tracked_entity_id:
-    - sensor.azarel_energy_added
+# aza_energy_last_session:
+#   friendly_name: 'Azarel, laddat (kWh)'
+#   initial_value: 0.0
+#   value_template: >-
+#     {% if is_state('device_tracker.azarel_location_tracker','home') and is_state('cover.azarel_charger_door','open') -%}
+#       {%- if states('binary_sensor.azarel_charging') -%}
+#         {{ states('sensor.azarel_energy_added') | float(0) }}
+#       {%- else -%}
+#         {{ states('var.aza_energy_last_session') }}
+#       {%- endif -%}
+#     {%- else -%}
+#       {{ 0 | float }}
+#     {%- endif %}
+#   tracked_entity_id:
+#     - sensor.azarel_energy_added

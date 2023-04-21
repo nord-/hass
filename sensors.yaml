@@ -37,6 +37,21 @@
   entities:
     - sensor.template_nordpool_current_price
 
+- platform: average
+  name: 'Elpriset [kr] (avg)'
+  duration:
+    days: 1
+  entities:
+    - sensor.template_elpris_kr
+
+- platform: average
+  unique_id: avg_nordpool_24hrs
+  name: 'Elpriset [kr] (avg 24h, inkl. moms)'
+  duration:
+    days: 1
+  entities:
+    - sensor.template_nordpool_current_price_vat
+
 
 ### INTEGRATIONS 
 - platform: integration
@@ -46,12 +61,12 @@
   method: left
   round: 2
 
-- platform: integration
-  unique_id: aza_energy_home_kwh
-  name: "Azarel, energi (kWh)"
-  source: sensor.template_aza_energy_home
-  method: left
-  round: 2
+# - platform: integration
+#   unique_id: aza_energy_home_kwh
+#   name: "Azarel, energi (kWh)"
+#   source: sensor.template_aza_energy_home
+#   method: left
+#   round: 2
 
 ### STATISTICS
 - platform: statistics

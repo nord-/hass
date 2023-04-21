@@ -155,15 +155,15 @@
                   "title": "Elpriset (totalt)",
                   "scale": "30px",
                   "hideunit": false,
-                  "min": 0,
+                  "min": 0.6,
                   "max": 3,
                   "severity": [
                     {
-                      "value": 1.2,
+                      "value": 1.1,
                       "bnStyle": "#00FF00"
                     },
                     {
-                      "value": 1.5,
+                      "value": 1.3,
                       "bnStyle": "#90EE90"
                     },
                     {
@@ -190,39 +190,19 @@
                   "experimental": {
                     "color_threshold": true
                   },
-                  "header": {
-                    "show": false,
-                    "title": "Nordpool Pris",
-                    "show_states": false
-                  },
                   "graph_span": "2d",
                   "span": {
                     "start": "day"
                   },
                   "series": [
                     {
-                      "entity": "sensor.elpriset_kr_avg_3",
-                      "name": "avg",
-                      "stroke_width": 1,
-                      "transform": "return x * 1.25;",
-                      "float_precision": 2,
-                      "show": {
-                        "legend_value": true,
-                        "in_header": false
-                      }
-                    },
-                    {
                       "entity": "sensor.nordpool_kwh_se3_sek_3_095_0",
-                      "name": "Idag",
-                      "stroke_width": 2,
-                      "color": "deepskyblue",
+                      "name": "Elpriset",
+                      "stroke_width": 3,
                       "float_precision": 2,
                       "data_generator": "return entity.attributes.raw_today\n  .concat(entity.attributes.raw_tomorrow).map((p) => {\n  return [new Date(p.start), p.value*1.25];\n});\n",
+                      "type": "line",
                       "curve": "stepline",
-                      "show": {
-                        "legend_value": false,
-                        "in_header": false
-                      },
                       "color_threshold": [
                         {
                           "value": 0,
@@ -249,6 +229,25 @@
                           "color": "red"
                         }
                       ]
+                    },
+                    {
+                      "entity": "sensor.elpriset_kr_avg_24h_inkl_moms",
+                      "name": "avg 24h",
+                      "stroke_width": 2,
+                      "color": "cornflowerblue"
+                    },
+                    {
+                      "entity": "sensor.elpriset_kr_avg_3",
+                      "name": "avg",
+                      "stroke_width": 2,
+                      "color": "deepskyblue",
+                      "transform": "return x*1.25"
+                    },
+                    {
+                      "entity": "sensor.template_nordpool_avg_price_vat",
+                      "name": "avg 24h",
+                      "stroke_width": 2,
+                      "color": "red"
                     }
                   ],
                   "now": {
@@ -262,6 +261,9 @@
                     "yaxis": {
                       "min": 0,
                       "decimalsInFloat": 2
+                    },
+                    "legend": {
+                      "show": false
                     }
                   }
                 },
@@ -277,10 +279,10 @@
                     },
                     {
                       "type": "entity",
-                      "entity": "sensor.template_nordpool_avg_price_vat",
                       "unit": "kr",
                       "name": "Avg",
-                      "icon": "mdi:cash-minus"
+                      "icon": "mdi:cash-minus",
+                      "entity": "sensor.template_nordpool_avg_price_vat"
                     },
                     {
                       "type": "entity",
@@ -290,6 +292,11 @@
                       "name": "Lågt"
                     }
                   ]
+                },
+                {
+                  "type": "entity",
+                  "entity": "sensor.template_next_low_price",
+                  "name": "Lågt kl."
                 }
               ]
             },
@@ -319,181 +326,18 @@
           "badges": [],
           "cards": [
             {
-              "type": "vertical-stack",
-              "title": "Azarel",
-              "cards": [
+              "type": "entities",
+              "entities": [
                 {
-                  "type": "horizontal-stack",
-                  "cards": [
-                    {
-                      "type": "gauge",
-                      "min": 0,
-                      "max": 100,
-                      "entity": "sensor.azarel_battery",
-                      "name": "SoC",
-                      "severity": {
-                        "green": 40,
-                        "yellow": 20,
-                        "red": 0
-                      },
-                      "needle": true
-                    },
-                    {
-                      "type": "gauge",
-                      "entity": "sensor.template_aza_charging_rate",
-                      "min": 0,
-                      "max": 11,
-                      "name": " ",
-                      "severity": {
-                        "green": 0,
-                        "yellow": 5.5,
-                        "red": 8
-                      },
-                      "needle": true
-                    },
-                    {
-                      "type": "gauge",
-                      "entity": "sensor.azarel_energy_added",
-                      "name": "Laddat",
-                      "max": 50,
-                      "needle": true,
-                      "severity": {
-                        "green": 0.1,
-                        "yellow": 25,
-                        "red": 35
-                      }
-                    }
-                  ]
+                  "entity": "sensor.template_next_charge",
+                  "icon": "mdi:car-clock",
+                  "name": "Starttid",
+                  "secondary_info": "last-changed"
                 },
                 {
-                  "type": "glance",
-                  "entities": [
-                    {
-                      "entity": "sensor.template_aza_mileage"
-                    },
-                    {
-                      "entity": "binary_sensor.azarel_charger",
-                      "name": "Inkopplad",
-                      "icon": "mdi:ev-plug-type2"
-                    },
-                    {
-                      "entity": "sensor.template_aza_last_update",
-                      "name": "Uppdaterad",
-                      "icon": "mdi:clock"
-                    }
-                  ]
-                },
-                {
-                  "type": "horizontal-stack",
-                  "cards": [
-                    {
-                      "show_name": false,
-                      "show_icon": true,
-                      "type": "button",
-                      "tap_action": {
-                        "action": "toggle"
-                      },
-                      "entity": "climate.azarel_hvac_climate_system",
-                      "name": " ",
-                      "icon": "mdi:radiator",
-                      "show_state": false
-                    },
-                    {
-                      "show_name": false,
-                      "show_icon": true,
-                      "type": "button",
-                      "tap_action": {
-                        "action": "toggle"
-                      },
-                      "entity": "cover.azarel_charger_door",
-                      "name": " ",
-                      "icon": "mdi:connection"
-                    },
-                    {
-                      "show_name": false,
-                      "show_icon": true,
-                      "type": "button",
-                      "tap_action": {
-                        "action": "toggle"
-                      },
-                      "entity": "lock.azarel_doors",
-                      "icon": "mdi:car-door-lock",
-                      "name": " "
-                    },
-                    {
-                      "show_name": false,
-                      "show_icon": true,
-                      "type": "button",
-                      "tap_action": {
-                        "action": "call-service",
-                        "service": "script.charge_the_tesla",
-                        "target": {},
-                        "data": {}
-                      },
-                      "icon": "mdi:ev-station",
-                      "show_state": false,
-                      "entity": "switch.azarel_charger"
-                    },
-                    {
-                      "show_name": false,
-                      "show_icon": true,
-                      "type": "button",
-                      "tap_action": {
-                        "action": "toggle"
-                      },
-                      "entity": "button.azarel_force_data_update",
-                      "icon": "mdi:refresh-circle"
-                    }
-                  ]
-                },
-                {
-                  "type": "horizontal-stack",
-                  "cards": [
-                    {
-                      "type": "entities",
-                      "entities": [
-                        {
-                          "entity": "input_datetime.azarel_hour",
-                          "name": "Klockan"
-                        },
-                        {
-                          "entity": "automation.ladda_azarel_pa_klocka",
-                          "name": "Vid klockslag",
-                          "icon": "mdi:car-clock",
-                          "secondary_info": "last-triggered"
-                        },
-                        {
-                          "entity": "automation.ladda_bilen_nar_det_ar_billigt",
-                          "name": "Vid lågt pris",
-                          "icon": "mdi:cash-multiple",
-                          "secondary_info": "last-triggered"
-                        }
-                      ],
-                      "title": "Ladda",
-                      "show_header_toggle": false
-                    }
-                  ]
-                },
-                {
-                  "type": "custom:collapsable-cards",
-                  "title": "Laddgräns",
-                  "cards": [
-                    {
-                      "type": "entities",
-                      "entities": [
-                        {
-                          "entity": "number.azarel_charge_limit",
-                          "name": "SoC gräns",
-                          "icon": "mdi:gauge"
-                        },
-                        {
-                          "entity": "sensor.template_aza_charging_required_time",
-                          "name": "Laddtid",
-                          "icon": "mdi:clock"
-                        }
-                      ]
-                    }
-                  ]
+                  "entity": "sensor.template_zoe_req_hours",
+                  "icon": "mdi:battery-clock-outline",
+                  "name": "Zoe, behov (h)"
                 }
               ]
             },
@@ -544,7 +388,7 @@
                       "icon": "mdi:counter"
                     },
                     {
-                      "entity": "binary_sensor.zoe_plugged_in",
+                      "entity": "binary_sensor.zoe_plug",
                       "icon": "mdi:ev-plug-type2",
                       "name": "Inkopplad"
                     },
@@ -621,30 +465,14 @@
                         {
                           "entity": "input_number.zoe_soc_upper_limit",
                           "name": "SoC"
+                        },
+                        {
+                          "entity": "input_datetime.zoe_before",
+                          "name": "Före kl."
                         }
                       ]
                     }
                   ]
-                }
-              ]
-            },
-            {
-              "type": "entities",
-              "entities": [
-                {
-                  "entity": "sensor.template_next_charge",
-                  "icon": "mdi:car-clock",
-                  "name": "Starttid"
-                },
-                {
-                  "entity": "sensor.template_aza_req_hours",
-                  "icon": "mdi:battery-clock-outline",
-                  "name": "Aza, behov (h)"
-                },
-                {
-                  "entity": "sensor.template_zoe_req_hours",
-                  "icon": "mdi:battery-clock-outline",
-                  "name": "Zoe, behov (h)"
                 }
               ]
             },
@@ -656,23 +484,13 @@
                   "type": "entities",
                   "entities": [
                     {
-                      "entity": "sensor.aza_kostnad",
-                      "name": "Azarel, mån",
-                      "icon": "mdi:car-sports"
-                    },
-                    {
                       "entity": "sensor.zoe_kostnad",
-                      "name": "Zoe, mån",
+                      "name": "Zoe [kr]",
                       "icon": "mdi:car-side"
                     },
                     {
-                      "entity": "sensor.azarel_kwh_man",
-                      "name": "Azarel",
-                      "icon": "mdi:car-sports"
-                    },
-                    {
                       "entity": "sensor.zoe_energi_per_manad",
-                      "name": "Zoe",
+                      "name": "Zoe [kWh]",
                       "icon": "mdi:car-side"
                     }
                   ]
@@ -686,61 +504,21 @@
                       "entities": [
                         {
                           "type": "attribute",
-                          "entity": "sensor.aza_kostnad",
-                          "attribute": "last_period",
-                          "name": "Azarel",
-                          "icon": "mdi:car-sports",
-                          "suffix": "kr"
-                        },
-                        {
-                          "type": "attribute",
                           "entity": "sensor.zoe_kostnad",
                           "attribute": "last_period",
-                          "name": "Zoe",
+                          "name": "Zoe [kr]",
                           "icon": "mdi:car-side",
                           "suffix": "kr"
-                        },
-                        {
-                          "type": "attribute",
-                          "entity": "sensor.azarel_energi_man",
-                          "attribute": "last_period",
-                          "name": "Azarel",
-                          "icon": "mdi:car-sports",
-                          "suffix": "kWh"
                         },
                         {
                           "type": "attribute",
                           "entity": "sensor.zoe_energi_per_manad",
                           "attribute": "last_period",
-                          "name": "Zoe",
+                          "name": "Zoe [kWh]",
                           "icon": "mdi:car-side",
                           "suffix": "kWh"
                         }
                       ]
-                    }
-                  ]
-                },
-                {
-                  "type": "custom:collapsable-cards",
-                  "title": "Effektgrafer",
-                  "cards": [
-                    {
-                      "hours_to_show": 24,
-                      "graph": "line",
-                      "type": "sensor",
-                      "entity": "sensor.template_aza_charging_rate",
-                      "detail": 2,
-                      "name": "Azarel",
-                      "icon": "mdi:car-sports"
-                    },
-                    {
-                      "hours_to_show": 24,
-                      "graph": "line",
-                      "type": "sensor",
-                      "entity": "sensor.template_zoe_power_kw",
-                      "detail": 2,
-                      "name": "Zoe",
-                      "icon": "mdi:car-side"
                     }
                   ]
                 }
@@ -992,59 +770,14 @@
             {
               "type": "custom:apexcharts-card",
               "header": {
-                "show": true,
-                "title": "Effekt och temperatur"
-              },
-              "series": [
-                {
-                  "entity": "sensor.template_grid_power_kw",
-                  "type": "line",
-                  "name": "effekt",
-                  "group_by": {
-                    "func": "avg",
-                    "duration": "60m"
-                  }
-                },
-                {
-                  "entity": "sensor.framsidan_temperature",
-                  "type": "line",
-                  "name": "temp",
-                  "color": "SteelBlue"
-                }
-              ],
-              "graph_span": "1d",
-              "apex_config": {
-                "yaxis": [
-                  {
-                    "seriesName": "effekt",
-                    "decimalsInFloat": 0
-                  },
-                  {
-                    "seriesName": "temp",
-                    "decimalsInFloat": 0,
-                    "opposite": true,
-                    "title": {
-                      "text": "temp"
-                    }
-                  }
-                ],
-                "stroke": {
-                  "show": true,
-                  "width": 2,
-                  "curve": "smooth"
-                }
-              }
-            },
-            {
-              "type": "custom:apexcharts-card",
-              "header": {
                 "show_states": false
               },
               "series": [
                 {
                   "entity": "sensor.template_house_power_kw",
-                  "name": " ",
+                  "name": "hus",
                   "type": "column",
+                  "stroke_width": 4,
                   "show": {
                     "legend_value": false
                   },
@@ -1055,7 +788,8 @@
                 },
                 {
                   "entity": "sensor.template_fronius_solar_power",
-                  "name": " ",
+                  "name": "sol",
+                  "color": "green",
                   "stroke_width": 3,
                   "show": {
                     "legend_value": false
@@ -1064,6 +798,13 @@
                     "func": "avg",
                     "duration": "1h"
                   }
+                },
+                {
+                  "entity": "sensor.template_nordpool_current_price_vat",
+                  "name": "Pris",
+                  "color": "#6f90f4",
+                  "curve": "stepline",
+                  "stroke_width": 3
                 }
               ],
               "update_interval": "1h",
@@ -1072,15 +813,24 @@
                 "end": "day"
               },
               "apex_config": {
+                "yaxis": [
+                  {
+                    "decimalsInFloat": 1
+                  },
+                  {
+                    "show": false
+                  },
+                  {
+                    "decimalsInFloat": 2,
+                    "max": 4,
+                    "min": 0,
+                    "opposite": true
+                  }
+                ],
                 "legend": {
                   "show": false
                 }
               }
-            },
-            {
-              "type": "entity",
-              "entity": "sensor.peaqev_hour_controller",
-              "name": "Peaqev"
             },
             {
               "type": "vertical-stack",
@@ -1533,7 +1283,7 @@
               "type": "entities",
               "entities": [
                 {
-                  "entity": "switch.kitchen_window",
+                  "entity": "light.kitchen_window",
                   "icon": "mdi:lamp",
                   "secondary_info": "none"
                 }
@@ -2043,6 +1793,23 @@
                   "tap_action": {
                     "action": "more-info"
                   }
+                },
+                {
+                  "type": "horizontal-stack",
+                  "cards": [
+                    {
+                      "type": "entity",
+                      "entity": "sun.sun",
+                      "attribute": "elevation",
+                      "name": "Elevation"
+                    },
+                    {
+                      "type": "entity",
+                      "entity": "sun.sun",
+                      "attribute": "azimuth",
+                      "name": "Azimut"
+                    }
+                  ]
                 },
                 {
                   "type": "history-graph",

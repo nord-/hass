@@ -128,7 +128,6 @@
       hours: 0
       minutes: 1
       seconds: 0
-      milliseconds: 0
   condition:
   - condition: and
     conditions:
@@ -144,8 +143,10 @@
   - condition: state
     entity_id: group.my_people
     state: home
+    enabled: true
   action:
   - service: script.turn_on_general_lights
+    data: {}
 - id: 9f920a28dc6b4985b53ecb6e13c42a06
   alias: Morgonbelysning, tänd
   trigger:
@@ -214,7 +215,6 @@
       hours: 0
       minutes: 1
       seconds: 0
-      milliseconds: 0
   condition:
   - condition: and
     conditions:
@@ -227,8 +227,10 @@
   - condition: state
     entity_id: group.my_people
     state: home
+    enabled: true
   action:
   - service: script.turn_on_general_lights
+    data: {}
 - id: '1515530983852'
   alias: Allmän belysning, släck
   trigger:
@@ -639,6 +641,15 @@
     value_template: '{{ now() >= as_datetime(states("sensor.template_next_charge"))
       }}'
     alias: Passed Start time
+  - condition: not
+    conditions:
+    - condition: state
+      entity_id: sensor.zoe_plug_state
+      state: unplugged
+    alias: Zoe is not Unplugged
+  - condition: state
+    entity_id: binary_sensor.zoe_charging
+    state: 'off'
   action:
   - service: script.ladda_zoe
     data: {}
@@ -870,68 +881,6 @@
   - service: script.1662626875831
     data: {}
   mode: single
-- id: '1662635649004'
-  alias: Tesla set polling time short
-  description: 'We adjust the Polling Interval down from the configured value if we:
-
-    * are driving
-
-    * are charging'
-  trigger:
-  - platform: homeassistant
-    event: start
-  - platform: state
-    entity_id:
-    - binary_sensor.azarel_parking_brake
-    to: 'off'
-  - platform: state
-    entity_id:
-    - switch.azarel_charger
-    to: 'on'
-  condition:
-  - condition: or
-    conditions:
-    - condition: state
-      entity_id: switch.azarel_charger
-      state: 'on'
-    - condition: state
-      entity_id: binary_sensor.azarel_parking_brake
-      state: 'off'
-  action:
-  - delay: 00:01:00
-  - service: tesla_custom.polling_interval
-    data:
-      vin: '{{ state_attr(''binary_sensor.azarel_online'',''vin'') }}'
-      scan_interval: 30
-- id: '1662635944830'
-  alias: Tesla set polling time long
-  description: We adjust the Polling Interval up to the configured value when we stop
-    charging or car is parked without charging
-  trigger:
-  - platform: state
-    entity_id:
-    - switch.azarel_charger
-    to: 'off'
-    for:
-      hours: 0
-      minutes: 15
-      seconds: 0
-  - platform: state
-    entity_id:
-    - binary_sensor.azarel_parking_brake
-    to: 'on'
-  condition:
-  - condition: state
-    entity_id: binary_sensor.azarel_parking_brake
-    state: 'on'
-  - condition: state
-    entity_id: switch.azarel_charger
-    state: 'off'
-  action:
-  - service: tesla_custom.polling_interval
-    data:
-      vin: '{{ state_attr(''binary_sensor.azarel_online'',''vin'') }}'
-      scan_interval: 660
 - id: '1663015641931'
   alias: Tvättmaskinen, starta på klockslag
   description: ''
@@ -1269,6 +1218,13 @@
   - condition: template
     value_template: '{{ state_attr("sun.sun", "elevation") < 5 }}'
     alias: Before Sunrise
+  - condition: state
+    entity_id: person.rickard_nord
+    state: home
+    for:
+      hours: 0
+      minutes: 5
+      seconds: 0
   action:
   - service: homeassistant.turn_on
     data: {}
