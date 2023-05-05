@@ -22,7 +22,7 @@
     unit_of_measurement: "kW"
     device_class: power
     state_class: measurement
-    state: "{{ (states('sensor.power_ac_fronius_inverter_1_192_168_2_31') | float / 1000.0) | round(2) }}"
+    state: "{{ (states('sensor.power_ac_fronius_inverter_1_192_168_2_31') | float(0) / 1000.0) | round(2) }}"
     attributes:
       friendly_name: "Fronius soleffekt"
           
@@ -231,6 +231,18 @@
     state: "{{ states.sun.sun.attributes.elevation | round(1) }}"
     attributes:
       friendly_name: "Solvinkel"
+# gräsklipparen
+- sensor:
+  - unique_id: walle_battery_level
+    unit_of_measurement: "%"
+    state: "{{ state_attr('vacuum.wall_e', 'battery_level') | int(0) }}"
+    attributes:
+      friendly_name: "Wall-E batteri"
+  - unique_id: walle_blade_hours
+    unit_of_measurement: "h"
+    state: "{{ (state_attr('vacuum.wall_e','blades').current_on | int(0) / 60) | round(0)}}"
+    attributes:
+      friendly_name: "Wall-E bladtid"
 
 # förbrukning/kostnad
 - sensor:

@@ -641,12 +641,16 @@
     value_template: '{{ now() >= as_datetime(states("sensor.template_next_charge"))
       }}'
     alias: Passed Start time
-  - condition: not
+  - condition: or
     conditions:
     - condition: state
-      entity_id: sensor.zoe_plug_state
-      state: unplugged
-    alias: Zoe is not Unplugged
+      entity_id: binary_sensor.zoe_plug
+      state: unavailable
+    - condition: state
+      entity_id: binary_sensor.zoe_plug
+      state: 'on'
+    alias: Zoe Plug inkopplad or otillgänglig
+    enabled: true
   - condition: state
     entity_id: binary_sensor.zoe_charging
     state: 'off'
@@ -663,8 +667,7 @@
   - platform: state
     entity_id:
     - vacuum.wall_e
-    from: no error
-    attribute: error
+    to: error
   - platform: state
     entity_id:
     - vacuum.wall_e
@@ -674,17 +677,15 @@
       seconds: 0
     to: returning
   condition:
-  - condition: not
-    conditions:
-    - condition: state
-      state: rain delay
-      entity_id: vacuum.wall_e
-      attribute: error
+  - condition: template
+    value_template: '{{ state_attr("vacuum.wall_e", "error").description != ''rain
+      delay'' }}'
+    alias: Error NOT 'rain delay'
   action:
   - service: notify.mobile_app_op9_pro
     data:
-      message: Fel på gräsklipparen ({{states("vacuum.wall_e")}}). Batteri {{ state_attr("vacuum.wall_e",
-        "battery_level") }}%.
+      message: Fel på gräsklipparen ({{ state_attr("vacuum.wall_e", "error").description
+        }}). Batteri {{ state_attr("vacuum.wall_e", "battery_level") }}%.
       title: Wall-E larm
   mode: single
 - id: '1656709628350'
@@ -730,10 +731,10 @@
     above: '10000'
   condition: []
   action:
-  - service: notify.mobile_app_op9_pro
+  - service: notify.rickards_devices
     data:
       title: Dags att byta knivar på Wall-E
-      message: Bladen har använts i {{ (state_attr("vacuum.wall_e","current_blade_time")
+      message: Bladen har använts i {{ (state_attr("vacuum.wall_e","blades").current_on
         | int / 60) | round(0) }} timmar.
   mode: single
 - id: '1661109418803'
@@ -1151,6 +1152,10 @@
     - sensor.node_18_node_status
     - sensor.node_17_node_status
     from: alive
+    for:
+      hours: 0
+      minutes: 2
+      seconds: 0
   condition: []
   action:
   - service: notify.rickards_devices
@@ -1272,7 +1277,10 @@
     state: 'on'
   - condition: numeric_state
     entity_id: sensor.template_spabadet_temperature
-    below: 35.7
+    below: 34
+  - condition: numeric_state
+    entity_id: sensor.template_spabadet_l3_current_a
+    above: 0.5
   action:
   - service: notify.rickards_devices
     data:

@@ -150,40 +150,8 @@
               "type": "vertical-stack",
               "cards": [
                 {
-                  "type": "custom:bignumber-card",
-                  "entity": "sensor.template_elpris_kr",
-                  "title": "Elpriset (totalt)",
-                  "scale": "30px",
-                  "hideunit": false,
-                  "min": 0.6,
-                  "max": 3,
-                  "severity": [
-                    {
-                      "value": 1.1,
-                      "bnStyle": "#00FF00"
-                    },
-                    {
-                      "value": 1.3,
-                      "bnStyle": "#90EE90"
-                    },
-                    {
-                      "value": 1.7,
-                      "bnStyle": "#FFFF00"
-                    },
-                    {
-                      "value": 2.5,
-                      "bnStyle": "#FFA500"
-                    },
-                    {
-                      "value": 3.5,
-                      "bnStyle": "#FF8A8A"
-                    },
-                    {
-                      "value": 40,
-                      "bnStyle": "#FF0000",
-                      "color": "#FFFFFF"
-                    }
-                  ]
+                  "type": "entity",
+                  "entity": "sensor.template_elpris_kr"
                 },
                 {
                   "type": "custom:apexcharts-card",
@@ -320,7 +288,7 @@
         },
         {
           "theme": "Backend-selected",
-          "title": "Tesla",
+          "title": "Bilar",
           "path": "tesla",
           "icon": "mdi:car",
           "badges": [],
@@ -893,6 +861,7 @@
         {
           "theme": "Backend-selected",
           "icon": "mdi:hot-tub",
+          "title": "Spabadet",
           "badges": [],
           "cards": [
             {
@@ -1046,7 +1015,7 @@
                 },
                 {
                   "name": "kWh",
-                  "entity": "sensor.template_spabadet_energy_kwh",
+                  "entity": "sensor.spabadet_kwh_man",
                   "type": "column",
                   "color": "FireBrick",
                   "group_by": {
@@ -1129,7 +1098,7 @@
         },
         {
           "theme": "Backend-selected",
-          "title": "Sovrummet",
+          "title": "Belysning",
           "icon": "mdi:lightbulb-group",
           "badges": [
             {
@@ -1886,6 +1855,12 @@
                       "icon": "mdi:battery-50",
                       "attribute": "battery_level",
                       "unit": "%"
+                    },
+                    {
+                      "type": "entity",
+                      "entity": "sensor.template_walle_blade_hours",
+                      "name": "Blad",
+                      "icon": "mdi:robot-mower-outline"
                     }
                   ]
                 },
@@ -1979,6 +1954,7 @@
         {
           "theme": "Backend-selected",
           "icon": "mdi:multimedia",
+          "title": "Media",
           "badges": [],
           "cards": [
             {
@@ -2189,6 +2165,7 @@
         {
           "theme": "Backend-selected",
           "icon": "mdi:access-point-network",
+          "title": "Status",
           "badges": [],
           "cards": [
             {
