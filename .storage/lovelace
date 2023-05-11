@@ -664,7 +664,7 @@
                     }
                   ],
                   "cache": true,
-                  "graph_span": "9h",
+                  "graph_span": "12h",
                   "update_interval": "30s",
                   "apex_config": {
                     "stroke": {
@@ -818,6 +818,10 @@
                       "entity": "sensor.template_spot_gain_loss_daily",
                       "type": "area",
                       "stroke_width": 0,
+                      "group_by": {
+                        "func": "avg",
+                        "duration": "15m"
+                      },
                       "color_threshold": [
                         {
                           "value": -100,
@@ -1005,7 +1009,7 @@
               "series": [
                 {
                   "name": "kr",
-                  "entity": "sensor.spabadet_kr",
+                  "entity": "sensor.spabadet_kr_man",
                   "type": "column",
                   "color": "DarkGreen",
                   "group_by": {
@@ -1850,10 +1854,9 @@
                     },
                     {
                       "type": "entity",
-                      "entity": "vacuum.wall_e",
+                      "entity": "sensor.template_walle_battery_level",
                       "name": " Batteri",
                       "icon": "mdi:battery-50",
-                      "attribute": "battery_level",
                       "unit": "%"
                     },
                     {

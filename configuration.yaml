@@ -137,3 +137,11 @@ var: !include vars.yaml
 #   default: error
 #   logs:
 #     custom_components.peaqev: debug
+logger:
+  default: warning
+  logs:
+    homeassistant.components.modbus: debug
+    pymodbus: debug
+
+# modbus for a TCP connection
+modbus: !include modbus.yaml

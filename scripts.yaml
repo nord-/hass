@@ -130,11 +130,17 @@ turn_on_outdoor:
   - service: switch.turn_on
     data:
       entity_id: group.ute
+  - service: light.turn_on
+    data:
+      entity_id: group.ute
   mode: single
 turn_off_outdoor:
   alias: Slå av utomhusbelysning
   sequence:
   - service: switch.turn_off
+    data:
+      entity_id: group.ute
+  - service: light.turn_off
     data:
       entity_id: group.ute
 turn_on_all_lights:

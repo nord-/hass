@@ -75,7 +75,8 @@ ute:
     - switch.telldusout1
     - switch.telldusout2
     - switch.an179_1     # altanväggen söderut
-    - switch.utebaren
+#    - switch.utebaren
+    - light.utebaren_mqtt
 
 my_people:
   name: Familjen

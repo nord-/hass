@@ -1128,6 +1128,14 @@
       - switch.cleverio_zw_plug_1
       - switch.clever_spz2
       - switch.clever_spz3
+    enabled: false
+  - service: button.press
+    data: {}
+    target:
+      entity_id:
+      - button.node_15_ping
+      - button.node_17_ping
+      - button.node_18_ping
   mode: single
 - id: '1664994425706'
   alias: iGrill alarm

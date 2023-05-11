@@ -7,3 +7,14 @@ sensor:
     name: "iGrill Battery"
     qos: 0
     unit_of_measurement: "%"
+
+light:
+  - name: "Utebaren mqtt"
+    unique_id: "utebaren"
+    payload_on: "on"
+    payload_off: "off"
+    qos: 1
+    state_topic: "shellies/shelly1-68C63AFA72FB/relay/0"
+    command_topic: "shellies/shelly1-68C63AFA72FB/relay/0/command"
+    json_attributes_topic: "shellies/shelly1-68C63AFA72FB/info"
+    retain: false
