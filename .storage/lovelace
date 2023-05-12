@@ -491,6 +491,30 @@
                   ]
                 }
               ]
+            },
+            {
+              "type": "horizontal-stack",
+              "title": "Uttag 1",
+              "cards": [
+                {
+                  "type": "gauge",
+                  "entity": "sensor.chargenode_port1_l1_current",
+                  "name": "L1",
+                  "max": 16
+                },
+                {
+                  "type": "gauge",
+                  "entity": "sensor.chargenode_port1_l2_current",
+                  "name": "L2",
+                  "max": 16
+                },
+                {
+                  "type": "gauge",
+                  "entity": "sensor.chargenode_port1_l3_current",
+                  "name": "L3",
+                  "max": 16
+                }
+              ]
             }
           ]
         },

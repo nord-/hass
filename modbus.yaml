@@ -11,16 +11,25 @@ sensors:
     slave: 1
     device_class: current
     unit_of_measurement: A
+    data_type: float
+    scale: 0.1
+    precision: 1
   - name: ChargeNode_Port1_L2_Current
     address: 35
     slave: 1
     device_class: current
     unit_of_measurement: A
+    data_type: float
+    scale: 0.1
+    precision: 1
   - name: ChargeNode_Port1_L3_Current
     address: 36
     slave: 1
     device_class: current
     unit_of_measurement: A
+    data_type: float
+    scale: 0.1
+    precision: 1
   - name: ChargeNode_Port2_State
     address: 40
     slave: 1
@@ -29,13 +38,22 @@ sensors:
     slave: 1
     device_class: current
     unit_of_measurement: A
+    data_type: float
+    scale: 0.1
+    precision: 1
   - name: ChargeNode_Port2_L2_Current
     address: 45
     slave: 1
     device_class: current
     unit_of_measurement: A
+    data_type: float
+    scale: 0.1
+    precision: 1
   - name: ChargeNode_Port2_L3_Current
     address: 46
     slave: 1
     device_class: current
     unit_of_measurement: A
+    data_type: float
+    scale: 0.1
+    precision: 1
