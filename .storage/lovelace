@@ -493,26 +493,36 @@
               ]
             },
             {
-              "type": "horizontal-stack",
-              "title": "Uttag 1",
+              "type": "vertical-stack",
+              "title": "Laddaren",
               "cards": [
                 {
-                  "type": "gauge",
-                  "entity": "sensor.chargenode_port1_l1_current",
-                  "name": "L1",
-                  "max": 16
+                  "type": "horizontal-stack",
+                  "cards": [
+                    {
+                      "type": "gauge",
+                      "entity": "sensor.chargenode_current_l1",
+                      "name": "L1",
+                      "max": 16
+                    },
+                    {
+                      "type": "gauge",
+                      "entity": "sensor.chargenode_current_l2",
+                      "name": "L2",
+                      "max": 16
+                    },
+                    {
+                      "type": "gauge",
+                      "entity": "sensor.chargenode_current_l3",
+                      "name": "L3",
+                      "max": 16
+                    }
+                  ]
                 },
                 {
-                  "type": "gauge",
-                  "entity": "sensor.chargenode_port1_l2_current",
-                  "name": "L2",
-                  "max": 16
-                },
-                {
-                  "type": "gauge",
-                  "entity": "sensor.chargenode_port1_l3_current",
-                  "name": "L3",
-                  "max": 16
+                  "type": "entity",
+                  "entity": "sensor.chargenode_energy",
+                  "name": "Total energi"
                 }
               ]
             }
@@ -670,26 +680,121 @@
                   ]
                 },
                 {
+                  "type": "horizontal-stack",
+                  "cards": [
+                    {
+                      "type": "gauge",
+                      "entity": "sensor.chargenode_sma_voltage_l1",
+                      "max": 250,
+                      "min": 210,
+                      "name": "L1",
+                      "needle": true,
+                      "segments": [
+                        {
+                          "from": 210,
+                          "color": "#db4437"
+                        },
+                        {
+                          "from": 220,
+                          "color": "#ffa600"
+                        },
+                        {
+                          "from": 225,
+                          "color": "#43a047"
+                        },
+                        {
+                          "from": 235,
+                          "color": "#ffa600"
+                        },
+                        {
+                          "from": 240,
+                          "color": "#db4437"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "gauge",
+                      "entity": "sensor.chargenode_sma_voltage_l2",
+                      "max": 250,
+                      "min": 210,
+                      "name": "L2",
+                      "needle": true,
+                      "segments": [
+                        {
+                          "from": 210,
+                          "color": "#db4437"
+                        },
+                        {
+                          "from": 220,
+                          "color": "#ffa600"
+                        },
+                        {
+                          "from": 225,
+                          "color": "#43a047"
+                        },
+                        {
+                          "from": 235,
+                          "color": "#ffa600"
+                        },
+                        {
+                          "from": 240,
+                          "color": "#db4437"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "gauge",
+                      "entity": "sensor.chargenode_sma_voltage_l3",
+                      "max": 250,
+                      "min": 210,
+                      "name": "L3",
+                      "needle": true,
+                      "segments": [
+                        {
+                          "from": 210,
+                          "color": "#db4437"
+                        },
+                        {
+                          "from": 220,
+                          "color": "#ffa600"
+                        },
+                        {
+                          "from": 225,
+                          "color": "#43a047"
+                        },
+                        {
+                          "from": 235,
+                          "color": "#ffa600"
+                        },
+                        {
+                          "from": 240,
+                          "color": "#db4437"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
                   "type": "custom:apexcharts-card",
                   "series": [
                     {
-                      "entity": "sensor.hem_gen5_electric_consumed_1",
+                      "entity": "sensor.chargenode_sma_current_l1",
                       "name": "L1"
                     },
                     {
-                      "entity": "sensor.hem_gen5_electric_consumed_2",
+                      "entity": "sensor.chargenode_sma_current_l2",
                       "name": "L2",
                       "color": "DeepSkyBlue"
                     },
                     {
-                      "entity": "sensor.hem_gen5_electric_consumed_3",
+                      "entity": "sensor.chargenode_sma_current_l3",
                       "name": "L3",
                       "color": "red"
                     }
                   ],
                   "cache": true,
                   "graph_span": "12h",
-                  "update_interval": "30s",
+                  "update_interval": "1m",
                   "apex_config": {
                     "stroke": {
                       "show": true,

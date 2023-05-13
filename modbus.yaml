@@ -6,54 +6,190 @@ sensors:
   - name: ChargeNode_Port1_State
     address: 30
     slave: 1
-  - name: ChargeNode_Port1_L1_Current
-    address: 34
-    slave: 1
-    device_class: current
-    unit_of_measurement: A
-    data_type: float
-    scale: 0.1
-    precision: 1
-  - name: ChargeNode_Port1_L2_Current
-    address: 35
-    slave: 1
-    device_class: current
-    unit_of_measurement: A
-    data_type: float
-    scale: 0.1
-    precision: 1
-  - name: ChargeNode_Port1_L3_Current
-    address: 36
-    slave: 1
-    device_class: current
-    unit_of_measurement: A
-    data_type: float
-    scale: 0.1
-    precision: 1
+    scan_interval: 60
   - name: ChargeNode_Port2_State
     address: 40
+    slave: 1    
+    scan_interval: 60
+  - name: ChargeNode_Current_L1
+    address: 1000
     slave: 1
-  - name: ChargeNode_Port2_L1_Current
-    address: 44
-    slave: 1
+    scan_interval: 30
     device_class: current
     unit_of_measurement: A
-    data_type: float
+    data_type: int16
     scale: 0.1
     precision: 1
-  - name: ChargeNode_Port2_L2_Current
-    address: 45
+  - name: ChargeNode_Current_L2
+    address: 1001
     slave: 1
+    scan_interval: 30
     device_class: current
     unit_of_measurement: A
-    data_type: float
+    data_type: int16
     scale: 0.1
     precision: 1
-  - name: ChargeNode_Port2_L3_Current
-    address: 46
+  - name: ChargeNode_Current_L3
+    address: 1002
     slave: 1
+    scan_interval: 30
     device_class: current
     unit_of_measurement: A
-    data_type: float
+    data_type: int16
+    scale: 0.1
+    precision: 1
+  - name: ChargeNode_Power_L1
+    address: 1003
+    slave: 1
+    scan_interval: 30
+    device_class: power
+    unit_of_measurement: W
+    data_type: int16
+    scale: 0.1
+    precision: 1
+  - name: ChargeNode_Power_L2
+    address: 1004
+    slave: 1
+    scan_interval: 30
+    device_class: power
+    unit_of_measurement: W
+    data_type: int16
+    scale: 0.1
+    precision: 1
+  - name: ChargeNode_Power_L3
+    address: 1005
+    slave: 1
+    scan_interval: 30
+    device_class: power
+    unit_of_measurement: W
+    data_type: int16
+    scale: 0.1
+    precision: 1
+  - name: ChargeNode_Voltage_L1
+    address: 1006
+    slave: 1
+    scan_interval: 30
+    device_class: voltage
+    unit_of_measurement: V
+    data_type: int16
+    scale: 0.1
+    precision: 1
+  - name: ChargeNode_Voltage_L2
+    address: 1007
+    slave: 1
+    scan_interval: 30
+    device_class: voltage
+    unit_of_measurement: V
+    data_type: int16
+    scale: 0.1
+    precision: 1
+  - name: ChargeNode_Voltage_L3
+    address: 1008
+    slave: 1
+    scan_interval: 30
+    device_class: voltage
+    unit_of_measurement: V
+    data_type: int16
+    scale: 0.1
+    precision: 1
+  - name: ChargeNode_Energy
+    address: 1009
+    slave: 1
+    scan_interval: 30
+    device_class: energy
+    unit_of_measurement: kWh
+    data_type: int32
+    swap: word
+    scale: 0.1
+    precision: 1
+  - name: ChargeNode_SMA_Current_L1
+    address: 1011
+    slave: 1
+    scan_interval: 60
+    device_class: current
+    unit_of_measurement: A
+    data_type: int16
+    scale: 0.1
+    precision: 1
+  - name: ChargeNode_SMA_Current_L2
+    address: 1012
+    slave: 1
+    scan_interval: 60
+    device_class: current
+    unit_of_measurement: A
+    data_type: int16
+    scale: 0.1
+    precision: 1
+  - name: ChargeNode_SMA_Current_L3
+    address: 1013
+    slave: 1
+    scan_interval: 60
+    device_class: current
+    unit_of_measurement: A
+    data_type: int16
+    scale: 0.1
+    precision: 1
+  - name: ChargeNode_SMA_Power_L1
+    address: 1014
+    slave: 1
+    scan_interval: 60
+    device_class: power
+    unit_of_measurement: W
+    data_type: int16
+    scale: 0.1
+    precision: 1
+  - name: ChargeNode_SMA_Power_L2
+    address: 1015
+    slave: 1
+    scan_interval: 60
+    device_class: power
+    unit_of_measurement: W
+    data_type: int16
+    scale: 0.1
+    precision: 1
+  - name: ChargeNode_SMA_Power_L3
+    address: 1016
+    slave: 1
+    scan_interval: 60
+    device_class: power
+    unit_of_measurement: W
+    data_type: int16
+    scale: 0.1
+    precision: 1
+  - name: ChargeNode_SMA_Voltage_L1
+    address: 1017
+    slave: 1
+    scan_interval: 60
+    device_class: voltage
+    unit_of_measurement: V
+    data_type: int16
+    scale: 0.1
+    precision: 1
+  - name: ChargeNode_SMA_Voltage_L2
+    address: 1018
+    slave: 1
+    scan_interval: 60
+    device_class: voltage
+    unit_of_measurement: V
+    data_type: int16
+    scale: 0.1
+    precision: 1
+  - name: ChargeNode_SMA_Voltage_L3
+    address: 1019
+    slave: 1
+    scan_interval: 60
+    device_class: voltage
+    unit_of_measurement: V
+    data_type: int16
+    scale: 0.1
+    precision: 1
+  - name: ChargeNode_SMA_EnergyPlus
+    address: 1020    
+    slave: 1
+    scan_interval: 60
+    device_class: energy
+    unit_of_measurement: kWh
+    data_type: int32
+    swap: word
     scale: 0.1
     precision: 1
