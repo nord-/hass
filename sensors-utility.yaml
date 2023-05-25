@@ -1,22 +1,3 @@
-# - platform: utility_meter
-#   unique_id: diskmaskinen_kostnad
-#   name: Diskmaskinen, kostnad
-#   source: sensor.diskmaskinen_kr
-#   cycle: monthly
-#   state_class: total_increasing
-#   unit_of_measurement: kr
-#   icon: mdi:cash
-
-# - platform: utility_meter
-#   unique_id: diskmaskinen_kostnad
-#   name: Diskmaskinen, kostnad
-#   source: sensor.diskmaskinen_kr
-#   state_class: total_increasing
-#   unit_of_measurement: kr
-#   icon: mdi:cash
-#   meter_period: monthly
-#   cron pattern: 0 0 1 * *
-
 # solenergi_kwh_man_2:
 #   source: sensor.template_fronius_solar_energy
 #   name: Solenergi [kWh] (mån)
@@ -31,3 +12,18 @@
 #   source: sensor.template_aza_energy_home
 #   name: Azarel [kWh] (mån)
 #   cycle: monthly
+
+chargenode_energy_month_kwh:
+  unique_id: chargenode_energy_month_kwh
+  source: sensor.chargenode_energy
+  name: "ChargeNode [kWh] (mån)"
+  cycle: monthly
+  periodically_resetting: false  
+
+chargenode_energy_year_kwh:  
+  unique_id: chargenode_energy_year_kwh
+  source: sensor.chargenode_energy
+  name: "ChargeNode [kWh] (år)"
+  cycle: yearly
+  periodically_resetting: false  
+  

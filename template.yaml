@@ -123,10 +123,23 @@
           + ((states('var.electric_tax') | float / 100.0)|float) 
           + ((states('var.electric_transfer_cost') | float / 100.0)|float) 
           + ((states('var.electric_fee') | float / 100.0)|float) }}
-    unit_of_measurement: kr
+    unit_of_measurement: kr/kWh
     device_class: monetary
+    state_class: measurement
     attributes:
       friendly_name: "Elpris, totalt (kr)"
+
+  - unique_id: elpris_solar_kr
+    state: >-
+      {{ states('sensor.nordpool_kwh_se3_sek_3_095_0') | float(0) 
+          + ((states('var.electric_solar_markup') | float / 100.0)|float) 
+          + ((states('var.electric_solar_net_markup') | float / 100.0)|float) 
+          + ((states('var.electric_solar_tax_refund') | float / 100.0)|float) }}
+    unit_of_measurement: kr/kWh
+    device_class: monetary
+    state_class: measurement
+    attributes:
+      friendly_name: "Elpris försäljning, totalt (kr)"
 
 # - sensor:
 #   - unique_id: elpris_avg_kr
@@ -388,7 +401,13 @@
     state: >-
       {{ states('sensor.spabadet_l1_energy')|float + states('sensor.spabadet_l2_energy')|float + states('sensor.spabadet_l3_energy')|float }}
 
-- sensor:
+  - unique_id: spabadet_energy_lastmonth_kwh
+    unit_of_measurement: "kWh"
+    device_class: energy
+    state: "{{ state_attr('sensor.spabadet_kwh_man','last_period')|float(0)|round(0) }}"
+    attributes:
+      friendly_name: "Spabadet, energi förra mån [kWh]"
+
   - unique_id: spabadet_power_kw
     unit_of_measurement: "kW"
     device_class: power
@@ -415,7 +434,6 @@
     state: >-
       {{ (states('sensor.spabadet_l1_power')|float / states('sensor.hem_gen5_electric_produced_v_2') | float(230)) | round(2) }}
 
-- sensor: 
   - unique_id: spabadet_l2_current_a
     unit_of_measurement: "A"
     device_class: current
@@ -425,7 +443,6 @@
     state: >-
       {{ (states('sensor.spabadet_l2_power')|float / states('sensor.hem_gen5_electric_produced_v_2_2') | float(230)) | round(2) }}
 
-- sensor: 
   - unique_id: spabadet_l3_current_a
     unit_of_measurement: "A"
     device_class: current

@@ -650,7 +650,7 @@
       entity_id: binary_sensor.zoe_plug
       state: 'on'
     alias: Zoe Plug inkopplad or otillgänglig
-    enabled: true
+    enabled: false
   - condition: state
     entity_id: binary_sensor.zoe_charging
     state: 'off'
@@ -1294,4 +1294,27 @@
     data:
       message: Värmen är på men drar ingen ström.
       title: Spabadet
+  mode: single
+- id: '1684931331914'
+  alias: 'Wall-E: Query Status'
+  description: Tvinga uppdatering av Wall-E
+  trigger:
+  - platform: time_pattern
+    hours: /1
+  condition:
+  - condition: time
+    after: '10:00:00'
+    before: '18:00:00'
+    alias: Between 10 and 18
+  - condition: template
+    value_template: '{{ (as_timestamp(now()) - as_timestamp(state_attr(''vacuum.wall_e'',''state_updated_at'')))
+      > 3600 }}'
+    alias: Updated at least an hour ago
+  action:
+  - service: landroid_cloud.partymode
+    data:
+      party_mode_enabled: false
+    target:
+      device_id: 04744719de96abcefa75f8ffeeb42a05
+    alias: Disable Wall-E Party Mode
   mode: single

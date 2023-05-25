@@ -13,6 +13,21 @@ electric_fee:
   friendly_name: 'Elavgift (öre)'
   initial_value: 7.5
   icon: mdi:cash-minus
+    
+electric_solar_markup: 
+  friendly_name: 'Påslag solel (öre)'
+  initial_value: 15
+  icon: mdi:cash-plus
+    
+electric_solar_net_markup: 
+  friendly_name: 'Nätnytta (öre)'
+  initial_value: 5.6
+  icon: mdi:cash-plus
+    
+electric_solar_tax_refund: 
+  friendly_name: 'Skatteåterbäring (öre)'
+  initial_value: 60
+  icon: mdi:cash-plus
 
 # solar panels
 solarenergy:

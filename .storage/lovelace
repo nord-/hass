@@ -151,7 +151,8 @@
               "cards": [
                 {
                   "type": "entity",
-                  "entity": "sensor.template_elpris_kr"
+                  "entity": "sensor.template_elpris_kr",
+                  "icon": "mdi:cash-clock"
                 },
                 {
                   "type": "custom:apexcharts-card",
@@ -831,7 +832,7 @@
                   "decimalsInFloat": 0
                 }
               },
-              "graph_span": "7d",
+              "graph_span": "4d",
               "cache": true,
               "span": {
                 "end": "day"
@@ -1118,15 +1119,12 @@
                       "type": "attribute",
                       "attribute": "last_period",
                       "suffix": "kr",
-                      "name": "Förra mån",
+                      "name": "Kostnad (förra)",
                       "icon": "mdi:cash"
                     },
                     {
-                      "entity": "sensor.spabadet_kwh_man",
-                      "type": "attribute",
-                      "attribute": "last_period",
-                      "suffix": "kWh",
-                      "name": "Förra mån",
+                      "entity": "sensor.template_spabadet_energy_lastmonth_kwh",
+                      "name": "Energi (förra)",
                       "icon": "mdi:lightning-bolt"
                     }
                   ]
@@ -1173,7 +1171,7 @@
                   }
                 ]
               },
-              "graph_span": "7d",
+              "graph_span": "4d",
               "cache": true,
               "span": {
                 "end": "day"
@@ -2135,13 +2133,13 @@
                 },
                 {
                   "type": "gauge",
-                  "entity": "sensor.template_nordpool_current_price",
+                  "entity": "sensor.template_elpris_solar_kr",
                   "min": 0,
-                  "max": 1.5,
+                  "max": 2.5,
                   "severity": {
-                    "red": 0,
-                    "yellow": 0.5,
-                    "green": 0.8
+                    "green": 1.5,
+                    "yellow": 1,
+                    "red": 0
                   },
                   "unit": "kr",
                   "name": "Elpriset"
@@ -2171,7 +2169,7 @@
             },
             {
               "type": "custom:apexcharts-card",
-              "graph_span": "10d",
+              "graph_span": "4d",
               "update_interval": "1hour",
               "cache": true,
               "series": [
@@ -2233,7 +2231,11 @@
                   "color": "deepskyblue",
                   "float_precision": 2,
                   "data_generator": "return entity.attributes.raw_today.map((p) => {\n  return [new Date(p.start), p.value];\n});\n",
-                  "curve": "stepline"
+                  "curve": "stepline",
+                  "group_by": {
+                    "func": "avg",
+                    "duration": "1h"
+                  }
                 }
               ],
               "span": {
