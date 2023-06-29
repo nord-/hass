@@ -365,7 +365,7 @@
     entity_id: sensor.lumi_lumi_sen_ill_agl01_illuminance
     for:
       hours: 0
-      minutes: 5
+      minutes: 2
       seconds: 0
     below: 250
   condition:
@@ -429,7 +429,7 @@
       hours: 0
       minutes: 5
       seconds: 0
-    above: 250
+    above: 400
   condition:
   - condition: numeric_state
     entity_id: sun.sun
@@ -633,6 +633,10 @@
   - platform: time_pattern
     hours: /1
     alias: Every hour
+  - platform: state
+    entity_id:
+    - binary_sensor.zoe_plug
+    to: 'on'
   condition:
   - condition: numeric_state
     entity_id: sensor.zoe_battery_level
@@ -726,9 +730,8 @@
   description: ''
   trigger:
   - platform: numeric_state
-    entity_id: vacuum.wall_e
-    attribute: current_blade_time
-    above: '10000'
+    entity_id: sensor.template_walle_blade_hours
+    above: 60
   condition: []
   action:
   - service: notify.rickards_devices
@@ -867,14 +870,9 @@
     - condition: state
       entity_id: input_boolean.zoe_upper_limit
       state: 'on'
-    - condition: or
-      conditions:
-      - condition: state
-        entity_id: automation.ladda_fridas_bil
-        state: 'on'
-      - condition: state
-        entity_id: automation.ladda_zoe_pa_tid
-        state: 'on'
+    - condition: state
+      state: charge_in_progress
+      entity_id: sensor.zoe_charge_state
     - condition: numeric_state
       entity_id: sensor.zoe_battery_level
       above: input_number.zoe_soc_upper_limit
@@ -1317,4 +1315,80 @@
     target:
       device_id: 04744719de96abcefa75f8ffeeb42a05
     alias: Disable Wall-E Party Mode
+  mode: single
+- id: '1685565293861'
+  alias: Ladda Zoe, inkopplad
+  description: ''
+  trigger:
+  - platform: state
+    entity_id:
+    - binary_sensor.zoe_plug
+    to: 'on'
+  condition: []
+  action:
+  - service: automation.turn_on
+    data: {}
+    target:
+      entity_id: automation.ladda_fridas_bil
+  mode: single
+- id: '1685708337936'
+  alias: Spabadet, still running manually notification
+  description: ''
+  trigger:
+  - platform: state
+    entity_id:
+    - input_boolean.spabadet_manual
+    to: 'on'
+    for:
+      hours: 4
+      minutes: 0
+      seconds: 0
+  condition: []
+  action:
+  - service: notify.rickards_devices
+    data:
+      message: Spabadet kör fortfarande manuellt.
+  - delay:
+      hours: 2
+      minutes: 0
+      seconds: 0
+      milliseconds: 0
+  - if:
+    - condition: state
+      entity_id: input_boolean.spabadet_manual
+      state: 'on'
+    then:
+    - service: notify.rickards_devices
+      data:
+        message: Spabadet kör fortfarande manuellt efter 6 timmar…
+  mode: single
+- id: '1685775877485'
+  alias: Ladda Zoe, stäng av automation
+  description: ''
+  trigger:
+  - platform: state
+    entity_id:
+    - binary_sensor.zoe_charging
+    to: 'on'
+  condition: []
+  action:
+  - service: automation.turn_off
+    data:
+      stop_actions: false
+    target:
+      entity_id: automation.ladda_fridas_bil
+  mode: single
+- id: '1686552991281'
+  alias: Wall-E, notify starts cutting
+  description: ''
+  trigger:
+  - platform: state
+    entity_id:
+    - vacuum.wall_e
+    to: mowing
+  condition: []
+  action:
+  - service: notify.rickards_devices
+    data:
+      message: Wall-E börjar klippa!
   mode: single

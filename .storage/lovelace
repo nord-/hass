@@ -139,10 +139,51 @@
                       "detail": 2
                     }
                   ]
+                }
+              ]
+            },
+            {
+              "type": "horizontal-stack",
+              "title": "Huset (L1-L3)",
+              "cards": [
+                {
+                  "type": "gauge",
+                  "entity": "sensor.chargenode_sma_current_l1",
+                  "max": 20,
+                  "name": " ",
+                  "min": -12,
+                  "needle": true,
+                  "severity": {
+                    "green": -12,
+                    "yellow": 0,
+                    "red": 10
+                  }
                 },
                 {
-                  "entity": "weather.smhi_home",
-                  "type": "weather-forecast"
+                  "type": "gauge",
+                  "entity": "sensor.chargenode_sma_current_l2",
+                  "name": " ",
+                  "needle": true,
+                  "severity": {
+                    "green": -12,
+                    "yellow": 0,
+                    "red": 10
+                  },
+                  "min": -12,
+                  "max": 20
+                },
+                {
+                  "type": "gauge",
+                  "entity": "sensor.chargenode_sma_current_l3",
+                  "max": 20,
+                  "name": " ",
+                  "min": -12,
+                  "needle": true,
+                  "severity": {
+                    "green": -12,
+                    "yellow": 0,
+                    "red": 10
+                  }
                 }
               ]
             },
@@ -270,20 +311,93 @@
               ]
             },
             {
-              "type": "custom:power-flow-card",
-              "entities": {
-                "solar": "sensor.template_fronius_solar_power",
-                "grid": "sensor.template_house_net_power_kw"
-              },
-              "inverted_entities": "grid"
-            },
-            {
               "type": "calendar",
               "entities": [
                 "calendar.family"
               ],
               "initial_view": "listWeek",
               "title": "Händer i veckan"
+            },
+            {
+              "type": "entities",
+              "title": "Diskmaskinen",
+              "entities": [
+                {
+                  "entity": "automation.diskmaskinen_starta_pa_klocka",
+                  "name": "Starta på timer",
+                  "icon": "mdi:clock-check-outline"
+                },
+                {
+                  "entity": "input_datetime.diskmaskinen_timme",
+                  "icon": "mdi:clock",
+                  "secondary_info": "none",
+                  "name": "Klockan"
+                },
+                {
+                  "type": "divider"
+                },
+                {
+                  "entity": "switch.clever_spz3",
+                  "name": "På/av",
+                  "icon": "mdi:dishwasher",
+                  "secondary_info": "last-updated"
+                }
+              ],
+              "show_header_toggle": false
+            },
+            {
+              "type": "entities",
+              "entities": [
+                {
+                  "entity": "automation.tvattmaskinen_starta_pa_klockslag",
+                  "icon": "mdi:clock-check-outline",
+                  "name": "Starta på timer"
+                },
+                {
+                  "entity": "input_datetime.tvattmaskinen_timme",
+                  "name": "Klockan"
+                },
+                {
+                  "type": "divider"
+                },
+                {
+                  "entity": "switch.clever_spz2",
+                  "name": "På/av",
+                  "icon": "mdi:washing-machine",
+                  "secondary_info": "last-updated"
+                }
+              ],
+              "show_header_toggle": false,
+              "title": "Tvättmaskinen"
+            },
+            {
+              "type": "horizontal-stack",
+              "cards": [
+                {
+                  "type": "entity",
+                  "entity": "vacuum.wall_e",
+                  "icon": "mdi:mower"
+                },
+                {
+                  "type": "entity",
+                  "entity": "sensor.template_walle_battery_level",
+                  "name": " Batteri",
+                  "icon": "mdi:battery-50",
+                  "unit": "%"
+                },
+                {
+                  "show_name": false,
+                  "show_icon": true,
+                  "type": "button",
+                  "tap_action": {
+                    "action": "call-service",
+                    "service": "vacuum.pause",
+                    "target": {}
+                  },
+                  "entity": "vacuum.wall_e",
+                  "icon": "mdi:stop-circle-outline"
+                }
+              ]
             }
           ]
         },
@@ -608,6 +722,14 @@
                   ]
                 }
               ]
+            },
+            {
+              "type": "custom:power-flow-card",
+              "entities": {
+                "solar": "sensor.template_fronius_solar_power",
+                "grid": "sensor.template_house_net_power_kw"
+              },
+              "inverted_entities": "grid"
             },
             {
               "type": "vertical-stack",
@@ -1252,13 +1374,13 @@
             {
               "entities": [
                 {
-                  "entity": "light.tuya_sovrum_rickard",
+                  "entity": "light.sovrum_rickard_light",
                   "name": "Rickard",
                   "icon": "mdi:wall-sconce",
                   "secondary_info": "none"
                 },
                 {
-                  "entity": "light.tuya_sovrum_frida",
+                  "entity": "light.sovrum_frida_light",
                   "name": "Frida",
                   "icon": "mdi:wall-sconce"
                 },
@@ -1269,16 +1391,6 @@
                 {
                   "entity": "switch.nexa_5",
                   "icon": "mdi:cellphone-charging"
-                },
-                {
-                  "entity": "switch.nexa_3",
-                  "name": "Frida",
-                  "icon": "mdi:candelabra-fire"
-                },
-                {
-                  "entity": "switch.nexa_4",
-                  "icon": "mdi:candelabra-fire",
-                  "name": "Rickard"
                 }
               ],
               "show_header_toggle": true,
@@ -1440,7 +1552,8 @@
                   "icon": "mdi:string-lights"
                 },
                 {
-                  "entity": "switch.utebaren"
+                  "entity": "light.utebaren_mqtt",
+                  "name": "Baren, ute"
                 }
               ],
               "show_header_toggle": true,
@@ -1977,7 +2090,7 @@
                     {
                       "type": "entity",
                       "entity": "vacuum.wall_e",
-                      "icon": "mow"
+                      "icon": "mdi:robot-mower-outline"
                     },
                     {
                       "type": "entity",
@@ -2027,6 +2140,18 @@
                       },
                       "entity": "vacuum.wall_e",
                       "icon": "mdi:home-battery"
+                    },
+                    {
+                      "show_name": false,
+                      "show_icon": true,
+                      "type": "button",
+                      "tap_action": {
+                        "action": "call-service",
+                        "service": "vacuum.pause",
+                        "target": {}
+                      },
+                      "entity": "vacuum.wall_e",
+                      "icon": "mdi:stop-circle-outline"
                     }
                   ]
                 },
@@ -2106,6 +2231,12 @@
                   "entity": "media_player.jbl_ute",
                   "type": "media-control"
                 }
+              ]
+            },
+            {
+              "type": "entities",
+              "entities": [
+                "remote.vardagsrummet"
               ]
             }
           ]

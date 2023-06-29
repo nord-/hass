@@ -278,7 +278,7 @@
 
 - sensor:
   - unique_id: house_cost
-    state: "{{ states('sensor.template_house_power_w')|float(0)/1000 * states('sensor.template_elpris_kr') | float }}"
+    state: "{{ states('sensor.template_house_power_kw')|float(0) * states('sensor.template_elpris_kr') | float }}"
     unit_of_measurement: kr
     device_class: monetary
 

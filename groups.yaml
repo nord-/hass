@@ -52,8 +52,8 @@ sovrummet:
   # id: 202111222351
   name: Sovrummet
   entities:
-    - light.tuya_sovrum_rickard
-    - light.tuya_sovrum_frida
+    - light.sovrum_rickard_light
+    - light.sovrum_frida_light
     - switch.nexa_3 # rickards sida
     - switch.nexa_4 # fridas sida
     - switch.nexa_1 # klädkammaren
