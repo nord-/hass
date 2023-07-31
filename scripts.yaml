@@ -209,19 +209,14 @@ start_the_car:
       entity_id: climate.azarel_hvac_climate_system
   mode: single
 charge_the_tesla:
-  alias: Ladda Teslan
+  alias: Ladda Kian
   sequence:
-  - service: rest_command.cn_add_aza_to_queue
+  - service: rest_command.cn_add_rya_to_queue
     data: {}
-  - service: tesla_custom.polling_interval
-    data:
-      vin: '{{ state_attr(''binary_sensor.azarel_online'',''vin'') }}'
-      scan_interval: 30
-    alias: Set Polling interval to short
   - service: notify.rickards_devices
     data:
-      title: Azarel börjar ladda
-      message: 'Laddningen av Azarel har startat.\n SoC:     {{ states("sensor.azarel_battery")
+      title: Kian börjar ladda
+      message: 'Laddningen av RYA har startat.\n SoC:     {{ states("sensor.ev6_ev_battery_level")
         }}%.\n Priset:  {{ states("sensor.template_nordpool_current_price_vat") }}
         kr\n Klockan: {{ now().strftime(''%H:%M den %d/%m'') }}'
   mode: single
@@ -256,21 +251,22 @@ ladda_zoe:
   mode: single
   icon: mdi:ev-station
 ladda_tesla_stoppa:
-  alias: Ladda Tesla, stoppa
+  alias: Ladda RYA, stoppa
   sequence:
-  - service: rest_command.cn_remove_aza_from_queue
+  - service: rest_command.cn_remove_rya_from_queue
     data: {}
   - service: tesla_custom.polling_interval
     data:
       vin: '{{ state_attr(''binary_sensor.azarel_online'',''vin'') }}'
       scan_interval: 660
     alias: Set polling interval to long
+    enabled: false
   - service: notify.rickards_devices
     data:
-      message: 'Laddningen av Azarel har stoppats.\n SoC:     {{ states("sensor.azarel_battery_sensor")
+      message: 'Laddningen av RYA har stoppats.\n SoC:     {{ states("sensor.ev6_ev_battery_level")
         }}%.\n Priset:  {{ states("sensor.template_nordpool_current_price_vat") }}
         kr\n Klockan: {{ now().strftime(''%H:%M den %d/%m'') }}'
-      title: Azarel har slutat ladda
+      title: Kian har slutat ladda
   mode: single
   icon: mdi:ev-station
 '1661376120898':

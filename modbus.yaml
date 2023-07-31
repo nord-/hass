@@ -4,11 +4,11 @@ host: 192.168.2.29
 port: 783
 sensors:
   - name: ChargeNode_Port1_State
-    address: 30
+    address: 20
     slave: 1
     scan_interval: 60
   - name: ChargeNode_Port2_State
-    address: 40
+    address: 30
     slave: 1    
     scan_interval: 60
   - name: ChargeNode_Current_L1

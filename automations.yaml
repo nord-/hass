@@ -263,12 +263,17 @@
         above: 250
         alias: Bright
       alias: Is Bright and Sun > 5°
+      enabled: true
     - condition: sun
       after: sunset
     - condition: state
       entity_id: group.my_people
       state: not_home
+      enabled: true
     alias: Bright day, after sunset or nobody home
+    enabled: false
+  - condition: sun
+    after: sunset
   action:
   - service: script.turn_off_general_lights
     data: {}
@@ -557,7 +562,7 @@
     data: {}
   mode: single
 - id: '1643056235541'
-  alias: 'Ladda Azarel: lågt elpris'
+  alias: Ladda RYA, lågt elpris
   description: ''
   trigger:
   - platform: state
@@ -567,17 +572,17 @@
     enabled: false
   - platform: state
     entity_id:
-    - binary_sensor.azarel_charger
+    - binary_sensor.ev6_ev_charge_port
     to: 'on'
   - platform: time_pattern
     hours: /1
     alias: Every hour
   condition:
   - condition: state
-    entity_id: device_tracker.azarel_location_tracker
+    entity_id: device_tracker.ev6_location
     state: home
   - condition: state
-    entity_id: binary_sensor.azarel_charger
+    entity_id: binary_sensor.ev6_ev_charge_port
     state: 'on'
   - condition: state
     entity_id: binary_sensor.low_price_off_peak
@@ -602,16 +607,16 @@
     to: 'off'
   condition:
   - condition: state
-    entity_id: device_tracker.azarel_location_tracker
+    entity_id: device_tracker.ev6_location
     state: home
   - condition: numeric_state
-    entity_id: sensor.azarel_battery
+    entity_id: sensor.ev6_ev_battery_level
     above: '20'
   - condition: state
     entity_id: binary_sensor.low_price
     state: 'off'
   - condition: state
-    entity_id: binary_sensor.azarel_charging
+    entity_id: binary_sensor.ev6_ev_battery_charge
     state: 'on'
   - condition: state
     entity_id: automation.ladda_bilen_nar_det_ar_billigt
@@ -1142,12 +1147,29 @@
   - platform: template
     value_template: '{{ states(''sensor.igrill_probe_1'')|int >= states(''input_number.igrill_target_temp'')|int
       }}'
+    alias: 'When at target temp '
+  - platform: template
+    value_template: '{{ states(''sensor.igrill_probe_1'')|int >= states(''input_number.igrill_target_temp'')|int-3
+      }}'
+    alias: 'When right before target temp '
   condition: []
   action:
-  - service: notify.rickards_devices
-    data:
-      title: iGrill alarm
-      message: Temperaturen är {{ states.sensor.igrill_probe_1.state|int }}°C.
+  - if:
+    - condition: template
+      value_template: '{{ states(''sensor.igrill_probe_1'')|int >= states(''input_number.igrill_target_temp'')|int
+        }}'
+      alias: 'At target temp '
+    then:
+    - service: notify.rickards_devices
+      data:
+        title: iGrill alarm
+        message: Temperaturen är {{ states.sensor.igrill_probe_1.state|int }}°C.
+    else:
+    - service: notify.rickards_devices
+      data:
+        title: iGrill alarm
+        message: Temperaturen är strax där {{ states.sensor.igrill_probe_1.state|int
+          }}°C ({{ states.input_number.igrill_target_temp.state|int }}°).
   mode: single
 - id: '1671363832692'
   alias: 'ALARM: Enheter offline'
@@ -1391,4 +1413,63 @@
   - service: notify.rickards_devices
     data:
       message: Wall-E börjar klippa!
+  mode: single
+- id: '1690820037786'
+  alias: Ladda Rya, set charge limit
+  description: ''
+  trigger:
+  - platform: state
+    entity_id:
+    - input_number.rya_soc_upper_limit
+    for:
+      hours: 0
+      minutes: 0
+      seconds: 10
+  - platform: state
+    entity_id:
+    - number.ev6_ac_charging_limit
+  condition:
+  - condition: template
+    value_template: '{{ states(''number.ev6_ac_charging_limit'')|int(0) != states(''input_number.rya_soc_upper_limit'')|int(0)
+      }}'
+  action:
+  - service: kia_uvo.set_charge_limits
+    data:
+      ac_limit: '{{ states("input_number.rya_soc_upper_limit")|int(80) }}'
+    alias: Set charge limit to Rya SoC Upper Limit
+    enabled: false
+  - if:
+    - condition: template
+      value_template: '{{ states.number.ev6_ac_charging_limit.state == 0 }}'
+      alias: EV6 is 0
+    then:
+    - service: number.set_value
+      alias: Set EV6 Charging Limit to SoC Upper Limit
+      target:
+        entity_id: number.ev6_ac_charging_limit
+      data:
+        value: '{{ states(''input_number.rya_soc_upper_limit'')|int(80) }}'
+    else:
+    - if:
+      - condition: template
+        value_template: '{{ trigger.entity_id == ''number.ev6_ac_charging_limit''
+          }}'
+        alias: Triggered by ev6_ac_charging_limit
+      - condition: numeric_state
+        entity_id: number.ev6_ac_charging_limit
+        above: 49
+      then:
+      - service: input_number.set_value
+        alias: Set SoC Upper Limit to EV6 Charging Limit
+        target:
+          entity_id: input_number.rya_soc_upper_limit
+        data:
+          value: '{{ states(''number.ev6_ac_charging_limit'')|int }}'
+      else:
+      - service: number.set_value
+        alias: Set EV6 Charging Limit to SoC Upper Limit
+        target:
+          entity_id: number.ev6_ac_charging_limit
+        data:
+          value: '{{ states(''input_number.rya_soc_upper_limit'')|int(80) }}'
   mode: single

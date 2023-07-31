@@ -375,15 +375,26 @@
               "cards": [
                 {
                   "type": "entity",
-                  "entity": "vacuum.wall_e",
-                  "icon": "mdi:mower"
-                },
-                {
-                  "type": "entity",
                   "entity": "sensor.template_walle_battery_level",
                   "name": " Batteri",
                   "icon": "mdi:battery-50",
                   "unit": "%"
+                },
+                {
+                  "show_name": false,
+                  "show_icon": true,
+                  "type": "button",
+                  "tap_action": {
+                    "action": "call-service",
+                    "service": "vacuum.start",
+                    "data": {},
+                    "target": {
+                      "device_id": "04744719de96abcefa75f8ffeeb42a05"
+                    }
+                  },
+                  "entity": "vacuum.wall_e",
+                  "icon": "mdi:mower",
+                  "show_state": false
                 },
                 {
                   "show_name": false,
@@ -421,6 +432,174 @@
                   "entity": "sensor.template_zoe_req_hours",
                   "icon": "mdi:battery-clock-outline",
                   "name": "Zoe, behov (h)"
+                },
+                {
+                  "entity": "sensor.template_rya_req_hours",
+                  "name": "Kian, behov (h)",
+                  "icon": "mdi:battery-clock-outline"
+                }
+              ]
+            },
+            {
+              "type": "vertical-stack",
+              "title": "EV6",
+              "cards": [
+                {
+                  "type": "horizontal-stack",
+                  "cards": [
+                    {
+                      "type": "gauge",
+                      "entity": "sensor.ev6_ev_battery_level",
+                      "needle": true,
+                      "severity": {
+                        "green": 40,
+                        "yellow": 20,
+                        "red": 0
+                      },
+                      "name": "SoC"
+                    },
+                    {
+                      "type": "entity",
+                      "entity": "sensor.ev6_ev_range",
+                      "name": "Räckvidd",
+                      "icon": "mdi:gauge"
+                    },
+                    {
+                      "type": "gauge",
+                      "entity": "sensor.template_rya_charging_power",
+                      "name": " ",
+                      "severity": {
+                        "green": 0,
+                        "yellow": 5.5,
+                        "red": 8
+                      },
+                      "max": 11,
+                      "needle": true
+                    }
+                  ]
+                },
+                {
+                  "type": "glance",
+                  "entities": [
+                    {
+                      "entity": "sensor.ev6_odometer",
+                      "name": "Körsträcka"
+                    },
+                    {
+                      "entity": "binary_sensor.ev6_ev_charge_port",
+                      "name": "Laddport"
+                    },
+                    {
+                      "entity": "sensor.ev6_last_updated_at",
+                      "name": "Uppdaterad"
+                    }
+                  ]
+                },
+                {
+                  "type": "horizontal-stack",
+                  "cards": [
+                    {
+                      "show_name": false,
+                      "show_icon": true,
+                      "type": "button",
+                      "icon_height": "25px",
+                      "tap_action": {
+                        "action": "call-service",
+                        "service": "kia_uvo.start_climate",
+                        "target": {},
+                        "data": {
+                          "duration": 10,
+                          "climate": true,
+                          "temperature": 22,
+                          "heating": false
+                        }
+                      },
+                      "entity": "binary_sensor.ev6_air_conditioner",
+                      "name": "EV6",
+                      "show_state": false
+                    },
+                    {
+                      "show_name": false,
+                      "show_icon": true,
+                      "type": "button",
+                      "icon_height": "25px",
+                      "tap_action": {
+                        "action": "call-service",
+                        "service": "kia_uvo.start_climate",
+                        "target": {},
+                        "data": {
+                          "duration": 10,
+                          "climate": true,
+                          "temperature": 22,
+                          "heating": "3",
+                          "defrost": true,
+                          "flseat": "8"
+                        }
+                      },
+                      "entity": "binary_sensor.ev6_air_conditioner",
+                      "name": "EV6",
+                      "show_state": false,
+                      "icon": "mdi:car-defrost-front"
+                    },
+                    {
+                      "show_name": false,
+                      "show_icon": true,
+                      "type": "button",
+                      "tap_action": {
+                        "action": "call-service",
+                        "service": "script.charge_the_tesla",
+                        "target": {}
+                      },
+                      "entity": "binary_sensor.ev6_ev_battery_charge",
+                      "show_state": false,
+                      "icon": "mdi:ev-station",
+                      "icon_height": "25px"
+                    },
+                    {
+                      "show_name": false,
+                      "show_icon": true,
+                      "type": "button",
+                      "tap_action": {
+                        "action": "call-service",
+                        "service": "kia_uvo.force_update",
+                        "target": {}
+                      },
+                      "entity": "sensor.ev6_last_updated_at",
+                      "icon": "mdi:refresh",
+                      "icon_height": "25px"
+                    }
+                  ]
+                },
+                {
+                  "type": "entities",
+                  "entities": [
+                    {
+                      "entity": "input_datetime.zoe_hour",
+                      "name": "Timmar"
+                    },
+                    {
+                      "entity": "automation.ladda_bilen_nar_det_ar_billigt",
+                      "name": "Lågt pris",
+                      "secondary_info": "last-triggered",
+                      "icon": "mdi:ev-station"
+                    },
+                    {
+                      "entity": "automation.ladda_azarel_pa_klocka",
+                      "icon": "mdi:car-clock",
+                      "name": "Klocka",
+                      "secondary_info": "last-triggered"
+                    }
+                  ],
+                  "show_header_toggle": false
+                },
+                {
+                  "type": "entities",
+                  "entities": [
+                    {
+                      "entity": "input_number.rya_soc_upper_limit",
+                      "name": "Laddgräns"
+                    }
+                  ]
                 }
               ]
             },
@@ -450,7 +629,7 @@
                     },
                     {
                       "type": "gauge",
-                      "entity": "sensor.template_zoe_power_kw",
+                      "entity": "sensor.template_zoe_charging_power",
                       "name": " ",
                       "severity": {
                         "green": 0,
@@ -567,6 +746,16 @@
                   "type": "entities",
                   "entities": [
                     {
+                      "entity": "sensor.rya_kostnad",
+                      "name": "Rya [kr]",
+                      "icon": "mdi:car-sports"
+                    },
+                    {
+                      "entity": "sensor.rya_energi_per_manad",
+                      "name": "Rya [kWh]",
+                      "icon": "mdi:car-sports"
+                    },
+                    {
                       "entity": "sensor.zoe_kostnad",
                       "name": "Zoe [kr]",
                       "icon": "mdi:car-side"
@@ -636,7 +825,7 @@
                 },
                 {
                   "type": "entity",
-                  "entity": "sensor.chargenode_energy",
+                  "entity": "sensor.template_chargenode_energy_kwh",
                   "name": "Total energi"
                 }
               ]
@@ -1665,7 +1854,7 @@
                           "entity": "sensor.clever_spz3_electric_consumption_w"
                         }
                       ],
-                      "graph_span": "3h",
+                      "graph_span": "2h",
                       "apex_config": {
                         "yaxis": [
                           {
@@ -1754,7 +1943,7 @@
                           "entity": "sensor.clever_spz2_electric_consumption_w_2"
                         }
                       ],
-                      "graph_span": "3h",
+                      "graph_span": "90m",
                       "apex_config": {
                         "yaxis": [
                           {

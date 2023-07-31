@@ -8,7 +8,6 @@
     attributes:
       friendly_name: "Fronius solenergi (totalt)"
 
-- sensor:
   - unique_id: fronius_solar_daily_energy
     unit_of_measurement: "kWh"
     device_class: energy
@@ -17,7 +16,6 @@
     attributes:
       friendly_name: "Fronius solenergi (idag)"
 
-- sensor:
   - unique_id: fronius_solar_power
     unit_of_measurement: "kW"
     device_class: power
@@ -25,8 +23,7 @@
     state: "{{ (states('sensor.power_ac_fronius_inverter_1_192_168_2_31') | float(0) / 1000.0) | round(2) }}"
     attributes:
       friendly_name: "Fronius soleffekt"
-          
-- sensor:
+
   - unique_id: last_solarenergy_value
     unit_of_measurement: 'kWh'
     device_class: energy
@@ -41,7 +38,6 @@
     attributes:
       friendly_name: "Solpanelerna, senaste energi"
 
-- sensor:
   - unique_id: last_sp_kw
     unit_of_measurement: "kW"
     state: >-
@@ -63,7 +59,6 @@
     state: "{{ states('sensor.nordpool_kwh_se3_sek_3_095_0') | float | round(2) }}"
     attributes:
       friendly_name: "Aktuellt elpris (ex. moms)"
-
   - unique_id: nordpool_avg_price_vat
     device_class: monetary
     state_class: measurement
@@ -71,8 +66,6 @@
     state: "{{ (state_attr('sensor.nordpool_kwh_se3_sek_3_095_0', 'average')|float*1.25)|round(2) }}"
     attributes:
       friendly_name: "Genomsnittligt elpris (inkl. moms)"
-
-- sensor: 
   - unique_id: nordpool_current_price_vat
     device_class: monetary
     state_class: measurement
@@ -80,12 +73,6 @@
     state: "{{ (states('sensor.nordpool_kwh_se3_sek_3_095_0') | float * 1.25) | round(2) }}"
     attributes:
       friendly_name: "Aktuellt elpris (inkl. moms)"    
-
-- binary_sensor:
-  - unique_id: nordpool_tomorrow_valid
-    state: "{{ state_attr('sensor.nordpool_kwh_se3_sek_3_095_0', 'tomorrow_valid') and state_attr('sensor.nordpool_kwh_se3_sek_3_095_0', 'tomorrow')|length > 23 }}"
-
-- sensor:
   - unique_id: nordpool_tomorrow_avg
     state: >-
       {% set nordpool = namespace(tomorrow = []) -%}
@@ -95,7 +82,6 @@
         {%- endfor -%}
         {{ "%.2f" | format(((nordpool.tomorrow | sum / nordpool.tomorrow | count) | float * 1.25)|float)  }}
       {%- endif %}
-- sensor:
   - unique_id: nordpool_tomorrow_max
     state: >-
       {% set nordpool = namespace(tomorrow = []) %}
@@ -105,7 +91,6 @@
         {% endfor %}
         {{ "%.2f" | format((nordpool.tomorrow | max | float * 1.25)|float) }}
       {% endif %}
-- sensor:
   - unique_id: nordpool_tomorrow_min
     state: >-
       {% set nordpool = namespace(tomorrow = []) %}
@@ -116,7 +101,6 @@
         {{ "%.2f" | format((nordpool.tomorrow | min | float * 1.25)|float) }}
       {% endif %}
 
-- sensor:
   - unique_id: elpris_kr
     state: >-
       {{ states('sensor.template_nordpool_current_price_vat') | float(0) 
@@ -128,7 +112,6 @@
     state_class: measurement
     attributes:
       friendly_name: "Elpris, totalt (kr)"
-
   - unique_id: elpris_solar_kr
     state: >-
       {{ states('sensor.nordpool_kwh_se3_sek_3_095_0') | float(0) 
@@ -140,6 +123,10 @@
     state_class: measurement
     attributes:
       friendly_name: "Elpris försäljning, totalt (kr)"
+
+- binary_sensor:
+  - unique_id: nordpool_tomorrow_valid
+    state: "{{ state_attr('sensor.nordpool_kwh_se3_sek_3_095_0', 'tomorrow_valid') and state_attr('sensor.nordpool_kwh_se3_sek_3_095_0', 'tomorrow')|length > 23 }}"
 
 # - sensor:
 #   - unique_id: elpris_avg_kr
@@ -162,7 +149,7 @@
     state: "{{ ((states('sensor.hem_gen5_electric_consumed_w') | float(0)) / (-1000)) | round(2) }}"
     attributes:
       friendly_name: "Husets nettoeffekt"
-- sensor:
+
   - unique_id: house_power_kw
     unit_of_measurement: "kW"
     device_class: power
@@ -170,7 +157,7 @@
     state: "{{ ((states('sensor.power_ac_fronius_inverter_1_192_168_2_31') | float(default=0.0) + states('sensor.hem_gen5_electric_consumed_w') | float) / 1000) | round(2) }}"
     attributes:
       friendly_name: "Husets effekt (kW)"
-- sensor:
+
   - unique_id: grid_power_kw
     state: "{{ (states('sensor.hem_gen5_electric_consumed_w') | float / 1000) | round(2) }}"
     unit_of_measurement: "kW"
@@ -178,7 +165,7 @@
     state_class: measurement
     attributes:
       friendly_name: "Näteffekt (kW)"
-- sensor:
+
   - unique_id: house_net_energy_kwh
     unit_of_measurement: "kWh"
     device_class: energy
@@ -238,12 +225,12 @@
     attributes:
       friendly_name: "Dåligt väder enligt YR"
 
-- sensor: 
   - unique_id: sunelevation
     unit_of_measurement: "°"
     state: "{{ states.sun.sun.attributes.elevation | round(1) }}"
     attributes:
       friendly_name: "Solvinkel"
+
 # gräsklipparen
 - sensor:
   - unique_id: walle_battery_level
@@ -263,31 +250,26 @@
     state: "{{ (states('sensor.clever_spz2_electric_consumption_w_2') | float/1000) * states('sensor.template_elpris_kr') | float }}"
     unit_of_measurement: kr
     device_class: monetary
-    
-- sensor:
+
   - unique_id: dishwasher_machine_cost
     state: "{{ (states('sensor.clever_spz3_electric_consumption_w') | float/1000) * states('sensor.template_elpris_kr') | float }}"
     unit_of_measurement: kr
     device_class: monetary
-    
-- sensor:
+
   - unique_id: garage_heating_cost
     state: "{{ (states('sensor.popp_outdoor_power') | float(0)/1000) * states('sensor.template_elpris_kr') | float }}"
     unit_of_measurement: kr
     device_class: monetary
 
-- sensor:
   - unique_id: house_cost
     state: "{{ states('sensor.template_house_power_kw')|float(0) * states('sensor.template_elpris_kr') | float }}"
     unit_of_measurement: kr
     device_class: monetary
 
-- sensor:
   - unique_id: spot_gain_loss_daily
     state: "{{ ((states('sensor.energy_x_cost_24_hrs')|float / (states('sensor.energy_used_24_hrs')|float * states('sensor.elpriset_kr_avg')|float)-1)*100)|round }}"
     unit_of_measurement: '%'
 
-- sensor:
   - unique_id: my_avg_spot_price
     state: "{{ (states('sensor.energy_x_cost_24_hrs')|float / states('sensor.energy_used_24_hrs')|float)|round(2) }}"
     unit_of_measurement: kr
@@ -296,99 +278,76 @@
       friendly_name: "Snittpris (24 hrs)"
 
 # bilar
-## Teslan
-# - sensor:
-#   - unique_id: aza_mileage
-#     unit_of_measurement: 'mil'
-#     icon: mdi:counter
-#     state: "{{ ((states('sensor.azarel_odometer') | float(0))/10) | round }}"
-#     attributes:
-#       friendly_name: "Körsträcka"
-
-# - sensor:
-#   - unique_id: aza_last_update
-#     state: "{{ as_timestamp(states.sensor.azarel_battery.last_updated) | timestamp_custom('%H:%M, %d %b') }}"
-#     attributes:
-#       friendly_name: "Senast uppdaterad"
-
-# - sensor:
-#   - unique_id: aza_charging_rate
-#     unit_of_measurement: "kW"
-#     device_class: power
-#     state_class: measurement
-#     state: "{{ (states('sensor.azarel_charging_rate') | float(0)/1564*230) | round(1) }}"
-#     attributes:
-#       friendly_name: "Azarel effekt"
-    
-# - sensor:
-#   - unique_id: aza_charging_cost
-#     unit_of_measurement: kr
-#     device_class: monetary
-#     state_class: total_increasing
-#     state: >-
-#       {{ states('sensor.template_aza_energy_home') | float(0) * states('sensor.template_elpris_kr') | float }}
-
-# - sensor:
-#   - unique_id: aza_power_home
-#     unit_of_measurement: "kW"
-#     device_class: power
-#     state_class: measurement
-#     state: >-
-#       {% if is_state('device_tracker.azarel_location_tracker','home') -%}
-#         {{ states('sensor.template_aza_charging_rate') | float(0) }}
-#       {%- else -%}
-#         {{ 0 | float }}
-#       {%- endif -%}
-
-# - sensor:
-#   - unique_id: aza_energy_home
-#     unit_of_measurement: "kWh"
-#     device_class: energy
-#     state_class: total_increasing
-#     state: "{{ states('var.aza_energy_last_session') }}"
-#       # {% if is_state('device_tracker.azarel_location_tracker','home') -%}
-#       #   {{ states('sensor.azarel_energy_added') | float(0) }}
-#       # {%- else -%}
-#       #   {{ 0 | float }}
-#       # {%- endif -%}
-
-# - sensor:
-#   - unique_id: aza_charging_required_time
-#     state: >-
-#       {%- set time = (states('number.azarel_charge_limit')|float(0) - states('sensor.azarel_battery')|float(0)) /100*51/11 -%}
-#       {%- set hours = time|int -%}
-#       {%- set minutes = ((time - hours)*60)|int -%}
-#       {{ '{:02}:{:02}'.format(hours, minutes) }}
-
-# - sensor:
-#   - unique_id: aza_req_hours
-#     state: >-
-#       {{ ((states('number.azarel_charge_limit')|float(0) - states('sensor.azarel_battery')|float(0)) /100*51/8) | round(0, 'ceil') if is_state('binary_sensor.azarel_charger','on') and is_state('automation.ladda_bilen_nar_det_ar_billigt','on') else 0 }}
+- sensor:
+  - unique_id: chargenode_energy_kwh
+    unit_of_measurement: "kWh"
+    device_class: energy
+    state_class: total_increasing
+    attributes:
+      friendly_name: "ChargeNode [kWh]"
+    state: "{{ states('sensor.chargenode_energy')|float(0) }}"
 
 ## Zoe:n
 - sensor:
-  - unique_id: zoe_charging_cost
-    state: "{{ states('sensor.zoe_charging_power') | float(0) * states('sensor.template_elpris_kr') | float }}"
-    device_class: monetary
-    unit_of_measurement: "kr"
-
-- sensor:
-  - unique_id: zoe_power_kw
-    state: "{{ states('sensor.zoe_charging_power') | float(0) }}"
+  - unique_id: zoe_charging_power
     unit_of_measurement: "kW"
     device_class: power
     state_class: measurement
+    attributes:
+      friendly_name: "Zoe effekt (kW)"
+    state: >-
+      {% if is_state('sensor.chargenode_port2_state','3') -%}
+        {{ states('sensor.chargenode_power_l1')|float(0) + states('sensor.chargenode_power_l2')|float(0) + states('sensor.chargenode_power_l3')|float(0) }}
+      {%- else -%}
+        {{ 0 | float }}
+      {%- endif -%}
+  - unique_id: zoe_charging_cost
+    device_class: monetary
+    unit_of_measurement: "kr"
+    state: "{{ states('sensor.template_zoe_charging_power')|float(0) * states('sensor.template_elpris_kr')|float(0) }}"
+  - unique_id: zoe_power_kw
+    unit_of_measurement: "kW"
+    device_class: power
+    state_class: measurement
+    state: "{{ states('sensor.template_zoe_charging_power')|float(0) }}"
 
-- sensor:
   - unique_id: zoe_last_update
     state: "{{ as_timestamp(states('sensor.zoe_last_battery_activity')) | timestamp_custom('%H:%M, %d %b') }}"
     attributes:
       friendly_name: "Senast uppdaterad"
 
-- sensor:
   - unique_id: zoe_req_hours
     state: >-
       {{ ((100-states("sensor.zoe_battery_level")|int) /100*40/6)|round(0, 'ceil') if is_state('automation.ladda_fridas_bil','on') or is_state('automation.ladda_zoe_pa_tid','on') else 0 }}
+
+## Kia:n
+- sensor:
+  - unique_id: rya_charging_required_time
+    state: >-
+      {%- set time = (states('input_number.rya_soc_upper_limit')|float(0) - states('sensor.ev6_ev_battery_level')|float(0)) /100*51/11 -%}
+      {%- set hours = time|int -%}
+      {%- set minutes = ((time - hours)*60)|int -%}
+      {{ '{:02}:{:02}'.format(hours, minutes) }}
+  - unique_id: rya_req_hours
+    state: >-
+      {{ ((states('input_number.rya_soc_upper_limit')|float(0) - states('sensor.ev6_ev_battery_level')|float(0)) /100*51/8) | round(0, 'ceil') if is_state('binary_sensor.ev6_ev_charge_port','on') and is_state('automation.ladda_bilen_nar_det_ar_billigt','on') else 0 }}
+
+  - unique_id: rya_charging_power
+    unit_of_measurement: "kW"
+    device_class: power
+    state_class: measurement
+    attributes:
+      friendly_name: "Kian effekt (kW)"
+    state: >-
+      {% if is_state('sensor.chargenode_port1_state','3') -%}
+        {{ states('sensor.chargenode_power_l1')|float(0) + states('sensor.chargenode_power_l2')|float(0) + states('sensor.chargenode_power_l3')|float(0) }}
+      {%- else -%}
+        {{ 0 | float }}
+      {%- endif -%}
+  - unique_id: rya_charging_cost
+    device_class: monetary
+    unit_of_measurement: "kr"
+    state: "{{ states('sensor.template_rya_charging_power')|float(0) * states('sensor.template_elpris_kr')|float(0) }}"
 
 ## Spabadet
 - sensor:
@@ -469,15 +428,15 @@
     - platform: state
       entity_id: input_datetime.zoe_before
       to:
-    # - platform: state
-    #   entity_id: sensor.template_aza_req_hours
-    #   to:
+    - platform: state
+      entity_id: sensor.template_rya_req_hours
+      to:
   sensor:
   - unique_id: next_charge
     device_class: timestamp
     state: >-
-      {#%set duration = states('sensor.template_aza_req_hours')|int + states('sensor.template_zoe_req_hours')|int%#}
-      {% set duration = states('sensor.template_zoe_req_hours')|int%}
+      {%set duration = states('sensor.template_rya_req_hours')|int + states('sensor.template_zoe_req_hours')|int%}
+      {#% set duration = states('sensor.template_zoe_req_hours')|int%#}
       {% set before = today_at(states('input_datetime.zoe_before'))+timedelta(minutes=5) 
           if now() < today_at(states('input_datetime.zoe_before')) 
           else today_at(states('input_datetime.zoe_before'))+timedelta(days=1,minutes=5) %}
@@ -517,7 +476,8 @@
     attributes:
       friendly_name: "Charge period"
       all: >-
-        {%set duration = states('sensor.template_zoe_req_hours')|int%}
+        {%set duration = states('sensor.template_rya_req_hours')|int + states('sensor.template_zoe_req_hours')|int%}
+        {#% set duration = states('sensor.template_zoe_req_hours')|int %#}
         {% set grow = namespace(value=0) %}
         {% set priceDict = namespace(value = []) %}
         {% set prices = state_attr('sensor.nordpool_kwh_se3_sek_3_095_0','today')|list %}
