@@ -45,8 +45,9 @@ vrum_uppe:
   name: Vardagsrummet, uppe
   entities:
 #    - switch.nexa_4
-    - switch.telldus_3
+#    - switch.telldus_3
     - light.byran_uppe_light
+    - switch.tz3000_1_brudkistan_switch
 
 sovrummet:
   # id: 202111222351

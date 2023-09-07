@@ -88,7 +88,7 @@ turn_on_general_lights:
       brightness_pct: 55
     target:
       entity_id: light.byran_uppe_light
-  mode: single
+  mode: restart
 turn_off_general_lights:
   alias: Släck allmän belysning
   sequence:
@@ -106,7 +106,16 @@ turn_off_general_lights:
       - switch.rusta13a
       - switch.rusta13c
       - group.sovrummet
-  mode: single
+  - if:
+    - condition: state
+      entity_id: script.turn_on_general_lights
+      state: 'on'
+    then:
+    - service: script.turn_off
+      data: {}
+      target:
+        entity_id: script.turn_on_general_lights
+  mode: restart
 turn_off_all:
   alias: Stäng av allt
   sequence:
@@ -209,7 +218,7 @@ start_the_car:
       entity_id: climate.azarel_hvac_climate_system
   mode: single
 charge_the_tesla:
-  alias: Ladda Kian
+  alias: Ladda RYA
   sequence:
   - service: rest_command.cn_add_rya_to_queue
     data: {}
@@ -219,6 +228,13 @@ charge_the_tesla:
       message: 'Laddningen av RYA har startat.\n SoC:     {{ states("sensor.ev6_ev_battery_level")
         }}%.\n Priset:  {{ states("sensor.template_nordpool_current_price_vat") }}
         kr\n Klockan: {{ now().strftime(''%H:%M den %d/%m'') }}'
+  - delay:
+      hours: 0
+      minutes: 3
+      seconds: 0
+      milliseconds: 0
+  - service: kia_uvo.force_update
+    data: {}
   mode: single
   icon: mdi:ev-station
 slack_inne:
@@ -642,3 +658,103 @@ spabadet_pump_and_heater_v2:
       alias: Turn off pump
   mode: single
   icon: mdi:pump
+diskmaskinen_aktivera_timer:
+  alias: Diskmaskinen, aktivera timer
+  sequence:
+  - service: automation.turn_on
+    data: {}
+    target:
+      entity_id:
+      - automation.diskmaskinen_starta_pa_klocka
+      - automation.diskmaskinen_armera
+  mode: single
+  icon: mdi:dishwasher-alert
+tvattmaskinen_aktivera_timer:
+  alias: Tvättmaskinen, aktivera timer
+  sequence:
+  - service: automation.turn_on
+    data: {}
+    target:
+      entity_id:
+      - automation.tvattmaskinen_starta_pa_klockslag
+      - automation.tvattmaskinen_starta
+  mode: single
+  icon: mdi:dishwasher-alert
+ev6_start_hvac:
+  alias: EV6, start HVAC
+  sequence:
+  - service: kia_uvo.start_climate
+    data:
+      duration: 10
+      climate: true
+      temperature: 22
+      heating: false
+      device_id: f4c09575234da651122f411210842a80
+    alias: Start AC on EV6
+  - repeat:
+      while:
+      - condition: state
+        entity_id: binary_sensor.ev6_air_conditioner
+        state: 'off'
+      - condition: template
+        value_template: '{{ repeat.index <= 60 }}'
+        alias: Repeat max 60 times (10 mins)
+      sequence:
+      - delay:
+          hours: 0
+          minutes: 0
+          seconds: 10
+          milliseconds: 0
+      - service: kia_uvo.update
+        data:
+          device_id: f4c09575234da651122f411210842a80
+        alias: Update EV6 from cache
+      - choose:
+        - conditions:
+          - condition: state
+            entity_id: script.ev6_start_hvac
+            state: 'on'
+            for:
+              hours: 0
+              minutes: 10
+              seconds: 0
+          sequence:
+          - stop: Max run time
+        enabled: false
+    alias: While AC is off Update from cache
+  mode: restart
+  icon: mdi:fan-auto
+ev6_start_defrost:
+  alias: EV6, start defrost
+  sequence:
+  - service: kia_uvo.start_climate
+    target: {}
+    data:
+      duration: 10
+      climate: true
+      temperature: 22
+      heating: '3'
+      defrost: true
+      flseat: '8'
+      device_id: f4c09575234da651122f411210842a80
+    alias: Start AC on EV6
+  - repeat:
+      while:
+      - condition: state
+        entity_id: binary_sensor.ev6_air_conditioner
+        state: 'off'
+      - condition: template
+        value_template: '{{ repeat.index <= 60 }}'
+        alias: Repeat max 60 times (10 mins)
+      sequence:
+      - delay:
+          hours: 0
+          minutes: 0
+          seconds: 10
+          milliseconds: 0
+      - service: kia_uvo.update
+        data:
+          device_id: f4c09575234da651122f411210842a80
+    alias: While AC is off Update EV6
+  mode: restart
+  icon: mdi:car-defrost-front

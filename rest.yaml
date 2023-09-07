@@ -1,11 +1,14 @@
-cn_add_rya_to_queue:
-  url: "https://dev-app-cn.azurewebsites.net/chargingbox/charge"
-  method: post
-  headers: 
-    authorization: !secret cn_rest_authorization
-    accept: 'text/plain, application/json, text/json'
-  content_type:  'application/json; charset=utf-8'
-  payload: '{ "portId": 510, "userCarId": 590, "departureTime": "{{ (as_timestamp(now()) + 8*60*60) | timestamp_local() }}", "startChargePercentage": {{ states("sensor.ev6_ev_battery_level") }}, "targetChargePercentage": {{ states("number.ev6_ac_charging_limit") | int(80) }} }'
+#  Uttag 1: a5ebcce2-1815-4bda-4c8c-08da08e8bc81
+#  Uttag 2: 6d8cf54d-0e87-4e83-470a-08da08e8d431
+
+# cn_add_rya_to_queue:
+#   url: "https://dev-app-cn.azurewebsites.net/chargingbox/charge"
+#   method: post
+#   headers: 
+#     authorization: !secret cn_rest_authorization
+#     accept: 'text/plain, application/json, text/json'
+#   content_type:  'application/json; charset=utf-8'
+#   payload: '{ "portId": 510, "userCarId": 590, "departureTime": "{{ (as_timestamp(now()) + 8*60*60) | timestamp_local() }}", "startChargePercentage": {{ states("sensor.ev6_ev_battery_level") }}, "targetChargePercentage": {{ states("number.ev6_ac_charging_limit") | int(80) }} }'
   # 510 uttag 1, 511 uttag 2, 512 uttag 3
   # UserCarId 12 = Azarel, 423 = Zoe, 590 = Kia
   
@@ -15,14 +18,14 @@ cn_remove_rya_from_queue:
   headers: 
     authorization: !secret cn_rest_authorization
 
-cn_add_yxx_to_queue:
-  url: "https://dev-app-cn.azurewebsites.net/chargingbox/charge"
-  method: post
-  headers: 
-    authorization: !secret cn_rest_authorization
-    accept: 'text/plain, application/json, text/json'
-  content_type:  'application/json; charset=utf-8'
-  payload: '{ "portId": 511, "userCarId": 423, "departureTime": "{{ int(as_timestamp((now() + timedelta(days=1)).date()) + 6*60*60+1800) | timestamp_local() if (now() > today_at("06:30")) else as_timestamp(today_at("06:30")) | timestamp_local() }}", "startChargePercentage": 0, "targetChargePercentage": 100 }'
+# cn_add_yxx_to_queue:
+#   url: "https://dev-app-cn.azurewebsites.net/chargingbox/charge"
+#   method: post
+#   headers: 
+#     authorization: !secret cn_rest_authorization
+#     accept: 'text/plain, application/json, text/json'
+#   content_type:  'application/json; charset=utf-8'
+#   payload: '{ "portId": 511, "userCarId": 423, "departureTime": "{{ int(as_timestamp((now() + timedelta(days=1)).date()) + 6*60*60+1800) | timestamp_local() if (now() > today_at("06:30")) else as_timestamp(today_at("06:30")) | timestamp_local() }}", "startChargePercentage": 0, "targetChargePercentage": 100 }'
 #  payload: '{ "portId": 510, "userCarId": 423, "departureTime": "{% if (now() > today_at("06:30")) %} {{ int(as_timestamp((now() + timedelta(days=1)).date()) + 6*60*60+1800) | timestamp_local() }} {% else %} {{ as_timestamp(today_at("06:30")) | timestamp_local() }}{% endif %}", "startChargePercentage": {{ states("sensor.zoe_battery_level") | int(0) - 10 }}, "targetChargePercentage": 100 }'
 
 cn_remove_yxx_from_queue:
@@ -30,3 +33,22 @@ cn_remove_yxx_from_queue:
   method: put
   headers: 
     authorization: !secret cn_rest_authorization
+
+cn_add_rya_to_queue:
+  url: "https://dev-app-cn.azurewebsites.net/v2/startcharge"
+  method: post
+  headers: 
+    authorization: !secret cn_rest_authorization
+    accept: 'text/plain, application/json, text/json'
+  content_type:  'application/json; charset=utf-8'
+  payload: '{"ConnectorId":"a5ebcce2-1815-4bda-4c8c-08da08e8bc81", "DepartureTime":"{{ (as_timestamp(now()) + 8*60*60) | timestamp_local() }}", "SelectedPaymentMethod": 1, "RequestedEnergy": {{ ((states("number.ev6_ac_charging_limit")|int(80) - states("sensor.ev6_ev_battery_level")|float) * 74.0/90)|round(0, "ceil")*1000 }}, "UserCarId": 590 }'
+
+cn_add_yxx_to_queue:
+  url: "https://dev-app-cn.azurewebsites.net/v2/startcharge"
+  method: post
+  headers: 
+    authorization: !secret cn_rest_authorization
+    accept: 'text/plain, application/json, text/json'
+  content_type:  'application/json; charset=utf-8'
+  payload: '{"ConnectorId":"6d8cf54d-0e87-4e83-470a-08da08e8d431", "DepartureTime":"{{ int(as_timestamp((now() + timedelta(days=1)).date()) + 6*60*60+1800) | timestamp_local() if (now() > today_at(states("input_datetime.zoe_before"))) else as_timestamp(today_at(states("input_datetime.zoe_before"))) | timestamp_local() }}", "SelectedPaymentMethod": 1, "RequestedEnergy": {{ (((states("input_number.zoe_soc_upper_limit") if states("input_boolean.zoe_upper_limit")|bool else 100)|int(80) - states("sensor.zoe_battery_level")|float) * 41.0/85)|round(0, "ceil")*1000 }}, "UserCarId": 423 }'
+  

@@ -34,28 +34,24 @@
                 {
                   "cards": [
                     {
+                      "show_name": false,
+                      "show_icon": true,
                       "entity": "script.turn_on_general_lights",
-                      "hold_action": {
-                        "action": "none"
-                      },
                       "icon": "mdi:brightness-7",
                       "tap_action": {
                         "action": "toggle"
                       },
-                      "type": "entity-button",
-                      "show_name": false
+                      "type": "entity-button"
                     },
                     {
+                      "show_name": false,
+                      "show_icon": true,
                       "entity": "script.turn_off_general_lights",
-                      "hold_action": {
-                        "action": "none"
-                      },
                       "icon": "mdi:weather-night",
                       "tap_action": {
                         "action": "toggle"
                       },
-                      "type": "entity-button",
-                      "show_name": false
+                      "type": "entity-button"
                     }
                   ],
                   "type": "horizontal-stack"
@@ -139,51 +135,6 @@
                       "detail": 2
                     }
                   ]
-                }
-              ]
-            },
-            {
-              "type": "horizontal-stack",
-              "title": "Huset (L1-L3)",
-              "cards": [
-                {
-                  "type": "gauge",
-                  "entity": "sensor.chargenode_sma_current_l1",
-                  "max": 20,
-                  "name": " ",
-                  "min": -12,
-                  "needle": true,
-                  "severity": {
-                    "green": -12,
-                    "yellow": 0,
-                    "red": 10
-                  }
-                },
-                {
-                  "type": "gauge",
-                  "entity": "sensor.chargenode_sma_current_l2",
-                  "name": " ",
-                  "needle": true,
-                  "severity": {
-                    "green": -12,
-                    "yellow": 0,
-                    "red": 10
-                  },
-                  "min": -12,
-                  "max": 20
-                },
-                {
-                  "type": "gauge",
-                  "entity": "sensor.chargenode_sma_current_l3",
-                  "max": 20,
-                  "name": " ",
-                  "min": -12,
-                  "needle": true,
-                  "severity": {
-                    "green": -12,
-                    "yellow": 0,
-                    "red": 10
-                  }
                 }
               ]
             },
@@ -319,59 +270,94 @@
               "title": "Händer i veckan"
             },
             {
-              "type": "entities",
-              "title": "Diskmaskinen",
-              "entities": [
+              "type": "horizontal-stack",
+              "cards": [
                 {
-                  "entity": "automation.diskmaskinen_starta_pa_klocka",
-                  "name": "Starta på timer",
-                  "icon": "mdi:clock-check-outline"
+                  "type": "vertical-stack",
+                  "title": "Tvätt",
+                  "cards": [
+                    {
+                      "show_name": true,
+                      "show_icon": true,
+                      "type": "button",
+                      "entity": "automation.tvattmaskinen_starta_pa_klockslag",
+                      "icon": "mdi:washing-machine",
+                      "tap_action": {
+                        "action": "call-service",
+                        "service": "script.tvattmaskinen_aktivera_timer",
+                        "target": {}
+                      },
+                      "show_state": false,
+                      "icon_height": "45px",
+                      "name": "Starta"
+                    },
+                    {
+                      "type": "entities",
+                      "entities": [
+                        {
+                          "entity": "input_datetime.tvattmaskinen_timme",
+                          "name": "Klockan"
+                        },
+                        {
+                          "type": "divider"
+                        },
+                        {
+                          "entity": "switch.clever_spz2",
+                          "name": "På/av",
+                          "icon": "mdi:washing-machine",
+                          "secondary_info": "last-updated"
+                        }
+                      ],
+                      "show_header_toggle": false
+                    }
+                  ]
                 },
                 {
-                  "entity": "input_datetime.diskmaskinen_timme",
-                  "icon": "mdi:clock",
-                  "secondary_info": "none",
-                  "name": "Klockan"
-                },
-                {
-                  "type": "divider"
-                },
-                {
-                  "entity": "switch.clever_spz3",
-                  "name": "På/av",
-                  "icon": "mdi:dishwasher",
-                  "secondary_info": "last-updated"
+                  "type": "vertical-stack",
+                  "title": "Disk",
+                  "cards": [
+                    {
+                      "type": "button",
+                      "show_name": true,
+                      "show_icon": true,
+                      "tap_action": {
+                        "action": "call-service",
+                        "service": "script.diskmaskinen_aktivera_timer",
+                        "target": {}
+                      },
+                      "entity": "automation.diskmaskinen_starta_pa_klocka",
+                      "name": "Starta",
+                      "icon_height": "45px",
+                      "icon": "mdi:dishwasher"
+                    },
+                    {
+                      "type": "entities",
+                      "entities": [
+                        {
+                          "entity": "input_datetime.diskmaskinen_timme",
+                          "icon": "mdi:clock",
+                          "secondary_info": "none",
+                          "name": "Klockan"
+                        },
+                        {
+                          "type": "divider"
+                        },
+                        {
+                          "entity": "switch.clever_spz3",
+                          "name": "På/av",
+                          "icon": "mdi:dishwasher",
+                          "secondary_info": "last-updated"
+                        }
+                      ],
+                      "show_header_toggle": false
+                    }
+                  ]
                 }
-              ],
-              "show_header_toggle": false
-            },
-            {
-              "type": "entities",
-              "entities": [
-                {
-                  "entity": "automation.tvattmaskinen_starta_pa_klockslag",
-                  "icon": "mdi:clock-check-outline",
-                  "name": "Starta på timer"
-                },
-                {
-                  "entity": "input_datetime.tvattmaskinen_timme",
-                  "name": "Klockan"
-                },
-                {
-                  "type": "divider"
-                },
-                {
-                  "entity": "switch.clever_spz2",
-                  "name": "På/av",
-                  "icon": "mdi:washing-machine",
-                  "secondary_info": "last-updated"
-                }
-              ],
-              "show_header_toggle": false,
-              "title": "Tvättmaskinen"
+              ]
             },
             {
               "type": "horizontal-stack",
+              "title": "Gräsklipparen",
               "cards": [
                 {
                   "type": "entity",
@@ -505,18 +491,19 @@
                       "icon_height": "25px",
                       "tap_action": {
                         "action": "call-service",
-                        "service": "kia_uvo.start_climate",
-                        "target": {},
-                        "data": {
-                          "duration": 10,
-                          "climate": true,
-                          "temperature": 22,
-                          "heating": false
-                        }
+                        "service": "script.ev6_start_hvac",
+                        "target": {}
                       },
                       "entity": "binary_sensor.ev6_air_conditioner",
-                      "name": "EV6",
-                      "show_state": false
+                      "show_state": false,
+                      "hold_action": {
+                        "action": "call-service",
+                        "service": "script.turn_off",
+                        "target": {
+                          "entity_id": "script.ev6_start_hvac"
+                        },
+                        "data": {}
+                      }
                     },
                     {
                       "show_name": false,
@@ -525,21 +512,20 @@
                       "icon_height": "25px",
                       "tap_action": {
                         "action": "call-service",
-                        "service": "kia_uvo.start_climate",
-                        "target": {},
-                        "data": {
-                          "duration": 10,
-                          "climate": true,
-                          "temperature": 22,
-                          "heating": "3",
-                          "defrost": true,
-                          "flseat": "8"
-                        }
+                        "service": "script.ev6_start_defrost",
+                        "target": {}
                       },
-                      "entity": "binary_sensor.ev6_air_conditioner",
-                      "name": "EV6",
+                      "entity": "script.ev6_start_defrost",
                       "show_state": false,
-                      "icon": "mdi:car-defrost-front"
+                      "icon": "",
+                      "hold_action": {
+                        "action": "call-service",
+                        "service": "script.turn_off",
+                        "target": {
+                          "entity_id": "script.ev6_start_defrost"
+                        },
+                        "data": {}
+                      }
                     },
                     {
                       "show_name": false,
@@ -562,7 +548,8 @@
                       "tap_action": {
                         "action": "call-service",
                         "service": "kia_uvo.force_update",
-                        "target": {}
+                        "target": {},
+                        "data": {}
                       },
                       "entity": "sensor.ev6_last_updated_at",
                       "icon": "mdi:refresh",
@@ -747,12 +734,12 @@
                   "entities": [
                     {
                       "entity": "sensor.rya_kostnad",
-                      "name": "Rya [kr]",
+                      "name": "EV6 [kr]",
                       "icon": "mdi:car-sports"
                     },
                     {
                       "entity": "sensor.rya_energi_per_manad",
-                      "name": "Rya [kWh]",
+                      "name": "EV6 [kWh]",
                       "icon": "mdi:car-sports"
                     },
                     {
@@ -774,6 +761,22 @@
                     {
                       "type": "entities",
                       "entities": [
+                        {
+                          "type": "attribute",
+                          "entity": "sensor.rya_kostnad",
+                          "attribute": "last_period",
+                          "name": "EV6 [kr]",
+                          "icon": "mdi:car-side",
+                          "suffix": "kr"
+                        },
+                        {
+                          "type": "attribute",
+                          "entity": "sensor.rya_energi_per_manad",
+                          "attribute": "last_period",
+                          "name": "EV6 [kWh]",
+                          "icon": "mdi:car-side",
+                          "suffix": "kWh"
+                        },
                         {
                           "type": "attribute",
                           "entity": "sensor.zoe_kostnad",
@@ -919,29 +922,6 @@
                 "grid": "sensor.template_house_net_power_kw"
               },
               "inverted_entities": "grid"
-            },
-            {
-              "type": "vertical-stack",
-              "cards": [
-                {
-                  "type": "entities",
-                  "entities": [
-                    {
-                      "entity": "switch.varmepumpen_a",
-                      "name": "A",
-                      "icon": "mdi:heat-pump-outline",
-                      "secondary_info": "last-changed"
-                    },
-                    {
-                      "entity": "switch.varmepumpen_b",
-                      "name": "B",
-                      "icon": "mdi:heat-pump-outline",
-                      "secondary_info": "last-changed"
-                    }
-                  ],
-                  "title": "Elpatron, blockerad"
-                }
-              ]
             },
             {
               "type": "vertical-stack",
@@ -1296,6 +1276,104 @@
                       "type": "entity",
                       "entity": "sensor.template_my_avg_spot_price",
                       "icon": "mdi:chart-bell-curve"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "vertical-stack",
+              "title": "Värmepumpen",
+              "cards": [
+                {
+                  "type": "horizontal-stack",
+                  "cards": [
+                    {
+                      "type": "gauge",
+                      "entity": "sensor.shellyem3_c45bbe55c55e_channel_a_current",
+                      "max": 16,
+                      "name": "L1",
+                      "needle": true,
+                      "severity": {
+                        "green": 1,
+                        "yellow": 5,
+                        "red": 10
+                      },
+                      "min": 0
+                    },
+                    {
+                      "type": "gauge",
+                      "entity": "sensor.shellyem3_c45bbe55c55e_channel_b_current",
+                      "name": "L2",
+                      "needle": true,
+                      "severity": {
+                        "green": 1,
+                        "yellow": 5,
+                        "red": 10
+                      },
+                      "max": 16
+                    },
+                    {
+                      "type": "gauge",
+                      "entity": "sensor.shellyem3_c45bbe55c55e_channel_c_current",
+                      "max": 16,
+                      "name": "L3",
+                      "needle": true,
+                      "severity": {
+                        "green": 1,
+                        "yellow": 5,
+                        "red": 10
+                      }
+                    }
+                  ]
+                },
+                {
+                  "type": "vertical-stack",
+                  "cards": [
+                    {
+                      "type": "entities",
+                      "entities": [
+                        {
+                          "entity": "switch.varmepumpen_a",
+                          "name": "A",
+                          "icon": "mdi:heat-pump-outline",
+                          "secondary_info": "last-changed"
+                        },
+                        {
+                          "entity": "switch.varmepumpen_b",
+                          "name": "B",
+                          "icon": "mdi:heat-pump-outline",
+                          "secondary_info": "last-changed"
+                        }
+                      ],
+                      "title": "Elpatron, blockerad"
+                    }
+                  ]
+                },
+                {
+                  "type": "entities",
+                  "entities": [
+                    {
+                      "entity": "sensor.template_heatpump_ivt_energy",
+                      "name": "Totalt"
+                    },
+                    {
+                      "entity": "sensor.varmepump_ivt_man_kwh",
+                      "name": "Månad",
+                      "icon": "mdi:lightning-bolt"
+                    },
+                    {
+                      "type": "attribute",
+                      "entity": "sensor.varmepump_ivt_man_kwh",
+                      "attribute": "last_period",
+                      "name": "Föreg. mån",
+                      "icon": "mdi:lightning-bolt",
+                      "suffix": "kWh"
+                    },
+                    {
+                      "entity": "sensor.varmepump_ivt_ar_kwh",
+                      "name": "År",
+                      "icon": "mdi:lightning-bolt"
                     }
                   ]
                 }
@@ -1694,7 +1772,8 @@
             {
               "entities": [
                 {
-                  "entity": "switch.telldus_3",
+                  "entity": "switch.tz3000_1_brudkistan_switch",
+                  "name": "Brudkistan",
                   "icon": "mdi:lamp"
                 },
                 {

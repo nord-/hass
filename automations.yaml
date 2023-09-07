@@ -470,14 +470,14 @@
   trigger:
   - platform: state
     entity_id:
-    - binary_sensor.azarel_charger
+    - binary_sensor.ev6_ev_charge_port
     to: 'on'
   condition:
   - condition: numeric_state
-    entity_id: sensor.azarel_battery
+    entity_id: sensor.ev6_ev_battery_level
     below: '20'
   - condition: state
-    entity_id: device_tracker.azarel_location_tracker
+    entity_id: device_tracker.ev6_location
     state: home
   - condition: numeric_state
     entity_id: sensor.framsidan_temperature
@@ -495,16 +495,14 @@
   description: ''
   trigger:
   - platform: numeric_state
-    entity_id: sensor.azarel_battery
+    entity_id: sensor.ev6_ev_battery_level
     above: '20'
-    below: '23'
   condition:
   - condition: state
-    entity_id: binary_sensor.azarel_charger
-    attribute: charging_state
+    entity_id: binary_sensor.ev6_ev_battery_charge
     state: Charging
   - condition: state
-    entity_id: device_tracker.azarel_location_tracker
+    entity_id: device_tracker.ev6_location
     state: home
   action:
   - if:
@@ -517,8 +515,8 @@
     else:
     - service: notify.mobile_app_op9_pro
       data:
-        message: Azarel har nått SoC {{ states("sensor.azarel_battery") }}%
-        title: Azarel laddar fortfarande pga. lågt elpris.
+        message: EV6 har nått SoC {{ states("sensor.ev6_ev_battery_level") }}%
+        title: EV6 laddar fortfarande pga. lågt elpris.
   - service: automation.turn_off
     entity_id: automation.laddat_till_20
   mode: single
@@ -592,14 +590,25 @@
     value_template: '{{ now() >= as_datetime(states("sensor.template_next_charge"))
       }}'
     alias: Passed Start time
+  - condition: not
+    conditions:
+    - condition: state
+      entity_id: binary_sensor.ev6_ev_battery_charge
+      state: 'on'
+    alias: EV6 not charging
   action:
   - service: script.charge_the_tesla
     data: {}
   - service: script.ladda_bilen_uppstart
     data: {}
+  - service: automation.turn_off
+    data:
+      stop_actions: false
+    target:
+      entity_id: automation.ladda_bilen_nar_det_ar_billigt
   mode: single
 - id: '1643296123979'
-  alias: Ladda bilen, stoppa
+  alias: Ladda RYA, stoppa
   description: ''
   trigger:
   - platform: state
@@ -736,7 +745,7 @@
   trigger:
   - platform: numeric_state
     entity_id: sensor.template_walle_blade_hours
-    above: 60
+    above: 100
   condition: []
   action:
   - service: notify.rickards_devices
@@ -1124,14 +1133,6 @@
     hours: /1
   condition: []
   action:
-  - service: zwave_js.ping
-    data: {}
-    target:
-      entity_id:
-      - switch.cleverio_zw_plug_1
-      - switch.clever_spz2
-      - switch.clever_spz3
-    enabled: false
   - service: button.press
     data: {}
     target:
@@ -1327,7 +1328,7 @@
     before: '18:00:00'
     alias: Between 10 and 18
   - condition: template
-    value_template: '{{ (as_timestamp(now()) - as_timestamp(state_attr(''vacuum.wall_e'',''state_updated_at'')))
+    value_template: '{{ (as_timestamp(now()) - as_timestamp(state_attr(''vacuum.wall_e'',''state_updated_at''),0))
       > 3600 }}'
     alias: Updated at least an hour ago
   action:
@@ -1415,7 +1416,7 @@
       message: Wall-E börjar klippa!
   mode: single
 - id: '1690820037786'
-  alias: Ladda Rya, set charge limit
+  alias: Ladda RYA, set charge limit
   description: ''
   trigger:
   - platform: state
@@ -1472,4 +1473,119 @@
           entity_id: number.ev6_ac_charging_limit
         data:
           value: '{{ states(''input_number.rya_soc_upper_limit'')|int(80) }}'
+  mode: single
+- id: '1690871828303'
+  alias: EV6, reload config
+  description: Reload EV6 configuration when it becomes unavailable
+  trigger:
+  - platform: template
+    value_template: '{{ states(''sensor.ev6_data'') == ''unavailable'' }}'
+    for:
+      hours: 0
+      minutes: 0
+      seconds: 30
+    alias: EV6 becomes unavailable
+  condition: []
+  action:
+  - service: homeassistant.reload_config_entry
+    data: {}
+    target:
+      device_id: f4c09575234da651122f411210842a80
+  mode: single
+- id: '1690876033170'
+  alias: EV6, reload when charging
+  description: Reload EV6 status every 15 min when charging
+  trigger:
+  - platform: state
+    entity_id:
+    - binary_sensor.ev6_ev_battery_charge
+    to: 'on'
+    enabled: false
+  - platform: state
+    entity_id:
+    - binary_sensor.ev6_ev_charge_port
+    to: 'on'
+  condition: []
+  action:
+  - service: automation.turn_on
+    data: {}
+    target:
+      entity_id: automation.ladda_bilen_nar_det_ar_billigt
+  - repeat:
+      while:
+      - condition: state
+        entity_id: binary_sensor.ev6_ev_battery_charge
+        state: 'on'
+        enabled: false
+      - condition: state
+        entity_id: binary_sensor.ev6_ev_charge_port
+        state: 'on'
+      - condition: numeric_state
+        entity_id: sensor.ev6_ev_battery_level
+        below: input_number.rya_soc_upper_limit
+        alias: Confirm EV6 SoC is lower than set limit
+      sequence:
+      - delay:
+          hours: 0
+          minutes: 15
+          seconds: 0
+          milliseconds: 0
+      - service: kia_uvo.force_update
+        data: {}
+        alias: Force update EV6
+    alias: Do while EV6 is charging
+  mode: single
+- id: '1693808329866'
+  alias: Tvättmaskinen, armera
+  description: ''
+  trigger:
+  - platform: numeric_state
+    entity_id: sensor.clever_spz2_electric_consumption_w_2
+    for:
+      hours: 0
+      minutes: 0
+      seconds: 10
+    above: 10
+  condition:
+  - condition: state
+    entity_id: automation.tvattmaskinen_starta_pa_klockslag
+    state: 'on'
+  action:
+  - service: switch.turn_off
+    data: {}
+    target:
+      entity_id: switch.clever_spz2
+  - service: automation.turn_off
+    data:
+      stop_actions: false
+    target:
+      entity_id: automation.tvattmaskinen_starta
+  mode: single
+- id: '1693809436762'
+  alias: Diskmaskinen, armera
+  description: ''
+  trigger:
+  - platform: numeric_state
+    entity_id: sensor.clever_spz3_electric_consumption_w
+    for:
+      hours: 0
+      minutes: 0
+      seconds: 10
+    above: 5
+  condition:
+  - condition: state
+    entity_id: automation.diskmaskinen_starta_pa_klocka
+    state: 'on'
+  action:
+  - service: switch.turn_off
+    data: {}
+    target:
+      entity_id:
+      - switch.clever_spz3
+  - service: automation.turn_off
+    data:
+      stop_actions: false
+    target:
+      entity_id:
+      - automation.diskmaskinen_armera
   mode: single

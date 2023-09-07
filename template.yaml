@@ -217,6 +217,28 @@
       {{sold | float * -1}}
     attributes:
       friendly_name: "Såld effekt"
+## värmepumpen 
+- sensor:
+  - unique_id: heatpump_ivt_power
+    device_class: power
+    state_class: measurement
+    unit_of_measurement: "W"
+    attributes:
+      friendly_name: "Värmepump IVT, effekt (W)"
+    state: >-
+      {{ states('sensor.shellyem3_c45bbe55c55e_channel_a_power')|float(0) +
+          states('sensor.shellyem3_c45bbe55c55e_channel_b_power')|float(0) + 
+          states('sensor.shellyem3_c45bbe55c55e_channel_c_power')|float(0) }}
+  - unique_id: heatpump_ivt_energy
+    device_class: energy
+    state_class: total
+    unit_of_measurement: "kWh"
+    attributes:
+      friendly_name: "Värmepump IVT, energi (kWh)"
+    state: >-
+      {{ states('sensor.shellyem3_c45bbe55c55e_channel_a_energy')|float(0) +
+          states('sensor.shellyem3_c45bbe55c55e_channel_b_energy')|float(0) + 
+          states('sensor.shellyem3_c45bbe55c55e_channel_c_energy')|float(0) }}
 
 # väder
 - sensor:
