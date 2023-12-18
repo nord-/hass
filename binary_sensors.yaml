@@ -31,9 +31,18 @@
       value_template: >-
         {{ states('sensor.hem_gen5_electric_consumed_2') | float(0) >= 20 and states('sensor.template_spabadet_l2_current_a') | float(0) > 0 }}
 
-    heatpump_immersion_heater:
-      friendly_name: "Elpatron"
-      value_template: "{{ not (states('switch.varmepumpen_a')|bool) and not (states('switch.varmepumpen_b')|bool) }}" 
+    heatpump_ivt_heater:
+      friendly_name: "Värmepump IVT, värme"
+      value_template: "{{ not (states('switch.varmepumpen_a')|bool) }}"
+
+    heatpump_ivt_hotwater:
+      friendly_name: "Värmepump IVT, varmvatten"
+      value_template: "{{ not (states('switch.varmepumpen_b')|bool) }}"
+
+    walle_online:
+      friendly_name: "Wall-E online"
+      value_template: >-
+        {{ state_attr('vacuum.wall_e','online') }}
 
 - platform: ping
   host: 192.168.2.29

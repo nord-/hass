@@ -1,12 +1,10 @@
 vrum_nere:
   name: Vardagsrummet, nere
   entities:
-    - switch.rusta15d
-    - switch.nexa_6
-    - light.fibaro_system_fgd212_dimmer_2_level_2
-    - switch.rusta14c # julgranen
-    - switch.rusta15b # röda julgranen
-    - switch.telldus_2 # flörtkulorna
+    - switch.nexa_6     # skänken
+    - light.fibaro_system_fgd212_dimmer_2_level_2 # vardagsrumsfönstret
+    - switch.telldus_2  # flörtkulorna
+    - light.tv_banken_light
     #    - switch.fibaro_system_fgwpe_f_wall_plug_gen5_switch
 
 felix_rum:
@@ -31,7 +29,7 @@ hallen:
 koket:
   name: Köket
   entities:
-    - light.kitchen_window
+    - light.koksfonstret_3
 #    - light.fibaro_system_fgd212_dimmer_2_level_4
     
 grovkoket:
@@ -46,18 +44,22 @@ vrum_uppe:
   entities:
 #    - switch.nexa_4
 #    - switch.telldus_3
-    - light.byran_uppe_light
+#    - light.byran_uppe_light
     - switch.tz3000_1_brudkistan_switch
+    - switch.tz3000_2_byran_uppe_switch
 
 sovrummet:
   # id: 202111222351
   name: Sovrummet
   entities:
-    - light.sovrum_rickard_light
-    - light.sovrum_frida_light
-    - switch.nexa_3 # rickards sida
-    - switch.nexa_4 # fridas sida
     - switch.nexa_1 # klädkammaren
+    - light.sovrumsfonstret
+    #- light.sovrummet_fonstret
+    #- switch.nexa_3 # rickards sida
+    #- switch.nexa_4 # fridas sida
+    #- light.sovrummet_taket
+    #- light.sovrum_rickard_light
+    #- light.sovrum_frida_light
 
 kontoret:
   name: Kontoret
@@ -78,6 +80,7 @@ ute:
     - switch.an179_1     # altanväggen söderut
 #    - switch.utebaren
     - light.utebaren_mqtt
+    - switch.shelly1pm_485519cb0b57
 
 my_people:
   name: Familjen

@@ -1,10 +1,12 @@
 sensor:
-  - state_topic: "cooking/grill/probe1"
-    name: "iGrill Probe 1"
+  - name: "iGrill Probe 1"
+    unique_id: "igrill_temperature"
+    state_topic: "cooking/grill/probe1"
     qos: 0
     unit_of_measurement: "°C"
-  - state_topic: "cooking/grill/battery"
-    name: "iGrill Battery"
+  - name: "iGrill Battery"
+    unique_id: "igrill_battery"
+    state_topic: "cooking/grill/battery"
     qos: 0
     unit_of_measurement: "%"
 
@@ -18,3 +20,14 @@ light:
     command_topic: "shellies/shelly1-68C63AFA72FB/relay/0/command"
     json_attributes_topic: "shellies/shelly1-68C63AFA72FB/info"
     retain: false
+
+# - platform: mqtt
+#   name: "Shelly1PM-example"
+#   unique_id: "shelly_1pm_example"
+#   payload_on: "on"
+#   payload_off: "off"
+#   qos: 1
+#   state_topic: "shellies/shelly1pm-xxxxxxx/relay/0"
+#   command_topic: "shellies/shelly1pm-xxxxxxx/relay/0/command"
+#   json_attributes_topic: "shellies/shelly1pm-xxxxxxx/info"
+

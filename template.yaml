@@ -103,10 +103,11 @@
 
   - unique_id: elpris_kr
     state: >-
-      {{ states('sensor.template_nordpool_current_price_vat') | float(0) 
-          + ((states('var.electric_tax') | float / 100.0)|float) 
-          + ((states('var.electric_transfer_cost') | float / 100.0)|float) 
-          + ((states('var.electric_fee') | float / 100.0)|float) }}
+      {{ '%.2f' | format((states('sensor.nordpool_kwh_se3_sek_3_095_0') | float(0) 
+        + (((states('var.electric_tax')|float/100.0)
+        + (states('var.electric_transfer_cost')|float/100.0)
+        + (states('var.electric_fee')|float/100.0))*0.8))*1.25)
+      }}
     unit_of_measurement: kr/kWh
     device_class: monetary
     state_class: measurement
@@ -124,9 +125,100 @@
     attributes:
       friendly_name: "Elpris försäljning, totalt (kr)"
 
+  - unique_id: fees_ex_vat
+    attributes:
+      friendly_name: "Elavgifter, exkl. moms (kr)"
+    unit_of_measurement: "kr"
+    device_class: monetary
+    state_class: measurement
+    state: "{{(states('var.electric_tax')|float + states('var.electric_transfer_cost')|float + states('var.electric_fee')|float)*0.008}}"
+
+  - unique_id: nordpool_median
+    attributes:
+      friendly_name: "Nordpool, median (kr)"
+    state: >-
+      {% set fees = states('sensor.template_fees_ex_vat')|float -%}
+      {% set nordpool = namespace(price = []) -%}
+      {% for num in state_attr('sensor.nordpool_kwh_se3_sek_3_095_0','today') -%}
+      {%   set nordpool.price = nordpool.price + [(num+fees)*1.25] -%}
+      {% endfor -%}
+      {% if not is_state('binary_sensor.template_nordpool_tomorrow_valid','off') -%}
+      {%   for num in state_attr('sensor.nordpool_kwh_se3_sek_3_095_0','tomorrow') -%}
+      {%     set nordpool.price = nordpool.price + [(num+fees)*1.25] -%}
+      {%   endfor -%}
+      {% endif -%}
+      {% set sortednp = nordpool.price|sort -%}
+      {% set ix = namespace(x = 0) %}
+      {% for n in sortednp -%}
+      {%   if ix.x == ((sortednp|count)/2-1)|int -%}
+      {{ '%.2f' | format(n) }}
+      {%   endif -%}
+      {%   set ix.x = ix.x + 1 -%}
+      {% endfor -%}
+  - unique_id: nordpool_75perc
+    attributes:
+      friendly_name: "Nordpool, 75 percentilen (kr)"
+    state: >-
+      {% set fees = states('sensor.template_fees_ex_vat')|float -%}
+      {% set nordpool = namespace(price = []) -%}
+      {% for num in state_attr('sensor.nordpool_kwh_se3_sek_3_095_0','today') -%}
+      {%   set nordpool.price = nordpool.price + [(num+fees)*1.25] -%}
+      {% endfor -%}
+      {% if not is_state('binary_sensor.template_nordpool_tomorrow_valid','off') -%}
+      {%   for num in state_attr('sensor.nordpool_kwh_se3_sek_3_095_0','tomorrow') -%}
+      {%     set nordpool.price = nordpool.price + [(num+fees)*1.25] -%}
+      {%   endfor -%}
+      {% endif -%}
+      {% set sortednp = nordpool.price|sort -%}
+      {% set ix = namespace(x = 0) %}
+      {% for n in sortednp -%}
+      {%   if ix.x == ((sortednp|count)*0.75-1)|int -%}
+      {{ '%.2f' | format(n) }}
+      {%   endif -%}
+      {%   set ix.x = ix.x + 1 -%}
+      {% endfor -%}
+  - unique_id: nordpool_25perc
+    attributes:
+      friendly_name: "Nordpool, 25 percentilen (kr)"
+    state: >-
+      {% set fees = states('sensor.template_fees_ex_vat')|float -%}
+      {% set nordpool = namespace(price = []) -%}
+      {% for num in state_attr('sensor.nordpool_kwh_se3_sek_3_095_0','today') -%}
+      {%   set nordpool.price = nordpool.price + [(num+fees)*1.25] -%}
+      {% endfor -%}
+      {% if not is_state('binary_sensor.template_nordpool_tomorrow_valid','off') -%}
+      {%   for num in state_attr('sensor.nordpool_kwh_se3_sek_3_095_0','tomorrow') -%}
+      {%     set nordpool.price = nordpool.price + [(num+fees)*1.25] -%}
+      {%   endfor -%}
+      {% endif -%}
+      {% set sortednp = nordpool.price|sort -%}
+      {% set ix = namespace(x = 0) %}
+      {% for n in sortednp -%}
+      {%   if ix.x == ((sortednp|count)*0.25-1)|int -%}
+      {{ '%.2f' | format(n) }}
+      {%   endif -%}
+      {%   set ix.x = ix.x + 1 -%}
+      {% endfor -%}
+
 - binary_sensor:
   - unique_id: nordpool_tomorrow_valid
     state: "{{ state_attr('sensor.nordpool_kwh_se3_sek_3_095_0', 'tomorrow_valid') and state_attr('sensor.nordpool_kwh_se3_sek_3_095_0', 'tomorrow')|length > 23 }}"
+  - unique_id: nordpool_price_low
+    attributes:
+      friendly_name: "Nordpool, under median"
+    state: >-
+      {{ states('sensor.template_elpris_kr') <= states('sensor.template_nordpool_median') }}
+  - unique_id: nordpool_price_not_high
+    attributes:
+      friendly_name: "Nordpool, under 75:e percentilen"
+    state: >-
+      {{ states('sensor.template_elpris_kr') <= states('sensor.template_nordpool_75perc') or states('sensor.nordpool_kwh_se3_sek_3_095_0') < states('sensor.elpriset_kr_avg_3') }}
+    # {{ states('sensor.template_elpris_kr') <= states('sensor.template_nordpool_75perc') }}
+  - unique_id: nordpool_price_reallow
+    attributes:
+      friendly_name: "Nordpool, under 25:e percentilen"
+    state: >-
+      {{ states('sensor.template_elpris_kr') <= states('sensor.template_nordpool_25perc') }}
 
 # - sensor:
 #   - unique_id: elpris_avg_kr
@@ -307,7 +399,15 @@
     state_class: total_increasing
     attributes:
       friendly_name: "ChargeNode [kWh]"
-    state: "{{ states('sensor.chargenode_energy')|float(0) }}"
+    state: >-
+      {% set ce = states('sensor.chargenode_energy')|float %}
+      {{ ce if ce != 'unknown' and ce > 0 else states('sensor.template_chargenode_energy_kwh')|float }}
+# {% if (states('sensor.chargenode_energy')|float(0) > 0) -%}
+# {{   states("sensor.chargenode_energy")|float }}
+# {% else -%}
+# {{None}}
+# {% endif %}
+
 
 ## Zoe:n
 - sensor:
@@ -338,21 +438,27 @@
     attributes:
       friendly_name: "Senast uppdaterad"
 
+  - unique_id: zoe_charging_required_time
+    state: >-
+      {%- set time = (states('input_number.zoe_soc_upper_limit')|float(0) - states('sensor.zoe_battery_level')|float(0)) /100*41/7 -%}
+      {%- set hours = time|int -%}
+      {%- set minutes = ((time - hours)*60)|int -%}
+      {{ '{:02}:{:02}'.format(hours, minutes) }}
   - unique_id: zoe_req_hours
     state: >-
-      {{ ((100-states("sensor.zoe_battery_level")|int) /100*40/6)|round(0, 'ceil') if is_state('automation.ladda_fridas_bil','on') or is_state('automation.ladda_zoe_pa_tid','on') else 0 }}
+      {{ ((states('input_number.zoe_soc_upper_limit')|float(0) - states("sensor.zoe_battery_level")|int) /100*41/7)|round(0, 'ceil') }}
 
 ## Kia:n
 - sensor:
   - unique_id: rya_charging_required_time
     state: >-
-      {%- set time = (states('input_number.rya_soc_upper_limit')|float(0) - states('sensor.ev6_ev_battery_level')|float(0)) /100*51/11 -%}
+      {%- set time = (states('input_number.rya_soc_upper_limit')|float(0) - states('sensor.ev6_ev_battery_level')|float(0)) /100*74/8 -%}
       {%- set hours = time|int -%}
       {%- set minutes = ((time - hours)*60)|int -%}
       {{ '{:02}:{:02}'.format(hours, minutes) }}
   - unique_id: rya_req_hours
     state: >-
-      {{ ((states('input_number.rya_soc_upper_limit')|float(0) - states('sensor.ev6_ev_battery_level')|float(0)) /100*51/8) | round(0, 'ceil') if is_state('binary_sensor.ev6_ev_charge_port','on') and is_state('automation.ladda_bilen_nar_det_ar_billigt','on') else 0 }}
+      {{ ((states('input_number.rya_soc_upper_limit')|float(0) - states('sensor.ev6_ev_battery_level')|float(0)) /100*74/8) | round(0, 'ceil') }}
 
   - unique_id: rya_charging_power
     unit_of_measurement: "kW"
@@ -453,12 +559,19 @@
     - platform: state
       entity_id: sensor.template_rya_req_hours
       to:
+    - platform: state
+      entity_id: automation.zoe_charge
+      to:
+    - platform: state
+      entity_id: automation.ladda_bilen_nar_det_ar_billigt
+      to:
   sensor:
   - unique_id: next_charge
     device_class: timestamp
     state: >-
-      {%set duration = states('sensor.template_rya_req_hours')|int + states('sensor.template_zoe_req_hours')|int%}
-      {#% set duration = states('sensor.template_zoe_req_hours')|int%#}
+      {% set duration = states('sensor.template_zoe_req_hours')|int if is_state('automation.zoe_charge','on') else 0 %}
+      {% set duration = duration + (states('sensor.template_rya_req_hours')|int if is_state('automation.ladda_bilen_nar_det_ar_billigt','on') else 0) %}
+
       {% set before = today_at(states('input_datetime.zoe_before'))+timedelta(minutes=5) 
           if now() < today_at(states('input_datetime.zoe_before')) 
           else today_at(states('input_datetime.zoe_before'))+timedelta(days=1,minutes=5) %}
@@ -498,8 +611,8 @@
     attributes:
       friendly_name: "Charge period"
       all: >-
-        {%set duration = states('sensor.template_rya_req_hours')|int + states('sensor.template_zoe_req_hours')|int%}
-        {#% set duration = states('sensor.template_zoe_req_hours')|int %#}
+        {% set duration = states('sensor.template_zoe_req_hours')|int if is_state('automation.zoe_charge','on') else 0 %}
+        {% set duration = duration + (states('sensor.template_rya_req_hours')|int if is_state('automation.ladda_bilen_nar_det_ar_billigt','on') else 0) %}
         {% set grow = namespace(value=0) %}
         {% set priceDict = namespace(value = []) %}
         {% set prices = state_attr('sensor.nordpool_kwh_se3_sek_3_095_0','today')|list %}
@@ -538,26 +651,25 @@
         {{ priceDict.value }}
 
   - unique_id: next_low_price
-    device_class: timestamp
     state: >-
-      {% set priceDict = namespace(value = []) %}
-      {% set prices = state_attr('sensor.nordpool_kwh_se3_sek_3_095_0','raw_today')|list %}
-      {% set tomorrow = state_attr('sensor.nordpool_kwh_se3_sek_3_095_0','raw_tomorrow')|list%}
-      {% if tomorrow | length > 1%}
-        {% set prices = prices + tomorrow%}
-      {% endif%}
-      {% for p in prices%}
-        {% set priceDict.value = priceDict.value + [(loop.index, (p.start, p.value))] %}
-      {% endfor%}
-      {% set dataDict = dict.from_keys(priceDict.value) %}
-      {% set priceDict.value = [] %}
+      {% set priceDict = namespace(value = []) -%}
+      {% set prices = state_attr('sensor.nordpool_kwh_se3_sek_3_095_0','raw_today')|list -%}
+      {% set tomorrow = state_attr('sensor.nordpool_kwh_se3_sek_3_095_0','raw_tomorrow')|list -%}
+      {% if tomorrow | length > 1 -%}
+        {% set prices = prices + tomorrow -%}
+      {% endif -%}
+      {% for p in prices -%}
+        {% set priceDict.value = priceDict.value + [(loop.index, (p.start, p.value))] -%}
+      {% endfor -%}
+      {% set dataDict = dict.from_keys(priceDict.value) -%}
+      {% set priceDict.value = [] -%}
       {% for p in dataDict.items() -%}
         {% if (dataDict[loop.index][0] >= now() and (dataDict[loop.index][1]|float) < state_attr('sensor.nordpool_kwh_se3_sek_3_095_0', 'average')|float) -%}
-          {% set priceDict.value = priceDict.value + [dataDict[loop.index][0]] %}
+          {% set priceDict.value = priceDict.value + [dataDict[loop.index][0]] -%}
         {% endif -%}
-      {% endfor %}
-      {% if priceDict.value %}
-        {{ priceDict.value|first }}
-      {% else %}
+      {% endfor -%}
+      {% if priceDict.value -%}
+      {{ (priceDict.value|first).strftime('%H:%M') }}
+      {% else -%}
         undefined
-      {% endif %}
+      {% endif -%}

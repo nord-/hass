@@ -41,7 +41,7 @@ cn_add_rya_to_queue:
     authorization: !secret cn_rest_authorization
     accept: 'text/plain, application/json, text/json'
   content_type:  'application/json; charset=utf-8'
-  payload: '{"ConnectorId":"a5ebcce2-1815-4bda-4c8c-08da08e8bc81", "DepartureTime":"{{ (as_timestamp(now()) + 8*60*60) | timestamp_local() }}", "SelectedPaymentMethod": 1, "RequestedEnergy": {{ ((states("number.ev6_ac_charging_limit")|int(80) - states("sensor.ev6_ev_battery_level")|float) * 74.0/90)|round(0, "ceil")*1000 }}, "UserCarId": 590 }'
+  payload: '{"ConnectorId":"a5ebcce2-1815-4bda-4c8c-08da08e8bc81", "DepartureTime":"{{ (as_timestamp(now()) + 8*60*60) | timestamp_local() }}", "SelectedPaymentMethod": 1, "RequestedEnergy": {{ ((states("number.ev6_ac_charging_limit")|int(80) - states("sensor.ev6_ev_battery_level")|float) * 74.0/87)|round(0, "ceil")*1000 }}, "UserCarId": 590 }'
 
 cn_add_yxx_to_queue:
   url: "https://dev-app-cn.azurewebsites.net/v2/startcharge"

@@ -1,0 +1,26 @@
+- id: '1695747156549'
+  name: Lås upp bilen
+  entities:
+    script.ev6_starta_bilen:
+      last_triggered:
+      mode: single
+      current: 0
+      friendly_name: EV6, starta bilen
+      state: 'off'
+  icon: mdi:car-door-lock
+  metadata:
+    script.ev6_starta_bilen:
+      entity_only: true
+- id: '1695747279986'
+  name: Unlock car
+  entities:
+    script.ev6_starta_bilen:
+      last_triggered:
+      mode: single
+      current: 0
+      friendly_name: EV6, starta bilen
+      state: 'off'
+  icon: mdi:car-door-lock
+  metadata:
+    script.ev6_starta_bilen:
+      entity_only: true

@@ -58,6 +58,11 @@
         "url": "/hacsfiles/home-assistant-sun-card/home-assistant-sun-card.js?hacstag=366482637014",
         "type": "module",
         "id": "db20489e53854f52bde84c962e7274bf"
+      },
+      {
+        "id": "23d492eb21fd410db4e5c6a83ca64523",
+        "url": "/hacsfiles/history-explorer-card/history-explorer-card.js?hacstag=4403747941050",
+        "type": "module"
       }
     ]
   }

@@ -136,21 +136,17 @@ turn_off_all:
 turn_on_outdoor:
   alias: Slå på utomhusbelysning
   sequence:
-  - service: switch.turn_on
-    data:
-      entity_id: group.ute
-  - service: light.turn_on
-    data:
+  - service: homeassistant.turn_on
+    data: {}
+    target:
       entity_id: group.ute
   mode: single
 turn_off_outdoor:
   alias: Slå av utomhusbelysning
   sequence:
-  - service: switch.turn_off
-    data:
-      entity_id: group.ute
-  - service: light.turn_off
-    data:
+  - service: homeassistant.turn_off
+    data: {}
+    target:
       entity_id: group.ute
 turn_on_all_lights:
   alias: Tänd belysning
@@ -181,6 +177,7 @@ turn_on_morning_lights:
       - light.office_window
       - light.fibaro_system_fgd212_dimmer_2_level_2
       - group.sovrummet
+      - switch.tz3000_2_byran_uppe_switch
   - service: light.turn_on
     data:
       brightness_pct: 1
@@ -209,13 +206,12 @@ start_the_car:
   alias: Starta bilen
   sequence:
   - service: lock.unlock
-    data:
+    data: {}
+    target:
       entity_id:
-      - lock.azarel_door_lock
-      - lock.azarel_charger_door_lock
-  - service: climate.turn_on
-    data:
-      entity_id: climate.azarel_hvac_climate_system
+      - lock.ev6_door_lock
+  - service: script.ev6_start_hvac
+    data: {}
   mode: single
 charge_the_tesla:
   alias: Ladda RYA
@@ -225,9 +221,10 @@ charge_the_tesla:
   - service: notify.rickards_devices
     data:
       title: Kian börjar ladda
-      message: 'Laddningen av RYA har startat.\n SoC:     {{ states("sensor.ev6_ev_battery_level")
-        }}%.\n Priset:  {{ states("sensor.template_nordpool_current_price_vat") }}
-        kr\n Klockan: {{ now().strftime(''%H:%M den %d/%m'') }}'
+      message: 'Laddningen av RYA har startat.\nSoC:    {{states("sensor.ev6_ev_battery_level")
+        }}%.\nPriset: {{states("sensor.template_nordpool_current_price_vat")}} kr\n{{now().strftime(''%m-%d
+        %H:%M'')}}'
+    alias: Notify Charge starting
   - delay:
       hours: 0
       minutes: 3
@@ -235,6 +232,16 @@ charge_the_tesla:
       milliseconds: 0
   - service: kia_uvo.force_update
     data: {}
+  - delay: '{{ (states(''sensor.template_rya_req_hours'')|int + states(''sensor.template_zoe_req_hours'')|int)|multiply(3600)|int
+      }}'
+    enabled: false
+  - service: notify.rickards_devices
+    data:
+      title: Kian laddat färdigt
+      message: 'Laddningen av RYA borde vara färdig.\nSoC: {{states(''sensor.ev6_ev_battery_level'')}}%.\n{{now().strftime(''%m-%d
+        %H:%M'')}}'
+    alias: Notify Charge finished
+    enabled: false
   mode: single
   icon: mdi:ev-station
 slack_inne:
@@ -260,10 +267,15 @@ ladda_zoe:
     data: {}
   - service: notify.rickards_devices
     data:
-      message: 'Laddningen av Zoe har startat.\n SoC:     {{ states("sensor.zoe_battery_level")
-        }}%.\n Priset:  {{ states("sensor.template_nordpool_current_price_vat") }}
-        kr\n Klockan: {{ now().strftime(''%H:%M den %d/%m'') }}'
       title: Zoe lagd i kö
+      message: 'Laddningen av Zoe har startat.\nSoC: {{states("sensor.zoe_battery_level")
+        }}%.\nPriset: {{states("sensor.template_nordpool_current_price_vat") }} kr\nKlockan:
+        {{now().strftime(''%m-%d %H:%M'')}}'
+  - service: automation.turn_off
+    data:
+      stop_actions: true
+    target:
+      entity_id: automation.ladda_fridas_bil
   mode: single
   icon: mdi:ev-station
 ladda_tesla_stoppa:
@@ -285,21 +297,6 @@ ladda_tesla_stoppa:
       title: Kian har slutat ladda
   mode: single
   icon: mdi:ev-station
-'1661376120898':
-  alias: Azarel Set Charge Limit SOC
-  mode: restart
-  sequence:
-  - service: tesla_custom.api
-    data:
-      command: CHANGE_CHARGE_LIMIT
-      parameters:
-        path_vars:
-          vehicle_id: '{{ state_attr(''binary_sensor.azarel_online_sensor'', ''id'')
-            }}'
-        percent: "{% if (states('input_number.aza_charge_limit') | int(default=80))
-          < 100 -%}\n  {{ states('input_number.aza_charge_limit') | int(default=80)
-          + 1 }}\n{%- else -%}\n  {{ 100 }}\n{%- endif %}"
-        wake_if_asleep: true
 '1662626875831':
   alias: Ladda Zoe, stoppa
   sequence:
@@ -307,10 +304,10 @@ ladda_tesla_stoppa:
     data: {}
   - service: notify.rickards_devices
     data:
-      message: 'Laddningen av Zoe har stoppats.\n SoC:     {{ states("sensor.zoe_battery_level")
-        }}%.\n Priset:  {{ states("sensor.template_nordpool_current_price_vat") }}
-        kr\n Klockan: {{ now().strftime(''%H:%M den %d/%m'') }}'
       title: Zoe har slutat ladda
+      message: 'Laddningen av Zoe har stoppats.\nSoC: {{states("sensor.zoe_battery_level")
+        }}%.\nPriset: {{states("sensor.template_nordpool_current_price_vat") }} kr\nKlockan:
+        {{now().strftime(''%m-%d %H:%M'')}}'
   mode: single
   icon: mdi:ev-station
 ladda_bilen_uppstart:
@@ -320,12 +317,15 @@ ladda_bilen_uppstart:
     data: {}
     target:
       entity_id: switch.spabadet_l2
+    alias: Turn off Spa Heater
   - service: switch.turn_on
     data: {}
     target:
       entity_id:
       - switch.varmepumpen_a
       - switch.varmepumpen_b
+    enabled: false
+    alias: 'Turn off VP Heat and Hot water '
   - delay:
       hours: 0
       minutes: 5
@@ -336,73 +336,27 @@ ladda_bilen_uppstart:
       entity_id: sensor.nordpool_kwh_se3_sek_3_095_0
       attribute: low_price
       state: true
+      alias: Confirm Nordpool low price
     then:
     - service: switch.turn_on
       data: {}
       target:
         entity_id: switch.spabadet_l2
+      alias: Turn on Spa Heater
     - service: switch.turn_off
       data: {}
       target:
         entity_id:
         - switch.varmepumpen_a
         - switch.varmepumpen_b
+      enabled: false
+      alias: Turn on VP Heat and Hot water
+    alias: If Nordpool low price
   mode: single
   icon: mdi:ev-station
 spabadet_pause_control:
   alias: Spabadet, pause control
   sequence:
-  - service: script.turn_off
-    data: {}
-    target:
-      entity_id:
-      - script.spabadet_pump_and_heater
-    alias: Take manual control of pumps and heater
-    enabled: false
-  - service: automation.turn_off
-    data:
-      stop_actions: true
-    target:
-      entity_id:
-      - automation.spabadet_pump_and_heater
-    enabled: false
-  - service: switch.turn_on
-    data: {}
-    target:
-      entity_id:
-      - switch.spabadet_l3
-      - switch.spabadet_l2
-    alias: Turn on pumps and heater
-    enabled: false
-  - service: notify.rickards_devices
-    data:
-      title: Spabadet
-      message: 'Uppvärmningen av spabadet har slagits på manuellt och automatiken
-        pausats.\n Priset:  {{ states("sensor.template_nordpool_current_price_vat")
-        }} kr\n Klockan: {{ now().strftime(''%H:%M'') }}'
-    alias: Notify Rickard that manual control is turned on
-    enabled: false
-  - delay:
-      hours: 2
-      minutes: 0
-      seconds: 0
-      milliseconds: 0
-    enabled: false
-  - service: automation.turn_on
-    data: {}
-    target:
-      entity_id:
-      - automation.spabadet_pump_and_heater
-    alias: Release manual control of pumps and heater
-    enabled: false
-  - service: notify.rickards_devices
-    data:
-      title: Spabadet
-      message: 'Uppvärmningen av spabadet går nu på automatik igen.\n Priset:  {{
-        states("sensor.template_nordpool_current_price_vat") }} kr\n Klockan: {{ now().strftime(''%H:%M'')
-        }}'
-    alias: Notify Rickard that manual control is turned off
-    enabled: false
   - if:
     - condition: state
       entity_id: automation.spabadet_pump_and_heater
@@ -442,171 +396,48 @@ spabadet_pause_control:
           now().strftime(''%H:%M'') }}\n Badet:   {{ states("sensor.template_spabadet_temperature")
           }}°C'
       alias: Notify Rickard that manual control is turned off
+    - if:
+      - condition: state
+        entity_id: binary_sensor.template_nordpool_price_reallow
+        state: 'off'
+        alias: If not cheap
+      then:
+      - service: switch.turn_off
+        data: {}
+        target:
+          entity_id: switch.spabadet_l2
+        alias: Turn off Heat
+      alias: 'If not cheap turn off Heat '
+    alias: If manual control turn on automatic
   - service: input_boolean.toggle
     data: {}
     target:
       entity_id: input_boolean.spabadet_manual
-    alias: Toggle Spabadet, manual
+    alias: Toggle manual/automatic
   mode: single
   icon: mdi:swim
-spabadet_pump_and_heater:
-  alias: Spabadet, pump and heater
-  sequence:
-  - if:
-    - condition: or
-      conditions:
-      - condition: or
-        conditions:
-        - condition: time
-          after: 00:00:00
-          before: 02:00:00
-        - condition: time
-          after: 08:00:00
-          before: '10:00:00'
-        - condition: time
-          after: '16:00:00'
-          before: '18:00:00'
-        alias: Time 00, 08, 16
-      - condition: numeric_state
-        entity_id: sensor.template_spabadet_temperature
-        below: 34
-        alias: Spabadet < 34°
-      alias: At 00, 08 or 16 or if temp < 34°
-    then:
-    - service: switch.turn_on
-      data: {}
-      target:
-        entity_id:
-        - switch.spabadet_l3
-        - switch.spabadet_l2
-      alias: Turn on pumps and heater
-    - service: notify.rickards_devices
-      data:
-        title: Spabadet, värmare
-        message: 'Uppvärmningen av spabadet har startat.\n Priset:  {{ states("sensor.template_nordpool_current_price_vat")
-          }} kr\n Klockan: {{ now().strftime(''%H:%M'') }}'
-      enabled: false
-    - delay:
-        hours: 0
-        minutes: 7
-        seconds: 0
-        milliseconds: 0
-    - if:
-      - condition: and
-        conditions:
-        - condition: state
-          entity_id: binary_sensor.low_price
-          alias: High price
-          state: 'off'
-        - condition: numeric_state
-          entity_id: sensor.template_spabadet_temperature
-          above: 34
-        alias: If expensive and temp >34°
-      then:
-      - service: switch.turn_off
-        data: {}
-        target:
-          entity_id: switch.spabadet_l2
-        alias: Turn off heater
-      - service: notify.rickards_devices
-        data:
-          title: Spabadet, värmare
-          message: 'Uppvärmningen av spabadet har stängts av.\n Priset:  {{ states("sensor.template_nordpool_current_price_vat")
-            }} kr\n Klockan: {{ now().strftime(''%H:%M'') }}'
-        enabled: false
-      alias: If expensive turn off heater
-  - delay:
-      hours: 1
-      minutes: 0
-      seconds: 0
-      milliseconds: 0
-  - if:
-    - condition: state
-      entity_id: binary_sensor.low_price
-      alias: Low price
-      state: 'on'
-    then:
-    - service: switch.turn_on
-      data: {}
-      target:
-        entity_id:
-        - switch.spabadet_l3
-        - switch.spabadet_l2
-      alias: Turn on pumps and heater
-    - service: notify.rickards_devices
-      data:
-        title: Spabadet, värmare
-        message: 'Uppvärmningen av spabadet har slagits på.\n Priset:  {{ states("sensor.template_nordpool_current_price_vat")
-          }} kr\n Klockan: {{ now().strftime(''%H:%M'') }}'
-      enabled: false
-    alias: Turn on heater if low price
-    else:
-    - if:
-      - condition: numeric_state
-        entity_id: sensor.template_spabadet_temperature
-        above: 34
-        alias: If temp > 34°
-      then:
-      - service: switch.turn_off
-        data: {}
-        target:
-          entity_id: switch.spabadet_l2
-        alias: Turn off heater
-      - service: notify.rickards_devices
-        data:
-          title: Spabadet, värmare
-          message: 'Uppvärmningen av spabadet har stängts av.\n Priset:  {{ states("sensor.template_nordpool_current_price_vat")
-            }} kr\n Klockan: {{ now().strftime(''%H:%M'') }}'
-        enabled: false
-      alias: If temp > 34° turn off heater
-  - delay:
-      hours: 1
-      minutes: 0
-      seconds: 0
-      milliseconds: 0
-  - if:
-    - condition: numeric_state
-      entity_id: sensor.framsidan_temperature
-      above: 0
-      alias: Temp >0°
-    then:
-    - service: switch.turn_off
-      data: {}
-      target:
-        entity_id:
-        - switch.spabadet_l3
-        - switch.spabadet_l2
-      alias: Turn off pumps and heater
-    alias: If temp is >0°
-    else:
-    - service: switch.turn_off
-      data: {}
-      target:
-        entity_id: switch.spabadet_l2
-      alias: Turn off heater
-  - service: notify.rickards_devices
-    data:
-      title: Spabadet, värmare
-      message: 'Uppvärmningen av spabadet har stängts av.\n Priset:  {{ states("sensor.template_nordpool_current_price_vat")
-        }} kr\n Klockan: {{ now().strftime(''%H:%M'') }}'
-    enabled: false
-  mode: single
-  icon: mdi:pump
 spabadet_pump_and_heater_v2:
   alias: Spabadet, pump and heater (V2)
   sequence:
-  - if:
-    - condition: or
+  - alias: Control heater
+    if:
+    - alias: Spabadet < 30° or Low price
+      condition: or
       conditions:
       - condition: numeric_state
         entity_id: sensor.template_spabadet_temperature
         alias: Spabadet < 30°
         below: 30
       - condition: state
-        entity_id: binary_sensor.low_price
+        entity_id: binary_sensor.template_nordpool_price_low
         state: 'on'
-        alias: Low price
-      alias: Spabadet < 30° or Low price
+        alias: Median low price
+        enabled: true
+      - condition: state
+        entity_id: binary_sensor.template_nordpool_price_reallow
+        state: 'on'
+        alias: Below 25%
+        enabled: false
     then:
     - service: switch.turn_on
       data: {}
@@ -614,7 +445,6 @@ spabadet_pump_and_heater_v2:
         entity_id:
         - switch.spabadet_l2
       alias: Turn on heater
-    alias: Control heater
     else:
     - service: switch.turn_off
       data: {}
@@ -634,9 +464,14 @@ spabadet_pump_and_heater_v2:
         alias: Spabadet < 30°
         below: 30
       - condition: state
+        entity_id: binary_sensor.template_nordpool_price_low
+        state: 'on'
+        alias: Median low price
+      - condition: state
         entity_id: binary_sensor.low_price
         state: 'on'
         alias: Low price
+        enabled: false
       - condition: template
         value_template: '{{now().hour % 4 == 0}}'
         alias: Every four hours
@@ -667,6 +502,12 @@ diskmaskinen_aktivera_timer:
       entity_id:
       - automation.diskmaskinen_starta_pa_klocka
       - automation.diskmaskinen_armera
+  - service: input_datetime.set_datetime
+    data:
+      time: '{{ as_timestamp(state_attr(''sensor.peaqnext_dishwasher'',''raw_start''))|timestamp_custom(''%H:%M:%S'')
+        }}'
+    target:
+      entity_id: input_datetime.diskmaskinen_timme
   mode: single
   icon: mdi:dishwasher-alert
 tvattmaskinen_aktivera_timer:
@@ -678,19 +519,81 @@ tvattmaskinen_aktivera_timer:
       entity_id:
       - automation.tvattmaskinen_starta_pa_klockslag
       - automation.tvattmaskinen_starta
+  - service: input_datetime.set_datetime
+    data:
+      time: '{{ as_timestamp(state_attr(''sensor.peaqnext_washing_machine'',''raw_start''))|timestamp_custom(''%H:%M:%S'')
+        }}'
+    target:
+      entity_id: input_datetime.tvattmaskinen_timme
   mode: single
   icon: mdi:dishwasher-alert
 ev6_start_hvac:
   alias: EV6, start HVAC
   sequence:
-  - service: kia_uvo.start_climate
-    data:
-      duration: 10
-      climate: true
-      temperature: 22
-      heating: false
+  - alias: Choose AC or Heat
+    choose:
+    - conditions:
+      - condition: numeric_state
+        entity_id: sensor.framsidan_temperature
+        above: 17
+      sequence:
+      - alias: Start AC on EV6
+        service: kia_uvo.start_climate
+        data:
+          duration: 10
+          climate: true
+          temperature: 22
+          heating: '0'
+          device_id: f4c09575234da651122f411210842a80
+    - conditions:
+      - condition: numeric_state
+        entity_id: sensor.framsidan_temperature
+        below: 17
+        above: 12
+      sequence:
+      - alias: Start Defrost on EV6
+        service: kia_uvo.start_climate
+        data:
+          duration: 10
+          climate: true
+          temperature: 22
+          heating: '0'
+          device_id: f4c09575234da651122f411210842a80
+          defrost: true
+    - conditions:
+      - condition: numeric_state
+        entity_id: sensor.framsidan_temperature
+        below: 12
+      sequence:
+      - alias: Start Heat, Seat and Steering Wheel on EV6
+        service: kia_uvo.start_climate
+        data:
+          duration: 10
+          climate: true
+          temperature: 22
+          heating: '3'
+          device_id: f4c09575234da651122f411210842a80
+          defrost: true
+          flseat: '8'
+    default:
+    - alias: Start Heat on EV6
+      service: kia_uvo.start_climate
+      data:
+        duration: 10
+        climate: true
+        temperature: 22
+        heating: false
+        device_id: f4c09575234da651122f411210842a80
+        defrost: true
+  - delay:
+      hours: 0
+      minutes: 0
+      seconds: 5
+      milliseconds: 0
+  - service: homeassistant.reload_config_entry
+    data: {}
+    target:
       device_id: f4c09575234da651122f411210842a80
-    alias: Start AC on EV6
   - repeat:
       while:
       - condition: state
@@ -706,8 +609,7 @@ ev6_start_hvac:
           seconds: 10
           milliseconds: 0
       - service: kia_uvo.update
-        data:
-          device_id: f4c09575234da651122f411210842a80
+        data: {}
         alias: Update EV6 from cache
       - choose:
         - conditions:
@@ -721,40 +623,23 @@ ev6_start_hvac:
           sequence:
           - stop: Max run time
         enabled: false
-    alias: While AC is off Update from cache
   mode: restart
   icon: mdi:fan-auto
-ev6_start_defrost:
-  alias: EV6, start defrost
+ev6_starta_bilen:
+  alias: EV6, starta bilen
   sequence:
   - service: kia_uvo.start_climate
-    target: {}
     data:
-      duration: 10
+      duration: 5
       climate: true
       temperature: 22
-      heating: '3'
-      defrost: true
-      flseat: '8'
-      device_id: f4c09575234da651122f411210842a80
-    alias: Start AC on EV6
-  - repeat:
-      while:
-      - condition: state
-        entity_id: binary_sensor.ev6_air_conditioner
-        state: 'off'
-      - condition: template
-        value_template: '{{ repeat.index <= 60 }}'
-        alias: Repeat max 60 times (10 mins)
-      sequence:
-      - delay:
-          hours: 0
-          minutes: 0
-          seconds: 10
-          milliseconds: 0
-      - service: kia_uvo.update
-        data:
-          device_id: f4c09575234da651122f411210842a80
-    alias: While AC is off Update EV6
-  mode: restart
-  icon: mdi:car-defrost-front
+      heating: false
+      defrost: false
+    alias: Start HVAC
+  - service: kia_uvo.unlock
+    data: {}
+    alias: Unlock
+  - service: kia_uvo.open_charge_port
+    data: {}
+    alias: Open Charge Port
+  mode: single
