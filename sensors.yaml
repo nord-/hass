@@ -52,6 +52,13 @@
   entities:
     - sensor.template_nordpool_current_price_vat
 
+- platform: average
+  unique_id: avg_spabadet_week
+  name: 'Spabadet [kWh], veckosnitt'
+  duration:
+    days: 7
+  entities:
+    - sensor.spabadet_dag
 
 ### INTEGRATIONS 
 - platform: integration

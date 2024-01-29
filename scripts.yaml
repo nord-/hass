@@ -424,10 +424,11 @@ spabadet_pump_and_heater_v2:
     - alias: Spabadet < 30° or Low price
       condition: or
       conditions:
-      - condition: numeric_state
+      - alias: Spabadet < lower temp limit
+        condition: numeric_state
         entity_id: sensor.template_spabadet_temperature
-        alias: Spabadet < 30°
-        below: 30
+        below: input_number.spabadet_lower_temp_limit
+        enabled: true
       - condition: state
         entity_id: binary_sensor.template_nordpool_price_low
         state: 'on'
@@ -452,17 +453,19 @@ spabadet_pump_and_heater_v2:
         entity_id:
         - switch.spabadet_l2
       alias: Turn off heater
-  - if:
-    - condition: or
+  - alias: Control pump
+    if:
+    - alias: Every four hours, Low price, Spabadet < 30° or Temp < 0°
+      condition: or
       conditions:
       - condition: numeric_state
         entity_id: sensor.231_temperature
         below: 0
         alias: Temp < 0°
-      - condition: numeric_state
+      - alias: Spabadet < 30°
+        condition: numeric_state
         entity_id: sensor.template_spabadet_temperature
-        alias: Spabadet < 30°
-        below: 30
+        below: input_number.spabadet_lower_temp_limit
       - condition: state
         entity_id: binary_sensor.template_nordpool_price_low
         state: 'on'
@@ -475,7 +478,6 @@ spabadet_pump_and_heater_v2:
       - condition: template
         value_template: '{{now().hour % 4 == 0}}'
         alias: Every four hours
-      alias: Every four hours, Low price, Spabadet < 30° or Temp < 0°
     then:
     - service: switch.turn_on
       data: {}
@@ -483,7 +485,6 @@ spabadet_pump_and_heater_v2:
         entity_id:
         - switch.spabadet_l3
       alias: Turn on pump
-    alias: Control pump
     else:
     - service: switch.turn_off
       data: {}
@@ -559,7 +560,6 @@ ev6_start_hvac:
           temperature: 22
           heating: '0'
           device_id: f4c09575234da651122f411210842a80
-          defrost: true
     - conditions:
       - condition: numeric_state
         entity_id: sensor.framsidan_temperature
@@ -573,7 +573,6 @@ ev6_start_hvac:
           temperature: 22
           heating: '3'
           device_id: f4c09575234da651122f411210842a80
-          defrost: true
           flseat: '8'
     default:
     - alias: Start Heat on EV6
@@ -584,7 +583,6 @@ ev6_start_hvac:
         temperature: 22
         heating: false
         device_id: f4c09575234da651122f411210842a80
-        defrost: true
   - delay:
       hours: 0
       minutes: 0

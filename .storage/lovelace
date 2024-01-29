@@ -64,24 +64,48 @@
             },
             {
               "type": "vertical-stack",
+              "title": "Bilarna",
               "cards": [
                 {
-                  "type": "glance",
-                  "show_name": true,
-                  "show_icon": false,
-                  "show_state": true,
-                  "entities": [
+                  "type": "horizontal-stack",
+                  "cards": [
                     {
-                      "entity": "sensor.framsidan_temperature",
-                      "name": "Ute"
+                      "type": "custom:bignumber-card",
+                      "title": "EV6",
+                      "entity": "sensor.ev6_ev_battery_level",
+                      "severity": [
+                        {
+                          "value": 40,
+                          "color": "var(--label-badge-red)"
+                        },
+                        {
+                          "value": 60,
+                          "color": "var(--label-badge-yellow)"
+                        },
+                        {
+                          "value": 100,
+                          "color": "var(--label-badge-green)"
+                        }
+                      ]
                     },
                     {
-                      "entity": "sensor.vardagsrummet_temperature",
-                      "name": "Inne"
-                    },
-                    {
-                      "entity": "sensor.template_spabadet_temperature",
-                      "name": "Badet"
+                      "type": "custom:bignumber-card",
+                      "title": "Zoe",
+                      "entity": "sensor.zoe_battery_level",
+                      "severity": [
+                        {
+                          "value": 40,
+                          "color": "var(--label-badge-red)"
+                        },
+                        {
+                          "value": 60,
+                          "color": "var(--label-badge-yellow)"
+                        },
+                        {
+                          "value": 100,
+                          "color": "var(--label-badge-green)"
+                        }
+                      ]
                     }
                   ]
                 },
@@ -89,29 +113,37 @@
                   "type": "horizontal-stack",
                   "cards": [
                     {
-                      "type": "gauge",
-                      "entity": "sensor.template_house_power_kw",
-                      "name": "Huset",
-                      "min": 0,
-                      "max": 12,
-                      "severity": {
-                        "green": 0,
-                        "yellow": 2.3,
-                        "red": 3.7
+                      "show_name": true,
+                      "show_icon": true,
+                      "type": "button",
+                      "tap_action": {
+                        "action": "call-service",
+                        "service": "script.ev6_start_hvac",
+                        "target": {}
                       },
-                      "needle": false
+                      "entity": "binary_sensor.ev6_air_conditioner",
+                      "show_state": false,
+                      "hold_action": {
+                        "action": "call-service",
+                        "service": "script.turn_off",
+                        "target": {
+                          "entity_id": "script.ev6_start_hvac"
+                        },
+                        "data": {}
+                      },
+                      "icon_height": "50px",
+                      "name": " "
                     },
                     {
-                      "entity": "sensor.template_fronius_solar_power",
-                      "max": 8.2,
-                      "min": 0,
-                      "name": "Solen",
-                      "type": "gauge",
-                      "severity": {
-                        "green": 5,
-                        "yellow": 3,
-                        "red": 0
-                      }
+                      "show_name": true,
+                      "show_icon": true,
+                      "type": "button",
+                      "tap_action": {
+                        "action": "toggle"
+                      },
+                      "entity": "button.zoe_start_air_conditioner",
+                      "icon_height": "50px",
+                      "name": " "
                     }
                   ]
                 }
@@ -187,58 +219,62 @@
             },
             {
               "type": "vertical-stack",
-              "title": "Bilarna",
               "cards": [
                 {
-                  "type": "horizontal-stack",
-                  "cards": [
+                  "type": "glance",
+                  "show_name": true,
+                  "show_icon": false,
+                  "show_state": true,
+                  "entities": [
                     {
-                      "show_name": true,
-                      "show_icon": true,
-                      "type": "button",
-                      "tap_action": {
-                        "action": "call-service",
-                        "service": "script.ev6_start_hvac",
-                        "target": {}
-                      },
-                      "entity": "binary_sensor.ev6_air_conditioner",
-                      "show_state": false,
-                      "hold_action": {
-                        "action": "call-service",
-                        "service": "script.turn_off",
-                        "target": {
-                          "entity_id": "script.ev6_start_hvac"
-                        },
-                        "data": {}
-                      },
-                      "icon_height": "35px",
-                      "name": "Kian"
+                      "entity": "sensor.framsidan_temperature",
+                      "name": "Ute"
                     },
                     {
-                      "show_name": true,
-                      "show_icon": true,
-                      "type": "button",
-                      "tap_action": {
-                        "action": "toggle"
-                      },
-                      "entity": "button.zoe_start_air_conditioner",
-                      "name": "Zoe",
-                      "icon_height": "35px"
+                      "entity": "sensor.vardagsrummet_temperature",
+                      "name": "Inne"
+                    },
+                    {
+                      "entity": "sensor.template_spabadet_temperature",
+                      "name": "Badet"
                     }
                   ]
+                },
+                {
+                  "type": "entity",
+                  "entity": "sensor.template_elpris_kr",
+                  "unit": "kr",
+                  "card_mod": {
+                    "style": ".info {\n  margin: 20px 0 7px 0 !important;\n  padding: 0 !important;\n  text-align: center;\n  line-height: 40pt !important;\n}\n.header { display: none !important }\n.value { font-size: 40pt !important }\nha-card {\n  color: {%- if states('sensor.template_elpris_kr')|float < 1.5 -%}\n      var(--label-badge-green);\n    {%- elif states('sensor.template_elpris_kr')|float < 2.3 -%}\n      var(--label-badge-yellow);\n    {%- else -%}\n      var(--label-badge-red);\n    {%- endif -%}\n}\n"
+                  }
                 },
                 {
                   "type": "horizontal-stack",
                   "cards": [
                     {
-                      "type": "entity",
-                      "entity": "sensor.ev6_ev_battery_level",
-                      "name": "EV6"
+                      "type": "gauge",
+                      "entity": "sensor.template_house_power_kw",
+                      "name": "Huset",
+                      "min": 0,
+                      "max": 12,
+                      "severity": {
+                        "green": 0,
+                        "yellow": 2.3,
+                        "red": 3.7
+                      },
+                      "needle": false
                     },
                     {
-                      "type": "entity",
-                      "entity": "sensor.zoe_battery_level",
-                      "name": "Zoe"
+                      "entity": "sensor.template_fronius_solar_power",
+                      "max": 8.2,
+                      "min": 0,
+                      "name": "Solen",
+                      "type": "gauge",
+                      "severity": {
+                        "green": 5,
+                        "yellow": 3,
+                        "red": 0
+                      }
                     }
                   ]
                 }
@@ -983,7 +1019,9 @@
               "header": " ",
               "legendVisible": false,
               "uiLayout": {
-                "toolbar": "hide"
+                "toolbar": "hide",
+                "selector": "hide",
+                "interval": "hide"
               },
               "graphs": [
                 {
@@ -1020,8 +1058,7 @@
                   "type": "glance",
                   "entities": [
                     {
-                      "entity": "sensor.template_nordpool_current_price_vat",
-                      "name": "Nu"
+                      "entity": "sensor.framsidan_temperature"
                     },
                     {
                       "entity": "sensor.felix_rum_temperature"
@@ -1383,16 +1420,16 @@
                           "entity": "switch.varmepumpen_a",
                           "icon": "mdi:heat-pump-outline",
                           "secondary_info": "last-changed",
-                          "name": "Värme"
+                          "name": "Värme & vatten"
                         },
                         {
                           "entity": "switch.varmepumpen_b",
                           "icon": "mdi:heat-pump-outline",
                           "secondary_info": "last-changed",
-                          "name": "Varmvatten"
+                          "name": "Elpatronen"
                         }
                       ],
-                      "title": "Värmepump, blockera"
+                      "title": "Stäng av"
                     }
                   ]
                 },
@@ -1494,7 +1531,7 @@
                   "entity": "sensor.template_house_power_kw",
                   "name": "hus",
                   "type": "column",
-                  "stroke_width": 4,
+                  "stroke_width": 3,
                   "show": {
                     "legend_value": false
                   },
@@ -1506,8 +1543,9 @@
                 {
                   "entity": "sensor.template_fronius_solar_power",
                   "name": "sol",
+                  "type": "column",
                   "color": "green",
-                  "stroke_width": 2,
+                  "stroke_width": 3,
                   "show": {
                     "legend_value": false
                   },
@@ -1533,14 +1571,15 @@
               "apex_config": {
                 "yaxis": [
                   {
+                    "seriesName": "hus",
                     "decimalsInFloat": 1
                   },
                   {
+                    "seriesName": "hus",
                     "show": false
                   },
                   {
                     "decimalsInFloat": 2,
-                    "max": 4,
                     "min": 0,
                     "opposite": true
                   }
@@ -1710,51 +1749,42 @@
               ]
             },
             {
-              "type": "custom:apexcharts-card",
-              "series": [
+              "type": "custom:history-explorer-card",
+              "defaultTimeRange": "14d",
+              "legendVisible": false,
+              "labelsVisible": false,
+              "showLabel": false,
+              "header": "hide",
+              "uiLayout": {
+                "toolbar": "hide",
+                "selector": "hide",
+                "interval": "hide"
+              },
+              "graphs": [
                 {
-                  "name": "kr",
-                  "entity": "sensor.spabadet_kr",
-                  "type": "column",
-                  "color": "DarkGreen",
-                  "group_by": {
-                    "func": "delta",
-                    "duration": "1d"
-                  }
-                },
-                {
-                  "name": "kWh",
-                  "entity": "sensor.template_spabadet_energy_kwh",
-                  "type": "column",
-                  "color": "FireBrick",
-                  "group_by": {
-                    "func": "delta",
-                    "duration": "1d"
-                  }
+                  "type": "bar",
+                  "options": {
+                    "interval": "daily"
+                  },
+                  "entities": [
+                    {
+                      "entity": "sensor.spabadet_kr",
+                      "color": "DarkGreen"
+                    },
+                    {
+                      "entity": "sensor.template_spabadet_energy_kwh",
+                      "color": "FireBrick"
+                    }
+                  ]
                 }
               ],
-              "update_interval": "1h",
-              "apex_config": {
-                "yaxis": [
-                  {
-                    "seriesName": "kr",
-                    "decimalsInFloat": 0,
-                    "min": 0
-                  }
-                ],
-                "tooltip": {
-                  "style": {
-                    "fontSize": "8pt"
-                  },
-                  "x": {
-                    "show": false
-                  }
-                }
+              "statistics": {
+                "mode": "max",
+                "period": "day"
               },
-              "graph_span": "4d",
-              "cache": true,
-              "span": {
-                "end": "day"
+              "timeTicks": {
+                "densityOverride": "high",
+                "dateFormat": "short"
               }
             },
             {
@@ -1795,7 +1825,7 @@
                 {
                   "chart_type": "line",
                   "period": "day",
-                  "days_to_show": 10,
+                  "days_to_show": 14,
                   "hide_legend": true,
                   "type": "statistics-graph",
                   "entities": [
@@ -1805,35 +1835,12 @@
                     }
                   ],
                   "stat_types": [
-                    "mean"
+                    "mean",
+                    "min",
+                    "max"
                   ]
                 }
               ]
-            },
-            {
-              "type": "custom:history-explorer-card",
-              "defaultTimeRange": "14d",
-              "header": " ",
-              "legendVisible": false,
-              "uiLayout": {
-                "toolbar": "hide"
-              },
-              "graphs": [
-                {
-                  "type": "bar",
-                  "entities": [
-                    {
-                      "entity": "sensor.template_spabadet_energy_kwh",
-                      "color": "#3e95cd",
-                      "fill": "rgba(151,187,205,0.15)"
-                    }
-                  ]
-                }
-              ],
-              "statistics": {
-                "mode": "max",
-                "period": "day"
-              }
             }
           ]
         },
@@ -2637,7 +2644,7 @@
                       "icon": "mdi:weather-cloudy"
                     },
                     {
-                      "entity": "sensor.framsidan_pressure"
+                      "entity": "sensor.framsidan_tryck"
                     },
                     {
                       "entity": "sensor.yr_wind_speed",
@@ -2645,27 +2652,51 @@
                       "icon": "mdi:weather-windy"
                     },
                     {
-                      "entity": "sensor.framsidan_humidity"
+                      "entity": "sensor.framsidan_luftfuktighet"
                     }
                   ]
                 }
               ]
             },
             {
-              "chart_type": "line",
-              "period": "day",
-              "days_to_show": 10,
-              "type": "statistics-graph",
-              "entities": [
+              "type": "vertical-stack",
+              "cards": [
                 {
-                  "entity": "sensor.framsidan_temperature",
-                  "name": " "
+                  "type": "statistics-graph",
+                  "chart_type": "line",
+                  "period": "day",
+                  "days_to_show": 14,
+                  "entities": [
+                    {
+                      "entity": "sensor.framsidan_temperature",
+                      "name": " "
+                    }
+                  ],
+                  "stat_types": [
+                    "mean",
+                    "min",
+                    "max"
+                  ],
+                  "hide_legend": true
+                },
+                {
+                  "chart_type": "line",
+                  "period": "day",
+                  "type": "statistics-graph",
+                  "entities": [
+                    "sensor.xiaomi_lys1_temperatur",
+                    "sensor.xiaomi_lys3_temperatur",
+                    "sensor.xiaomi_lys4_temperatur",
+                    "sensor.felix_rum_temperature",
+                    "sensor.vardagsrummet_temperature",
+                    "sensor.kontoret_temperature"
+                  ],
+                  "stat_types": [
+                    "mean"
+                  ],
+                  "hide_legend": true,
+                  "days_to_show": 14
                 }
-              ],
-              "stat_types": [
-                "mean",
-                "min",
-                "max"
               ]
             },
             {
@@ -2821,7 +2852,8 @@
               "header": " ",
               "legendVisible": false,
               "uiLayout": {
-                "toolbar": "hide"
+                "toolbar": "hide",
+                "selector": "hide"
               },
               "statistics": {
                 "mode": "mean",
@@ -3066,7 +3098,7 @@
                 },
                 {
                   "entity": "binary_sensor.heatpump_ivt_hotwater",
-                  "name": "Varmvatten"
+                  "name": "Elpatron"
                 },
                 {
                   "entity": "switch.spabadet_l2",
@@ -3128,8 +3160,38 @@
                 {
                   "entity": "sensor.ikea_of_sweden_tradfri_on_off_switch_battery",
                   "name": "RC On/off"
+                },
+                {
+                  "entity": "sensor.xiaomi_lys1_batteri",
+                  "name": "LYS1"
+                },
+                {
+                  "entity": "sensor.xiaomi_lys3_batteri",
+                  "name": "LYS3"
+                },
+                {
+                  "entity": "sensor.xiaomi_lys4_batteri",
+                  "name": "LYS4"
                 }
               ]
+            },
+            {
+              "chart_type": "line",
+              "period": "5minute",
+              "type": "statistics-graph",
+              "entities": [
+                "sensor.xiaomi_lys1_temperatur",
+                "sensor.xiaomi_lys3_temperatur",
+                "sensor.xiaomi_lys4_temperatur",
+                "sensor.felix_rum_temperature",
+                "sensor.vardagsrummet_temperature",
+                "sensor.kontoret_temperature"
+              ],
+              "stat_types": [
+                "mean"
+              ],
+              "hide_legend": true,
+              "days_to_show": 2
             }
           ]
         }

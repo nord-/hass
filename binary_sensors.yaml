@@ -44,7 +44,8 @@
       value_template: >-
         {{ state_attr('vacuum.wall_e','online') }}
 
-- platform: ping
-  host: 192.168.2.29
-  name: ChargeNode pie
-  scan_interval: 60
+# Konfigurering av Ping med hjälp av YAML tas bort.
+# - platform: ping
+#   host: 192.168.2.29
+#   name: ChargeNode pie
+#   scan_interval: 60

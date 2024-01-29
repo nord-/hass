@@ -61,7 +61,12 @@
       },
       {
         "id": "23d492eb21fd410db4e5c6a83ca64523",
-        "url": "/hacsfiles/history-explorer-card/history-explorer-card.js?hacstag=4403747941050",
+        "url": "/hacsfiles/history-explorer-card/history-explorer-card.js?hacstag=4403747941051",
+        "type": "module"
+      },
+      {
+        "id": "1169ec7667f0408c8147524861c07012",
+        "url": "/hacsfiles/lovelace-card-mod/card-mod.js?hacstag=190927524342",
         "type": "module"
       }
     ]

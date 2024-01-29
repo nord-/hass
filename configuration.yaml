@@ -99,9 +99,11 @@ var: !include vars.yaml
 #     custom_components.peaqev: debug
 logger:
   default: warning
-  logs:
-    homeassistant.components.modbus: debug
-    pymodbus: debug
+  # logs:
+    # homeassistant.components.modbus: debug
+    # pymodbus: debug
+    # homeassistant.components.zha: debug
+    # zigpy: debug
 
 # modbus for a TCP connection
 modbus: !include modbus.yaml
@@ -111,3 +113,8 @@ zha:
   custom_quirks_path: /config/custom_zha_quirks
   database_path: /config/zigbee.db 
   enable_quirks: true
+  zigpy_config:
+    ota:
+      otau_directory: /config/zigpy_ota
+
+zha_toolkit:

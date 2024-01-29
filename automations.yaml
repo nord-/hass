@@ -436,6 +436,12 @@
     data: {}
   - service: script.ladda_bilen_uppstart
     data: {}
+    enabled: false
+  - service: automation.turn_off
+    target:
+      entity_id: automation.ladda_zoe_pa_tid
+    data:
+      stop_actions: false
   mode: single
 - id: '1657529930391'
   alias: Elpriser, notifiera
@@ -605,11 +611,9 @@
   - condition: and
     conditions:
     - condition: state
-      entity_id: input_boolean.zoe_upper_limit
-      state: 'on'
-    - condition: state
       state: charge_in_progress
       entity_id: sensor.zoe_charge_state
+      enabled: false
     - condition: numeric_state
       entity_id: sensor.zoe_battery_level
       above: input_number.zoe_soc_upper_limit
@@ -864,8 +868,9 @@
     alias: Every hour
   - alias: When hot tub temp >31°
     platform: numeric_state
-    entity_id: sensor.template_spabadet_temperature
-    above: 31
+    entity_id:
+    - sensor.template_spabadet_temperature
+    above: input_number.spabadet_lower_temp_limit
   condition: []
   action:
   - delay:
@@ -1207,13 +1212,13 @@
     - sensor.felix_rum_temperature
     below: 23
     alias: When Temp goes below 23°
-    enabled: true
+    enabled: false
   - alias: When Temp goes above 23°
     platform: numeric_state
     entity_id:
     - sensor.felix_rum_temperature
     above: 22.9
-    enabled: true
+    enabled: false
   condition: []
   action:
   - alias: When expensive turn off heat
@@ -1221,7 +1226,7 @@
     - condition: numeric_state
       entity_id: sensor.felix_rum_temperature
       above: 23
-      enabled: true
+      enabled: false
     - condition: state
       entity_id: binary_sensor.template_nordpool_price_not_high
       state: 'off'
@@ -1230,17 +1235,22 @@
       data: {}
       target:
         entity_id: switch.varmepumpen_a
+    - service: switch.turn_on
+      metadata: {}
+      data: {}
+      target:
+        entity_id: switch.varmepumpen_b
+      enabled: false
   - alias: When not expensive turn on heat and warm water
     if:
     - alias: When Not Expensive OR Temp<23°
       condition: or
       conditions:
-      - condition: numeric_state
-        entity_id:
-        - sensor.felix_rum_temperature
+      - alias: When Temp goes below 23°
+        condition: numeric_state
+        entity_id: sensor.felix_rum_temperature
         below: 23
-        alias: When Temp goes below 23°
-        enabled: true
+        enabled: false
       - condition: state
         entity_id: binary_sensor.template_nordpool_price_not_high
         state: 'on'
@@ -1280,6 +1290,23 @@
         entity_id: binary_sensor.template_nordpool_price_not_high
         state: 'on'
         alias: Under 75:e percentilen
+      - alias: Över median
+        condition: state
+        entity_id: binary_sensor.template_nordpool_price_low
+        state: 'off'
+      sequence:
+      - alias: Magenta
+        service: zwave_js.set_config_parameter
+        data:
+          parameter: '41'
+          value: '9'
+        target:
+          device_id: aa0c0b41292d62cfbef2a78d19659e46
+    - conditions:
+      - condition: state
+        entity_id: binary_sensor.template_nordpool_price_low
+        state: 'on'
+        alias: Under median
       - condition: state
         entity_id: binary_sensor.template_nordpool_price_reallow
         state: 'off'
@@ -1305,58 +1332,6 @@
         target:
           device_id: aa0c0b41292d62cfbef2a78d19659e46
         alias: Grön
-  mode: single
-- id: '1698589680106'
-  alias: Belysning, sovrumsfönstet
-  description: ''
-  trigger:
-  - platform: device
-    type: turned_on
-    device_id: 561658b47089ec170430b3a90235e3ed
-    entity_id: 0deaeb905f1732723e5b47094a620148
-    domain: light
-    id: window_on
-  - platform: device
-    type: turned_off
-    device_id: 561658b47089ec170430b3a90235e3ed
-    entity_id: 0deaeb905f1732723e5b47094a620148
-    domain: light
-    id: window_off
-  - platform: state
-    entity_id: light.sovrummet_fonstret
-    attribute: brightness
-    id: window_brightness
-  condition: []
-  action:
-  - choose:
-    - conditions:
-      - condition: trigger
-        id:
-        - window_on
-      sequence:
-      - service: light.turn_on
-        data: {}
-        target:
-          entity_id: light.sovrumsfonstret
-    - conditions:
-      - condition: trigger
-        id:
-        - window_off
-      sequence:
-      - service: light.turn_off
-        data: {}
-        target:
-          entity_id: light.sovrumsfonstret
-    - conditions:
-      - condition: trigger
-        id:
-        - window_brightness
-      sequence:
-      - service: light.turn_on
-        data:
-          brightness: '{{ state_attr(''light.sovrummet_fonstret'',''brightness'')|int}}'
-        target:
-          entity_id: light.sovrumsfonstret
   mode: single
 - id: '1699456441373'
   alias: EV6, scheduled HVAC
@@ -1443,4 +1418,76 @@
   - service: script.ladda_bilen_uppstart
     data: {}
     enabled: false
+  mode: single
+- id: '1703854838804'
+  alias: Belysning, sovrumsfönstet
+  description: ''
+  use_blueprint:
+    path: fireboy1919/light-state-sync.yaml
+    input:
+      entity_1: light.sovrummet_fonstret
+      entity_2: light.sovrumsfonstret
+- id: '1705750284263'
+  alias: Värmepumpen, larm om elpatron
+  description: ''
+  trigger:
+  - platform: numeric_state
+    entity_id:
+    - sensor.shellyem3_c45bbe55c55e_channel_b_current
+    above: 1
+  condition: []
+  action:
+  - service: notify.rickards_devices
+    data:
+      message: 'Elpatronen är tillslagen på värmepumpen.\n Elpriset: {{states(''sensor.template_elpris_kr'')}}
+        kr\n Temp: {{states(''sensor.framsidan_temperature'')}}°C\n Kl.: {{now().strftime(''%m-%d
+        %H:%M'')}}'
+      title: VP elpatron
+  mode: single
+- id: '1705870917421'
+  alias: Projektorn, Stäng av belysning
+  description: ''
+  trigger:
+  - platform: device
+    device_id: dc532b8fd22b934a570a3040abba3ccd
+    domain: media_player
+    entity_id: dd4661684aac4934b475a564d21887dc
+    type: playing
+  condition: []
+  action:
+  - service: switch.turn_off
+    metadata: {}
+    data: {}
+    target:
+      entity_id: switch.tz3000_2_byran_uppe_switch
+  mode: single
+- id: '1705871800010'
+  alias: Projektorn, Slå på belysning
+  description: ''
+  trigger:
+  - platform: device
+    device_id: dc532b8fd22b934a570a3040abba3ccd
+    domain: media_player
+    entity_id: dd4661684aac4934b475a564d21887dc
+    type: turned_off
+  - platform: device
+    device_id: dc532b8fd22b934a570a3040abba3ccd
+    domain: media_player
+    entity_id: dd4661684aac4934b475a564d21887dc
+    type: paused
+    for:
+      hours: 0
+      minutes: 5
+      seconds: 0
+  condition:
+  - condition: sun
+    after: sunset
+  - condition: time
+    before: '23:45:00'
+  action:
+  - service: switch.turn_on
+    metadata: {}
+    data: {}
+    target:
+      entity_id: switch.tz3000_2_byran_uppe_switch
   mode: single
