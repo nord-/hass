@@ -5,6 +5,7 @@ vrum_nere:
     - light.fibaro_system_fgd212_dimmer_2_level_2 # vardagsrumsfönstret
     - switch.telldus_2  # flörtkulorna
     - light.tv_banken_light
+    - switch.tz3000_3_ljusslingan_brytare
     #    - switch.fibaro_system_fgwpe_f_wall_plug_gen5_switch
 
 felix_rum:

@@ -73,6 +73,8 @@ notify: !include groups_notify.yaml
 automation: !include automations.yaml
 script: !include scripts.yaml
 
+python_script:
+
 # NEXA / Tellstick DUO
 tellstick:
   host: core-tellstick
@@ -100,6 +102,7 @@ var: !include vars.yaml
 logger:
   default: warning
   # logs:
+  #   homeassistant.components.rest: debug
     # homeassistant.components.modbus: debug
     # pymodbus: debug
     # homeassistant.components.zha: debug

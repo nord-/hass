@@ -230,6 +230,11 @@ charge_the_tesla:
       minutes: 3
       seconds: 0
       milliseconds: 0
+  - service: homeassistant.update_entity
+    target:
+      entity_id: sensor.charge_rya_sessionid
+    data: {}
+    alias: Get SessionId
   - service: kia_uvo.force_update
     data: {}
   - delay: '{{ (states(''sensor.template_rya_req_hours'')|int + states(''sensor.template_zoe_req_hours'')|int)|multiply(3600)|int
@@ -276,6 +281,11 @@ ladda_zoe:
       stop_actions: true
     target:
       entity_id: automation.ladda_fridas_bil
+  - alias: Get SessionId
+    service: homeassistant.update_entity
+    data: {}
+    target:
+      entity_id: sensor.charge_yxx_sessionid
   mode: single
   icon: mdi:ev-station
 ladda_tesla_stoppa:
@@ -536,34 +546,7 @@ ev6_start_hvac:
     - conditions:
       - condition: numeric_state
         entity_id: sensor.framsidan_temperature
-        above: 17
-      sequence:
-      - alias: Start AC on EV6
-        service: kia_uvo.start_climate
-        data:
-          duration: 10
-          climate: true
-          temperature: 22
-          heating: '0'
-          device_id: f4c09575234da651122f411210842a80
-    - conditions:
-      - condition: numeric_state
-        entity_id: sensor.framsidan_temperature
-        below: 17
-        above: 12
-      sequence:
-      - alias: Start Defrost on EV6
-        service: kia_uvo.start_climate
-        data:
-          duration: 10
-          climate: true
-          temperature: 22
-          heating: '0'
-          device_id: f4c09575234da651122f411210842a80
-    - conditions:
-      - condition: numeric_state
-        entity_id: sensor.framsidan_temperature
-        below: 12
+        below: 5
       sequence:
       - alias: Start Heat, Seat and Steering Wheel on EV6
         service: kia_uvo.start_climate
@@ -574,8 +557,9 @@ ev6_start_hvac:
           heating: '3'
           device_id: f4c09575234da651122f411210842a80
           flseat: '8'
+          defrost: true
     default:
-    - alias: Start Heat on EV6
+    - alias: Set temp to 22° on EV6
       service: kia_uvo.start_climate
       data:
         duration: 10

@@ -584,18 +584,19 @@
               ]
             },
             {
-              "type": "history-graph",
+              "chart_type": "line",
+              "period": "hour",
+              "type": "statistics-graph",
               "entities": [
-                {
-                  "entity": "sensor.nordpool_kwh_se3_sek_3_095_0",
-                  "name": "Pris"
-                },
-                {
-                  "entity": "sensor.elpriset_kr_avg_3",
-                  "name": "Avg 3"
-                }
+                "sensor.template_nordpool_current_price_vat",
+                "sensor.elpriset_kr_avg_3",
+                "sensor.elpriset_kr_avg_24h_inkl_moms"
               ],
-              "hours_to_show": 72
+              "stat_types": [
+                "mean"
+              ],
+              "days_to_show": 3,
+              "hide_legend": true
             }
           ]
         },
@@ -944,101 +945,77 @@
               "title": "Statistik",
               "cards": [
                 {
-                  "type": "entities",
+                  "chart_type": "bar",
+                  "period": "day",
+                  "type": "statistics-graph",
                   "entities": [
-                    {
-                      "entity": "sensor.rya_kostnad",
-                      "name": "EV6 [kr]",
-                      "icon": "mdi:car-sports"
-                    },
-                    {
-                      "entity": "sensor.rya_energi_per_manad",
-                      "name": "EV6 [kWh]",
-                      "icon": "mdi:car-sports"
-                    },
-                    {
-                      "entity": "sensor.zoe_kostnad",
-                      "name": "Zoe [kr]",
-                      "icon": "mdi:car-side"
-                    },
-                    {
-                      "entity": "sensor.zoe_energi_per_manad",
-                      "name": "Zoe [kWh]",
-                      "icon": "mdi:car-side"
-                    }
-                  ]
+                    "sensor.rya_kwh",
+                    "sensor.zoe_kwh"
+                  ],
+                  "stat_types": [
+                    "change"
+                  ],
+                  "days_to_show": 7,
+                  "hide_legend": true
                 },
                 {
-                  "type": "custom:collapsable-cards",
-                  "title": "Förra månaden",
-                  "cards": [
-                    {
-                      "type": "entities",
-                      "entities": [
-                        {
-                          "type": "attribute",
-                          "entity": "sensor.rya_kostnad",
-                          "attribute": "last_period",
-                          "name": "EV6 [kr]",
-                          "icon": "mdi:car-side",
-                          "suffix": "kr"
-                        },
-                        {
-                          "type": "attribute",
-                          "entity": "sensor.rya_energi_per_manad",
-                          "attribute": "last_period",
-                          "name": "EV6 [kWh]",
-                          "icon": "mdi:car-side",
-                          "suffix": "kWh"
-                        },
-                        {
-                          "type": "attribute",
-                          "entity": "sensor.zoe_kostnad",
-                          "attribute": "last_period",
-                          "name": "Zoe [kr]",
-                          "icon": "mdi:car-side",
-                          "suffix": "kr"
-                        },
-                        {
-                          "type": "attribute",
-                          "entity": "sensor.zoe_energi_per_manad",
-                          "attribute": "last_period",
-                          "name": "Zoe [kWh]",
-                          "icon": "mdi:car-side",
-                          "suffix": "kWh"
-                        }
-                      ]
-                    }
-                  ]
+                  "chart_type": "bar",
+                  "period": "month",
+                  "type": "statistics-graph",
+                  "entities": [
+                    "sensor.rya_kwh",
+                    "sensor.zoe_kwh"
+                  ],
+                  "stat_types": [
+                    "change"
+                  ],
+                  "hide_legend": true,
+                  "days_to_show": 70
                 }
               ]
             },
             {
-              "type": "custom:history-explorer-card",
-              "defaultTimeRange": "14d",
-              "header": " ",
-              "legendVisible": false,
-              "uiLayout": {
-                "toolbar": "hide",
-                "selector": "hide",
-                "interval": "hide"
-              },
-              "graphs": [
-                {
-                  "type": "line",
-                  "entities": [
-                    {
-                      "entity": "sensor.ev6_odometer",
-                      "color": "#3e95cd",
-                      "fill": "rgba(151,187,205,0.15)"
-                    }
-                  ]
-                }
+              "chart_type": "bar",
+              "period": "month",
+              "type": "statistics-graph",
+              "entities": [
+                "sensor.ev6_odometer",
+                "sensor.zoe_mileage"
               ],
-              "statistics": {
-                "mode": "max",
-                "period": "day"
-              }
+              "stat_types": [
+                "change"
+              ],
+              "hide_legend": true,
+              "logarithmic_scale": false
+            },
+            {
+              "type": "entities",
+              "title": "Månadskostnad",
+              "entities": [
+                {
+                  "entity": "sensor.rya_kostnad",
+                  "icon": "mdi:car-estate",
+                  "name": "EV6"
+                },
+                {
+                  "entity": "sensor.zoe_kostnad",
+                  "name": "Zoe",
+                  "icon": "mdi:car-hatchback"
+                },
+                {
+                  "type": "divider"
+                },
+                {
+                  "entity": "sensor.template_rya_charging_cost_last_period",
+                  "icon": "mdi:car-estate",
+                  "name": "EV6 (förra)"
+                },
+                {
+                  "entity": "sensor.template_zoe_charging_cost_last_period",
+                  "name": "Zoe (förra)",
+                  "icon": "mdi:car-hatchback"
+                }
+              ]
             }
           ]
         },
@@ -1432,6 +1409,100 @@
                       "title": "Stäng av"
                     }
                   ]
+                }
+              ]
+            },
+            {
+              "type": "vertical-stack",
+              "title": "Husets förbrukning",
+              "cards": [
+                {
+                  "chart_type": "bar",
+                  "period": "day",
+                  "type": "statistics-graph",
+                  "entities": [
+                    "sensor.template_house_net_energy_kwh",
+                    "sensor.template_chargenode_energy_kwh",
+                    "sensor.template_house_energy_wo_evcharging"
+                  ],
+                  "stat_types": [
+                    "change"
+                  ],
+                  "days_to_show": 7,
+                  "hide_legend": true
+                },
+                {
+                  "type": "custom:apexcharts-card",
+                  "header": {
+                    "show_states": false
+                  },
+                  "series": [
+                    {
+                      "entity": "sensor.template_house_power_kw",
+                      "name": "hus",
+                      "type": "column",
+                      "stroke_width": 3,
+                      "show": {
+                        "legend_value": false
+                      },
+                      "group_by": {
+                        "func": "avg",
+                        "duration": "1h"
+                      }
+                    },
+                    {
+                      "entity": "sensor.template_fronius_solar_power",
+                      "name": "sol",
+                      "type": "column",
+                      "color": "green",
+                      "stroke_width": 3,
+                      "show": {
+                        "legend_value": false
+                      },
+                      "group_by": {
+                        "func": "avg",
+                        "duration": "1h"
+                      }
+                    },
+                    {
+                      "entity": "sensor.template_elpris_kr",
+                      "name": "Pris",
+                      "float_precision": 2,
+                      "color": "#6f90f4",
+                      "curve": "stepline",
+                      "stroke_width": 2
+                    }
+                  ],
+                  "update_interval": "1h",
+                  "graph_span": "1d",
+                  "span": {
+                    "end": "hour"
+                  },
+                  "apex_config": {
+                    "yaxis": [
+                      {
+                        "seriesName": "hus",
+                        "decimalsInFloat": 1
+                      },
+                      {
+                        "seriesName": "hus",
+                        "show": false
+                      },
+                      {
+                        "decimalsInFloat": 2,
+                        "min": 0,
+                        "opposite": true
+                      }
+                    ],
+                    "legend": {
+                      "show": false
+                    },
+                    "tooltip": {
+                      "x": {
+                        "show": false
+                      }
+                    }
+                  }
                 },
                 {
                   "type": "entities",
@@ -1461,138 +1532,6 @@
                   ]
                 }
               ]
-            },
-            {
-              "type": "custom:apexcharts-card",
-              "header": {
-                "show": true,
-                "title": "Husets förbrukning",
-                "show_states": true,
-                "colorize_states": true
-              },
-              "series": [
-                {
-                  "entity": "sensor.house_energy_day",
-                  "name": " ",
-                  "type": "column",
-                  "group_by": {
-                    "func": "delta",
-                    "duration": "1d"
-                  }
-                }
-              ],
-              "update_interval": "1h",
-              "apex_config": {
-                "yaxis": {
-                  "min": 0,
-                  "decimalsInFloat": 0
-                }
-              },
-              "graph_span": "4d",
-              "cache": true,
-              "span": {
-                "end": "day"
-              }
-            },
-            {
-              "type": "custom:apexcharts-card",
-              "header": {
-                "show": true,
-                "title": "Nettoförbrukning",
-                "show_states": true
-              },
-              "series": [
-                {
-                  "entity": "sensor.template_house_net_power_kw",
-                  "name": " ",
-                  "type": "column",
-                  "show": {
-                    "legend_value": true
-                  },
-                  "group_by": {
-                    "func": "avg",
-                    "duration": "1h"
-                  }
-                }
-              ],
-              "update_interval": "1h",
-              "graph_span": "2d",
-              "span": {
-                "end": "day"
-              }
-            },
-            {
-              "type": "custom:apexcharts-card",
-              "header": {
-                "show_states": false
-              },
-              "series": [
-                {
-                  "entity": "sensor.template_house_power_kw",
-                  "name": "hus",
-                  "type": "column",
-                  "stroke_width": 3,
-                  "show": {
-                    "legend_value": false
-                  },
-                  "group_by": {
-                    "func": "avg",
-                    "duration": "1h"
-                  }
-                },
-                {
-                  "entity": "sensor.template_fronius_solar_power",
-                  "name": "sol",
-                  "type": "column",
-                  "color": "green",
-                  "stroke_width": 3,
-                  "show": {
-                    "legend_value": false
-                  },
-                  "group_by": {
-                    "func": "avg",
-                    "duration": "1h"
-                  }
-                },
-                {
-                  "entity": "sensor.template_elpris_kr",
-                  "name": "Pris",
-                  "float_precision": 2,
-                  "color": "#6f90f4",
-                  "curve": "stepline",
-                  "stroke_width": 2
-                }
-              ],
-              "update_interval": "1h",
-              "graph_span": "1d",
-              "span": {
-                "end": "day"
-              },
-              "apex_config": {
-                "yaxis": [
-                  {
-                    "seriesName": "hus",
-                    "decimalsInFloat": 1
-                  },
-                  {
-                    "seriesName": "hus",
-                    "show": false
-                  },
-                  {
-                    "decimalsInFloat": 2,
-                    "min": 0,
-                    "opposite": true
-                  }
-                ],
-                "legend": {
-                  "show": false
-                },
-                "tooltip": {
-                  "x": {
-                    "show": false
-                  }
-                }
-              }
             }
           ]
         },
@@ -1749,45 +1688,6 @@
               ]
             },
             {
-              "type": "custom:history-explorer-card",
-              "defaultTimeRange": "14d",
-              "legendVisible": false,
-              "labelsVisible": false,
-              "showLabel": false,
-              "header": "hide",
-              "uiLayout": {
-                "toolbar": "hide",
-                "selector": "hide",
-                "interval": "hide"
-              },
-              "graphs": [
-                {
-                  "type": "bar",
-                  "options": {
-                    "interval": "daily"
-                  },
-                  "entities": [
-                    {
-                      "entity": "sensor.spabadet_kr",
-                      "color": "DarkGreen"
-                    },
-                    {
-                      "entity": "sensor.template_spabadet_energy_kwh",
-                      "color": "FireBrick"
-                    }
-                  ]
-                }
-              ],
-              "statistics": {
-                "mode": "max",
-                "period": "day"
-              },
-              "timeTicks": {
-                "densityOverride": "high",
-                "dateFormat": "short"
-              }
-            },
-            {
               "type": "vertical-stack",
               "title": "Temperatur",
               "cards": [
@@ -1841,6 +1741,56 @@
                   ]
                 }
               ]
+            },
+            {
+              "type": "vertical-stack",
+              "title": "Statistik",
+              "cards": [
+                {
+                  "chart_type": "bar",
+                  "period": "month",
+                  "type": "statistics-graph",
+                  "entities": [
+                    "sensor.template_spabadet_energy_kwh",
+                    "sensor.spabadet_kr"
+                  ],
+                  "stat_types": [
+                    "change"
+                  ],
+                  "days_to_show": 180,
+                  "hide_legend": true
+                },
+                {
+                  "chart_type": "bar",
+                  "period": "day",
+                  "type": "statistics-graph",
+                  "entities": [
+                    "sensor.template_spabadet_energy_kwh",
+                    "sensor.spabadet_kr"
+                  ],
+                  "stat_types": [
+                    "change"
+                  ],
+                  "days_to_show": 14,
+                  "hide_legend": true
+                },
+                {
+                  "chart_type": "line",
+                  "period": "5minute",
+                  "type": "statistics-graph",
+                  "entities": [
+                    "sensor.template_spabadet_l1_current_a",
+                    "sensor.template_spabadet_l2_current_a",
+                    "sensor.template_spabadet_l3_current_a"
+                  ],
+                  "stat_types": [
+                    "mean"
+                  ],
+                  "hide_legend": true,
+                  "days_to_show": 1,
+                  "logarithmic_scale": false
+                }
+              ]
             }
           ]
         },
@@ -1850,7 +1800,7 @@
           "icon": "mdi:lightbulb-group",
           "badges": [
             {
-              "entity": "sensor.op9_pro_battery_level"
+              "entity": "sensor.le2123_battery_level"
             },
             {
               "entity": "sensor.sm_p610_batteriniva",
@@ -1989,8 +1939,8 @@
                   "name": "Skänken"
                 },
                 {
-                  "entity": "switch.telldus_2",
-                  "icon": "mdi:string-lights"
+                  "entity": "switch.tz3000_3_ljusslingan_brytare",
+                  "name": "Ljusslingan"
                 }
               ],
               "show_header_toggle": true,
@@ -2146,6 +2096,10 @@
                   "name": "Tvättstugan",
                   "icon": "mdi:led-strip",
                   "secondary_info": "brightness"
+                },
+                {
+                  "entity": "switch.nexa_5",
+                  "name": "Växtlampan"
                 }
               ],
               "show_header_toggle": true,
@@ -2529,6 +2483,35 @@
                       "entity": "sensor.felix_rum_temperature",
                       "detail": 1,
                       "name": "Tvättstugan"
+                    }
+                  ]
+                },
+                {
+                  "type": "horizontal-stack",
+                  "cards": [
+                    {
+                      "graph": "line",
+                      "hours_to_show": 24,
+                      "entity": "sensor.xiaomi_lys1_temperatur",
+                      "type": "sensor",
+                      "detail": 1,
+                      "name": "Vrum uppe"
+                    },
+                    {
+                      "graph": "line",
+                      "hours_to_show": 24,
+                      "type": "sensor",
+                      "entity": "sensor.xiaomi_lys3_temperatur",
+                      "detail": 1,
+                      "name": "Köket"
+                    },
+                    {
+                      "graph": "line",
+                      "hours_to_show": 24,
+                      "type": "sensor",
+                      "entity": "sensor.xiaomi_lys4_temperatur",
+                      "detail": 1,
+                      "name": "Badrummet"
                     }
                   ]
                 },
@@ -2920,43 +2903,17 @@
               ]
             },
             {
-              "type": "custom:apexcharts-card",
-              "graph_span": "4d",
-              "update_interval": "1hour",
-              "cache": true,
-              "series": [
-                {
-                  "entity": "sensor.template_fronius_solar_daily_energy",
-                  "type": "column",
-                  "show": {
-                    "datalabels": true
-                  },
-                  "group_by": {
-                    "func": "delta",
-                    "duration": "1d"
-                  }
-                }
+              "chart_type": "bar",
+              "period": "day",
+              "type": "statistics-graph",
+              "entities": [
+                "sensor.template_fronius_solar_daily_energy"
               ],
-              "span": {
-                "end": "day"
-              },
-              "apex_config": {
-                "yaxis": [
-                  {
-                    "decimalsInFloat": 0,
-                    "min": 0
-                  }
-                ],
-                "dataLabels": {
-                  "background": {
-                    "foreColor": "rgb(255,255,255)",
-                    "opacity": 0
-                  },
-                  "dropShadow": {
-                    "enabled": true
-                  }
-                }
-              }
+              "stat_types": [
+                "change"
+              ],
+              "days_to_show": 7,
+              "hide_legend": true
             },
             {
               "type": "custom:apexcharts-card",

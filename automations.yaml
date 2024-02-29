@@ -360,26 +360,17 @@
   alias: Ladda RYA, stoppa
   description: ''
   trigger:
-  - platform: state
-    entity_id: binary_sensor.low_price
-    to: 'off'
+  - platform: numeric_state
+    entity_id:
+    - sensor.ev6_ev_battery_level
+    above: input_number.rya_soc_upper_limit
   condition:
   - condition: state
     entity_id: device_tracker.ev6_location
     state: home
   - condition: numeric_state
     entity_id: sensor.ev6_ev_battery_level
-    above: '20'
-  - condition: state
-    entity_id: binary_sensor.low_price
-    state: 'off'
-  - condition: state
-    entity_id: binary_sensor.ev6_ev_battery_charge
-    state: 'on'
-  - condition: state
-    entity_id: automation.ladda_bilen_nar_det_ar_billigt
-    state: 'on'
-    alias: Confirm automation Ladda vid lågt pris is on
+    above: input_number.rya_soc_upper_limit
   action:
   - service: script.ladda_tesla_stoppa
     data: {}
@@ -1014,19 +1005,33 @@
       hours: 0
       minutes: 0
       seconds: 10
+    id: HA_SoC
   - platform: state
     entity_id:
     - number.ev6_ac_charging_limit
+    id: EV6_SoC
   condition:
-  - condition: template
-    value_template: '{{ states(''number.ev6_ac_charging_limit'')|int(0) != states(''input_number.rya_soc_upper_limit'')|int(0)
-      }}'
+  - condition: or
+    conditions:
+    - condition: and
+      conditions:
+      - condition: trigger
+        id:
+        - EV6_SoC
+      - condition: template
+        value_template: '{{ states(''number.ev6_ac_charging_limit'')|int(0) != states(''input_number.rya_soc_upper_limit'')|int(0)
+          }}'
+      alias: if triggered by EV6 and EV6 ≠ HA
+    - condition: and
+      conditions:
+      - condition: trigger
+        id:
+        - HA_SoC
+      - condition: numeric_state
+        entity_id: input_number.rya_soc_upper_limit
+        above: 49
+      alias: If triggered by HA and EV6 > 49
   action:
-  - service: kia_uvo.set_charge_limits
-    data:
-      ac_limit: '{{ states("input_number.rya_soc_upper_limit")|int(80) }}'
-    alias: Set charge limit to Rya SoC Upper Limit
-    enabled: false
   - if:
     - condition: template
       value_template: '{{ states.number.ev6_ac_charging_limit.state == 0 }}'
@@ -1040,10 +1045,9 @@
         value: '{{ states(''input_number.rya_soc_upper_limit'')|int(80) }}'
     else:
     - if:
-      - condition: template
-        value_template: '{{ trigger.entity_id == ''number.ev6_ac_charging_limit''
-          }}'
-        alias: Triggered by ev6_ac_charging_limit
+      - condition: trigger
+        id:
+        - EV6_SoC
       - condition: numeric_state
         entity_id: number.ev6_ac_charging_limit
         above: 49
@@ -1101,6 +1105,10 @@
   - platform: numeric_state
     entity_id: sensor.template_rya_charging_power
     above: 0.1
+  - platform: state
+    entity_id:
+    - binary_sensor.ev6_ev_battery_charge
+    to: 'on'
   condition: []
   action:
   - if:
@@ -1121,6 +1129,15 @@
       - condition: numeric_state
         entity_id: sensor.template_rya_charging_power
         above: 0.1
+        enabled: false
+      - condition: or
+        conditions:
+        - condition: state
+          entity_id: binary_sensor.ev6_ev_battery_charge
+          state: 'on'
+        - condition: numeric_state
+          entity_id: sensor.template_rya_charging_power
+          above: 0.1
       sequence:
       - service: kia_uvo.update
         data: {}
@@ -1355,7 +1372,7 @@
   - service: notify.rickards_devices
     data:
       title: A/C på Kian
-      message: 'Luftkonditioneringen på RYA är startad.\n A/C: {{states(''sensor.ev6_set_temperature'')}}°
+      message: 'Luftkonditioneringen på RYA är startad.\n Ute: {{states(''sensor.framsidan_temperature'')}}°
         {{''(på)'' if states(''binary_sensor.ev6_air_conditioner'')|bool else ''(av)''}}\n
         SoC: {{states(''sensor.ev6_ev_battery_level'')}}%.\n {{now().strftime(''%m-%d
         %H:%M'')}}'
@@ -1490,4 +1507,64 @@
     data: {}
     target:
       entity_id: switch.tz3000_2_byran_uppe_switch
+  mode: single
+- id: shellies_announce
+  alias: Shellies Announce
+  trigger:
+  - platform: homeassistant
+    event: start
+  - platform: time_pattern
+    hours: /1
+  action:
+    service: mqtt.publish
+    data:
+      topic: shellies/command
+      payload: announce
+- id: shellies_discovery
+  alias: Shellies Discovery
+  mode: queued
+  max: 999
+  trigger:
+    platform: mqtt
+    topic: shellies/announce
+  condition:
+  - condition: template
+    value_template: '{{ trigger.payload_json.gen is not defined }}'
+  action:
+    service: python_script.shellies_discovery
+    data:
+      id: '{{ trigger.payload_json.id }}'
+      mac: '{{ trigger.payload_json.mac }}'
+      fw_ver: '{{ trigger.payload_json.fw_ver }}'
+      model: '{{ trigger.payload_json.model | default }}'
+      mode: '{{ trigger.payload_json.mode | default }}'
+      host: '{{ trigger.payload_json.ip }}'
+- id: '1707560096898'
+  alias: Belysning, växtlampa
+  description: ''
+  trigger:
+  - platform: time
+    at: 08:00:00
+    id: TimeOn
+  - platform: time
+    at: '21:00:00'
+    id: TimeOff
+  condition: []
+  action:
+  - if:
+    - condition: trigger
+      id:
+      - TimeOn
+    then:
+    - service: switch.turn_on
+      metadata: {}
+      data: {}
+      target:
+        entity_id: switch.nexa_5
+    else:
+    - service: switch.turn_off
+      metadata: {}
+      data: {}
+      target:
+        entity_id: switch.nexa_5
   mode: single

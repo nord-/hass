@@ -264,9 +264,16 @@
     state_class: total
     state: >-
       {{ states('sensor.hem_gen5_electric_consumed_kwh') | float + states('var.solarenergy') | float }}
-    # {{ (states('sensor.hem_gen5_electric_consumed_kwh') | float) + states('sensor.template_last_solarenergy_value') | float(0) }}
     attributes:
       friendly_name: "Husets nettoenergi"
+
+  - unique_id: house_energy_wo_evcharging
+    unit_of_measurement: "kWh"
+    device_class: energy
+    state_class: total
+    state: "{{ states('sensor.template_house_net_energy_kwh')|float(0) - states('sensor.template_chargenode_energy_kwh')|float(0) }}"
+    attributes:
+      friendly_name: "Husets nettoenergi exkl laddning (kWh)"
 
 ## house consumed from grid
 - sensor:
@@ -447,6 +454,10 @@
   - unique_id: zoe_req_hours
     state: >-
       {{ ((states('input_number.zoe_soc_upper_limit')|float(0) - states("sensor.zoe_battery_level")|int) /100*41/7)|round(0, 'ceil') }}
+  - unique_id: zoe_charging_cost_last_period
+    device_class: monetary
+    unit_of_measurement: "kr"
+    state: "{{ state_attr('sensor.zoe_kostnad','last_period')|float(0)|round(0) }}"
 
 ## Kia:n
 - sensor:
@@ -476,6 +487,10 @@
     device_class: monetary
     unit_of_measurement: "kr"
     state: "{{ states('sensor.template_rya_charging_power')|float(0) * states('sensor.template_elpris_kr')|float(0) }}"
+  - unique_id: rya_charging_cost_last_period
+    device_class: monetary
+    unit_of_measurement: "kr"
+    state: "{{ state_attr('sensor.rya_kostnad','last_period')|float(0)|round(0) }}"
 
 ## Spabadet
 - sensor:
