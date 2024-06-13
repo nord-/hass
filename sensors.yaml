@@ -35,7 +35,8 @@
   duration:
     days: 3
   entities:
-    - sensor.template_nordpool_current_price
+    - sensor.template_elpris_kr
+    #- sensor.template_nordpool_current_price_vat
 
 - platform: average
   name: 'Elpriset [kr] (avg)'
@@ -59,6 +60,15 @@
     days: 7
   entities:
     - sensor.spabadet_dag
+    
+# - platform: average
+#   unique_id: avg_temp
+#   name: 'Temp [°C], dag'
+#   end: '{{ now().replace(hour=0).replace(minute=0).replace(second=0) }}'
+#   duration:
+#     hours: 24
+#   entities:
+#     - sensor.template_home_temp
 
 ### INTEGRATIONS 
 - platform: integration
@@ -76,6 +86,7 @@
 #   round: 2
 
 ### STATISTICS
+# https://www.home-assistant.io/integrations/statistics/
 - platform: statistics
   unique_id: energy_used_24_hrs
   name: "Energy Used (24 hrs)"
@@ -83,7 +94,6 @@
   state_characteristic: change
   max_age:
     hours: 24
-  sampling_size: 1440
 
 - platform: statistics
   unique_id: energycost_24hrs
@@ -91,14 +101,21 @@
   entity_id: sensor.house_cost_real
   state_characteristic: change
   max_age:
+    hours: 24  
+
+- platform: statistics
+  unique_id: spa_active_24hrs
+  name: "Spabadet, påslaget [min] (24 hrs)"
+  entity_id: sensor.template_spabadet_pump_active
+  state_characteristic: sum_differences_nonnegative
+  max_age:
     hours: 24
-  sampling_size: 1440
 
 ### REST
 - platform: rest
   unique_id: cn_rya_sessionid
   name: "Charge RYA SessionId"
-  scan_interval: 3600
+  scan_interval: 43200
   resource: https://dev-app-cn.azurewebsites.net/v2/sessions/active
   value_template: "{{ as_timestamp(states.sensor.charge_rya_sessionid.last_updated) | timestamp_custom('%Y-%m-%d %H:%M:%S') }}"
   json_attributes_path: "$.data[?(@.vehicle.userCarId==590)]"
@@ -112,7 +129,7 @@
 - platform: rest
   unique_id: cn_yxx_sessionid
   name: "Charge YXX SessionId"
-  scan_interval: 3600
+  scan_interval: 43200
   resource: https://dev-app-cn.azurewebsites.net/v2/sessions/active
   value_template: "{{ as_timestamp(states.sensor.charge_yxx_sessionid.last_updated) | timestamp_custom('%Y-%m-%d %H:%M:%S') }}"
   json_attributes_path: "$.data[?(@.vehicle.userCarId==423)]"

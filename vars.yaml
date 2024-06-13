@@ -54,6 +54,11 @@ solarenergy_daily:
   tracked_entity_id:
     - sensor.energy_day_fronius_inverter_1_192_168_2_31
 
+# spa
+spa_cost:
+  friendly_name: 'Badkostnad'
+  icon: mdi:hot-tub
+  
 # cars
 # aza_energy_last_session:
 #   friendly_name: 'Azarel, laddat (kWh)'

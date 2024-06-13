@@ -35,8 +35,6 @@ history:
 
 logbook:
 
-map:
-
 sun:
 
 sensor: !include sensors.yaml

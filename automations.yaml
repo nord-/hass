@@ -234,62 +234,6 @@
   action:
   - service: script.turn_off_outdoor
     data: {}
-- id: '1610304172777'
-  alias: Ladda bilen, SoC <20%
-  description: ''
-  trigger:
-  - platform: state
-    entity_id:
-    - binary_sensor.ev6_ev_charge_port
-    to: 'on'
-  condition:
-  - condition: numeric_state
-    entity_id: sensor.ev6_ev_battery_level
-    below: '20'
-  - condition: state
-    entity_id: device_tracker.ev6_location
-    state: home
-  - condition: numeric_state
-    entity_id: sensor.framsidan_temperature
-    below: 5
-  action:
-  - service: automation.turn_on
-    entity_id: automation.laddat_till_20
-  - service: script.charge_the_tesla
-    data: {}
-  - service: script.ladda_bilen_uppstart
-    data: {}
-  mode: single
-- id: '1610304940192'
-  alias: Ladda bilen, stoppa, SoC ≥20%
-  description: ''
-  trigger:
-  - platform: numeric_state
-    entity_id: sensor.ev6_ev_battery_level
-    above: '20'
-  condition:
-  - condition: state
-    entity_id: binary_sensor.ev6_ev_battery_charge
-    state: Charging
-  - condition: state
-    entity_id: device_tracker.ev6_location
-    state: home
-  action:
-  - if:
-    - condition: state
-      entity_id: binary_sensor.low_price
-      state: 'off'
-    then:
-    - service: script.ladda_tesla_stoppa
-      data: {}
-    else:
-    - service: notify.mobile_app_op9_pro
-      data:
-        message: EV6 har nått SoC {{ states("sensor.ev6_ev_battery_level") }}%
-        title: EV6 laddar fortfarande pga. lågt elpris.
-  - service: automation.turn_off
-    entity_id: automation.laddat_till_20
-  mode: single
 - id: '1633032752936'
   alias: Belysning tänd, Tidig morgon
   description: ''
@@ -311,14 +255,15 @@
     data: {}
   mode: single
 - id: '1643056235541'
-  alias: Ladda RYA, lågt elpris
+  alias: EV6, charge when cheap
   description: ''
   trigger:
   - platform: state
     entity_id:
     - binary_sensor.ev6_ev_charge_port
     to: 'on'
-    enabled: false
+    enabled: true
+    from: 'off'
   - platform: time
     at: sensor.template_next_charge
   condition:
@@ -338,10 +283,10 @@
       entity_id: binary_sensor.ev6_ev_battery_charge
       state: 'on'
     alias: EV6 not charging
-  - condition: numeric_state
+  - alias: EV6 SoC < Charging limit
+    condition: numeric_state
     entity_id: sensor.ev6_ev_battery_level
-    below: number.ev6_ac_charging_limit
-    alias: EV6 SoC < Charging limit
+    below: input_number.rya_soc_upper_limit
   action:
   - service: script.turn_on
     data: {}
@@ -356,67 +301,61 @@
     target:
       entity_id: automation.ladda_bilen_nar_det_ar_billigt
   mode: single
-- id: '1643296123979'
-  alias: Ladda RYA, stoppa
-  description: ''
-  trigger:
-  - platform: numeric_state
-    entity_id:
-    - sensor.ev6_ev_battery_level
-    above: input_number.rya_soc_upper_limit
-  condition:
-  - condition: state
-    entity_id: device_tracker.ev6_location
-    state: home
-  - condition: numeric_state
-    entity_id: sensor.ev6_ev_battery_level
-    above: input_number.rya_soc_upper_limit
-  action:
-  - service: script.ladda_tesla_stoppa
-    data: {}
-  mode: single
 - id: '1652813052285'
   alias: Wall-E, fellarm
   description: ''
   trigger:
   - platform: state
     entity_id:
-    - vacuum.wall_e
+    - lawn_mower.wall_e
     to: error
     id: error_trigger
-  - platform: state
-    entity_id:
-    - vacuum.wall_e
     for:
       hours: 0
-      minutes: 20
+      minutes: 0
+      seconds: 0
+  - platform: state
+    entity_id:
+    - lawn_mower.wall_e
+    for:
+      hours: 0
+      minutes: 15
       seconds: 0
     to: returning
   condition:
-  - condition: template
-    value_template: '{{ state_attr("vacuum.wall_e", "error").description != ''rain
-      delay'' }}'
-    alias: Error NOT 'rain delay'
-  - condition: and
+  - alias: Error NOT 'rain delay'
+    condition: template
+    value_template: '{{ states(''sensor.wall_e_error_2'') != ''rain delay'' }}'
+  - condition: or
     conditions:
-    - condition: trigger
-      id:
-      - error_trigger
-    - condition: template
-      value_template: '{{ state_attr("vacuum.wall_e", "error").description != ''no
-        error'' }}'
-      alias: NOT 'no error'
-    alias: Triggered by error and NOT 'no error'
+    - condition: and
+      conditions:
+      - condition: trigger
+        id:
+        - error_trigger
+      - condition: not
+        conditions:
+        - condition: state
+          entity_id: sensor.wall_e_error_2
+          state: no_error
+        alias: NOT 'no error'
+      alias: Error BUT NOT no_error
+    - condition: not
+      conditions:
+      - condition: trigger
+        id:
+        - error_trigger
+      alias: NOT Error
   action:
   - service: notify.mobile_app_op9_pro
     data:
-      message: 'Fel på gräsklipparen ({{ state_attr("vacuum.wall_e", "error").description
-        }}). Status: {{states(''vacuum.wall_e'')}}. Batteri {{ state_attr("vacuum.wall_e",
-        "battery_level") }}%.'
-      title: Wall-E larm
+      message: 'Status:  {{states(''lawn_mower.wall_e'')}}.\n Batteri: {{states(''sensor.wall_e_battery_2'')}}%.\n
+        Senast:  {{states.lawn_mower.wall_e.last_updated | as_local | as_timestamp
+        | timestamp_custom(''%H:%M'')}}'
+      title: Wall-E larm ({{states('sensor.wall_e_error_2')}})
   mode: single
 - id: '1656709628350'
-  alias: Ladda Zoe:n, klocka
+  alias: Zoe, start charge on time
   description: ''
   trigger:
   - platform: time
@@ -442,35 +381,49 @@
     entity_id:
     - binary_sensor.template_nordpool_tomorrow_valid
     to: 'on'
+    for:
+      hours: 0
+      minutes: 0
+      seconds: 5
   condition: []
   action:
   - service: notify.rickards_devices
     data:
-      message: "Nu är morgondagens priser uppdaterade.\\n avg: {{states(\"sensor.template_nordpool_tomorrow_avg\")}}
-        kr\\n min: {{states(\"sensor.template_nordpool_tomorrow_min\")}} kr\\n max:
-        {{states(\"sensor.template_nordpool_tomorrow_max\")}} kr\\n{% for price in
-        state_attr('sensor.nordpool_kwh_se3_sek_3_095_0', 'tomorrow') -%}\n  {{ '{:02d}:
-        {:.1f}'.format((loop.index-1), price|float(0) * 125) -}}\n  {{ \", \" if not
-        loop.last else \"\" -}}\n{% endfor %}"
-      title: Elpriset uppdaterat
+      message: "Morgondagens priser:\\r\\n (min {{states(\"sensor.template_nordpool_tomorrow_min\")}}
+        | avg {{states(\"sensor.template_nordpool_tomorrow_avg\")}} | max {{states(\"sensor.template_nordpool_tomorrow_max\")}})\\r\\n\\r\\n
+        {% for price in state_attr('sensor.nordpool_kwh_se3_sek_3_095_0', 'tomorrow')
+        -%}\n  {{ '{:02d}: {:>3}'.format((loop.index-1), (price|float(0)*125)|round(0)|string)
+        -}}\n  {{ \" | \" if (loop.index % 4 != 0) else \"\\n\" -}}\n{% endfor %}"
+      title: Morgondagens elpriser
+      data:
+        clickAction: /lovelace/2
   mode: single
 - id: '1659106208657'
   alias: Wall-E, dags att byta blad
   description: ''
   trigger:
   - platform: numeric_state
-    entity_id: sensor.template_walle_blade_hours
+    entity_id:
+    - sensor.wall_e_blades_current_on_time_2
     above: 100
+  - platform: numeric_state
+    entity_id:
+    - sensor.wall_e_blades_current_on_time_2
+    above: 120
+  - platform: numeric_state
+    entity_id:
+    - sensor.wall_e_blades_current_on_time_2
+    above: 140
   condition: []
   action:
   - service: notify.rickards_devices
     data:
       title: Dags att byta knivar på Wall-E
-      message: Bladen har använts i {{ (state_attr("vacuum.wall_e","blades").current_on
-        | int / 60) | round(0) }} timmar.
+      message: Bladen har använts i {{states('sensor.wall_e_blades_current_on_time_2')|round(0)}}
+        timmar.
   mode: single
 - id: '1661109418803'
-  alias: 'Ladda Azarel: på klocka'
+  alias: EV6, start charge on time
   description: ''
   trigger:
   - platform: time
@@ -588,26 +541,16 @@
       entity_id: automation.diskmaskinen_starta_pa_klocka
   mode: single
 - id: '1662626703155'
-  alias: Ladda Zoe, stoppa
+  alias: Zoe, stop charge
   description: ''
   trigger:
-  - platform: template
-    value_template: '{{ states(''sensor.zoe_battery_level'')|int >= states(''input_number.zoe_soc_upper_limit'')|int
-      }}'
-    enabled: false
   - platform: numeric_state
     entity_id: sensor.zoe_battery_level
     above: input_number.zoe_soc_upper_limit
   condition:
-  - condition: and
-    conditions:
-    - condition: state
-      state: charge_in_progress
-      entity_id: sensor.zoe_charge_state
-      enabled: false
-    - condition: numeric_state
-      entity_id: sensor.zoe_battery_level
-      above: input_number.zoe_soc_upper_limit
+  - condition: numeric_state
+    entity_id: sensor.zoe_battery_level
+    above: input_number.zoe_soc_upper_limit
   action:
   - service: script.1662626875831
     data: {}
@@ -862,6 +805,10 @@
     entity_id:
     - sensor.template_spabadet_temperature
     above: input_number.spabadet_lower_temp_limit
+  - platform: state
+    entity_id:
+    - binary_sensor.template_nordpool_price_low
+    alias: When Nordpool median price changes
   condition: []
   action:
   - delay:
@@ -920,6 +867,11 @@
     value_template: '{{ (as_timestamp(now()) - as_timestamp(state_attr(''vacuum.wall_e'',''state_updated_at''),0))
       > 3600 }}'
     alias: Updated at least an hour ago
+  - type: is_connected
+    condition: device
+    device_id: 04744719de96abcefa75f8ffeeb42a05
+    entity_id: be792a9a0e07a92d1d4e5562caaf30b2
+    domain: binary_sensor
   action:
   - service: landroid_cloud.partymode
     data:
@@ -929,7 +881,7 @@
     alias: Disable Wall-E Party Mode
   mode: single
 - id: '1685565293861'
-  alias: Ladda Zoe, inkopplad
+  alias: Zoe, charge port connected
   description: ''
   trigger:
   - platform: state
@@ -956,14 +908,21 @@
     - input_boolean.spabadet_manual
     to: 'on'
     for:
-      hours: 4
+      hours: 2
       minutes: 0
       seconds: 0
   condition: []
   action:
   - service: notify.rickards_devices
     data:
-      message: Spabadet kör fortfarande manuellt.
+      title: Spabadet kör fortfarande manuellt
+      data:
+        clickAction: /lovelace/4
+      message: 'Priset:  {{states("sensor.template_elpris_kr") }} kr\n Klockan: {{now().strftime(''%H:%M'')
+        }}\n Badet:   {{states("sensor.template_spabadet_temperature") }}°C\n Kostnad:
+        {{(states(''sensor.spabadet_kr'')|float - states("var.spa_cost")|float)|round(2)}}
+        kr'
+    alias: Notify Rickard that manual control is turned off
   - delay:
       hours: 2
       minutes: 0
@@ -976,26 +935,27 @@
     then:
     - service: notify.rickards_devices
       data:
-        message: Spabadet kör fortfarande manuellt efter 6 timmar…
-  mode: single
-- id: '1685775877485'
-  alias: Ladda Zoe, stäng av automation
-  description: ''
-  trigger:
-  - platform: state
-    entity_id:
-    - binary_sensor.zoe_charging
-    to: 'on'
-  condition: []
-  action:
-  - service: automation.turn_off
-    data:
-      stop_actions: false
-    target:
-      entity_id: automation.zoe_charge
+        title: Spabadet stängs av om 5 min
+        data:
+          clickAction: /lovelace/4
+        message: 'Priset:  {{states("sensor.template_elpris_kr") }} kr\n Klockan:
+          {{now().strftime(''%H:%M'') }}\n Badet:   {{states("sensor.template_spabadet_temperature")
+          }}°C\n Kostnad: {{(states(''sensor.spabadet_kr'')|float - states("var.spa_cost")|float)|round(2)}}
+          kr'
+      alias: Notify Rickard that manual control is turned off
+    - delay:
+        hours: 0
+        minutes: 5
+        seconds: 0
+        milliseconds: 0
+    - service: input_boolean.turn_off
+      metadata: {}
+      data: {}
+      target:
+        entity_id: input_boolean.spabadet_manual
   mode: single
 - id: '1690820037786'
-  alias: Ladda RYA, set charge limit
+  alias: EV6, set charge limit
   description: ''
   trigger:
   - platform: state
@@ -1006,65 +966,61 @@
       minutes: 0
       seconds: 10
     id: HA_SoC
+    alias: HA SoC change state for 10 seconds
   - platform: state
     entity_id:
     - number.ev6_ac_charging_limit
     id: EV6_SoC
+    for:
+      hours: 0
+      minutes: 1
+      seconds: 0
+    enabled: true
+    alias: EV6 SoC changes
   condition:
-  - condition: or
+  - alias: Triggered by HA or Triggered by EV6 and State != 0
+    condition: or
     conditions:
-    - condition: and
+    - condition: trigger
+      id:
+      - HA_SoC
+      alias: Triggered by HA
+    - alias: Triggered by EV6 and State != 0
+      condition: and
       conditions:
       - condition: trigger
         id:
         - EV6_SoC
       - condition: template
-        value_template: '{{ states(''number.ev6_ac_charging_limit'')|int(0) != states(''input_number.rya_soc_upper_limit'')|int(0)
-          }}'
-      alias: if triggered by EV6 and EV6 ≠ HA
-    - condition: and
-      conditions:
-      - condition: trigger
-        id:
-        - HA_SoC
-      - condition: numeric_state
-        entity_id: input_number.rya_soc_upper_limit
-        above: 49
-      alias: If triggered by HA and EV6 > 49
+        value_template: '{{ trigger.from_state.state|int(0) != 0 }}'
+        alias: From State != 0
+        enabled: false
+      - condition: template
+        value_template: '{{ trigger.to_state.state|int(0) != 0 }}'
+        alias: To State != 0
+  - condition: template
+    value_template: '{{ states(''number.ev6_ac_charging_limit'')|int(0) != states(''input_number.rya_soc_upper_limit'')|int(0)
+      }}'
+    alias: EV6 SoC != HA State
   action:
   - if:
-    - condition: template
-      value_template: '{{ states.number.ev6_ac_charging_limit.state == 0 }}'
-      alias: EV6 is 0
+    - condition: trigger
+      id:
+      - EV6_SoC
     then:
+    - service: input_number.set_value
+      alias: Set SoC Upper Limit to EV6 Charging Limit
+      target:
+        entity_id: input_number.rya_soc_upper_limit
+      data:
+        value: '{{ states(''number.ev6_ac_charging_limit'')|int(80) }}'
+    else:
     - service: number.set_value
       alias: Set EV6 Charging Limit to SoC Upper Limit
       target:
         entity_id: number.ev6_ac_charging_limit
       data:
         value: '{{ states(''input_number.rya_soc_upper_limit'')|int(80) }}'
-    else:
-    - if:
-      - condition: trigger
-        id:
-        - EV6_SoC
-      - condition: numeric_state
-        entity_id: number.ev6_ac_charging_limit
-        above: 49
-      then:
-      - service: input_number.set_value
-        alias: Set SoC Upper Limit to EV6 Charging Limit
-        target:
-          entity_id: input_number.rya_soc_upper_limit
-        data:
-          value: '{{ states(''number.ev6_ac_charging_limit'')|int }}'
-      else:
-      - service: number.set_value
-        alias: Set EV6 Charging Limit to SoC Upper Limit
-        target:
-          entity_id: number.ev6_ac_charging_limit
-        data:
-          value: '{{ states(''input_number.rya_soc_upper_limit'')|int(80) }}'
   mode: single
 - id: '1690871828303'
   alias: EV6, reload config
@@ -1099,50 +1055,50 @@
   trigger:
   - platform: state
     entity_id:
-    - binary_sensor.ev6_ev_charge_port
-    to: 'on'
-    id: Cp_open
-  - platform: numeric_state
-    entity_id: sensor.template_rya_charging_power
-    above: 0.1
-  - platform: state
-    entity_id:
     - binary_sensor.ev6_ev_battery_charge
     to: 'on'
+    from: 'off'
+  - platform: state
+    entity_id:
+    - sensor.chargenode_port1_state
+    to: '3'
   condition: []
   action:
-  - if:
-    - condition: trigger
-      id:
-      - Cp_open
-    then:
-    - service: automation.turn_on
-      data: {}
-      target:
-        entity_id: automation.ladda_bilen_nar_det_ar_billigt
-    alias: Enable Automation Ladda RYA
-  - repeat:
+  - variables:
+      kwh_start: '{{ states(''sensor.rya_kwh'')|int }}'
+  - alias: While EV6 Charge Port is Open AND EV6 is Charging
+    repeat:
       while:
-      - condition: state
-        entity_id: binary_sensor.ev6_ev_charge_port
-        state: 'on'
-      - condition: numeric_state
-        entity_id: sensor.template_rya_charging_power
-        above: 0.1
-        enabled: false
       - condition: or
         conditions:
         - condition: state
           entity_id: binary_sensor.ev6_ev_battery_charge
           state: 'on'
-        - condition: numeric_state
-          entity_id: sensor.template_rya_charging_power
-          above: 0.1
+        - condition: state
+          entity_id: sensor.chargenode_port1_state
+          state: '3'
+        alias: EV6 is charging OR ChargeNode Port 1 is charging
+      - condition: not
+        conditions:
+        - condition: state
+          entity_id: binary_sensor.ev6_ev_charge_port
+          state: 'off'
+        alias: NOT Closed
       sequence:
-      - service: kia_uvo.update
-        data: {}
-        alias: Refresh EV6 status
-        enabled: false
+      - service: notify.mobile_app_op9_pro
+        data:
+          message: 'SoC: {{states(''sensor.ev6_ev_battery_level'')}}% ({{states.sensor.ev6_ev_battery_level.last_updated|as_local|as_timestamp|timestamp_custom(''%d
+            %H:%M'')}})\n {{states(''sensor.template_rya_charging_power'')}} kW |
+            {{states(''sensor.rya_kwh'')|int - kwh_start}} kWh\n {{now().strftime(''%d
+            %H:%M'')}}'
+          title: EV6 laddar
+          data:
+            clickAction: /lovelace/tesla
+            sticky: true
+            persistent: true
+            tag: car_1_charging
+            channel: ev
+        alias: Send persistent notification
       - delay:
           hours: 0
           minutes: 15
@@ -1153,6 +1109,17 @@
         data: {}
         alias: Force refresh EV6 status
         enabled: true
+      - delay:
+          hours: 0
+          minutes: 0
+          seconds: 15
+          milliseconds: 0
+  - service: notify.rickards_devices
+    data:
+      message: clear_notification
+      data:
+        tag: car_1_charging
+    alias: Dismiss persistent notification
   mode: single
 - id: '1693808329866'
   alias: Tvättmaskinen, armera
@@ -1290,6 +1257,32 @@
   action:
   - choose:
     - conditions:
+      - condition: numeric_state
+        entity_id: sensor.template_elpris_kr
+        above: 2
+        alias: Elpriset över 2 kr
+      sequence:
+      - service: zwave_js.set_config_parameter
+        data:
+          parameter: '41'
+          value: '4'
+        target:
+          device_id: aa0c0b41292d62cfbef2a78d19659e46
+        alias: Röd
+    - conditions:
+      - condition: numeric_state
+        entity_id: sensor.template_elpris_kr
+        below: 1
+      sequence:
+      - service: zwave_js.set_config_parameter
+        data:
+          parameter: '41'
+          value: '5'
+        target:
+          device_id: aa0c0b41292d62cfbef2a78d19659e46
+        alias: Grön
+      alias: Elpriset under 1 kr
+    - conditions:
       - condition: state
         entity_id: binary_sensor.template_nordpool_price_not_high
         state: 'off'
@@ -1319,6 +1312,7 @@
           value: '9'
         target:
           device_id: aa0c0b41292d62cfbef2a78d19659e46
+      alias: Över median
     - conditions:
       - condition: state
         entity_id: binary_sensor.template_nordpool_price_low
@@ -1336,6 +1330,7 @@
           value: '7'
         target:
           device_id: aa0c0b41292d62cfbef2a78d19659e46
+      alias: Under median
     - conditions:
       - condition: state
         entity_id: binary_sensor.template_nordpool_price_reallow
@@ -1349,6 +1344,7 @@
         target:
           device_id: aa0c0b41292d62cfbef2a78d19659e46
         alias: Grön
+      alias: Under 25:e percentilen
   mode: single
 - id: '1699456441373'
   alias: EV6, scheduled HVAC
@@ -1407,18 +1403,14 @@
   alias: Zoe, charge
   description: ''
   trigger:
-  - platform: state
-    entity_id:
-    - binary_sensor.zoe_plug
-    to: 'on'
-    enabled: false
   - platform: time
     at: sensor.template_next_charge
     alias: When at Start time
   condition:
   - condition: numeric_state
-    entity_id: sensor.zoe_battery_level
+    entity_id: sensor.template_zoe_battery
     below: input_number.zoe_soc_upper_limit
+    alias: When SoC is below limit
   - condition: template
     value_template: '{{ now() >= as_datetime(states("sensor.template_next_charge"))
       }}'
@@ -1426,15 +1418,19 @@
   - condition: state
     entity_id: binary_sensor.zoe_charging
     state: 'off'
+    enabled: false
+  - condition: not
+    conditions:
+    - condition: state
+      entity_id: sensor.chargenode_port2_state
+      state: '3'
+    alias: Port 2 is NOT charging State
   action:
   - service: script.turn_on
     data: {}
     target:
       entity_id: script.ladda_zoe
     enabled: true
-  - service: script.ladda_bilen_uppstart
-    data: {}
-    enabled: false
   mode: single
 - id: '1703854838804'
   alias: Belysning, sovrumsfönstet
@@ -1567,4 +1563,185 @@
       data: {}
       target:
         entity_id: switch.nexa_5
+  mode: single
+- id: '1713453461065'
+  alias: Hot Tub, Toggle manual control
+  description: ''
+  trigger:
+  - platform: state
+    entity_id:
+    - input_boolean.spabadet_manual
+  condition: []
+  action:
+  - service: script.turn_on
+    metadata: {}
+    data: {}
+    target:
+      entity_id: script.spabadet_pause_control
+  mode: single
+- id: '1716643157191'
+  alias: EV6, run HVAC
+  description: ''
+  trigger:
+  - platform: state
+    entity_id:
+    - input_boolean.rya_hvac_on
+    to: 'on'
+  condition: []
+  action:
+  - service: script.ev6_start_hvac
+    metadata: {}
+    data: {}
+  mode: single
+- id: '1716792651321'
+  alias: EV6, notification response
+  description: ''
+  trigger:
+  - alias: action_keep_on event fired
+    platform: event
+    event_type: mobile_app_notification_action
+    event_data:
+      action: '{{ ''KEEPON_202405270928'' }}'
+  - alias: action_turn_off event fired
+    platform: event
+    event_type: mobile_app_notification_action
+    event_data:
+      action: '{{ ''TURNOFF_202405270928'' }}'
+  - alias: Notification dismissed
+    platform: event
+    event_type: mobile_app_notification_cleared
+    event_data:
+      action_1_key: '{{ ''KEEPON_202405270928'' }}'
+  condition: []
+  action:
+  - alias: Perform the action
+    choose:
+    - conditions:
+      - condition: template
+        value_template: '{{ trigger.event.data.action == ''KEEPON_202405270928'' }}'
+      sequence:
+      - service: input_boolean.turn_on
+        target:
+          entity_id: input_boolean.rya_hvac_on
+        data: {}
+      alias: Keep on
+    - conditions:
+      - condition: template
+        value_template: '{{ trigger.event.data.action == ''TURNOFF_202405270928''
+          }}'
+      sequence:
+      - service: input_boolean.turn_off
+        target:
+          entity_id: input_boolean.rya_hvac_on
+        data: {}
+      alias: Turn off
+    - conditions:
+      - condition: template
+        value_template: '{{ trigger.event.event_type == ''mobile_app_notification_cleared''
+          }}'
+      sequence:
+      - service: input_boolean.turn_off
+        target:
+          entity_id: input_boolean.rya_hvac_on
+        data: {}
+      alias: Turn off because notfication dismissed
+  mode: single
+- id: '1717686782989'
+  alias: EV6, Activate charge automation
+  description: Enable charge automation for EV6 when plugged in at home
+  trigger:
+  - platform: state
+    entity_id:
+    - binary_sensor.ev6_ev_charge_port
+    to: 'on'
+    id: Cp_open
+    enabled: true
+  condition:
+  - condition: zone
+    entity_id: device_tracker.ev6_location
+    zone: zone.home
+    alias: 'EV6 is at home '
+    enabled: true
+  - condition: state
+    entity_id: automation.ladda_bilen_nar_det_ar_billigt
+    state: 'off'
+  - condition: template
+    value_template: '{{ trigger.from_state.state not in [''unknown'', ''unavailable'']
+      }}'
+    alias: Previous state NOT unknown or unavailable
+  action:
+  - service: automation.turn_on
+    data: {}
+    target:
+      entity_id: automation.ladda_bilen_nar_det_ar_billigt
+    alias: Enable Automation Ladda RYA
+  mode: single
+- id: '1717691119350'
+  alias: EV6, force update
+  description: Force update of EV6 if data older than one hour
+  trigger:
+  - platform: time_pattern
+    hours: /1
+    alias: Every hour
+  condition:
+  - condition: template
+    value_template: '{{ now()-states(''sensor.ev6_last_updated_at'')|as_datetime >
+      timedelta(hours=1) }}'
+    alias: EV6 updated more than 1 hour ago
+  - condition: time
+    after: 06:55:00
+    before: '23:05:00'
+  action:
+  - service: kia_uvo.force_update
+    metadata: {}
+    data: {}
+  mode: single
+- id: '1717930116901'
+  alias: Zoe, show SoC while charging
+  description: Reload Zoe status every 15 min when charging
+  trigger:
+  - platform: state
+    entity_id:
+    - sensor.chargenode_port2_state
+    to: '3'
+  condition: []
+  action:
+  - variables:
+      kwh_start: '{{ states(''sensor.zoe_kwh'')|int }}'
+  - service: automation.turn_off
+    data:
+      stop_actions: false
+    target:
+      entity_id: automation.zoe_charge
+  - repeat:
+      while:
+      - condition: state
+        entity_id: sensor.chargenode_port2_state
+        state: '3'
+      sequence:
+      - service: notify.mobile_app_op9_pro
+        data:
+          message: 'SoC: {{states(''sensor.zoe_battery_level'')}}% ({{states.sensor.zoe_battery_level.last_updated|as_local|as_timestamp|timestamp_custom(''%H:%M'')}})\n
+            {{states(''sensor.template_zoe_charging_power'')}} kW | {{states(''sensor.zoe_kwh'')|int
+            - kwh_start}} kWh\n {{now().strftime(''%H:%M'')}}'
+          title: ZOE laddar
+          data:
+            clickAction: /lovelace/tesla
+            sticky: true
+            persistent: true
+            tag: car_2_charging
+            channel: ev
+        alias: Send persistent notification
+      - delay:
+          hours: 0
+          minutes: 15
+          seconds: 0
+          milliseconds: 0
+        enabled: true
+  - alias: Dismiss persistent notification
+    service: notify.rickards_devices
+    data:
+      message: clear_notification
+      data:
+        tag: car_2_charging
   mode: single

@@ -43,7 +43,7 @@ sensors:
     slave: 1
     scan_interval: 30
     device_class: power
-    unit_of_measurement: W
+    unit_of_measurement: kW
     data_type: int16
     scale: 0.1
     precision: 1
@@ -52,7 +52,7 @@ sensors:
     slave: 1
     scan_interval: 30
     device_class: power
-    unit_of_measurement: W
+    unit_of_measurement: kW
     data_type: int16
     scale: 0.1
     precision: 1
@@ -61,7 +61,7 @@ sensors:
     slave: 1
     scan_interval: 30
     device_class: power
-    unit_of_measurement: W
+    unit_of_measurement: kW
     data_type: int16
     scale: 0.1
     precision: 1
@@ -134,7 +134,7 @@ sensors:
     slave: 1
     scan_interval: 60
     device_class: power
-    unit_of_measurement: W
+    unit_of_measurement: kW
     data_type: int16
     scale: 0.1
     precision: 1
@@ -143,7 +143,7 @@ sensors:
     slave: 1
     scan_interval: 60
     device_class: power
-    unit_of_measurement: W
+    unit_of_measurement: kW
     data_type: int16
     scale: 0.1
     precision: 1
@@ -152,7 +152,7 @@ sensors:
     slave: 1
     scan_interval: 60
     device_class: power
-    unit_of_measurement: W
+    unit_of_measurement: kW
     data_type: int16
     scale: 0.1
     precision: 1

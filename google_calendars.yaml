@@ -55,3 +55,9 @@
     name: Familjen
     track: true
 
+
+- cal_id: 0b1b8822b22c9e0c26d4ef253b54fd3b5190a3a0e0bae58b47a069c3906afbbd@group.calendar.google.com
+  entities:
+  - device_id: fotboll
+    ignore_availability: true
+    name: Fotboll

@@ -5,26 +5,6 @@
   "data": {
     "items": [
       {
-        "id": "0e5a410309f948f8a7b99525c8175ff8",
-        "type": "module",
-        "url": "/local/plugins/fold-entity-row.js?v=19"
-      },
-      {
-        "id": "7a77a69eb7c5442eacec4f2c4843d4aa",
-        "type": "module",
-        "url": "/local/plugins/group-card.js"
-      },
-      {
-        "id": "56963393097f4e10a1da452f352fb271",
-        "type": "module",
-        "url": "/local/plugins/monster-card.js"
-      },
-      {
-        "url": "/local/plugins/apexcharts-card.js?v=1.8.2",
-        "type": "module",
-        "id": "027afde645d5409481c48cab755a8c31"
-      },
-      {
         "url": "/hacsfiles/apexcharts-card/apexcharts-card.js?hacstag=331701152204",
         "type": "module",
         "id": "efe9a700ad09414fa032d32726aee801"
@@ -35,7 +15,7 @@
         "id": "b77b48adf6114b1ebdc4f8b2b51875e5"
       },
       {
-        "url": "/hacsfiles/mini-graph-card/mini-graph-card-bundle.js?hacstag=1512800620110",
+        "url": "/hacsfiles/mini-graph-card/mini-graph-card-bundle.js?hacstag=1512800620121",
         "type": "module",
         "id": "841836c87b5b4e13ad1cbff6fd63e45c"
       },
@@ -50,7 +30,7 @@
         "id": "59120cd8cb0f45ad837dd0a4ea4bb53d"
       },
       {
-        "url": "/hacsfiles/uptime-card/uptime-card.js?hacstag=3505098670150",
+        "url": "/hacsfiles/uptime-card/uptime-card.js?hacstag=3505098670160",
         "type": "module",
         "id": "8cf36aeb921648b69a5a602f7652d9e9"
       },
@@ -60,13 +40,8 @@
         "id": "db20489e53854f52bde84c962e7274bf"
       },
       {
-        "id": "23d492eb21fd410db4e5c6a83ca64523",
-        "url": "/hacsfiles/history-explorer-card/history-explorer-card.js?hacstag=4403747941051",
-        "type": "module"
-      },
-      {
         "id": "1169ec7667f0408c8147524861c07012",
-        "url": "/hacsfiles/lovelace-card-mod/card-mod.js?hacstag=190927524342",
+        "url": "/hacsfiles/lovelace-card-mod/card-mod.js?hacstag=190927524343",
         "type": "module"
       }
     ]
