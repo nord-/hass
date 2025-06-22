@@ -90,11 +90,11 @@
 - platform: statistics
   unique_id: energy_used_24_hrs
   name: "Energy Used (24 hrs)"
-  entity_id: sensor.template_house_net_energy_kwh
+  entity_id: sensor.house_energy
   state_characteristic: change
   max_age:
-    hours: 24
-
+    hours: 24  
+  
 - platform: statistics
   unique_id: energycost_24hrs
   name: "Energy × Cost (24 hrs)"
@@ -111,14 +111,23 @@
   max_age:
     hours: 24
 
+- platform: statistics
+  unique_id: energy_sum_24_hrs
+  name: "Energy Sum (24 hrs)"
+  entity_id: sensor.house_energy
+  state_characteristic: sum_differences_nonnegative
+  keep_last_sample: true
+  max_age:
+    hours: 24  
+  
 ### REST
 - platform: rest
   unique_id: cn_rya_sessionid
-  name: "Charge RYA SessionId"
+  name: "Charge EZC SessionId"
   scan_interval: 43200
   resource: https://dev-app-cn.azurewebsites.net/v2/sessions/active
   value_template: "{{ as_timestamp(states.sensor.charge_rya_sessionid.last_updated) | timestamp_custom('%Y-%m-%d %H:%M:%S') }}"
-  json_attributes_path: "$.data[?(@.vehicle.userCarId==590)]"
+  json_attributes_path: "$.data[?(@.vehicle.userCarId==697)]"
   json_attributes:
     - id
     - started
@@ -128,11 +137,11 @@
 
 - platform: rest
   unique_id: cn_yxx_sessionid
-  name: "Charge YXX SessionId"
+  name: "Charge HRY SessionId"
   scan_interval: 43200
   resource: https://dev-app-cn.azurewebsites.net/v2/sessions/active
   value_template: "{{ as_timestamp(states.sensor.charge_yxx_sessionid.last_updated) | timestamp_custom('%Y-%m-%d %H:%M:%S') }}"
-  json_attributes_path: "$.data[?(@.vehicle.userCarId==423)]"
+  json_attributes_path: "$.data[?(@.vehicle.userCarId==642)]"
   json_attributes:
     - id
     - started

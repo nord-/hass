@@ -54,7 +54,7 @@
     unit_of_measurement: "A"
     device_class: current
     state_class: measurement
-    state: "{{ (states('sensor.current_ac_fronius_inverter_1_192_168_2_31')|float(0)/3)|round(1) }}"
+    state: "{{ (states('sensor.fronius_inverter_total_current')|float(0)/3)|round(1) }}"
     attributes:
       friendly_name: "Fronius ström (per fas) [A]"
 
@@ -270,7 +270,7 @@
     attributes:
       friendly_name: "Nordpool, under 75:e percentilen"
     state: >-
-      {{ states('sensor.template_elpris_kr') <= states('sensor.template_nordpool_75perc') or states('sensor.nordpool_kwh_se3_sek_3_095_0') < states('sensor.elpriset_kr_avg_3') }}
+      {{ states('sensor.template_elpris_kr') <= states('sensor.template_nordpool_75perc') or states('sensor.template_elpris_kr') < states('sensor.elpriset_kr_avg_3') }}
     # {{ states('sensor.template_elpris_kr') <= states('sensor.template_nordpool_75perc') }}
   - unique_id: nordpool_price_reallow
     attributes:
@@ -321,7 +321,12 @@
     device_class: energy
     state_class: total
     state: >-
-      {{ states('sensor.hem_gen5_electric_consumed_kwh') | float(0) + states('var.solarenergy') | float(0) }}
+      {% if states('sensor.hem_gen5_electric_consumed_kwh')|is_number and 
+            states('var.solarenergy')|is_number %}
+        {{ states('sensor.hem_gen5_electric_consumed_kwh')|float(0) + states('var.solarenergy')|float(0) }}
+      {% else %}
+        {{ this.state }}
+      {% endif %}
     attributes:
       friendly_name: "Husets nettoenergi"
 
@@ -383,9 +388,15 @@
     attributes:
       friendly_name: "Värmepump IVT, effekt [W]"
     state: >-
-      {{ states('sensor.shellyem3_c45bbe55c55e_channel_a_power')|float(0) +
-          states('sensor.shellyem3_c45bbe55c55e_channel_b_power')|float(0) + 
-          states('sensor.shellyem3_c45bbe55c55e_channel_c_power')|float(0) }}
+      {% if states('sensor.shellyem3_c45bbe55c55e_channel_a_power')|is_number and
+            states('sensor.shellyem3_c45bbe55c55e_channel_b_power')|is_number and 
+            states('sensor.shellyem3_c45bbe55c55e_channel_c_power')|is_number %}
+        {{ states('sensor.shellyem3_c45bbe55c55e_channel_a_power')|float(0) +
+            states('sensor.shellyem3_c45bbe55c55e_channel_b_power')|float(0) + 
+            states('sensor.shellyem3_c45bbe55c55e_channel_c_power')|float(0) }}
+      {% else %}
+        {{ this.state }}
+      {% endif %}
   - unique_id: heatpump_ivt_energy
     device_class: energy
     state_class: total
@@ -393,9 +404,30 @@
     attributes:
       friendly_name: "Värmepump IVT, energi [kWh]"
     state: >-
-      {{ states('sensor.shellyem3_c45bbe55c55e_channel_a_energy')|float(0) +
-          states('sensor.shellyem3_c45bbe55c55e_channel_b_energy')|float(0) + 
-          states('sensor.shellyem3_c45bbe55c55e_channel_c_energy')|float(0) }}
+      {% if states('sensor.shellyem3_c45bbe55c55e_channel_a_energy')|is_number and
+            states('sensor.shellyem3_c45bbe55c55e_channel_b_energy')|is_number and 
+            states('sensor.shellyem3_c45bbe55c55e_channel_c_energy')|is_number %}
+        {{ states('sensor.shellyem3_c45bbe55c55e_channel_a_energy')|float(0) +
+            states('sensor.shellyem3_c45bbe55c55e_channel_b_energy')|float(0) + 
+            states('sensor.shellyem3_c45bbe55c55e_channel_c_energy')|float(0) }}
+      {% else %}
+        {{ this.state }}
+      {% endif %}
+
+- sensor:
+  - unique_id: dishwasher_current
+    device_class: current
+    unit_of_measurement: "A"
+    attributes:
+      friendly_name: "Diskmaskinen [A]"
+    state: "{{(states('sensor.clever_spz3_electric_consumption_w')|float(0) / states('sensor.hem_gen5_electric_consumed_v_3')|float(230))|round(1)}}"
+  - unique_id: washingmachine_current
+    device_class: current
+    unit_of_measurement: "A"
+    attributes:
+      friendly_name: "Tvättmaskinen [A]"
+    state: "{{(states('sensor.clever_spz2_electric_consumption_w_2')|float(0) / states('sensor.hem_gen5_electric_consumed_v_2')|float(230))|round(1)}}"
+
 
 # väder
 - sensor:
@@ -418,6 +450,16 @@
       friendly_name: "Hemma [°C]"
     state: >-
       {{ states('sensor.231_temperature')|float|round(1) if states('sensor.231_temperature')|float(99) < states('sensor.framsidan_temperature')|float(98) else states('sensor.framsidan_temperature')|float(99)|round(1) }}
+    icon: >-
+      {% if states("sensor.template_home_temp")|int < 0 -%}
+      mdi:thermometer-minus
+      {%- elif states("sensor.template_home_temp")|int < 15 -%}
+      mdi:thermometer-low
+      {%- elif states("sensor.template_home_temp")|int > 25 -%}
+      mdi:thermometer-high
+      {%- else -%}
+      mdi:thermometer
+      {%- endif %}
 
 # förbrukning/kostnad
 - sensor:
@@ -437,16 +479,33 @@
     device_class: monetary
 
   - unique_id: house_cost
-    state: "{{ states('sensor.template_house_power_kw')|float(0) * states('sensor.template_elpris_kr') | float(0) }}"
+    # state: "{{ states('sensor.template_house_power_kw')|float(0) * states('sensor.template_elpris_kr') | float(0) }}"
+    state: "{{ (states('sensor.template_house_power_w')|float(0)/1000.0) * states('sensor.template_elpris_kr')|float(0) }}"
     unit_of_measurement: kr
     device_class: monetary
 
   - unique_id: spot_gain_loss_daily
-    state: "{{ ((states('sensor.energy_x_cost_24_hrs')|float(0) / (states('sensor.energy_used_24_hrs')|float(0) * states('sensor.elpriset_kr_avg')|float(0))-1)*100)|round }}"
+    state: >-
+      {% if states('sensor.energy_used_24_hrs')|is_number and
+            state_attr('sensor.energy_used_24_hrs','source_value_valid') and
+            state_attr('sensor.energy_used_24_hrs','age_coverage_ratio')|float(0) >= 0.5 and
+            states('sensor.energy_used_24_hrs')|float(0) > 0 -%}
+        {{ ((states('sensor.energy_x_cost_24_hrs')|float(0) / ((states('sensor.energy_used_24_hrs')|float(0)/1000) * states('sensor.elpriset_kr_avg')|float(0))-1)*100)|round }}
+      {%- else -%}
+        {{this.state}}
+      {%- endif -%}
     unit_of_measurement: '%'
 
   - unique_id: my_avg_spot_price
-    state: "{{ (states('sensor.energy_x_cost_24_hrs')|float(0) / states('sensor.energy_used_24_hrs')|float(0))|round(2) }}"
+    state: >-
+      {% if states('sensor.energy_used_24_hrs')|is_number and
+            state_attr('sensor.energy_used_24_hrs','source_value_valid') and
+            state_attr('sensor.energy_used_24_hrs','age_coverage_ratio')|float(0) >= 0.5 and
+            states('sensor.energy_used_24_hrs')|float(0) > 0 -%}
+        {{ (states('sensor.energy_x_cost_24_hrs')|float(0) / (states('sensor.energy_used_24_hrs')|float(0)/1000))|round(2) }}
+      {%- else -%}
+        {{this.state}}
+      {%- endif -%}
     unit_of_measurement: kr
     device_class: monetary
     state_class: measurement
@@ -462,42 +521,55 @@
     attributes:
       friendly_name: "ChargeNode [kWh]"
     state: >-
-      {% set ce = states('sensor.chargenode_energy')|float(0) %}
-      {{ ce if ce != 'unknown' and ce > 0 else states('sensor.template_chargenode_energy_kwh')|float(0) }}
-# {% if (states('sensor.chargenode_energy')|float(0) > 0) -%}
-# {{   states("sensor.chargenode_energy")|float(0) }}
-# {% else -%}
-# {{None}}
-# {% endif %}
-
-
+      {% if states('sensor.chargenode_energy')|is_number and
+            states('sensor.chargenode_energy')|float(0) > 0 -%}
+        {{states('sensor.chargenode_energy')|float(0)}}
+      {%- else -%}
+        {{ this.state }}
+      {%- endif -%}
+  - unique_id: chargenode_power_kw
+    unit_of_measurement: "kW"
+    device_class: power
+    attributes:
+      friendly_name: "ChargeNode effekt [kW]"
+    state: >-
+      {{ states('sensor.chargenode_power_l1')|float(0) + states('sensor.chargenode_power_l2')|float(0) + states('sensor.chargenode_power_l3')|float(0) }}
+      
 ## Zoe:n (car 2)
 - sensor:
   - unique_id: zoe_battery
     unit_of_measurement: "%"
-    state: "{{ (states('sensor.zoe_battery_autonomy')|int/248*100)|round(0,'floor') if states('sensor.zoe_battery_level') == 'unknown' else states('sensor.zoe_battery_level')|int}}"
+    state: "{{ states('input_number.car_2_soc')|int}}"
     attributes:
-      friendly_name: "Zoe SoC [%]"
-      
+      friendly_name: "Delphine SoC [%]"
+    icon: >-
+      {% if states('input_number.car_2_soc')|int == 100 -%}
+        mdi:battery
+      {%- else -%}
+        mdi:battery-{{(states('input_number.car_2_soc')|int/10)|round(0,'floor')*10}}
+      {%- endif -%}
+                                                              
   - unique_id: zoe_charging_power
     unit_of_measurement: "kW"
     device_class: power
     state_class: measurement
     attributes:
-      friendly_name: "Zoe effekt [kW]"
+      friendly_name: "Delphine effekt [kW]"
     state: >-
       {% if is_state('sensor.chargenode_port2_state','3') -%}
-        {{ states('sensor.chargenode_power_l1')|float(0) + states('sensor.chargenode_power_l2')|float(0) + states('sensor.chargenode_power_l3')|float(0) }}
+        {{ states("sensor.template_chargenode_power_kw")|float(0) }}
       {%- else -%}
-        {{ 0 | float }}
+      {{ 0 | float }}
       {%- endif -%}
+    
+    # {{ states('sensor.chargenode_power_l1')|float(0) + states('sensor.chargenode_power_l2')|float(0) + states('sensor.chargenode_power_l3')|float(0) }}
 
   - unique_id: car_2_season_power
     unit_of_measurement: "kW"
     device_class: power
     state: "{{ states('input_number.car_2_power_high')|int if now().month > 2 and now().month < 10 else states('input_number.car_2_power_low')|int }}"
     attributes:
-      friendly_name: "Zoe laddeffekt [kW]"
+      friendly_name: "Delphine laddeffekt [kW]"
 
   - unique_id: zoe_charging_cost
     device_class: monetary
@@ -510,55 +582,61 @@
     state: "{{ states('sensor.template_zoe_charging_power')|float(0) }}"
 
   - unique_id: zoe_last_update
-    state: "{{ as_timestamp(states('sensor.zoe_last_battery_activity')) | timestamp_custom('%H:%M, %d %b') }}"
+    state: "{{states.input_number.car_2_soc.last_updated|as_timestamp|timestamp_custom('%H:%M, %d %b')}}"
     attributes:
       friendly_name: "Senast uppdaterad"
 
   - unique_id: zoe_charging_required_time
     state: >-      
-      {%- set time = (states('input_number.zoe_soc_upper_limit')|float(0) - states('sensor.template_zoe_battery')|float(0)) /100*41/(states('sensor.template_car_2_season_power')|int) -%}
+      {%- set time = (states('input_number.zoe_soc_upper_limit')|float(0) - states('sensor.template_zoe_battery')|float(0)) /100*(states('input_number.car_2_battery')|int)/(states('sensor.template_car_2_season_power')|int) -%}
       {%- set hours = time|int -%}
       {%- set minutes = ((time - hours)*60)|int -%}
       {{ '{:02}:{:02}'.format(hours, minutes) }}
   - unique_id: zoe_req_hours
     state: >-
-      {{ ((states('input_number.zoe_soc_upper_limit')|float(0) - states('sensor.template_zoe_battery')|int) /100*41/(states('sensor.template_car_2_season_power')|int))|round(1, 'ceil') }}
+      {{ ((states('input_number.zoe_soc_upper_limit')|float(0) - states('sensor.template_zoe_battery')|int) /100*(states('input_number.car_2_battery')|int)/(states('sensor.template_car_2_season_power')|int))|round(1, 'ceil') }}
   - unique_id: zoe_charging_cost_last_period
     device_class: monetary
     unit_of_measurement: "kr"
     state: "{{ state_attr('sensor.zoe_kostnad','last_period')|float(0)|round(0) }}"
 
-## Kia:n (car 1)
+  - unique_id: car_2_range
+    unit_of_measurement: "km"
+    state: "{{ (states('sensor.template_zoe_battery')|int(0)*2.575)|round(0) }}"
+
+## Tesla MY (car 1)
 - sensor:
   - unique_id: car_1_season_power
     unit_of_measurement: "kW"
     device_class: power
     state: "{{ states('input_number.car_1_power_high')|int if now().month > 2 and now().month < 10 else states('input_number.car_1_power_low')|int }}"
     attributes:
-      friendly_name: "EV6 laddeffekt (kW)"
+      friendly_name: "Eazy laddeffekt (kW)"
 
   - unique_id: rya_charging_required_time
     state: >-
-      {%- set time = (states('input_number.rya_soc_upper_limit')|float(0) - states('sensor.ev6_ev_battery_level')|float(0)) /100*74/(states('sensor.template_car_1_season_power')|int) -%}
+      {%- set time = (states('input_number.rya_soc_upper_limit')|float(0) - states('sensor.tesla_battery_level')|float(0)) /100*(states('input_number.car_1_battery')|int)/(states('sensor.template_car_1_season_power')|int) -%}
       {%- set hours = time|int -%}
       {%- set minutes = ((time - hours)*60)|int -%}
       {{ '{:02}:{:02}'.format(hours, minutes) }}
   - unique_id: rya_req_hours
     state: >-
-      {{ ((states('input_number.rya_soc_upper_limit')|float(0) - states('sensor.ev6_ev_battery_level')|float(0)) /100*74/(states('sensor.template_car_1_season_power')|int)) | round(1, 'ceil') }}
+      {{ ((states('input_number.rya_soc_upper_limit')|float(0) - states('sensor.tesla_battery_level')|float(0)) /100*(states('input_number.car_1_battery')|int)/(states('sensor.template_car_1_season_power')|int)) | round(1, 'ceil') }}
 
   - unique_id: rya_charging_power
     unit_of_measurement: "kW"
     device_class: power
     state_class: measurement
     attributes:
-      friendly_name: "Kian effekt (kW)"
+      friendly_name: "Eazy effekt (kW)"
     state: >-
       {% if is_state('sensor.chargenode_port1_state','3') -%}
-        {{ states('sensor.chargenode_power_l1')|float(0) + states('sensor.chargenode_power_l2')|float(0) + states('sensor.chargenode_power_l3')|float(0) }}
+        {{ states("sensor.template_chargenode_power_kw")|float(0) }}
       {%- else -%}
-        {{ 0 | float }}
+      {{ 0 | float }}
       {%- endif -%}
+    
+    # {{ states('sensor.chargenode_power_l1')|float(0) + states('sensor.chargenode_power_l2')|float(0) + states('sensor.chargenode_power_l3')|float(0) }}
 
   - unique_id: rya_charging_cost
     device_class: monetary
@@ -587,6 +665,13 @@
     state: "{{ state_attr('sensor.spabadet_kwh_man','last_period')|float(0)|round(0) }}"
     attributes:
       friendly_name: "Spabadet, energi förra mån [kWh]"
+
+  - unique_id: spabadet_energy_lastweek_kwh
+    unit_of_measurement: "kWh"
+    device_class: energy
+    state: "{{ state_attr('sensor.spabadet_kwh_vecka','last_period')|float(0)|round(1) }}"
+    attributes:
+      friendly_name: "Spabadet, energi förra veckan [kWh]"
 
   - unique_id: spabadet_power_kw
     unit_of_measurement: "kW"
@@ -764,6 +849,8 @@
           {% endfor -%}
           {{ priceDict.value|replace(",","\xA0")|replace("[","")|replace("]","") }}          
         {% endif %}
+  - unique_id: next_charge_time
+    state: "{{states('sensor.template_next_charge')|as_timestamp|timestamp_custom('%H:%M')}}"
 
   - unique_id: next_low_price
     state: >-

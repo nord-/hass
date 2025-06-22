@@ -255,15 +255,14 @@
     data: {}
   mode: single
 - id: '1643056235541'
-  alias: EV6, charge when cheap
+  alias: EV6, Charge
   description: ''
   trigger:
   - platform: state
     entity_id:
-    - binary_sensor.ev6_ev_charge_port
-    to: 'on'
-    enabled: true
+    - binary_sensor.ev6_ev_battery_plug
     from: 'off'
+    to: 'on'
   - platform: time
     at: sensor.template_next_charge
   condition:
@@ -288,18 +287,18 @@
     entity_id: sensor.ev6_ev_battery_level
     below: input_number.rya_soc_upper_limit
   action:
-  - service: script.turn_on
-    data: {}
-    target:
-      entity_id: script.charge_the_tesla
-  - service: script.ladda_bilen_uppstart
-    data: {}
-    enabled: false
   - service: automation.turn_off
     data:
       stop_actions: false
     target:
       entity_id: automation.ladda_bilen_nar_det_ar_billigt
+  - service: script.ladda_bilen_uppstart
+    data: {}
+    enabled: false
+  - service: script.charge_the_tesla
+    metadata: {}
+    data: {}
+    alias: Run script EV6, Charge
   mode: single
 - id: '1652813052285'
   alias: Wall-E, fellarm
@@ -349,21 +348,68 @@
   action:
   - service: notify.mobile_app_op9_pro
     data:
-      message: 'Status:  {{states(''lawn_mower.wall_e'')}}.\n Batteri: {{states(''sensor.wall_e_battery_2'')}}%.\n
-        Senast:  {{states.lawn_mower.wall_e.last_updated | as_local | as_timestamp
-        | timestamp_custom(''%H:%M'')}}'
+      message: 'Status:  {{states(''lawn_mower.wall_e'')}} ({{states.sensor.wall_e_error_2.last_updated|as_local|as_timestamp|timestamp_custom(''%H:%M'')}})\n
+        Batteri: {{states(''sensor.wall_e_battery_2'')}}%.\n Senast:  {{states.lawn_mower.wall_e.last_updated|as_local|as_timestamp|timestamp_custom(''%H:%M'')}}'
       title: Wall-E larm ({{states('sensor.wall_e_error_2')}})
+      data:
+        tag: lawn_error
+  - wait_for_trigger:
+    - platform: state
+      entity_id:
+      - lawn_mower.wall_e
+      to: docked
+    - platform: state
+      entity_id:
+      - lawn_mower.wall_e
+      from: error
+    timeout:
+      hours: 0
+      minutes: 30
+      seconds: 0
+      milliseconds: 0
+    alias: Wait for error to clear or docked (max 30 min)
+  - if:
+    - condition: state
+      entity_id: sensor.wall_e_error_2
+      state: no_error
+    - condition: not
+      conditions:
+      - condition: state
+        entity_id: lawn_mower.wall_e
+        state: returning
+    then:
+    - service: notify.rickards_devices
+      metadata: {}
+      data:
+        data:
+          tag: lawn_error
+        message: clear_notification
+    alias: Clear notification if no_error AND NOT returning
   mode: single
 - id: '1656709628350'
-  alias: Zoe, start charge on time
+  alias: Delphine, Charge on time
   description: ''
   trigger:
   - platform: time
     at: input_datetime.zoe_hour
   condition: []
   action:
-  - service: script.ladda_zoe
-    data: {}
+  - service: retry.actions
+    data:
+      sequence:
+      - service: rest_command.cn_add_yxx_to_queue
+        metadata: {}
+        data: {}
+    alias: Try Add Zoe to queue
+  - service: notify.rickards_devices
+    data:
+      title: Delphine börjar ladda
+      data:
+        clickAction: /lovelace/tesla
+        channel: ev
+      message: 'SoC:    {{states("sensor.template_zoe_battery")}}%\n Priset: {{states("sensor.template_nordpool_current_price_vat")
+        }} kr\n {{now().strftime(''%d %H:%M'')}}'
+    alias: Send message
   - service: script.ladda_bilen_uppstart
     data: {}
     enabled: false
@@ -401,40 +447,66 @@
 - id: '1659106208657'
   alias: Wall-E, dags att byta blad
   description: ''
-  trigger:
-  - platform: numeric_state
-    entity_id:
+  triggers:
+  - entity_id:
     - sensor.wall_e_blades_current_on_time_2
     above: 100
-  - platform: numeric_state
-    entity_id:
+    trigger: numeric_state
+  - entity_id:
     - sensor.wall_e_blades_current_on_time_2
-    above: 120
-  - platform: numeric_state
-    entity_id:
+    above: 150
+    trigger: numeric_state
+  - entity_id:
     - sensor.wall_e_blades_current_on_time_2
-    above: 140
-  condition: []
-  action:
-  - service: notify.rickards_devices
-    data:
-      title: Dags att byta knivar på Wall-E
-      message: Bladen har använts i {{states('sensor.wall_e_blades_current_on_time_2')|round(0)}}
-        timmar.
+    above: 200
+    trigger: numeric_state
+  conditions:
+  - condition: template
+    value_template: '{{ trigger.from_state.state not in [''unknown'', ''unavailable'']
+      }}'
+  actions:
+  - choose:
+    - conditions:
+      - condition: numeric_state
+        entity_id: sensor.wall_e_blades_current_on_time_2
+        above: 200
+      sequence:
+      - data:
+          title: Måste byta knivar på Wall-E
+          message: Bladen har använts i {{states('sensor.wall_e_blades_current_on_time_2')|round(0)}}
+            timmar.
+        action: notify.rickards_devices
+    - conditions:
+      - condition: numeric_state
+        entity_id: sensor.wall_e_blades_current_on_time_2
+        above: 150
+      sequence:
+      - data:
+          title: Dags att byta knivar på Wall-E
+          message: Bladen har använts i {{states('sensor.wall_e_blades_current_on_time_2')|round(0)}}
+            timmar.
+        action: notify.rickards_devices
+    - conditions:
+      - condition: numeric_state
+        entity_id: sensor.wall_e_blades_current_on_time_2
+        above: 100
+      sequence:
+      - data:
+          title: Snart dags att byta knivar på Wall-E
+          message: Bladen har använts i {{states('sensor.wall_e_blades_current_on_time_2')|round(0)}}
+            timmar.
+        action: notify.rickards_devices
   mode: single
 - id: '1661109418803'
-  alias: EV6, start charge on time
+  alias: EV6, Charge on time
   description: ''
   trigger:
   - platform: time
-    at: input_datetime.azarel_hour
+    at: input_datetime.car_2_time
   condition:
   - condition: state
-    entity_id: device_tracker.azarel_location_tracker
+    entity_id: device_tracker.ev6_location
     state: home
-  - condition: state
-    entity_id: binary_sensor.azarel_charger
-    state: 'on'
   - condition: state
     entity_id: binary_sensor.low_price
     state: 'on'
@@ -444,101 +516,198 @@
     data: {}
   - service: script.ladda_bilen_uppstart
     data: {}
+    enabled: false
   mode: single
 - id: '1662395114345'
   alias: Värmepumpen, tillåt elpatron
   description: ''
-  trigger:
-  - platform: state
+  triggers:
+  - alias: When Not Expensive
     entity_id:
-    - binary_sensor.low_price
-    alias: When Cheap
+    - binary_sensor.template_nordpool_price_not_high
     to: 'on'
-  - platform: numeric_state
-    entity_id: sensor.hem_gen5_electric_consumed_2
+    trigger: state
+  - entity_id: sensor.hem_gen5_electric_consumed_2
     below: 16
-  condition:
+    trigger: numeric_state
+  conditions:
   - condition: state
-    entity_id: binary_sensor.low_price
     state: 'on'
-  action:
-  - service: switch.turn_off
-    data: {}
+    entity_id: binary_sensor.template_nordpool_price_not_high
+    alias: Not Expensive
+  actions:
+  - data: {}
     target:
       entity_id:
       - switch.varmepumpen_b
-      - switch.varmepumpen_a
+    action: switch.turn_off
+    alias: Allow Heating Cartridge
   mode: single
 - id: '1662395326862'
   alias: Värmepumpen, blockera elpatron
   description: ''
-  trigger:
-  - platform: state
+  triggers:
+  - alias: When expensive
     entity_id:
-    - binary_sensor.low_price
-    alias: When expensive
+    - binary_sensor.template_nordpool_price_not_high
     to: 'off'
     id: evt_expensive
-  - platform: numeric_state
-    entity_id: sensor.hem_gen5_electric_consumed_3
+    trigger: state
+  - entity_id:
+    - sensor.hem_gen5_electric_consumed_2
     above: 20
-  condition: []
-  action:
-  - service: switch.turn_on
-    data: {}
+    trigger: numeric_state
+  conditions: []
+  actions:
+  - data: {}
     target:
-      entity_id: switch.varmepumpen_a
+      entity_id: switch.varmepumpen_b
     alias: Turn off VP Heat
-  - if:
-    - condition: state
-      entity_id: binary_sensor.low_price
-      state: 'off'
-    then:
-    - service: switch.turn_on
-      data: {}
-      target:
-        entity_id: switch.varmepumpen_a
-    alias: If expensive block completely
-  - delay:
-      hours: 0
-      minutes: 0
-      seconds: 6
-      milliseconds: 0
-  - if:
-    - condition: numeric_state
-      entity_id: sensor.hem_gen5_electric_consumed_2
-      above: 21
-    then:
-    - service: switch.turn_on
-      data: {}
-      target:
-        entity_id: switch.varmepumpen_a
+    action: switch.turn_on
   mode: single
 - id: '1662572482443'
   alias: Diskmaskinen, starta på klocka
   description: ''
-  trigger:
-  - platform: time
-    at: input_datetime.diskmaskinen_timme
-  condition: []
-  action:
-  - service: switch.turn_on
-    data: {}
-    target:
-      entity_id: switch.clever_spz3
-  - wait_for_trigger:
-    - platform: numeric_state
-      entity_id: sensor.clever_spz3_electric_consumption_w
+  triggers:
+  - entity_id:
+    - sensor.clever_spz3_electric_consumption_w
+    for:
+      hours: 0
+      minutes: 0
+      seconds: 3
+    above: 5
+    enabled: false
+    trigger: numeric_state
+  - entity_id:
+    - sensor.clever_spz3_electric_consumption_w
+    above: 1
+    trigger: numeric_state
+  conditions: []
+  actions:
+  - variables:
+      start_time: '{{state_attr(''sensor.peaqnext_dishwasher'',''raw_start'')|as_datetime|as_local}}'
+      start_now: '{{state_attr(''sensor.peaqnext_dishwasher'',''raw_start'')|as_datetime|as_local
+        < (now()+timedelta(minutes=15)) }}'
+      dish_cost: '{{ states(''sensor.diskmaskinen_kr'')|float }}'
+      action_runnow: '{{ ''RUNNOW_'' ~ context.id }}'
+      current_current:
+        '[object Object]':
+  - data:
+      title: Diskmaskinen
+      data:
+        tag: dishwasher
+        channel: Food
+        sticky: true
+        actions:
+        - action: '{{ action_runnow }}'
+          title: Starta direkt
+        clickAction: /lovelace/koket
+      message: Diskmaskinen startar {{'nu' if start_now else state_attr('sensor.peaqnext_dishwasher','raw_start')|as_timestamp|timestamp_custom('%H:%M')}}.
+    alias: Notify start time
+    action: notify.rickards_devices
+  - delay:
+      hours: 0
+      minutes: 0
+      seconds: 1
+      milliseconds: 0
+  - metadata: {}
+    data:
+      name: 30Pqy9tk9Euf9YnbSg8WVh
+      message: 'electric_consumption_w: {{ states(''sensor.clever_spz3_electric_consumption_w'')|float(0)
+        }}'
+    alias: Write to Logbook
+    action: logbook.log
+  - alias: Wait for Answer or Dishwasher to start
+    wait_for_trigger:
+    - event_type: mobile_app_notification_action
+      event_data:
+        action: '{{ action_runnow }}'
+      id: runnow_id
+      trigger: event
+    - event_type: mobile_app_notification_cleared
+      id: clear_id
+      trigger: event
+    - alias: Power >10W
+      entity_id:
+      - sensor.clever_spz3_electric_consumption_w
+      above: 10
+      id: starting_id
+      trigger: numeric_state
+    continue_on_timeout: false
+  - metadata: {}
+    data:
+      name: 28Pqy9tk9Euf9YnbSg8WVh
+      message: 'wait_trigger_id: {{ wait.trigger.id }} electric_consumption_w: {{
+        states(''sensor.clever_spz3_electric_consumption_w'')|float(0) }}'
+    alias: Write wait_trigger_id to Logbook
+    action: logbook.log
+  - alias: Run Now OR Wait until time
+    if:
+    - alias: Run Now Action OR Time
+      condition: or
+      conditions:
+      - alias: Run Now Action
+        condition: template
+        value_template: '{{ wait.trigger.id == ''runnow_id'' }}      '
+      - alias: Run Now Time
+        condition: template
+        value_template: '{{ start_now }}'
+    then:
+    - alias: Notify Starting Now
+      data:
+        title: Diskmaskinen
+        data:
+          tag: dishwasher
+          channel: Food
+          sticky: true
+          clickAction: /lovelace/koket
+        message: Diskmaskinen startar nu.
+      action: notify.rickards_devices
+    else:
+    - action: switch.turn_off
+      target:
+        entity_id: switch.clever_spz3
+      data: {}
+    - action: logbook.log
+      data:
+        name: 28Pqy9tk9Euf9YnbSg8WVg
+        message: 'start_time: {{start_time}} ({{start_time|as_timestamp}})
+
+          now: {{now()}} ({{now()|as_timestamp}})
+
+          condition: {{ start_time|as_datetime <= now() }}'
+      alias: Write start_time to Logbook
+    - alias: Wait until it's time to start
+      wait_for_trigger:
+      - alias: Wait until
+        value_template: '{{ start_time|as_datetime <= now() }}'
+        trigger: template
+    - data: {}
+      target:
+        entity_id: switch.clever_spz3
+      enabled: true
+      action: switch.turn_on
+  - alias: Wait for Dishwasher to stop draw current
+    wait_for_trigger:
+    - entity_id:
+      - sensor.clever_spz3_electric_consumption_w
       for:
         hours: 0
-        minutes: 5
+        minutes: 2
         seconds: 0
-      below: 4
-  - service: automation.turn_off
-    alias: Turn off automation
-    data: {}
-    target:
-      entity_id: automation.diskmaskinen_starta_pa_klocka
+      below: 1
+      trigger: numeric_state
+    continue_on_timeout: false
+  - data:
+      title: Diskmaskinen
+      data:
+        tag: dishwasher
+        channel: Food
+        clickAction: /lovelace/koket
+      message: Diskmaskinen färdig…\n {{now().strftime('%H:%M')}} • {{(states('sensor.diskmaskinen_kr')|float
+        - dish_cost|float)|round(2)}} kr
+    action: notify.rickards_devices
+    alias: Notify Finished
   mode: single
 - id: '1662626703155'
   alias: Zoe, stop charge
@@ -558,56 +727,83 @@
 - id: '1663015641931'
   alias: Tvättmaskinen, starta på klockslag
   description: ''
-  trigger:
-  - platform: time
-    at: input_datetime.tvattmaskinen_timme
-  condition: []
-  action:
-  - service: switch.turn_on
-    data: {}
-    target:
-      entity_id: switch.clever_spz2
-  - wait_for_trigger:
-    - platform: numeric_state
-      entity_id: sensor.clever_spz2_electric_consumption_w_2
-      for:
-        hours: 0
-        minutes: 2
-        seconds: 0
-      below: 5
-  - service: automation.turn_off
+  triggers:
+  - at: input_datetime.tvattmaskinen_timme
+    trigger: time
+    enabled: false
+  - trigger: numeric_state
+    entity_id:
+    - sensor.clever_spz2_electric_consumption_w_2
+    above: 5
+    alias: 'When Washing machine draws power '
+  conditions: []
+  actions:
+  - variables:
+      start_time: '{{state_attr(''sensor.peaqnext_washing_machine'',''raw_start'')|as_datetime|as_local}}'
+      start_now: '{{state_attr(''sensor.peaqnext_washing_machine'',''raw_start'')|as_datetime|as_local
+        < (now()+timedelta(minutes=15)) }}'
+      wash_cost: '{{ states(''sensor.tvattmaskinen_kostnad'')|float }}'
+    enabled: true
+  - data:
+      title: Tvättmaskinen
+      data:
+        tag: washing
+        channel: Food
+        sticky: true
+        clickAction: /lovelace/koket
+      message: Tvättmaskinen startar {{'nu' if start_now else state_attr('sensor.peaqnext_washing_machine','raw_start')|as_timestamp|timestamp_custom('%H:%M')}}.
+    alias: Notify start time
+    action: notify.rickards_devices
+    enabled: true
+  - action: logbook.log
     data:
+      name: 28Pqy9tk9Euf9YnbSg8WVk
+      message: 'start_time: {{start_time}} ({{start_time|as_timestamp}})
+
+        now: {{now()}} ({{now()|as_timestamp}})
+
+        condition: {{ start_time|as_datetime <= now() }}'
+    alias: Write start_time to Logbook
+  - if:
+    - alias: If start in the future
+      condition: template
+      value_template: '{{ not(start_now) }}'
+    then:
+    - target:
+        entity_id: switch.clever_spz2
+      action: switch.turn_off
+      alias: Turn off washing machine
+      data: {}
+    - wait_for_trigger:
+      - alias: Wait until
+        value_template: '{{ start_time|as_datetime <= now() }}'
+        trigger: template
+    - target:
+        entity_id: switch.clever_spz2
+      action: switch.turn_on
+      alias: Turn on washing machine
+      data: {}
+    alias: If Start Later stop and wait
+  - wait_for_trigger:
+    - entity_id: sensor.clever_spz2_electric_consumption_w_2
+      below: 5
+      trigger: numeric_state
+  - action: notify.rickards_devices
+    data:
+      title: Tvättmaskinen
+      data:
+        tag: washing
+        channel: Food
+        clickAction: /lovelace/koket
+      message: Tvättmaskinen färdig…\n {{now().strftime('%H:%M')}} • {{(states('sensor.tvattmaskinen_kostnad')|float
+        - wash_cost|float)|round(2)}} kr
+    alias: Notify Finished
+  - data:
       stop_actions: false
     target:
       entity_id: automation.tvattmaskinen_starta_pa_klockslag
-  mode: single
-- id: '1663084425465'
-  alias: 'Tvättmaskinen klar '
-  description: ''
-  trigger:
-  - platform: numeric_state
-    entity_id: sensor.clever_spz2_electric_consumption_w_2
-    above: 1000
-  condition: []
-  action:
-  - wait_for_trigger:
-    - platform: numeric_state
-      entity_id: sensor.clever_spz2_electric_consumption_w_2
-      for:
-        hours: 0
-        minutes: 2
-        seconds: 0
-      below: 5
-  - service: notify.fridas_devices
-    data:
-      title: Tvättmaskinen är klar
-      message: Tvättmaskinen blev färdig kl. {{ now().strftime('%H:%M den %d/%m')
-        }}
-  - service: notify.rickards_devices
-    data:
-      title: Tvättmaskinen är klar
-      message: Tvättmaskinen blev färdig kl. {{ now().strftime('%H:%M den %d/%m')
-        }}
+    action: automation.turn_off
+    enabled: false
   mode: single
 - id: '1663105406145'
   alias: Spelrummet, LED
@@ -616,20 +812,23 @@
     path: niro1987/zha_ikea_tradfri_5button_remote_preset.yaml
     input:
       remote: c53b352f8a5c574b8c18e8cc9b371448
-      light: light.spelrummet_taket_light
-      preset: input_select.helper_spelrummet_led
+      light: light.tvattstugan_banken_light
+      preset: input_select.tvattstugan_led_color
 - id: '1663141580671'
   alias: ALARM, ChargeNode offline
   description: ''
-  trigger:
-  - platform: state
-    entity_id:
+  triggers:
+  - entity_id:
     - binary_sensor.chargenode_pie
     to: 'off'
-  condition: []
-  action:
-  - service: notify.rickards_devices
-    data:
+    trigger: state
+    for:
+      hours: 0
+      minutes: 1
+      seconds: 0
+  conditions: []
+  actions:
+  - data:
       title: Laddaren offline!
       message: Det går inte att nå ChargeNode-laddaren!
       data:
@@ -641,6 +840,7 @@
         channel: Alarm
         ttl: 0
         priority: high
+    action: notify.rickards_devices
   mode: single
 - id: '1664118673084'
   alias: Tvättstugan, LED
@@ -649,7 +849,7 @@
     path: niro1987/zha_ikea_tradfri_5button_remote_preset.yaml
     input:
       remote: 6a70347d6c5f0791963cff2b5e01c92b
-      light: light.tvattstugan_banken_light
+      light: light.spelrummet_taket_light
       preset: input_select.helper_spelrummet_led
 - id: '1664611841028'
   alias: Check Cleverio status
@@ -670,33 +870,55 @@
 - id: '1664994425706'
   alias: iGrill alarm
   description: ''
-  trigger:
-  - platform: template
-    value_template: '{{ states(''sensor.igrill_probe_1'')|int >= states(''input_number.igrill_target_temp'')|int
+  triggers:
+  - value_template: '{{ states(''sensor.igrill_probe_1'')|int >= states(''input_number.igrill_target_temp'')|int
       }}'
     alias: 'When at target temp '
-  - platform: template
-    value_template: '{{ states(''sensor.igrill_probe_1'')|int >= states(''input_number.igrill_target_temp'')|int-3
+    enabled: false
+    trigger: template
+  - value_template: '{{ states(''sensor.igrill_probe_1'')|int >= states(''input_number.igrill_target_temp'')|int-3
       }}'
     alias: 'When right before target temp '
-  condition: []
-  action:
-  - if:
+    enabled: false
+    trigger: template
+  - entity_id:
+    - sensor.igrill_probe_1
+    trigger: state
+  conditions:
+  - alias: iGrill within 10° from Target
+    condition: numeric_state
+    entity_id: sensor.igrill_probe_1
+    value_template: '{{ states("sensor.igrill_probe_1")|float(0) + 10 }}'
+    above: input_number.igrill_target_temp
+  actions:
+  - alias: Show temp and then send alarm
+    if:
     - condition: template
       value_template: '{{ states(''sensor.igrill_probe_1'')|int >= states(''input_number.igrill_target_temp'')|int
         }}'
       alias: 'At target temp '
     then:
-    - service: notify.rickards_devices
-      data:
-        title: iGrill alarm
+    - data:
+        title: iGrill
+        data:
+          tag: igrill
+          channel: Alarm
+          clickAction: /lovelace/koket
         message: Temperaturen är {{ states.sensor.igrill_probe_1.state|int }}°C.
+      alias: Send alarm notification
+      action: notify.rickards_devices
     else:
-    - service: notify.rickards_devices
-      data:
-        title: iGrill alarm
-        message: Temperaturen är strax där {{ states.sensor.igrill_probe_1.state|int
-          }}°C ({{ states.input_number.igrill_target_temp.state|int }}°).
+    - data:
+        title: iGrill
+        data:
+          tag: igrill
+          sticky: true
+          channel: Food
+          clickAction: /lovelace/koket
+        message: '{{ states("sensor.igrill_probe_1")|int }}°C\n ({{states("input_number.igrill_target_temp")|int}}°C)
+          • {{now().strftime(''%H:%M'')}}'
+      alias: Send persistant notification
+      action: notify.rickards_devices
   mode: single
 - id: '1671363832692'
   alias: 'ALARM: Enheter offline'
@@ -721,47 +943,47 @@
 - id: '1672646126224'
   alias: Förrådet, Turn On Heat
   description: ''
-  trigger:
-  - platform: numeric_state
-    entity_id: sensor.199_temperature
+  triggers:
+  - entity_id: sensor.199_temperature
     below: 10
     alias: When Förrådet temp <10
-  - platform: state
-    entity_id:
-    - binary_sensor.template_nordpool_price_low
+    trigger: numeric_state
+  - entity_id:
+    - binary_sensor.low_price
     to: 'on'
-  condition:
+    trigger: state
+  conditions:
   - condition: state
-    entity_id: binary_sensor.template_nordpool_price_low
     state: 'on'
+    entity_id: binary_sensor.low_price
   - condition: numeric_state
     entity_id: sensor.199_temperature
     below: 10
     alias: When Förrådet is <10°
-  action:
-  - service: homeassistant.turn_on
-    data: {}
+  actions:
+  - data: {}
     target:
       entity_id: switch.popp_outdoor
+    action: homeassistant.turn_on
   mode: single
 - id: '1672652238394'
   alias: Förrådet, Turn Off Heat
   description: ''
-  trigger:
+  triggers:
   - alias: When Förrådet >12°
-    platform: numeric_state
     entity_id: sensor.199_temperature
     above: 12
-  - platform: state
-    entity_id:
-    - binary_sensor.template_nordpool_price_low
+    trigger: numeric_state
+  - entity_id:
+    - binary_sensor.low_price
     to: 'off'
-  condition: []
-  action:
-  - service: homeassistant.turn_off
-    data: {}
+    trigger: state
+  conditions: []
+  actions:
+  - data: {}
     target:
       entity_id: switch.popp_outdoor
+    action: homeassistant.turn_off
   mode: single
 - id: '1673507757148'
   alias: Belysning tänd, Arbetsdagar
@@ -796,61 +1018,97 @@
 - id: '1675949713517'
   alias: Spabadet, pump and heater
   description: ''
-  trigger:
-  - platform: time_pattern
-    hours: /1
+  triggers:
+  - hours: /1
     alias: Every hour
+    trigger: time_pattern
   - alias: When hot tub temp >31°
-    platform: numeric_state
     entity_id:
     - sensor.template_spabadet_temperature
     above: input_number.spabadet_lower_temp_limit
-  - platform: state
-    entity_id:
+    trigger: numeric_state
+  - entity_id:
     - binary_sensor.template_nordpool_price_low
     alias: When Nordpool median price changes
-  condition: []
-  action:
+    trigger: state
+    enabled: false
+  - trigger: state
+    entity_id:
+    - sensor.template_nordpool_25perc
+    alias: When Nordpool low price changes
+  conditions: []
+  actions:
   - delay:
       hours: 0
       minutes: 0
       seconds: 5
       milliseconds: 0
-  - service: script.turn_on
-    data: {}
+  - data: {}
     target:
       entity_id: script.spabadet_pump_and_heater_v2
     alias: Run Spabadet, pump and heater (V2)
+    action: script.turn_on
   mode: single
 - id: '1677244066232'
   alias: Spabadet, larm om värmen
   description: ''
-  trigger:
-  - platform: numeric_state
-    entity_id: sensor.spabadet_l3_power
+  triggers:
+  - entity_id:
+    - sensor.spabadet_l3_power
     for:
       hours: 0
-      minutes: 5
+      minutes: 10
       seconds: 0
     above: 0.5
-  condition:
-  - condition: numeric_state
-    entity_id: sensor.spabadet_l2_power
-    below: 1
-  - condition: state
-    entity_id: switch.spabadet_l2
-    state: 'on'
-  - condition: numeric_state
-    entity_id: sensor.template_spabadet_temperature
-    below: 34
-  - condition: numeric_state
-    entity_id: sensor.template_spabadet_l3_current_a
-    above: 0.5
-  action:
-  - service: notify.rickards_devices
-    data:
-      message: Värmen är på men drar ingen ström.
-      title: Spabadet
+    trigger: numeric_state
+  - trigger: numeric_state
+    entity_id:
+    - sensor.spabadet_temperatur
+    below: input_number.spabadet_lower_temp_limit
+  - trigger: state
+    entity_id:
+    - sensor.spabadet_temperatur
+    to:
+    for:
+      hours: 2
+  conditions: []
+  actions:
+  - choose:
+    - conditions:
+      - condition: template
+        value_template: '{{ now() - states.sensor.spabadet_temperatur.last_changed
+          >= timedelta(hours=2) }}'
+        alias: Temp value is stale
+      sequence:
+      - data:
+          message: "Gammalt värde från spabadet\\n {{ states(\"sensor.spabadet_temperatur\")
+            }}°C\\n\nÄndrad: {{states.sensor.spabadet_temperatur.last_changed|as_timestamp|timestamp_custom(\"%a
+            %H:%M\", true)}} • \U0001F50B{{states(\"sensor.spabadet_batteri\")}}%"
+          title: Spabadet
+          data:
+            tag: spa_error
+            channel: Spa
+            clickAction: /lovelace/spa
+        action: notify.rickards_devices
+        alias: Notify Rickard
+    - conditions:
+      - condition: numeric_state
+        entity_id: sensor.template_spabadet_temperature
+        below: input_number.spabadet_lower_temp_limit
+        alias: Temp is lower than limit
+      sequence:
+      - data:
+          message: "Låg temperatur i badet\\n {{ states(\"sensor.spabadet_temperatur\")
+            }}°C ({{states(\"input_number.spabadet_lower_temp_limit\")}}°C)\\n Ändrad:
+            {{states.sensor.spabadet_temperatur.last_changed|as_timestamp|timestamp_custom(\"%a
+            %H:%M\", true)}} • \U0001F50B{{states(\"sensor.spabadet_batteri\")}}%"
+          title: Spabadet
+          data:
+            tag: spa_error
+            channel: Spa
+            clickAction: /lovelace/spa
+        action: notify.rickards_devices
+        alias: Notify Rickard
   mode: single
 - id: '1684931331914'
   alias: 'Wall-E: Query Status'
@@ -881,7 +1139,7 @@
     alias: Disable Wall-E Party Mode
   mode: single
 - id: '1685565293861'
-  alias: Zoe, charge port connected
+  alias: Zoe, Charge Port connected
   description: ''
   trigger:
   - platform: state
@@ -913,15 +1171,20 @@
       seconds: 0
   condition: []
   action:
+  - variables:
+      action_yes: '{{ ''YES_'' ~ context.id }}'
+      action_no: '{{ ''NO_'' ~ context.id }}'
   - service: notify.rickards_devices
     data:
       title: Spabadet kör fortfarande manuellt
       data:
-        clickAction: /lovelace/4
-      message: 'Priset:  {{states("sensor.template_elpris_kr") }} kr\n Klockan: {{now().strftime(''%H:%M'')
-        }}\n Badet:   {{states("sensor.template_spabadet_temperature") }}°C\n Kostnad:
-        {{(states(''sensor.spabadet_kr'')|float - states("var.spa_cost")|float)|round(2)}}
-        kr'
+        tag: spa
+        channel: Spa
+        sticky: true
+        clickAction: /lovelace/spa
+      message: '{{states("sensor.template_spabadet_temperature") }}°C • {{states("sensor.template_home_temp")
+        }}°C ute\n Kostnad: {{(states(''sensor.spabadet_kr'')|float - states("var.spa_cost")|float)|round(2)}}
+        kr\n Priset:  {{states("sensor.template_elpris_kr")}} kr\n {{now().strftime(''%H:%M'')}}'
     alias: Notify Rickard that manual control is turned off
   - delay:
       hours: 2
@@ -937,29 +1200,83 @@
       data:
         title: Spabadet stängs av om 5 min
         data:
-          clickAction: /lovelace/4
-        message: 'Priset:  {{states("sensor.template_elpris_kr") }} kr\n Klockan:
-          {{now().strftime(''%H:%M'') }}\n Badet:   {{states("sensor.template_spabadet_temperature")
-          }}°C\n Kostnad: {{(states(''sensor.spabadet_kr'')|float - states("var.spa_cost")|float)|round(2)}}
-          kr'
+          tag: spa_options
+          channel: Spa
+          sticky: true
+          actions:
+          - action: '{{ action_yes }}'
+            title: Ja
+          - action: '{{ action_no }}'
+            title: Nej
+          clickAction: /lovelace/spa
+        message: Vill du fortsätta köra?\n {{states("sensor.template_spabadet_temperature")}}°C
+          • {{states("sensor.template_home_temp")}}°C ute\n {{(states('sensor.spabadet_kr')|float
+          - states("var.spa_cost")|float)|round(2)}} kr\n {{now().strftime('%H:%M')}}
       alias: Notify Rickard that manual control is turned off
-    - delay:
+    - wait_for_trigger:
+      - platform: event
+        event_type: mobile_app_notification_action
+        event_data:
+          action: '{{ action_yes }}'
+      - platform: event
+        event_type: mobile_app_notification_action
+        event_data:
+          action: '{{ action_no }}'
+      - platform: event
+        event_type: mobile_app_notification_cleared
+        event_data:
+          action_1_key: '{{ action_yes }}'
+      timeout:
         hours: 0
         minutes: 5
         seconds: 0
         milliseconds: 0
-    - service: input_boolean.turn_off
-      metadata: {}
-      data: {}
-      target:
-        entity_id: input_boolean.spabadet_manual
+    - choose:
+      - conditions:
+        - condition: template
+          value_template: '{{ wait.trigger.event.data.action == action_yes }}'
+        sequence:
+        - service: notify.rickards_devices
+          data:
+            message: clear_notification
+            data:
+              tag: spa_options
+          alias: Clear notification
+        - service: notify.rickards_devices
+          data:
+            data:
+              tag: spa
+              channel: Spa
+              sticky: true
+              clickAction: /lovelace/spa
+            message: Spabadet fortsätter köra manuellt tills du stänger av det.\n
+              {{states("sensor.template_spabadet_temperature")}}°C • {{states("sensor.template_home_temp")}}°C
+              ute\n {{(states('sensor.spabadet_kr')|float - states("var.spa_cost")|float)|round(2)}}
+              kr\n {{now().strftime('%H:%M')}}
+        alias: 'Yes: keep running'
+      - conditions:
+        - condition: template
+          value_template: '{{ wait.trigger.event.data.action == action_no or wait.trigger.event.event_type
+            == ''mobile_app_notification_cleared'' }}'
+        sequence:
+        - service: input_boolean.turn_off
+          target:
+            entity_id: input_boolean.spabadet_manual
+          data: {}
+          alias: Turn off Spabadet, manual
+        - service: notify.rickards_devices
+          data:
+            message: clear_notification
+            data:
+              tag: spa_options
+          alias: Clear notification
+        alias: 'No: stop'
   mode: single
 - id: '1690820037786'
   alias: EV6, set charge limit
   description: ''
-  trigger:
-  - platform: state
-    entity_id:
+  triggers:
+  - entity_id:
     - input_number.rya_soc_upper_limit
     for:
       hours: 0
@@ -967,8 +1284,8 @@
       seconds: 10
     id: HA_SoC
     alias: HA SoC change state for 10 seconds
-  - platform: state
-    entity_id:
+    trigger: state
+  - entity_id:
     - number.ev6_ac_charging_limit
     id: EV6_SoC
     for:
@@ -977,7 +1294,8 @@
       seconds: 0
     enabled: true
     alias: EV6 SoC changes
-  condition:
+    trigger: state
+  conditions:
   - alias: Triggered by HA or Triggered by EV6 and State != 0
     condition: or
     conditions:
@@ -1002,25 +1320,32 @@
     value_template: '{{ states(''number.ev6_ac_charging_limit'')|int(0) != states(''input_number.rya_soc_upper_limit'')|int(0)
       }}'
     alias: EV6 SoC != HA State
-  action:
+  actions:
   - if:
     - condition: trigger
       id:
       - EV6_SoC
     then:
-    - service: input_number.set_value
+    - action: input_number.set_value
       alias: Set SoC Upper Limit to EV6 Charging Limit
       target:
         entity_id: input_number.rya_soc_upper_limit
       data:
         value: '{{ states(''number.ev6_ac_charging_limit'')|int(80) }}'
     else:
-    - service: number.set_value
-      alias: Set EV6 Charging Limit to SoC Upper Limit
-      target:
-        entity_id: number.ev6_ac_charging_limit
-      data:
-        value: '{{ states(''input_number.rya_soc_upper_limit'')|int(80) }}'
+    - alias: Send update if limit ≥50
+      if:
+      - condition: numeric_state
+        entity_id: input_number.rya_soc_upper_limit
+        above: 49
+      then:
+      - action: number.set_value
+        alias: Set EV6 Charging Limit to SoC Upper Limit
+        target:
+          entity_id: number.ev6_ac_charging_limit
+        data:
+          value: '{{ states(''input_number.rya_soc_upper_limit'')|int(80) }}'
+    alias: Update EV6 or Upper limit
   mode: single
 - id: '1690871828303'
   alias: EV6, reload config
@@ -1062,10 +1387,31 @@
     entity_id:
     - sensor.chargenode_port1_state
     to: '3'
+    id: cn_port_change
   condition: []
   action:
   - variables:
       kwh_start: '{{ states(''sensor.rya_kwh'')|int }}'
+      kwh_lastupdate: '{{ states.sensor.ev6_ev_battery_level.last_updated|as_timestamp
+        }}'
+  - if:
+    - condition: trigger
+      id:
+      - cn_port_change
+    then:
+    - metadata: {}
+      data: {}
+      action: kia_uvo.force_update
+    - wait_for_trigger:
+      - platform: template
+        value_template: '{{ states.sensor.ev6_ev_battery_level.last_updated|as_timestamp
+          != kwh_lastupdate }}'
+      timeout:
+        hours: 0
+        minutes: 2
+        seconds: 0
+        milliseconds: 0
+      alias: Wait for EV6 to Update
   - alias: While EV6 Charge Port is Open AND EV6 is Charging
     repeat:
       while:
@@ -1084,96 +1430,71 @@
           entity_id: binary_sensor.ev6_ev_charge_port
           state: 'off'
         alias: NOT Closed
+        enabled: false
       sequence:
-      - service: notify.mobile_app_op9_pro
-        data:
-          message: 'SoC: {{states(''sensor.ev6_ev_battery_level'')}}% ({{states.sensor.ev6_ev_battery_level.last_updated|as_local|as_timestamp|timestamp_custom(''%d
-            %H:%M'')}})\n {{states(''sensor.template_rya_charging_power'')}} kW |
-            {{states(''sensor.rya_kwh'')|int - kwh_start}} kWh\n {{now().strftime(''%d
-            %H:%M'')}}'
-          title: EV6 laddar
-          data:
-            clickAction: /lovelace/tesla
-            sticky: true
-            persistent: true
-            tag: car_1_charging
-            channel: ev
-        alias: Send persistent notification
+      - if:
+        - condition: device
+          device_id: f4c09575234da651122f411210842a80
+          domain: device_tracker
+          entity_id: 5c97f21a93e7d9c05f08b14bdf9369ed
+          type: is_home
+        then:
+        - data:
+            message: 'SoC: {{states(''sensor.ev6_ev_battery_level'')}}% ({{states.sensor.ev6_ev_battery_level.last_updated|as_local|as_timestamp|timestamp_custom(''%H:%M'')}})\n
+              {{states(''sensor.template_rya_charging_power'')}} kW • {{states(''sensor.rya_kwh'')|int
+              - kwh_start}} kWh\n {{now().strftime(''%H:%M'')}}'
+            title: EV6 laddar
+            data:
+              clickAction: /lovelace/tesla
+              sticky: true
+              persistent: false
+              tag: car_1_charging
+              channel: ev
+          alias: Send persistent notification
+          action: notify.mobile_app_op9_pro
+        alias: If EV6 is At Home send notification
       - delay:
           hours: 0
           minutes: 15
           seconds: 0
           milliseconds: 0
         enabled: true
-      - service: kia_uvo.force_update
-        data: {}
-        alias: Force refresh EV6 status
-        enabled: true
-      - delay:
-          hours: 0
-          minutes: 0
-          seconds: 15
-          milliseconds: 0
-  - service: notify.rickards_devices
-    data:
-      message: clear_notification
+        alias: Wait 15 mins
+      - alias: 'Retry Force refresh EV6 status '
+        metadata: {}
+        data:
+          sequence:
+          - service: kia_uvo.force_update
+            data: {}
+            alias: Force refresh EV6 status
+            enabled: true
+          - delay:
+              hours: 0
+              minutes: 0
+              seconds: 15
+              milliseconds: 0
+          retries: 2
+          on_error:
+          - service: notify.rickards_devices
+            data:
+              message: clear_notification
+              data:
+                tag: car_1_charging
+            alias: Dismiss persistent notification
+            enabled: true
+        action: retry.actions
+  - data:
+      message: 'SoC: {{states(''sensor.ev6_ev_battery_level'')}}% ({{states.sensor.ev6_ev_battery_level.last_updated|as_local|as_timestamp|timestamp_custom(''%H:%M'')}})\n
+        {{states(''sensor.rya_kwh'')|int - kwh_start}} kWh laddat\n {{now().strftime(''%m-%d
+        %H:%M'')}}'
+      title: EV6 slutat ladda
       data:
+        clickAction: /lovelace/tesla
+        sticky: true
         tag: car_1_charging
-    alias: Dismiss persistent notification
-  mode: single
-- id: '1693808329866'
-  alias: Tvättmaskinen, armera
-  description: ''
-  trigger:
-  - platform: numeric_state
-    entity_id: sensor.clever_spz2_electric_consumption_w_2
-    for:
-      hours: 0
-      minutes: 0
-      seconds: 5
-    above: 10
-  condition:
-  - condition: state
-    entity_id: automation.tvattmaskinen_starta_pa_klockslag
-    state: 'on'
-  action:
-  - service: switch.turn_off
-    data: {}
-    target:
-      entity_id: switch.clever_spz2
-  - service: automation.turn_off
-    data:
-      stop_actions: false
-    target:
-      entity_id: automation.tvattmaskinen_starta
-  mode: single
-- id: '1693809436762'
-  alias: Diskmaskinen, armera
-  description: ''
-  trigger:
-  - platform: numeric_state
-    entity_id: sensor.clever_spz3_electric_consumption_w
-    for:
-      hours: 0
-      minutes: 0
-      seconds: 5
-    above: 5
-  condition:
-  - condition: state
-    entity_id: automation.diskmaskinen_starta_pa_klocka
-    state: 'on'
-  action:
-  - service: switch.turn_off
-    data: {}
-    target:
-      entity_id:
-      - switch.clever_spz3
-  - service: automation.turn_off
-    data:
-      stop_actions: false
-    target:
-      entity_id:
-      - automation.diskmaskinen_armera
+        channel: ev
+    alias: Send notification
+    action: notify.rickards_devices
   mode: single
 - id: '1695920348544'
   alias: Värmepumpen, styrning
@@ -1249,38 +1570,38 @@
 - id: '1698044468504'
   alias: Elpriset, indikator
   description: ''
-  trigger:
-  - platform: state
-    entity_id:
+  triggers:
+  - entity_id:
     - sensor.nordpool_kwh_se3_sek_3_095_0
-  condition: []
-  action:
+    trigger: state
+  conditions: []
+  actions:
   - choose:
     - conditions:
-      - condition: numeric_state
+      - alias: Elpriset över 2 kr
+        condition: numeric_state
         entity_id: sensor.template_elpris_kr
-        above: 2
-        alias: Elpriset över 2 kr
+        above: 1.9
       sequence:
-      - service: zwave_js.set_config_parameter
-        data:
+      - data:
           parameter: '41'
           value: '4'
         target:
           device_id: aa0c0b41292d62cfbef2a78d19659e46
         alias: Röd
+        action: zwave_js.set_config_parameter
     - conditions:
       - condition: numeric_state
         entity_id: sensor.template_elpris_kr
         below: 1
       sequence:
-      - service: zwave_js.set_config_parameter
-        data:
+      - data:
           parameter: '41'
           value: '5'
         target:
           device_id: aa0c0b41292d62cfbef2a78d19659e46
         alias: Grön
+        action: zwave_js.set_config_parameter
       alias: Elpriset under 1 kr
     - conditions:
       - condition: state
@@ -1288,13 +1609,13 @@
         state: 'off'
         alias: Över 75:e percentilen
       sequence:
-      - service: zwave_js.set_config_parameter
-        data:
+      - data:
           parameter: '41'
           value: '4'
         target:
           device_id: aa0c0b41292d62cfbef2a78d19659e46
         alias: Röd
+        action: zwave_js.set_config_parameter
     - conditions:
       - condition: state
         entity_id: binary_sensor.template_nordpool_price_not_high
@@ -1306,12 +1627,12 @@
         state: 'off'
       sequence:
       - alias: Magenta
-        service: zwave_js.set_config_parameter
         data:
           parameter: '41'
           value: '9'
         target:
           device_id: aa0c0b41292d62cfbef2a78d19659e46
+        action: zwave_js.set_config_parameter
       alias: Över median
     - conditions:
       - condition: state
@@ -1324,12 +1645,12 @@
         alias: Över 25:e percentilen
       sequence:
       - alias: Gul
-        service: zwave_js.set_config_parameter
         data:
           parameter: '41'
           value: '7'
         target:
           device_id: aa0c0b41292d62cfbef2a78d19659e46
+        action: zwave_js.set_config_parameter
       alias: Under median
     - conditions:
       - condition: state
@@ -1337,13 +1658,13 @@
         state: 'on'
         alias: Under 25:e percentilen
       sequence:
-      - service: zwave_js.set_config_parameter
-        data:
+      - data:
           parameter: '41'
           value: '5'
         target:
           device_id: aa0c0b41292d62cfbef2a78d19659e46
         alias: Grön
+        action: zwave_js.set_config_parameter
       alias: Under 25:e percentilen
   mode: single
 - id: '1699456441373'
@@ -1354,25 +1675,15 @@
     at: input_datetime.rya_starta_hvac
   condition: []
   action:
-  - service: script.turn_on
-    data: {}
+  - service: input_boolean.turn_on
     target:
-      entity_id: script.ev6_start_hvac
-    alias: Start HVAC
+      entity_id: input_boolean.rya_hvac_on
+    alias: Turn on EV6 HVAC
   - delay:
       hours: 0
       minutes: 0
-      seconds: 20
+      seconds: 5
       milliseconds: 0
-    alias: Delay 20 secs
-  - service: notify.rickards_devices
-    data:
-      title: A/C på Kian
-      message: 'Luftkonditioneringen på RYA är startad.\n Ute: {{states(''sensor.framsidan_temperature'')}}°
-        {{''(på)'' if states(''binary_sensor.ev6_air_conditioner'')|bool else ''(av)''}}\n
-        SoC: {{states(''sensor.ev6_ev_battery_level'')}}%.\n {{now().strftime(''%m-%d
-        %H:%M'')}}'
-    alias: Notify A/C started
   - service: automation.turn_off
     data:
       stop_actions: false
@@ -1400,13 +1711,13 @@
       device_id: ffd6fdd0eebca8d7951b4008604c2c94
   mode: single
 - id: '1699976122787'
-  alias: Zoe, charge
+  alias: Delphine, Charge
   description: ''
-  trigger:
-  - platform: time
-    at: sensor.template_next_charge
+  triggers:
+  - at: sensor.template_next_charge
     alias: When at Start time
-  condition:
+    trigger: time
+  conditions:
   - condition: numeric_state
     entity_id: sensor.template_zoe_battery
     below: input_number.zoe_soc_upper_limit
@@ -1415,22 +1726,78 @@
     value_template: '{{ now() >= as_datetime(states("sensor.template_next_charge"))
       }}'
     alias: Passed Start time
-  - condition: state
-    entity_id: binary_sensor.zoe_charging
-    state: 'off'
-    enabled: false
   - condition: not
     conditions:
     - condition: state
       entity_id: sensor.chargenode_port2_state
       state: '3'
     alias: Port 2 is NOT charging State
-  action:
-  - service: script.turn_on
+  actions:
+  - action: script.turn_on
+    metadata: {}
     data: {}
     target:
-      entity_id: script.ladda_zoe
-    enabled: true
+      entity_id: script.ladda_bilen_uppstart
+    alias: Turn off household consumers
+  - alias: Try Add Zoe to queue
+    data:
+      sequence:
+      - action: rest_command.cn_add_yxx_to_queue
+        metadata: {}
+        data: {}
+    action: retry.actions
+  - data:
+      title: Delphine börjar ladda
+      data:
+        clickAction: /lovelace/tesla
+        channel: ev
+      message: 'SoC:    {{states("sensor.template_zoe_battery")}}%\n Priset: {{states("sensor.template_nordpool_current_price_vat")
+        }} kr\n {{now().strftime(''%d %H:%M'')}}'
+    alias: Send message
+    action: notify.rickards_devices
+  - data:
+      stop_actions: true
+    target:
+      entity_id: automation.ladda_fridas_bil
+    alias: 'Turn off automation '
+    action: automation.turn_off
+  - delay:
+      hours: 0
+      minutes: 2
+      seconds: 0
+      milliseconds: 0
+  - alias: Get SessionId
+    data: {}
+    target:
+      entity_id: sensor.charge_yxx_sessionid
+    action: homeassistant.update_entity
+  - alias: Wait for SoC > Limit (max 6h)
+    wait_for_trigger:
+    - entity_id:
+      - sensor.template_zoe_battery
+      above: input_number.zoe_soc_upper_limit
+      trigger: numeric_state
+    timeout:
+      hours: 6
+      minutes: 0
+      seconds: 0
+      milliseconds: 0
+  - alias: If SoC > Limit
+    if:
+    - condition: numeric_state
+      entity_id: sensor.template_zoe_battery
+      above: input_number.zoe_soc_upper_limit
+    then:
+    - data: {}
+      action: rest_command.cn_remove_yxx_from_queue
+    - data:
+        title: Delphine har laddat färdigt
+        message: 'SoC:    {{states("sensor.template_zoe_battery")}}%\n Priset: {{states("sensor.template_nordpool_current_price_vat")}}
+          kr\n {{now().strftime(''%m-%d %H:%M'')}}'
+        data:
+          clickAction: /lovelace/tesla
+          channel: ev
+      action: notify.rickards_devices
   mode: single
 - id: '1703854838804'
   alias: Belysning, sovrumsfönstet
@@ -1443,66 +1810,20 @@
 - id: '1705750284263'
   alias: Värmepumpen, larm om elpatron
   description: ''
-  trigger:
-  - platform: numeric_state
-    entity_id:
-    - sensor.shellyem3_c45bbe55c55e_channel_b_current
+  triggers:
+  - entity_id:
+    - sensor.shellyem3_c45bbe55c55e_channel_a_current
     above: 1
-  condition: []
-  action:
-  - service: notify.rickards_devices
-    data:
+    trigger: numeric_state
+  conditions: []
+  actions:
+  - data:
       message: 'Elpatronen är tillslagen på värmepumpen.\n Elpriset: {{states(''sensor.template_elpris_kr'')}}
-        kr\n Temp: {{states(''sensor.framsidan_temperature'')}}°C\n Kl.: {{now().strftime(''%m-%d
-        %H:%M'')}}'
+        kr\n Temp: {{states(''sensor.framsidan_temperature'')}}°C\n {{now().strftime(''%H:%M'')}}'
       title: VP elpatron
-  mode: single
-- id: '1705870917421'
-  alias: Projektorn, Stäng av belysning
-  description: ''
-  trigger:
-  - platform: device
-    device_id: dc532b8fd22b934a570a3040abba3ccd
-    domain: media_player
-    entity_id: dd4661684aac4934b475a564d21887dc
-    type: playing
-  condition: []
-  action:
-  - service: switch.turn_off
-    metadata: {}
-    data: {}
-    target:
-      entity_id: switch.tz3000_2_byran_uppe_switch
-  mode: single
-- id: '1705871800010'
-  alias: Projektorn, Slå på belysning
-  description: ''
-  trigger:
-  - platform: device
-    device_id: dc532b8fd22b934a570a3040abba3ccd
-    domain: media_player
-    entity_id: dd4661684aac4934b475a564d21887dc
-    type: turned_off
-  - platform: device
-    device_id: dc532b8fd22b934a570a3040abba3ccd
-    domain: media_player
-    entity_id: dd4661684aac4934b475a564d21887dc
-    type: paused
-    for:
-      hours: 0
-      minutes: 5
-      seconds: 0
-  condition:
-  - condition: sun
-    after: sunset
-  - condition: time
-    before: '23:45:00'
-  action:
-  - service: switch.turn_on
-    metadata: {}
-    data: {}
-    target:
-      entity_id: switch.tz3000_2_byran_uppe_switch
+      data:
+        clickAction: /lovelace/huset
+    action: notify.rickards_devices
   mode: single
 - id: shellies_announce
   alias: Shellies Announce
@@ -1567,17 +1888,172 @@
 - id: '1713453461065'
   alias: Hot Tub, Toggle manual control
   description: ''
-  trigger:
-  - platform: state
-    entity_id:
+  triggers:
+  - entity_id:
     - input_boolean.spabadet_manual
-  condition: []
-  action:
-  - service: script.turn_on
-    metadata: {}
+    to: 'on'
+    id: turn_on
+    trigger: state
+  - entity_id:
+    - input_boolean.spabadet_manual
+    to: 'off'
+    id: turn_off
+    trigger: state
+  conditions: []
+  actions:
+  - metadata: {}
     data: {}
     target:
       entity_id: script.spabadet_pause_control
+    enabled: false
+    action: script.turn_on
+  - variables:
+      action_yes: '{{ ''YES_'' ~ context.id }}'
+      action_no: '{{ ''NO_'' ~ context.id }}'
+      spa_cost: '{{ states(''sensor.spabadet_kr'')|float }}'
+  - choose:
+    - conditions:
+      - condition: trigger
+        id:
+        - turn_on
+      sequence:
+      - action: automation.turn_off
+        metadata: {}
+        data:
+          stop_actions: true
+        target:
+          entity_id: automation.kontrollera_spabadets_varme_med_lagprisperioder
+        alias: Turn off automation (V3)
+      - data:
+          stop_actions: true
+        target:
+          entity_id:
+          - automation.spabadet_pump_and_heater
+        alias: Turn off automation
+        action: automation.turn_off
+        enabled: true
+      - data: {}
+        target:
+          entity_id:
+          - switch.spabadet_l3
+          - switch.spabadet_l2
+        alias: Turn on pumps and heater
+        action: switch.turn_on
+      - repeat:
+          sequence:
+          - data:
+              title: Spabadet på
+              data:
+                tag: spa
+                channel: Spa
+                sticky: true
+                actions:
+                - action: '{{ action_yes }}'
+                  title: 2 tim
+                - action: '{{ action_no }}'
+                  title: Stoppa
+                clickAction: /lovelace/spa
+              message: '{{states("sensor.template_spabadet_temperature")}}°C • {{states("sensor.template_home_temp")}}°C
+                ute • {{now().strftime(''%H:%M'')}}\n {{(states("sensor.spabadet_kr")|float
+                - spa_cost)|round(2) }} kr • {{states("sensor.template_elpris_kr")
+                }} kr\n Fortsätt?'
+            alias: Notify manual control is ON
+            action: notify.rickards_devices
+          - wait_for_trigger:
+            - event_type: mobile_app_notification_action
+              event_data:
+                action: '{{ action_yes }}'
+              trigger: event
+            - event_type: mobile_app_notification_action
+              event_data:
+                action: '{{ action_no }}'
+              trigger: event
+            - event_type: mobile_app_notification_cleared
+              event_data:
+                action_1_key: '{{ action_yes }}'
+              trigger: event
+            - entity_id:
+              - input_boolean.spabadet_manual
+              to: 'off'
+              trigger: state
+            timeout:
+              minutes: 15
+          - choose:
+            - conditions:
+              - condition: template
+                value_template: '{{ wait.trigger.event.data.action == action_yes or
+                  wait.trigger.event.event_type == ''mobile_app_notification_cleared''
+                  }}'
+              sequence:
+              - data:
+                  message: clear_notification
+                  data:
+                    tag: spa
+                alias: Clear notification
+                action: notify.rickards_devices
+              - alias: Wait two hours
+                delay:
+                  hours: 2
+              alias: 'Yes: keep running'
+            - conditions:
+              - condition: template
+                value_template: '{{ wait.trigger.event.data.action == action_no }}'
+              sequence:
+              - target:
+                  entity_id: input_boolean.spabadet_manual
+                data: {}
+                alias: Turn off Spabadet, manual
+                action: input_boolean.turn_off
+              - data:
+                  message: clear_notification
+                  data:
+                    tag: spa
+                alias: Clear notification
+                action: notify.rickards_devices
+              alias: 'No: stop'
+          while:
+          - condition: state
+            entity_id: input_boolean.spabadet_manual
+            state: 'on'
+      alias: Turn ON
+  - alias: Turn on automation
+    target:
+      entity_id:
+      - automation.spabadet_pump_and_heater
+    data: {}
+    action: automation.turn_on
+    enabled: true
+  - action: automation.turn_on
+    metadata: {}
+    data: {}
+    target:
+      entity_id: automation.kontrollera_spabadets_varme_med_lagprisperioder
+    alias: Turn on automation (V3)
+    enabled: false
+  - data:
+      title: Spabadet av
+      data:
+        tag: spa
+        channel: Spa
+        sticky: true
+        clickAction: /lovelace/spa
+      message: '{{states("sensor.template_spabadet_temperature")}}°C • {{states("sensor.template_home_temp")}}°C
+        ute\n {{(states(''sensor.spabadet_kr'')|float - spa_cost)|round(2)}} kr\n
+        {{now().strftime(''%H:%M'')}}'
+    alias: Notify that manual control is turned off
+    action: notify.rickards_devices
+  - if:
+    - condition: state
+      entity_id: binary_sensor.template_nordpool_price_reallow
+      state: 'off'
+      alias: If not cheap
+    then:
+    - data: {}
+      target:
+        entity_id: switch.spabadet_l2
+      alias: Turn off Heat
+      action: switch.turn_off
+    alias: 'If not cheap turn off Heat '
   mode: single
 - id: '1716643157191'
   alias: EV6, run HVAC
@@ -1593,61 +2069,8 @@
     metadata: {}
     data: {}
   mode: single
-- id: '1716792651321'
-  alias: EV6, notification response
-  description: ''
-  trigger:
-  - alias: action_keep_on event fired
-    platform: event
-    event_type: mobile_app_notification_action
-    event_data:
-      action: '{{ ''KEEPON_202405270928'' }}'
-  - alias: action_turn_off event fired
-    platform: event
-    event_type: mobile_app_notification_action
-    event_data:
-      action: '{{ ''TURNOFF_202405270928'' }}'
-  - alias: Notification dismissed
-    platform: event
-    event_type: mobile_app_notification_cleared
-    event_data:
-      action_1_key: '{{ ''KEEPON_202405270928'' }}'
-  condition: []
-  action:
-  - alias: Perform the action
-    choose:
-    - conditions:
-      - condition: template
-        value_template: '{{ trigger.event.data.action == ''KEEPON_202405270928'' }}'
-      sequence:
-      - service: input_boolean.turn_on
-        target:
-          entity_id: input_boolean.rya_hvac_on
-        data: {}
-      alias: Keep on
-    - conditions:
-      - condition: template
-        value_template: '{{ trigger.event.data.action == ''TURNOFF_202405270928''
-          }}'
-      sequence:
-      - service: input_boolean.turn_off
-        target:
-          entity_id: input_boolean.rya_hvac_on
-        data: {}
-      alias: Turn off
-    - conditions:
-      - condition: template
-        value_template: '{{ trigger.event.event_type == ''mobile_app_notification_cleared''
-          }}'
-      sequence:
-      - service: input_boolean.turn_off
-        target:
-          entity_id: input_boolean.rya_hvac_on
-        data: {}
-      alias: Turn off because notfication dismissed
-  mode: single
 - id: '1717686782989'
-  alias: EV6, Activate charge automation
+  alias: EV6, Charge Port connected
   description: Enable charge automation for EV6 when plugged in at home
   trigger:
   - platform: state
@@ -1656,6 +2079,10 @@
     to: 'on'
     id: Cp_open
     enabled: true
+  - platform: state
+    entity_id:
+    - binary_sensor.ev6_ev_battery_plug
+    to: 'on'
   condition:
   - condition: zone
     entity_id: device_tracker.ev6_location
@@ -1684,10 +2111,10 @@
     hours: /1
     alias: Every hour
   condition:
-  - condition: template
+  - alias: EV6 updated more than 1 hour ago
+    condition: template
     value_template: '{{ now()-states(''sensor.ev6_last_updated_at'')|as_datetime >
-      timedelta(hours=1) }}'
-    alias: EV6 updated more than 1 hour ago
+      timedelta(minutes=55) }}'
   - condition: time
     after: 06:55:00
     before: '23:05:00'
@@ -1697,34 +2124,42 @@
     data: {}
   mode: single
 - id: '1717930116901'
-  alias: Zoe, show SoC while charging
-  description: Reload Zoe status every 15 min when charging
-  trigger:
-  - platform: state
-    entity_id:
+  alias: Delphine, show SoC while charging
+  description: Notify Delphine charging status every 15 min
+  triggers:
+  - entity_id:
     - sensor.chargenode_port2_state
     to: '3'
-  condition: []
-  action:
+    trigger: state
+  conditions: []
+  actions:
   - variables:
-      kwh_start: '{{ states(''sensor.zoe_kwh'')|int }}'
-  - service: automation.turn_off
-    data:
+      kwh_start: '{{ states(''sensor.zoe_kwh'')|float }}'
+      soc_start: '{{ states(''input_number.car_2_soc'')|int }}'
+  - data:
       stop_actions: false
     target:
       entity_id: automation.zoe_charge
+    enabled: false
+    action: automation.turn_off
   - repeat:
       while:
       - condition: state
         entity_id: sensor.chargenode_port2_state
         state: '3'
       sequence:
-      - service: notify.mobile_app_op9_pro
+      - alias: Update SoC
+        metadata: {}
         data:
-          message: 'SoC: {{states(''sensor.zoe_battery_level'')}}% ({{states.sensor.zoe_battery_level.last_updated|as_local|as_timestamp|timestamp_custom(''%H:%M'')}})\n
-            {{states(''sensor.template_zoe_charging_power'')}} kW | {{states(''sensor.zoe_kwh'')|int
-            - kwh_start}} kWh\n {{now().strftime(''%H:%M'')}}'
-          title: ZOE laddar
+          value: '{{(soc_start + ((states(''sensor.zoe_kwh'')|float - kwh_start)*0.9/(states(''input_number.car_2_battery'')|int)*100))|int}}'
+        target:
+          entity_id: input_number.car_2_soc
+        action: input_number.set_value
+      - data:
+          message: 'SoC: {{states(''sensor.template_zoe_battery'')}}% ({{states.sensor.template_zoe_battery.last_updated|as_local|as_timestamp|timestamp_custom(''%H:%M'')}})\n
+            {{states(''sensor.template_zoe_charging_power'')}} kW • {{(states(''sensor.zoe_kwh'')|float
+            - kwh_start)|int}} kWh\n {{now().strftime(''%H:%M'')}}'
+          title: Delphine laddar
           data:
             clickAction: /lovelace/tesla
             sticky: true
@@ -1732,6 +2167,7 @@
             tag: car_2_charging
             channel: ev
         alias: Send persistent notification
+        action: notify.mobile_app_op9_pro
       - delay:
           hours: 0
           minutes: 15
@@ -1739,9 +2175,356 @@
           milliseconds: 0
         enabled: true
   - alias: Dismiss persistent notification
-    service: notify.rickards_devices
     data:
       message: clear_notification
       data:
         tag: car_2_charging
+    action: notify.rickards_devices
+  - alias: Update SoC
+    metadata: {}
+    data:
+      value: '{{(soc_start + ((states(''sensor.zoe_kwh'')|float - kwh_start)*0.9/(states(''input_number.car_2_battery'')|int)*100))|int}}'
+    target:
+      entity_id: input_number.car_2_soc
+    action: input_number.set_value
+  - data:
+      message: 'SoC: {{states(''sensor.template_zoe_battery'')}}% ({{states.sensor.template_zoe_battery.last_updated|as_local|as_timestamp|timestamp_custom(''%m-%d
+        %H:%M'')}})\n {{(states(''sensor.zoe_kwh'')|float - kwh_start)|int}} kWh laddat\n
+        {{now().strftime(''%m-%d %H:%M'')}}'
+      title: Delphine slutat ladda
+      data:
+        clickAction: /lovelace/tesla
+        sticky: true
+        tag: car_2_stop_charge
+        channel: ev
+    alias: Send notification
+    action: notify.rickards_devices
+  mode: single
+- id: '1720281421563'
+  alias: Statistics reload on start
+  description: ''
+  trigger:
+  - platform: homeassistant
+    event: start
+  condition: []
+  action:
+  - delay:
+      hours: 0
+      minutes: 0
+      seconds: 30
+      milliseconds: 0
+  - service: statistics.reload
+    data: {}
+  mode: single
+- id: '1722424433977'
+  alias: Test steps
+  description: ''
+  trigger: []
+  condition: []
+  action:
+  - variables:
+      start_time: '{{state_attr(''sensor.peaqnext_dishwasher'',''raw_start'')|as_datetime|as_local}}'
+  - service: logbook.log
+    metadata: {}
+    data:
+      name: kTTKet1Py0OR09RaDLYsTQ
+      message: 'start_time: {{start_time}} {{start_time|as_timestamp}}
+
+        now: {{now()}}
+
+        condition: {{ start_time|as_datetime <= now() }}'
+  mode: single
+- id: '1730932428277'
+  alias: 'Hot Tub, clear notification '
+  description: ''
+  triggers:
+  - trigger: numeric_state
+    entity_id:
+    - sensor.template_spabadet_l2_current_a
+    above: 1
+  conditions: []
+  actions:
+  - metadata: {}
+    data:
+      data:
+        tag: spa_error
+      message: clear_notification
+    action: notify.rickards_devices
+  mode: single
+- id: '1732290054315'
+  alias: Kontrollera spabadets värme och pump
+  description: Automatiserar styrning av spabadets värme och pump baserat på temperatur,
+    elpris, schema och driftstider.
+  triggers:
+  - minutes: /10
+    trigger: time_pattern
+  - entity_id: sensor.template_home_temp
+    below: 0
+    trigger: numeric_state
+  conditions: []
+  actions:
+  - variables:
+      current_temp: '{{ states(''sensor.template_spabadet_temperature'') | float }}'
+      target_temp: '{{ states(''input_number.spabadet_target_temp_weekends'') | float
+        }}'
+      hours_needed: '{{ (target_temp - current_temp) / 2 | round(0, ''ceil'') }}'
+      start_time: '{{ 16 - hours_needed }}'
+  - choose:
+    - conditions:
+      - condition: numeric_state
+        entity_id: sensor.spabadet_temperatur
+        below: input_number.spabadet_lower_temp_limit
+        alias: Temp under gränsvärdet
+      sequence:
+      - alias: Starta pumpen innan värmen aktiveras
+        target:
+          entity_id: switch.spabadet_l3
+        action: switch.turn_on
+        data: {}
+      - alias: Aktivera värmaren
+        target:
+          entity_id: switch.spabadet_l2
+        action: switch.turn_on
+        data: {}
+      alias: Slå på värmen om under gränsvärdet
+    - conditions:
+      - condition: time
+        weekday:
+        - fri
+        - sat
+      - condition: template
+        value_template: "{{ (now().weekday() in [4, 5] and \n   states('sensor.template_spabadet_temperature')
+          | float < states('input_number.spabadet_target_temp_weekends') | float)
+          }}"
+        alias: Helg och under måltemp
+      - condition: template
+        value_template: '{{ now().hour >= start_time and current_temp < target_temp
+          }}'
+        alias: Starta värmen vid rätt tidpunkt
+      sequence:
+      - alias: Starta pumpen innan värmen aktiveras
+        target:
+          entity_id: switch.spabadet_l3
+        action: switch.turn_on
+        data: {}
+      - alias: Aktivera värmaren
+        target:
+          entity_id: switch.spabadet_l2
+        action: switch.turn_on
+        data: {}
+      alias: Kontrollera värme och temperatur (helg)
+    - alias: Kontrollera värme och temperatur (veckodagar)
+      conditions:
+      - alias: Kontrollera om temperaturen är under målnivån
+        condition: template
+        value_template: "{{ \n  (now().weekday() not in [4, 5] and \n   states('sensor.template_spabadet_temperature')
+          | float < states('input_number.spabadet_target_temp_weekdays') | float)
+          \n}}\n"
+      sequence:
+      - alias: Starta pumpen innan värmen aktiveras
+        target:
+          entity_id: switch.spabadet_l3
+        action: switch.turn_on
+        data: {}
+      - alias: Aktivera värmaren
+        target:
+          entity_id: switch.spabadet_l2
+        action: switch.turn_on
+        data: {}
+    - alias: Starta pumpen vid schemalagd tid
+      conditions:
+      - alias: Kontrollera om aktuellt klockslag är hel timme (00, 06, 12, 18)
+        condition: template
+        value_template: '{{ now().minute == 0 and now().hour in [0, 6, 12, 18] }}
+
+          '
+      - alias: Kontrollera om pumpen inte redan körs
+        condition: state
+        entity_id: switch.spabadet_l3
+        state: 'off'
+      - alias: Kontrollera om pumpen inte uppnått 8 timmar totalt
+        condition: template
+        value_template: '{{ states(''sensor.spabadet_paslaget_min_24_hrs'') | int
+          < 480 }}
+
+          '
+      sequence:
+      - alias: Starta pumpen
+        target:
+          entity_id: switch.spabadet_l3
+        action: switch.turn_on
+        data: {}
+    - alias: Stäng av pumpen efter två timmar
+      conditions:
+      - condition: state
+        entity_id: switch.spabadet_l3
+        state: 'on'
+        alias: Pumpen är på
+      - alias: Kontrollera om pumpen varit igång i två timmar
+        condition: template
+        value_template: '{{ states(''sensor.template_spabadet_pump_active'') | int
+          >= 120 }}
+
+          '
+      - alias: Kontrollera om temperaturen ute är 0°C eller högre
+        condition: numeric_state
+        entity_id: sensor.template_home_temp
+        above: 0
+      sequence:
+      - alias: Stäng av pumpen
+        target:
+          entity_id: switch.spabadet_l3
+        action: switch.turn_off
+        data: {}
+    - alias: Slå på pump vid minusgrader
+      conditions:
+      - alias: Kontrollera om utetemperaturen är under 0°C
+        condition: numeric_state
+        entity_id: sensor.template_home_temp
+        below: 0
+      sequence:
+      - alias: Starta pumpen
+        target:
+          entity_id: switch.spabadet_l3
+        action: switch.turn_on
+        data: {}
+    - alias: Stäng av värmen om målvärdet är uppnått
+      conditions:
+      - alias: Kontrollera om temperaturen är lika med eller över målvärdet
+        condition: template
+        value_template: "{{ \n  (now().weekday() in [4, 5] and states('sensor.template_spabadet_temperature')
+          | float >= states('input_number.spabadet_target_temp_weekends') | float)
+          or \n  (now().weekday() not in [4, 5] and states('sensor.template_spabadet_temperature')
+          | float >= states('input_number.spabadet_target_temp_weekdays') | float)
+          \n}}\n"
+      sequence:
+      - alias: Stäng av värmaren
+        target:
+          entity_id: switch.spabadet_l2
+        action: switch.turn_off
+        data: {}
+    default: []
+  mode: single
+- id: '1732831088444'
+  alias: Värma spabadet med billigaste elpris på fredagar
+  description: Hitta billigaste 7-timmarsperioden (torsdag från 13 och fredag) för
+    uppvärmning.
+  triggers:
+  - trigger: state
+    entity_id:
+    - sensor.nordpool_kwh_se3_sek_3_095_0
+    attribute: tomorrow_valid
+    to: 'True'
+  conditions:
+  - condition: template
+    value_template: '{{ now().weekday() == 3 }}'
+    alias: Kör bara på torsdagar
+  actions:
+  - variables:
+      target_temp: '{{ states(''input_number.spabadet_target_temp_weekends'') | float
+        }}'
+      current_temp: '{{ states(''sensor.template_spabadet_temperature'') | float }}'
+      hours_needed: '{{ ((target_temp - current_temp) / 2) | round(0, ''ceil'') if
+        (target_temp - current_temp) > 0 else 0 }}
+
+        '
+      today_prices: "{{\n  state_attr('sensor.nordpool_kwh_se3_sek_3_095_0', 'today')[13:]
+        \n  if state_attr('sensor.nordpool_kwh_se3_sek_3_095_0', 'today') is not none
+        else []\n}}\n"
+      tomorrow_prices: "{{\n  state_attr('sensor.nordpool_kwh_se3_sek_3_095_0', 'tomorrow')
+        \n  if state_attr('sensor.nordpool_kwh_se3_sek_3_095_0', 'tomorrow') is not
+        none else []\n}}\n"
+      combined_prices: '{{ today_prices + tomorrow_prices }}'
+  - alias: Beräkna och schemalägg billigaste uppvärmningsperiod
+    sequence:
+    - alias: Kontrollera om uppvärmning krävs
+      condition: template
+      value_template: '{{ hours_needed > 0 and combined_prices | length >= hours_needed
+        }}'
+    - alias: Beräkna billigaste perioden
+      variables:
+        cheapest_start_index: "{% set min_cost = 999999 %} {% set best_index = 0 %}
+          {% for i in range(0, combined_prices | length - hours_needed | int + 1)
+          %}\n  {% set cost = combined_prices[i:i+hours_needed | int] | sum %}\n  {%
+          if cost < min_cost %}\n    {% set min_cost = cost %}\n    {% set best_index
+          = i %}\n  {% endif %}\n{% endfor %} {{ best_index }}\n"
+        cheapest_start_time: "{% set hour_offset = cheapest_start_index + 13 %} {%
+          if hour_offset < 24 %}\n  {{ '%02d:00:00' | format(hour_offset) }}\n{% else
+          %}\n  {{ '%02d:00:00' | format(hour_offset - 24) }}\n{% endif %}\n"
+    - alias: Schemalägg uppvärmning
+      target:
+        entity_id: input_datetime.spabadet_start_time
+      data:
+        time: '{{ cheapest_start_time }}'
+      action: input_datetime.set_datetime
+    - alias: Logga starttiden för uppvärmning
+      data:
+        level: info
+        message: 'Spabadet kommer att starta uppvärmningen kl {{ cheapest_start_time
+          }} baserat på billigaste elpris.
+
+          '
+      action: system_log.write
+- id: '1733771470983'
+  alias: Lights, turn on Felix taket
+  description: ''
+  triggers:
+  - device_id: c57d74d8bb09e519a5af01225ec160f1
+    domain: zha
+    type: remote_button_short_press
+    subtype: turn_on
+    trigger: device
+  conditions: []
+  actions:
+  - action: light.turn_on
+    metadata: {}
+    data: {}
+    target:
+      entity_id: light.felix_rum_taket_light
+  mode: single
+- id: '1733771531484'
+  alias: Lights, Felix taket turn off
+  description: ''
+  triggers:
+  - device_id: c57d74d8bb09e519a5af01225ec160f1
+    domain: zha
+    type: remote_button_short_press
+    subtype: turn_off
+    trigger: device
+  conditions: []
+  actions:
+  - action: light.turn_off
+    metadata: {}
+    data: {}
+    target:
+      entity_id: light.felix_rum_taket_light
+  mode: single
+- id: '1733772571218'
+  alias: Lights, Felix taket
+  description: ''
+  use_blueprint:
+    path: poolcactus/zha-ikea-tradfri-on-off-switch-incl-dimmer.yaml
+    input:
+      remote: c57d74d8bb09e519a5af01225ec160f1
+      light:
+        entity_id: light.felix_rum_taket_light
+- id: '1738934122505'
+  alias: Tvättstugan light timer
+  description: ''
+  triggers:
+  - trigger: state
+    entity_id:
+    - light.tvattstugan_banken_light
+    to: 'on'
+    for:
+      hours: 0
+      minutes: 30
+      seconds: 0
+  conditions: []
+  actions:
+  - action: light.turn_off
+    metadata: {}
+    data: {}
+    target:
+      entity_id: light.tvattstugan_banken_light
   mode: single

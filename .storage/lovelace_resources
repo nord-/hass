@@ -5,7 +5,7 @@
   "data": {
     "items": [
       {
-        "url": "/hacsfiles/apexcharts-card/apexcharts-card.js?hacstag=331701152204",
+        "url": "/hacsfiles/apexcharts-card/apexcharts-card.js?hacstag=331701152212",
         "type": "module",
         "id": "efe9a700ad09414fa032d32726aee801"
       },
@@ -15,7 +15,7 @@
         "id": "b77b48adf6114b1ebdc4f8b2b51875e5"
       },
       {
-        "url": "/hacsfiles/mini-graph-card/mini-graph-card-bundle.js?hacstag=1512800620121",
+        "url": "/hacsfiles/mini-graph-card/mini-graph-card-bundle.js?hacstag=1512800620130",
         "type": "module",
         "id": "841836c87b5b4e13ad1cbff6fd63e45c"
       },
@@ -41,7 +41,47 @@
       },
       {
         "id": "1169ec7667f0408c8147524861c07012",
-        "url": "/hacsfiles/lovelace-card-mod/card-mod.js?hacstag=190927524343",
+        "url": "/hacsfiles/lovelace-card-mod/card-mod.js?hacstag=190927524344",
+        "type": "module"
+      },
+      {
+        "id": "6a8cbb425ff447c493dc372dd04c4d34",
+        "url": "/hacsfiles/lovelace-mushroom/mushroom.js?hacstag=444350375440",
+        "type": "module"
+      },
+      {
+        "id": "bb8a7e1369ce422bb5adaffb3b56cf9d",
+        "url": "/hacsfiles/vertical-stack-in-card/vertical-stack-in-card.js?hacstag=142051833101",
+        "type": "module"
+      },
+      {
+        "id": "df24ae623cc34c4fbe208e77c84f8fde",
+        "url": "/hacsfiles/lovelace-layout-card/layout-card.js?hacstag=156434866246",
+        "type": "module"
+      },
+      {
+        "id": "67fa61aaa27e4df186efb719de996c65",
+        "url": "/hacsfiles/landroid-card/landroid-card.js?hacstag=510045489124",
+        "type": "module"
+      },
+      {
+        "id": "298a447adfa64c4d850150fe5d46b709",
+        "url": "/hacsfiles/week-planner-card/week-planner-card.js?hacstag=7717287661121",
+        "type": "module"
+      },
+      {
+        "id": "034a04796f6c4e5e9d345d2dec2feb9b",
+        "url": "/local/pollenprognos-card.js",
+        "type": "module"
+      },
+      {
+        "id": "7e3b6caf0a134afea5109910ea1481c8",
+        "url": "/hacsfiles/clock-weather-card/clock-weather-card.js?hacstag=5226340192811",
+        "type": "module"
+      },
+      {
+        "id": "de0b6069d3b043279f4a15264f7bba36",
+        "url": "/hacsfiles/power-flow-card-plus/power-flow-card-plus.js?hacstag=618081815025",
         "type": "module"
       }
     ]

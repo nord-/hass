@@ -1,195 +1,253 @@
-name: "103H182"
-type: tcp
-host: 192.168.2.29
-port: 783
-sensors:
-  - name: ChargeNode_Port1_State
-    address: 20
-    slave: 1
-    scan_interval: 60
-  - name: ChargeNode_Port2_State
-    address: 30
-    slave: 1    
-    scan_interval: 60
-  - name: ChargeNode_Current_L1
-    address: 1000
-    slave: 1
-    scan_interval: 30
-    device_class: current
-    unit_of_measurement: A
-    data_type: int16
-    scale: 0.1
-    precision: 1
-  - name: ChargeNode_Current_L2
-    address: 1001
-    slave: 1
-    scan_interval: 30
-    device_class: current
-    unit_of_measurement: A
-    data_type: int16
-    scale: 0.1
-    precision: 1
-  - name: ChargeNode_Current_L3
-    address: 1002
-    slave: 1
-    scan_interval: 30
-    device_class: current
-    unit_of_measurement: A
-    data_type: int16
-    scale: 0.1
-    precision: 1
-  - name: ChargeNode_Power_L1
-    address: 1003
-    slave: 1
-    scan_interval: 30
-    device_class: power
-    unit_of_measurement: kW
-    data_type: int16
-    scale: 0.1
-    precision: 1
-  - name: ChargeNode_Power_L2
-    address: 1004
-    slave: 1
-    scan_interval: 30
-    device_class: power
-    unit_of_measurement: kW
-    data_type: int16
-    scale: 0.1
-    precision: 1
-  - name: ChargeNode_Power_L3
-    address: 1005
-    slave: 1
-    scan_interval: 30
-    device_class: power
-    unit_of_measurement: kW
-    data_type: int16
-    scale: 0.1
-    precision: 1
-  - name: ChargeNode_Voltage_L1
-    address: 1006
-    slave: 1
-    scan_interval: 30
-    device_class: voltage
-    unit_of_measurement: V
-    data_type: int16
-    scale: 0.1
-    precision: 1
-  - name: ChargeNode_Voltage_L2
-    address: 1007
-    slave: 1
-    scan_interval: 30
-    device_class: voltage
-    unit_of_measurement: V
-    data_type: int16
-    scale: 0.1
-    precision: 1
-  - name: ChargeNode_Voltage_L3
-    address: 1008
-    slave: 1
-    scan_interval: 30
-    device_class: voltage
-    unit_of_measurement: V
-    data_type: int16
-    scale: 0.1
-    precision: 1
-  - name: ChargeNode_Energy
-    address: 1009
-    slave: 1
-    scan_interval: 30
-    device_class: energy
-    unit_of_measurement: kWh
-    data_type: int32
-    swap: word
-    scale: 0.1
-    precision: 1
-  - name: ChargeNode_SMA_Current_L1
-    address: 1011
-    slave: 1
-    scan_interval: 60
-    device_class: current
-    unit_of_measurement: A
-    data_type: int16
-    scale: 0.1
-    precision: 1
-  - name: ChargeNode_SMA_Current_L2
-    address: 1012
-    slave: 1
-    scan_interval: 60
-    device_class: current
-    unit_of_measurement: A
-    data_type: int16
-    scale: 0.1
-    precision: 1
-  - name: ChargeNode_SMA_Current_L3
-    address: 1013
-    slave: 1
-    scan_interval: 60
-    device_class: current
-    unit_of_measurement: A
-    data_type: int16
-    scale: 0.1
-    precision: 1
-  - name: ChargeNode_SMA_Power_L1
-    address: 1014
-    slave: 1
-    scan_interval: 60
-    device_class: power
-    unit_of_measurement: kW
-    data_type: int16
-    scale: 0.1
-    precision: 1
-  - name: ChargeNode_SMA_Power_L2
-    address: 1015
-    slave: 1
-    scan_interval: 60
-    device_class: power
-    unit_of_measurement: kW
-    data_type: int16
-    scale: 0.1
-    precision: 1
-  - name: ChargeNode_SMA_Power_L3
-    address: 1016
-    slave: 1
-    scan_interval: 60
-    device_class: power
-    unit_of_measurement: kW
-    data_type: int16
-    scale: 0.1
-    precision: 1
-  - name: ChargeNode_SMA_Voltage_L1
-    address: 1017
-    slave: 1
-    scan_interval: 60
-    device_class: voltage
-    unit_of_measurement: V
-    data_type: int16
-    scale: 0.1
-    precision: 1
-  - name: ChargeNode_SMA_Voltage_L2
-    address: 1018
-    slave: 1
-    scan_interval: 60
-    device_class: voltage
-    unit_of_measurement: V
-    data_type: int16
-    scale: 0.1
-    precision: 1
-  - name: ChargeNode_SMA_Voltage_L3
-    address: 1019
-    slave: 1
-    scan_interval: 60
-    device_class: voltage
-    unit_of_measurement: V
-    data_type: int16
-    scale: 0.1
-    precision: 1
-  - name: ChargeNode_SMA_EnergyPlus
-    address: 1020    
-    slave: 1
-    scan_interval: 60
-    device_class: energy
-    unit_of_measurement: kWh
-    data_type: int32
-    swap: word
-    scale: 0.1
-    precision: 1
+- name: "103H182"
+  type: tcp
+  host: 192.168.2.29
+  port: 783
+  sensors:
+    - name: ChargeNode_Port1_State
+      address: 20
+      slave: 1
+      scan_interval: 60
+    - name: ChargeNode_Port2_State
+      address: 30
+      slave: 1    
+      scan_interval: 60
+    - name: ChargeNode_Current_L1
+      address: 1000
+      slave: 1
+      scan_interval: 30
+      device_class: current
+      unit_of_measurement: A
+      data_type: int16
+      scale: 0.1
+      precision: 1
+    - name: ChargeNode_Current_L2
+      address: 1001
+      slave: 1
+      scan_interval: 30
+      device_class: current
+      unit_of_measurement: A
+      data_type: int16
+      scale: 0.1
+      precision: 1
+    - name: ChargeNode_Current_L3
+      address: 1002
+      slave: 1
+      scan_interval: 30
+      device_class: current
+      unit_of_measurement: A
+      data_type: int16
+      scale: 0.1
+      precision: 1
+    - name: ChargeNode_Power_L1
+      address: 1003
+      slave: 1
+      scan_interval: 30
+      device_class: power
+      unit_of_measurement: kW
+      data_type: int16
+      scale: 0.1
+      precision: 1
+    - name: ChargeNode_Power_L2
+      address: 1004
+      slave: 1
+      scan_interval: 30
+      device_class: power
+      unit_of_measurement: kW
+      data_type: int16
+      scale: 0.1
+      precision: 1
+    - name: ChargeNode_Power_L3
+      address: 1005
+      slave: 1
+      scan_interval: 30
+      device_class: power
+      unit_of_measurement: kW
+      data_type: int16
+      scale: 0.1
+      precision: 1
+    - name: ChargeNode_Voltage_L1
+      address: 1006
+      slave: 1
+      scan_interval: 30
+      device_class: voltage
+      unit_of_measurement: V
+      data_type: int16
+      scale: 0.1
+      precision: 1
+    - name: ChargeNode_Voltage_L2
+      address: 1007
+      slave: 1
+      scan_interval: 30
+      device_class: voltage
+      unit_of_measurement: V
+      data_type: int16
+      scale: 0.1
+      precision: 1
+    - name: ChargeNode_Voltage_L3
+      address: 1008
+      slave: 1
+      scan_interval: 30
+      device_class: voltage
+      unit_of_measurement: V
+      data_type: int16
+      scale: 0.1
+      precision: 1
+    - name: ChargeNode_Energy
+      address: 1009
+      slave: 1
+      scan_interval: 30
+      device_class: energy
+      unit_of_measurement: kWh
+      data_type: int32
+      swap: word
+      scale: 0.1
+      precision: 1
+    - name: ChargeNode_SMA_Current_L1
+      address: 1011
+      slave: 1
+      scan_interval: 60
+      device_class: current
+      unit_of_measurement: A
+      data_type: int16
+      scale: 0.1
+      precision: 1
+    - name: ChargeNode_SMA_Current_L2
+      address: 1012
+      slave: 1
+      scan_interval: 60
+      device_class: current
+      unit_of_measurement: A
+      data_type: int16
+      scale: 0.1
+      precision: 1
+    - name: ChargeNode_SMA_Current_L3
+      address: 1013
+      slave: 1
+      scan_interval: 60
+      device_class: current
+      unit_of_measurement: A
+      data_type: int16
+      scale: 0.1
+      precision: 1
+    - name: ChargeNode_SMA_Power_L1
+      address: 1014
+      slave: 1
+      scan_interval: 60
+      device_class: power
+      unit_of_measurement: kW
+      data_type: int16
+      scale: 0.1
+      precision: 1
+    - name: ChargeNode_SMA_Power_L2
+      address: 1015
+      slave: 1
+      scan_interval: 60
+      device_class: power
+      unit_of_measurement: kW
+      data_type: int16
+      scale: 0.1
+      precision: 1
+    - name: ChargeNode_SMA_Power_L3
+      address: 1016
+      slave: 1
+      scan_interval: 60
+      device_class: power
+      unit_of_measurement: kW
+      data_type: int16
+      scale: 0.1
+      precision: 1
+    - name: ChargeNode_SMA_Voltage_L1
+      address: 1017
+      slave: 1
+      scan_interval: 60
+      device_class: voltage
+      unit_of_measurement: V
+      data_type: int16
+      scale: 0.1
+      precision: 1
+    - name: ChargeNode_SMA_Voltage_L2
+      address: 1018
+      slave: 1
+      scan_interval: 60
+      device_class: voltage
+      unit_of_measurement: V
+      data_type: int16
+      scale: 0.1
+      precision: 1
+    - name: ChargeNode_SMA_Voltage_L3
+      address: 1019
+      slave: 1
+      scan_interval: 60
+      device_class: voltage
+      unit_of_measurement: V
+      data_type: int16
+      scale: 0.1
+      precision: 1
+    - name: ChargeNode_SMA_EnergyPlus
+      address: 1020    
+      slave: 1
+      scan_interval: 60
+      device_class: energy
+      unit_of_measurement: kWh
+      data_type: int32
+      swap: word
+      scale: 0.1
+      precision: 1
+- name: froniussymo
+  type: tcp
+  host: 192.168.2.31
+  port: 502
+  sensors:
+    # - name: Fronius Inverter SerialNo
+    #   address: 40052
+    #   data_type: string
+    #   count: 16
+    #   scan_interval: 60
+    - name: Fronius Inverter Total Power
+      address: 40091
+      unit_of_measurement: kW
+      data_type: float32
+      scale: 0.001
+      unique_id: froninv_power
+      # scan_interval: 10 # default 15
+    - name: Fronius Inverter Total Current
+      address: 40071
+      unit_of_measurement: A
+      data_type: float32
+      unique_id: froninv_current
+    - name: Fronius Inverter Total Exported
+      address: 40101
+      unit_of_measurement: kWh
+      data_type: float32
+      scale: 0.001
+      unique_id: froninv_export
+    - name: Fronius Inverter voltage L1
+      address: 40085
+      unit_of_measurement: V
+      data_type: float32
+      unique_id: froninv_voltage_l1
+    - name: Fronius Inverter voltage L2
+      address: 40087
+      unit_of_measurement: V
+      data_type: float32
+      unique_id: froninv_voltage_l2
+    - name: Fronius Inverter voltage L3
+      address: 40089
+      unit_of_measurement: V
+      data_type: float32
+      unique_id: froninv_voltage_l3
+    - name: Fronius Inverter current L1
+      address: 40073
+      unit_of_measurement: A
+      data_type: float32
+      unique_id: froninv_current_l1
+    - name: Fronius Inverter current L2
+      address: 40075
+      unit_of_measurement: A
+      data_type: float32
+      unique_id: froninv_current_l2
+    - name: Fronius Inverter current L3
+      address: 40077
+      unit_of_measurement: A
+      data_type: float32
+      unique_id: froninv_current_l3

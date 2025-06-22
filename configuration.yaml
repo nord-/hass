@@ -23,13 +23,13 @@ mobile_app:
 config:
 
 http:
-  # Secrets are defined in the file secrets.yaml
   # api_password: !secret http_password
-  # Uncomment this if you are using SSL/TLS, running in Docker container, etc.
   # base_url: example.duckdns.org:8123
-  # Example configuration.yaml entry for the HTTP component
-  ssl_certificate: /ssl/fullchain.pem
-  ssl_key: /ssl/privkey.pem
+  # ssl_certificate: /ssl/fullchain.pem
+  # ssl_key: /ssl/privkey.pem
+  use_x_forwarded_for: true
+  trusted_proxies:
+    - 172.30.33.0/24
 
 history:
 
@@ -41,7 +41,8 @@ sensor: !include sensors.yaml
 # sensor: !include sensors-integration.yaml
 template: !include template.yaml
 binary_sensor: !include binary_sensors.yaml
-mqtt: !include mqtt.yaml
+#mqtt: !include mqtt.yaml
+mqtt: !include_dir_list mqtt/
 utility_meter: !include sensors_utility.yaml
 
 rest_command: !include rest.yaml
@@ -87,22 +88,24 @@ google_assistant: !include gassistant.yaml
 #  client_id: 406236313752-db7bm79q1n3v77s4cf5j9qfvv7961tic.apps.googleusercontent.com
 #  client_secret: !secret gcal_api
 
-landroid_cloud:
-  - email: rickard@nord.cc
-    password: !secret worx_password
+# deprecated...
+# landroid_cloud:
+#   - email: rickard@nord.cc
+#     password: !secret worx_password
     
 var: !include vars.yaml
 
 # logger:
-#   default: error
+#   default: error|warning|info|debug
 #   logs:
 #     custom_components.peaqev: debug
 logger:
-  default: warning
-  # logs:
-  #   homeassistant.components.rest: debug
+  default: error
+  # logs: 
+    # homeassistant.components.rest: debug
     # homeassistant.components.modbus: debug
     # pymodbus: debug
+
     # homeassistant.components.zha: debug
     # zigpy: debug
 
@@ -116,6 +119,17 @@ zha:
   enable_quirks: true
   zigpy_config:
     ota:
+      ikea_provider: true
+      ledvance_provider: true
+      salus_provider: true
+      # inovelli_provider: true
+      thirdreality_provider: true
+      enabled: true
+      z2m_remote_index: https://raw.githubusercontent.com/Koenkk/zigbee-OTA/master/index.json
       otau_directory: /config/zigpy_ota
+      allow_advanced_ota_dir: I understand I can *destroy* my devices by enabling OTA
+        updates from files. Some OTA updates can be mistakenly applied to the
+        wrong device, breaking it. I am consciously using this at my own risk.
+      advanced_ota_dir: /config/zigpy_ota
 
 zha_toolkit:

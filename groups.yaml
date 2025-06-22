@@ -81,7 +81,7 @@ ute:
     - switch.an179_1     # altanväggen söderut
 #    - switch.utebaren
     - light.utebaren_mqtt
-    - switch.shelly1pm_485519cb0b57
+    - switch.shelly_1pm_485519cb0b57_relay_0
 
 my_people:
   name: Familjen

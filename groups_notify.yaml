@@ -1,10 +1,10 @@
 - name: Rickards_devices
   platform: group
   services:
-    - service: mobile_app_op9_pro
+    - service: mobile_app_rickards_gs24
     - service: mobile_app_sm_p610
 
 - name: Fridas_devices
   platform: group
   services:
-    - service: mobile_app_sm_g950f
+    - service: mobile_app_frida_sg20fe

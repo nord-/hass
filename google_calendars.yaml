@@ -61,3 +61,15 @@
   - device_id: fotboll
     ignore_availability: true
     name: Fotboll
+
+- cal_id: ol6onqfb5n3mcan9t3j0ktimgjhrlic9@import.calendar.google.com
+  entities:
+  - device_id: nord_trollhattans_flygklubb_myweblog
+    ignore_availability: true
+    name: "Nord - Trollh\xE4ttans Flygklubb [myWebLog]"
+
+- cal_id: family07511384924720755671@group.calendar.google.com
+  entities:
+  - device_id: familjefilm
+    ignore_availability: true
+    name: Familjefilm
