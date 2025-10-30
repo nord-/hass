@@ -67,8 +67,9 @@ turn_off_nere:
 turn_on_general_lights:
   alias: Tänd allmän belysning
   sequence:
-  - service: homeassistant.turn_on
-    data:
+  - data: {}
+    action: homeassistant.turn_on
+    target:
       entity_id:
       - group.grovkoket
       - group.koket
@@ -76,18 +77,27 @@ turn_on_general_lights:
       - group.hallen
       - group.gastrummet
       - group.sovrummet
-      - group.vrum_uppe
       - group.kontoret
-  - service: light.turn_on
-    data:
+  - data:
       brightness_pct: 35
     target:
       entity_id: light.spelrummet_fonstret
-  - service: light.turn_on
-    data:
-      brightness_pct: 55
-    target:
-      entity_id: light.byran_uppe_light
+    action: light.turn_on
+  - if:
+    - condition: state
+      entity_id: input_boolean.movie_time
+      state: 'off'
+    then:
+    - data:
+        brightness_pct: 55
+      target:
+        entity_id: light.byran_uppe_light
+      action: light.turn_on
+    - action: homeassistant.turn_on
+      metadata: {}
+      data: {}
+      target:
+        entity_id: group.vrum_uppe
   mode: restart
 turn_off_general_lights:
   alias: Släck allmän belysning
@@ -202,41 +212,27 @@ early_morning_lights_on:
       entity_id: light.byran_uppe_light
     alias: Turn on Byrån uppe, low light
   mode: single
-start_the_car:
-  alias: EV6, Start Car
-  sequence:
-  - service: lock.unlock
-    data: {}
-    target:
-      entity_id:
-      - lock.ev6_door_lock
-    alias: Unlock
-  - service: script.ev6_start_hvac
-    data: {}
-    alias: Start HVAC
-  mode: single
-  description: ''
 charge_the_tesla:
-  alias: EV6, Charge
+  alias: Tesla, Charge
   sequence:
-  - alias: Try to add EV6 to queue
+  - alias: Try to add to queue
     metadata: {}
     data:
       sequence:
       - action: rest_command.cn_add_rya_to_queue
         data: {}
     action: retry.actions
-  - data:
-      title: EV6 börjar ladda
+  - alias: Notify Charge starting
+    data:
+      title: Eazy börjar ladda
       data:
         persistent: true
         sticky: true
         tag: car_1_charging
         channel: ev
         clickAction: /lovelace/tesla
-      message: 'SoC:    {{states("sensor.ev6_ev_battery_level") }}%\n Priset: {{states("sensor.template_nordpool_current_price_vat")}}
+      message: 'SoC:    {{states("sensor.tesla_battery_level") }}%\n Priset: {{states("sensor.template_nordpool_current_price_vat")}}
         kr\n {{now().strftime(''%d %H:%M'')}}'
-    alias: Notify Charge starting
     action: notify.rickards_devices
   - delay:
       hours: 0
@@ -248,8 +244,17 @@ charge_the_tesla:
     data: {}
     alias: Get SessionId
     action: homeassistant.update_entity
-  - data: {}
-    action: kia_uvo.force_update
+  - alias: Write to Logbook
+    metadata: {}
+    data:
+      name: 202507051950f
+      message: 'sessionid: {{ states(''sensor.charge_rya_sessionid'') }}'
+    action: logbook.log
+  - action: automation.turn_on
+    metadata: {}
+    data: {}
+    target:
+      entity_id: automation.car_1_charging
   mode: single
   icon: mdi:ev-station
   description: ''
@@ -270,18 +275,18 @@ slack_inne:
   alias: Släck inne
   icon: mdi:lightbulb-group-off-outline
 ladda_tesla_stoppa:
-  alias: 'EV6, Stop Charge '
+  alias: 'Tesla, Stop Charge '
   sequence:
-  - service: rest_command.cn_remove_rya_from_queue
-    data: {}
-  - service: notify.rickards_devices
-    data:
-      message: 'SoC:    {{states("sensor.ev6_ev_battery_level")}}%\n Priset: {{states("sensor.template_nordpool_current_price_vat")}}
+  - data: {}
+    action: rest_command.cn_remove_rya_from_queue
+  - data:
+      message: 'SoC:    {{states("sensor.tesla_battery_level")}}%\n Priset: {{states("sensor.template_nordpool_current_price_vat")}}
         kr\n {{now().strftime(''%m-%d %H:%M'')}}'
-      title: EV6 har laddat färdigt
+      title: Eazy har laddat färdigt
       data:
         clickAction: /lovelace/tesla
         channel: ev
+    action: notify.rickards_devices
   mode: single
   icon: mdi:ev-station
   description: ''
@@ -563,218 +568,10 @@ tvattmaskinen_aktivera_timer:
       entity_id: input_datetime.tvattmaskinen_timme
   mode: single
   icon: mdi:dishwasher-alert
-ev6_start_hvac:
-  alias: EV6, start HVAC
-  sequence:
-  - alias: Choose AC or Heat
-    choose:
-    - conditions:
-      - condition: numeric_state
-        entity_id: sensor.template_home_temp
-        below: 14
-        above: 5.1
-      sequence:
-      - alias: Set Heat to 22°
-        data:
-          duration: 10
-          climate: true
-          temperature: 22
-          heating: '0'
-          device_id: f4c09575234da651122f411210842a80
-        action: kia_uvo.start_climate
-    - conditions:
-      - condition: numeric_state
-        entity_id: sensor.template_home_temp
-        below: 5
-      sequence:
-      - alias: Set Heat to 22° and turn on Defrost on EV6
-        data:
-          duration: 10
-          climate: true
-          temperature: 22
-          heating: '3'
-          device_id: f4c09575234da651122f411210842a80
-          defrost: true
-        action: kia_uvo.start_climate
-    default:
-    - alias: Set temp to 22° on EV6
-      data:
-        duration: 10
-        climate: true
-        temperature: 21
-        heating: '0'
-        device_id: f4c09575234da651122f411210842a80
-      action: kia_uvo.start_climate
-  - delay:
-      hours: 0
-      minutes: 0
-      seconds: 5
-      milliseconds: 0
-  - data: {}
-    target:
-      device_id: f4c09575234da651122f411210842a80
-    action: homeassistant.reload_config_entry
-  - repeat:
-      while:
-      - condition: state
-        entity_id: binary_sensor.ev6_air_conditioner
-        state: 'off'
-      - condition: template
-        value_template: '{{ repeat.index <= 60 }}'
-        alias: Repeat max 60 times (10 mins)
-      sequence:
-      - delay:
-          hours: 0
-          minutes: 0
-          seconds: 10
-          milliseconds: 0
-      - data: {}
-        alias: Update EV6 from cache
-        action: kia_uvo.update
-  - variables:
-      action_keepon: '{{ ''KEEPON_'' ~ context.id }}'
-      action_turnoff: '{{ ''TURNOFF_'' ~ context.id }}'
-    enabled: false
-  - repeat:
-      sequence:
-      - alias: Notify Rickard that HVAC is running
-        data:
-          message: 'AC kör i 15 minuter.\n {{states(''sensor.ev6_ev_battery_level'')}}%
-            • {{states(''sensor.ev6_set_temperature'')}}°C\n {{now().strftime(''%H:%M'')}}          '
-          data:
-            channel: ev
-            tag: ev_hvac
-            sticky: true
-            click_action: /lovelace/tesla
-        action: notify.mobile_app_op9_pro
-      - delay:
-          minutes: 15
-      - if:
-        - condition: state
-          entity_id: input_boolean.rya_hvac_on
-          state: 'on'
-        then:
-        - alias: Ask Rickard to stop or continue
-          data:
-            title: AC kör fortfarande på EV6
-            data:
-              channel: ev
-              tag: ev_hvac
-              sticky: true
-              persistent: true
-              click_action: /lovelace/tesla
-              actions:
-              - action: '{{ action_keepon }}'
-                title: Fortsätt
-              - action: '{{ action_turnoff }}'
-                title: Stäng av
-            message: Vill du köra 15 minuter till?\n {{states('sensor.ev6_ev_battery_level')}}%
-              • {{states('sensor.ev6_set_temperature')}}°C\n AC {{states('binary_sensor.ev6_air_conditioner')}}
-              ({{ states.binary_sensor.ev6_air_conditioner.last_updated|as_local|as_timestamp|timestamp_custom('%m-%d
-              %H:%M')}})\n (Kört {{repeat.index}} gång(er))\n               {{now().strftime('%H:%M')}}
-          action: notify.mobile_app_op9_pro
-        - wait_for_trigger:
-          - event_type: mobile_app_notification_action
-            event_data:
-              action: '{{ action_keepon }}'
-            trigger: event
-          - event_type: mobile_app_notification_action
-            event_data:
-              action: '{{ action_turnoff }}'
-            trigger: event
-          - event_type: mobile_app_notification_cleared
-            event_data:
-              action_1_key: '{{ action_keepon }}'
-            trigger: event
-          timeout:
-            minutes: 1
-        - data:
-            message: clear_notification
-            data:
-              tag: ev_hvac
-          alias: Clear persistent notification
-          action: notify.rickards_devices
-        - choose:
-          - conditions:
-            - condition: template
-              value_template: '{{ wait.trigger.event.data.action == action_keepon
-                }}'
-            sequence:
-            - alias: Set temp to 21° on EV6
-              data:
-                duration: 10
-                climate: true
-                temperature: 21
-                heating: false
-                device_id: f4c09575234da651122f411210842a80
-              enabled: true
-              action: kia_uvo.start_climate
-            - delay:
-                hours: 0
-                minutes: 0
-                seconds: 15
-                milliseconds: 0
-              enabled: true
-            - data: {}
-              alias: Refresh EV6 from cache
-              action: kia_uvo.update
-          default:
-          - target:
-              entity_id: input_boolean.rya_hvac_on
-            alias: Turn off EV6 HVAC
-            data: {}
-            action: input_boolean.turn_off
-        alias: Check AC still is on
-      while:
-      - condition: template
-        alias: While AC is on but no more than 3 times
-        value_template: '{{ repeat.index < 4 and states(''input_boolean.rya_hvac_on'')
-          == ''on'' }}'
-    enabled: false
-  - alias: Notify Rickard that HVAC is running
-    data:
-      message: AC kör i 15 minuter.\n {{states('sensor.ev6_ev_battery_level')}}% •
-        {{states('sensor.ev6_set_temperature')}}°C
-      data:
-        channel: ev
-        tag: ev_hvac
-        sticky: true
-        click_action: /lovelace/tesla
-    action: notify.rickards_devices
-  mode: single
-  icon: mdi:fan-auto
-ev6_lock_door:
-  alias: EV6, Lock Door
-  sequence:
-  - device_id: f4c09575234da651122f411210842a80
-    domain: lock
-    entity_id: b08be94101111d34f139c1ea5cd906f9
-    type: lock
-  - delay:
-      hours: 0
-      minutes: 0
-      seconds: 5
-      milliseconds: 0
-  - action: kia_uvo.update
-    data: {}
-  description: ''
-  icon: mdi:car-door-lock
-ev6_simple_heat:
-  alias: EV6, Simple Heat
-  sequence:
-  - alias: Set Heat to 22° on EV6
-    data:
-      duration: 10
-      climate: true
-      temperature: 22
-      heating: '3'
-      device_id: f4c09575234da651122f411210842a80
-      flseat: '8'
-    action: kia_uvo.start_climate
-  description: ''
 movie_time:
   sequence:
-  - if:
+  - alias: Toggle Lights
+    if:
     - condition: or
       conditions:
       - condition: state
@@ -787,6 +584,10 @@ movie_time:
         entity_id: switch.tz2
         state: 'on'
       alias: Any Lights are ON
+      enabled: false
+    - condition: state
+      entity_id: input_boolean.movie_time
+      state: 'on'
     then:
     - action: switch.turn_off
       metadata: {}
@@ -805,7 +606,22 @@ movie_time:
         - switch.tz2
         - switch.tz3000_2_byran_uppe_switch
         - switch.tz3000_1_brudkistan_switch
-    alias: Toggle Lights
   alias: Movie Time
   description: ''
   icon: mdi:projector-screen
+byd_stop_charge:
+  sequence:
+  - action: rest_command.cn_remove_yxx_from_queue
+    data: {}
+  - data:
+      message: 'SoC:    {{states("input_number.car_2_soc")}}%\n Priset: {{states("sensor.template_nordpool_current_price_vat")}}
+        kr\n {{now().strftime(''%m-%d %H:%M'')}}'
+      title: Delphine har laddat färdigt
+      data:
+        clickAction: /lovelace/tesla
+        channel: ev
+    action: notify.rickards_devices
+  alias: Delphine, Stop Charge
+  mode: single
+  icon: mdi:ev-station
+  description: ''

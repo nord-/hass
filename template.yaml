@@ -5,24 +5,21 @@
     device_class: energy
     state_class: total_increasing
     state: "{{ states('var.solarenergy') }}"
-    attributes:
-      friendly_name: "Fronius solenergi (totalt)"
+    name: "Fronius solenergi (totalt)"
 
   - unique_id: fronius_solar_daily_energy
     unit_of_measurement: "kWh"
     device_class: energy
     state_class: total_increasing
     state: "{{ states('var.solarenergy_daily') }}"
-    attributes:
-      friendly_name: "Fronius solenergi (idag)"
+    name: "Fronius solenergi (idag)"
 
   - unique_id: fronius_solar_power
     unit_of_measurement: "kW"
     device_class: power
     state_class: measurement
     state: "{{ (states('sensor.power_ac_fronius_inverter_1_192_168_2_31') | float(0) / 1000.0) | round(2) }}"
-    attributes:
-      friendly_name: "Fronius soleffekt"
+    name: "Fronius soleffekt"
 
   - unique_id: last_solarenergy_value
     unit_of_measurement: 'kWh'
@@ -35,8 +32,7 @@
         {% set last_solarenergy_value = ((states('sensor.energy_total_fronius_inverter_1_192_168_2_31') | float / 1000) | float) %}
         {{ (states('sensor.energy_total_fronius_inverter_1_192_168_2_31')|float / 1000) | float }}
       {% endif %}
-    attributes:
-      friendly_name: "Solpanelerna, senaste energi"
+    name: "Solpanelerna, senaste energi"
 
   - unique_id: last_sp_kw
     unit_of_measurement: "kW"
@@ -47,16 +43,14 @@
         {% set last_sp_kw = states("sensor.aktuell_effekt") %}
         {{ states("sensor.aktuell_effekt") }}
       {% endif %}
-    attributes:
-      friendly_name: "Senaste effekt"
+    name: "Senaste effekt"
 
   - unique_id: fronius_solar_current
     unit_of_measurement: "A"
     device_class: current
     state_class: measurement
     state: "{{ (states('sensor.fronius_inverter_total_current')|float(0)/3)|round(1) }}"
-    attributes:
-      friendly_name: "Fronius ström (per fas) [A]"
+    name: "Fronius ström (per fas) [A]"
 
 # elpriser
 - sensor: 
@@ -65,22 +59,19 @@
     state_class: measurement
     unit_of_measurement: "kr"
     state: "{{ states('sensor.nordpool_kwh_se3_sek_3_095_0') | float | round(2) }}"
-    attributes:
-      friendly_name: "Aktuellt elpris (ex. moms)"
+    name: "Aktuellt elpris (ex. moms)"
   - unique_id: nordpool_avg_price_vat
     device_class: monetary
     state_class: measurement
     unit_of_measurement: "kr"
     state: "{{ (state_attr('sensor.nordpool_kwh_se3_sek_3_095_0', 'average')|float*1.25)|round(2) }}"
-    attributes:
-      friendly_name: "Genomsnittligt elpris (inkl. moms)"
+    name: "Genomsnittligt elpris (inkl. moms)"
   - unique_id: nordpool_current_price_vat
     device_class: monetary
     state_class: measurement
     unit_of_measurement: "kr"
     state: "{{ (states('sensor.nordpool_kwh_se3_sek_3_095_0') | float * 1.25) | round(2) }}"
-    attributes:
-      friendly_name: "Aktuellt elpris (inkl. moms)"    
+    name: "Aktuellt elpris (inkl. moms)"    
   - unique_id: nordpool_tomorrow_avg
     state: >-
       {% set nordpool = namespace(tomorrow = []) -%}
@@ -115,8 +106,7 @@
     device_class: monetary
     state_class: measurement
     unit_of_measurement: "kr"
-    attributes:
-      friendly_name: "Elpriset (avg)"
+    name: "Elpriset (avg)"
     state: >-
       {% set nordpool = namespace(today = []) -%}
       {% set fees = states("sensor.template_fees_ex_vat")|float(0) %}
@@ -128,8 +118,7 @@
     device_class: monetary
     state_class: measurement
     unit_of_measurement: "kr"
-    attributes:
-      friendly_name: "Elpriset (max)"
+    name: "Elpriset (max)"
     state: >-
       {% set nordpool = namespace(today = []) %}
       {% set fees = states("sensor.template_fees_ex_vat")|float(0) %}
@@ -141,8 +130,7 @@
     device_class: monetary
     state_class: measurement
     unit_of_measurement: "kr"
-    attributes:
-      friendly_name: "Elpriset (min)"
+    name: "Elpriset (min)"
     state: >-
       {% set nordpool = namespace(today = []) %}
       {% set fees = states("sensor.template_fees_ex_vat")|float(0) %}
@@ -157,34 +145,29 @@
     unit_of_measurement: kr
     device_class: monetary
     state_class: measurement
-    attributes:
-      friendly_name: "Elpris, totalt [kr]"
+    name: "Elpris, totalt [kr]"
   - unique_id: elpris_solar_kr
     state: >-
       {{ states('sensor.nordpool_kwh_se3_sek_3_095_0')|float(0) + states("sensor.template_fees_solar")|float }}
     unit_of_measurement: kr
     device_class: monetary
     state_class: measurement
-    attributes:
-      friendly_name: "Elpris försäljning, totalt [kr]"
+    name: "Elpris försäljning, totalt [kr]"
 
   - unique_id: fees_ex_vat
-    attributes:
-      friendly_name: "Elavgifter, exkl. moms [kr]"
+    name: "Elavgifter, exkl. moms [kr]"
     unit_of_measurement: "kr"
     device_class: monetary
     state_class: measurement
     state: "{{(states('var.electric_tax')|float + states('var.electric_transfer_cost')|float + states('var.electric_fee')|float)*0.008}}"
   - unique_id: fees_inc_vat
-    attributes:
-      friendly_name: "Elavgifter, inkl. moms [kr]"
+    name: "Elavgifter, inkl. moms [kr]"
     unit_of_measurement: "kr"
     device_class: monetary
     state_class: measurement
     state: "{{((states('var.electric_tax')|float + states('var.electric_transfer_cost')|float + states('var.electric_fee')|float)/100.0)|round(2)}}"
   - unique_id: fees_solar
-    attributes:
-      friendly_name: "Solel, påslag [kr]"
+    name: "Solel, påslag [kr]"
     unit_of_measurement: "kr"
     device_class: monetary
     state_class: measurement
@@ -192,8 +175,7 @@
   
 
   - unique_id: nordpool_median
-    attributes:
-      friendly_name: "Nordpool, median [kr]"
+    name: "Nordpool, median [kr]"
     state: >-
       {% set fees = states('sensor.template_fees_ex_vat')|float -%}
       {% set nordpool = namespace(price = []) -%}
@@ -214,8 +196,7 @@
       {%   set ix.x = ix.x + 1 -%}
       {% endfor -%}
   - unique_id: nordpool_75perc
-    attributes:
-      friendly_name: "Nordpool, 75 percentilen [kr]"
+    name: "Nordpool, 75 percentilen [kr]"
     state: >-
       {% set fees = states('sensor.template_fees_ex_vat')|float -%}
       {% set nordpool = namespace(price = []) -%}
@@ -236,8 +217,7 @@
       {%   set ix.x = ix.x + 1 -%}
       {% endfor -%}
   - unique_id: nordpool_25perc
-    attributes:
-      friendly_name: "Nordpool, 25 percentilen [kr]"
+    name: "Nordpool, 25 percentilen [kr]"
     state: >-
       {% set fees = states('sensor.template_fees_ex_vat')|float -%}
       {% set nordpool = namespace(price = []) -%}
@@ -262,19 +242,16 @@
   - unique_id: nordpool_tomorrow_valid
     state: "{{ state_attr('sensor.nordpool_kwh_se3_sek_3_095_0', 'tomorrow_valid') and state_attr('sensor.nordpool_kwh_se3_sek_3_095_0', 'tomorrow')|length > 23 }}"
   - unique_id: nordpool_price_low
-    attributes:
-      friendly_name: "Nordpool, under median"
+    name: "Nordpool, under median"
     state: >-
       {{ states('sensor.template_elpris_kr') <= states('sensor.template_nordpool_median') }}
   - unique_id: nordpool_price_not_high
-    attributes:
-      friendly_name: "Nordpool, under 75:e percentilen"
+    name: "Nordpool, under 75:e percentilen"
     state: >-
       {{ states('sensor.template_elpris_kr') <= states('sensor.template_nordpool_75perc') or states('sensor.template_elpris_kr') < states('sensor.elpriset_kr_avg_3') }}
     # {{ states('sensor.template_elpris_kr') <= states('sensor.template_nordpool_75perc') }}
   - unique_id: nordpool_price_reallow
-    attributes:
-      friendly_name: "Nordpool, under 25:e percentilen"
+    name: "Nordpool, under 25:e percentilen"
     state: >-
       {{ states('sensor.template_elpris_kr') <= states('sensor.template_nordpool_25perc') }}
 
@@ -297,24 +274,21 @@
     unit_of_measurement: "kW"
     device_class: power
     state_class: measurement
-    attributes:
-      friendly_name: "Näteffekt [kW]"
+    name: "Näteffekt [kW]"
 
   - unique_id: house_net_power_kw
     unit_of_measurement: "kW"
     device_class: power
     state_class: measurement
     state: "{{ (states('sensor.template_grid_power_kw')|float(0) * -1)|round(2) }}"
-    attributes:
-      friendly_name: "Husets nettoeffekt"
+    name: "Husets nettoeffekt"
 
   - unique_id: house_power_kw
     unit_of_measurement: "kW"
     device_class: power
     state_class: measurement
     state: "{{(((states('sensor.power_ac_fronius_inverter_1_192_168_2_31')|float(default=0))/1000)|float + states('sensor.template_grid_power_kw')|float)|round(2)}}"
-    attributes:
-      friendly_name: "Husets effekt (kW)"
+    name: "Husets effekt (kW)"
 
   - unique_id: house_net_energy_kwh
     unit_of_measurement: "kWh"
@@ -327,16 +301,14 @@
       {% else %}
         {{ this.state }}
       {% endif %}
-    attributes:
-      friendly_name: "Husets nettoenergi"
+    name: "Husets nettoenergi"
 
   - unique_id: house_energy_wo_evcharging
     unit_of_measurement: "kWh"
     device_class: energy
     state_class: total
     state: "{{ states('sensor.template_house_net_energy_kwh')|float(0) - states('sensor.template_chargenode_energy_kwh')|float(0) }}"
-    attributes:
-      friendly_name: "Husets nettoenergi exkl laddning [kWh]"
+    name: "Husets nettoenergi exkl laddning [kWh]"
 
 ## house consumed from grid
 - sensor:
@@ -344,8 +316,7 @@
     unit_of_measurement: "W"
     device_class: power
     state_class: measurement
-    attributes:
-      friendly_name: "Husets effekt (W)"
+    name: "Husets effekt (W)"
     state: >-
       {% set pwr = 0.0 -%}
       {%- if (states('sensor.hem_gen5_electric_consumed_v_2')|float(0) * states('sensor.hem_gen5_electric_consumed_1')|float(0)) > 0 -%}
@@ -377,23 +348,21 @@
         {%- set sold = (states('sensor.hem_gen5_electric_consumed_v_3')|float(0) * states('sensor.hem_gen5_electric_consumed_3')|float(0)) + sold -%}
       {%- endif %}
       {{sold | float(0) * -1}}
-    attributes:
-      friendly_name: "Såld effekt"
+    name: "Såld effekt"
 ## värmepumpen 
 - sensor:
   - unique_id: heatpump_ivt_power
     device_class: power
     state_class: measurement
     unit_of_measurement: "W"
-    attributes:
-      friendly_name: "Värmepump IVT, effekt [W]"
+    name: "Värmepump IVT, effekt [W]"
     state: >-
-      {% if states('sensor.shellyem3_c45bbe55c55e_channel_a_power')|is_number and
-            states('sensor.shellyem3_c45bbe55c55e_channel_b_power')|is_number and 
-            states('sensor.shellyem3_c45bbe55c55e_channel_c_power')|is_number %}
-        {{ states('sensor.shellyem3_c45bbe55c55e_channel_a_power')|float(0) +
-            states('sensor.shellyem3_c45bbe55c55e_channel_b_power')|float(0) + 
-            states('sensor.shellyem3_c45bbe55c55e_channel_c_power')|float(0) }}
+      {% if states('sensor.shelly_3em_c45bbe55c55e_power_0')|is_number and
+            states('sensor.shelly_3em_c45bbe55c55e_power_1')|is_number and 
+            states('sensor.shelly_3em_c45bbe55c55e_power_2')|is_number %}
+        {{ states('sensor.shelly_3em_c45bbe55c55e_power_0')|float(0) +
+            states('sensor.shelly_3em_c45bbe55c55e_power_1')|float(0) + 
+            states('sensor.shelly_3em_c45bbe55c55e_power_2')|float(0) }}
       {% else %}
         {{ this.state }}
       {% endif %}
@@ -401,15 +370,14 @@
     device_class: energy
     state_class: total
     unit_of_measurement: "kWh"
-    attributes:
-      friendly_name: "Värmepump IVT, energi [kWh]"
+    name: "Värmepump IVT, energi [kWh]"
     state: >-
-      {% if states('sensor.shellyem3_c45bbe55c55e_channel_a_energy')|is_number and
-            states('sensor.shellyem3_c45bbe55c55e_channel_b_energy')|is_number and 
-            states('sensor.shellyem3_c45bbe55c55e_channel_c_energy')|is_number %}
-        {{ states('sensor.shellyem3_c45bbe55c55e_channel_a_energy')|float(0) +
-            states('sensor.shellyem3_c45bbe55c55e_channel_b_energy')|float(0) + 
-            states('sensor.shellyem3_c45bbe55c55e_channel_c_energy')|float(0) }}
+      {% if states('sensor.shelly_3em_c45bbe55c55e_energy_0')|is_number and
+            states('sensor.shelly_3em_c45bbe55c55e_energy_1')|is_number and 
+            states('sensor.shelly_3em_c45bbe55c55e_energy_2')|is_number %}
+        {{ states('sensor.shelly_3em_c45bbe55c55e_energy_0')|float(0) +
+            states('sensor.shelly_3em_c45bbe55c55e_energy_1')|float(0) + 
+            states('sensor.shelly_3em_c45bbe55c55e_energy_2')|float(0) }}
       {% else %}
         {{ this.state }}
       {% endif %}
@@ -418,14 +386,12 @@
   - unique_id: dishwasher_current
     device_class: current
     unit_of_measurement: "A"
-    attributes:
-      friendly_name: "Diskmaskinen [A]"
+    name: "Diskmaskinen [A]"
     state: "{{(states('sensor.clever_spz3_electric_consumption_w')|float(0) / states('sensor.hem_gen5_electric_consumed_v_3')|float(230))|round(1)}}"
   - unique_id: washingmachine_current
     device_class: current
     unit_of_measurement: "A"
-    attributes:
-      friendly_name: "Tvättmaskinen [A]"
+    name: "Tvättmaskinen [A]"
     state: "{{(states('sensor.clever_spz2_electric_consumption_w_2')|float(0) / states('sensor.hem_gen5_electric_consumed_v_2')|float(230))|round(1)}}"
 
 
@@ -433,21 +399,18 @@
 - sensor:
   - unique_id: yrwthr
     state: "{%set badWeatherList = 'cloudy','fog','heavyrain','heavyrainandthunder','heavyrainshowers','heavyrainshowersandthunder','heavysleet','heavysleetandthunder','heavysleetshowers','heavysleetshowersandthunder','heavysnow','heavysnowandthunder','heavysnowshowers','heavysnowshowersandthunder','lightrain','lightrainandthunder','lightrainshowers','lightrainshowersandthunder','lightsleet','lightsleetandthunder','lightsleetshowers','lightsnow','lightsnowandthunder','lightsnowshowers','lightssleetshowersandthunder','lightssnowshowersandthunder','rain','rainandthunder','rainshowers','rainshowersandthunder','sleet','sleetandthunder','sleetshowers','sleetshowersandthunder','snow','snowandthunder','snowshowers','snowshowersandthunder'%}{{states('sensor.yr_symbol') in badWeatherList}}"
-    attributes:
-      friendly_name: "Dåligt väder enligt YR"
+    name: "Dåligt väder enligt YR"
 
   - unique_id: sunelevation
     unit_of_measurement: "°"
     state: "{{ states.sun.sun.attributes.elevation | round(1) }}"
-    attributes:
-      friendly_name: "Solvinkel"
+    name: "Solvinkel"
       
   - unique_id: home_temp
     unit_of_measurement: "°C"
     device_class: temperature
     state_class: measurement
-    attributes:
-      friendly_name: "Hemma [°C]"
+    name: "Hemma [°C]"
     state: >-
       {{ states('sensor.231_temperature')|float|round(1) if states('sensor.231_temperature')|float(99) < states('sensor.framsidan_temperature')|float(98) else states('sensor.framsidan_temperature')|float(99)|round(1) }}
     icon: >-
@@ -460,7 +423,11 @@
       {%- else -%}
       mdi:thermometer
       {%- endif %}
-
+  - unique_id: lightning_distance
+    state: "{{ distance(states.device_tracker.rickards_gs24, closest(states.device_tracker.rickards_gs24, states.geo_location))|float(9999)|round(1) }}"
+    unit_of_measurement: km
+    icon: mdi:lightning-bolt-circle
+    
 # förbrukning/kostnad
 - sensor:
   - unique_id: washing_machine_cost
@@ -509,8 +476,7 @@
     unit_of_measurement: kr
     device_class: monetary
     state_class: measurement
-    attributes:
-      friendly_name: "Snittpris (24 hrs)"
+    name: "Snittpris (24 hrs)"
 
 # bilar
 - sensor:
@@ -518,8 +484,7 @@
     unit_of_measurement: "kWh"
     device_class: energy
     state_class: total_increasing
-    attributes:
-      friendly_name: "ChargeNode [kWh]"
+    name: "ChargeNode [kWh]"
     state: >-
       {% if states('sensor.chargenode_energy')|is_number and
             states('sensor.chargenode_energy')|float(0) > 0 -%}
@@ -530,8 +495,7 @@
   - unique_id: chargenode_power_kw
     unit_of_measurement: "kW"
     device_class: power
-    attributes:
-      friendly_name: "ChargeNode effekt [kW]"
+    name: "ChargeNode effekt [kW]"
     state: >-
       {{ states('sensor.chargenode_power_l1')|float(0) + states('sensor.chargenode_power_l2')|float(0) + states('sensor.chargenode_power_l3')|float(0) }}
       
@@ -540,8 +504,7 @@
   - unique_id: zoe_battery
     unit_of_measurement: "%"
     state: "{{ states('input_number.car_2_soc')|int}}"
-    attributes:
-      friendly_name: "Delphine SoC [%]"
+    name: "Delphine SoC [%]"
     icon: >-
       {% if states('input_number.car_2_soc')|int == 100 -%}
         mdi:battery
@@ -553,8 +516,7 @@
     unit_of_measurement: "kW"
     device_class: power
     state_class: measurement
-    attributes:
-      friendly_name: "Delphine effekt [kW]"
+    name: "Delphine effekt [kW]"
     state: >-
       {% if is_state('sensor.chargenode_port2_state','3') -%}
         {{ states("sensor.template_chargenode_power_kw")|float(0) }}
@@ -568,8 +530,7 @@
     unit_of_measurement: "kW"
     device_class: power
     state: "{{ states('input_number.car_2_power_high')|int if now().month > 2 and now().month < 10 else states('input_number.car_2_power_low')|int }}"
-    attributes:
-      friendly_name: "Delphine laddeffekt [kW]"
+    name: "Delphine laddeffekt [kW]"
 
   - unique_id: zoe_charging_cost
     device_class: monetary
@@ -583,8 +544,7 @@
 
   - unique_id: zoe_last_update
     state: "{{states.input_number.car_2_soc.last_updated|as_timestamp|timestamp_custom('%H:%M, %d %b')}}"
-    attributes:
-      friendly_name: "Senast uppdaterad"
+    name: "Senast uppdaterad"
 
   - unique_id: zoe_charging_required_time
     state: >-      
@@ -604,31 +564,35 @@
     unit_of_measurement: "km"
     state: "{{ (states('sensor.template_zoe_battery')|int(0)*2.575)|round(0) }}"
 
+  - unique_id: car_2_monthly_cost
+    device_class: monetary
+    unit_of_measurement: "kr"
+    state: "{{ states('sensor.zoe_kostnad')|float(0) }}"
+    name: 'Delphine Charge Cost'
+
 ## Tesla MY (car 1)
 - sensor:
   - unique_id: car_1_season_power
     unit_of_measurement: "kW"
     device_class: power
     state: "{{ states('input_number.car_1_power_high')|int if now().month > 2 and now().month < 10 else states('input_number.car_1_power_low')|int }}"
-    attributes:
-      friendly_name: "Eazy laddeffekt (kW)"
+    name: "Eazy laddeffekt (kW)"
 
   - unique_id: rya_charging_required_time
     state: >-
-      {%- set time = (states('input_number.rya_soc_upper_limit')|float(0) - states('sensor.tesla_battery_level')|float(0)) /100*(states('input_number.car_1_battery')|int)/(states('sensor.template_car_1_season_power')|int) -%}
+      {%- set time = (states('sensor.tesla_charge_limit_soc')|float(0) - states('sensor.tesla_battery_level')|float(0)) /100*(states('input_number.car_1_battery')|int)/(states('sensor.template_car_1_season_power')|int) -%}
       {%- set hours = time|int -%}
       {%- set minutes = ((time - hours)*60)|int -%}
       {{ '{:02}:{:02}'.format(hours, minutes) }}
   - unique_id: rya_req_hours
     state: >-
-      {{ ((states('input_number.rya_soc_upper_limit')|float(0) - states('sensor.tesla_battery_level')|float(0)) /100*(states('input_number.car_1_battery')|int)/(states('sensor.template_car_1_season_power')|int)) | round(1, 'ceil') }}
+      {{ ((states('sensor.tesla_charge_limit_soc')|float(0) - states('sensor.tesla_battery_level')|float(0)) /100*(states('input_number.car_1_battery')|int)/(states('sensor.template_car_1_season_power')|int)) | round(1, 'ceil') }}
 
   - unique_id: rya_charging_power
     unit_of_measurement: "kW"
     device_class: power
     state_class: measurement
-    attributes:
-      friendly_name: "Eazy effekt (kW)"
+    name: "Eazy effekt (kW)"
     state: >-
       {% if is_state('sensor.chargenode_port1_state','3') -%}
         {{ states("sensor.template_chargenode_power_kw")|float(0) }}
@@ -637,7 +601,14 @@
       {%- endif -%}
     
     # {{ states('sensor.chargenode_power_l1')|float(0) + states('sensor.chargenode_power_l2')|float(0) + states('sensor.chargenode_power_l3')|float(0) }}
-
+  - unique_id: car_2_odometer
+    unit_of_measurement: "km"
+    name: 'Tesla Eazy Odometer'
+    icon: mdi:counter
+    state_class: total_increasing
+    state: >-
+      {{ states("sensor.tesla_odometer")|float|round(0) }}
+      
   - unique_id: rya_charging_cost
     device_class: monetary
     unit_of_measurement: "kr"
@@ -648,14 +619,19 @@
     unit_of_measurement: "kr"
     state: "{{ state_attr('sensor.rya_kostnad','last_period')|float(0)|round(0) }}"
 
+  - unique_id: car_1_monthly_cost
+    device_class: monetary
+    unit_of_measurement: "kr"
+    state: "{{ states('sensor.rya_kostnad')|float(0) }}"
+    name: 'Tesla Eazy Charge Cost'
+
 ## Spabadet
 - sensor:
   - unique_id: spabadet_energy_kwh
     unit_of_measurement: "kWh"
     device_class: energy
     state_class: total_increasing
-    attributes:
-      friendly_name: "Spabadet, energi [kWh]"
+    name: "Spabadet, energi [kWh]"
     state: >-
       {{ states('sensor.spabadet_l1_energy')|float(0) + states('sensor.spabadet_l2_energy')|float(0) + states('sensor.spabadet_l3_energy')|float(0) }}
 
@@ -663,22 +639,19 @@
     unit_of_measurement: "kWh"
     device_class: energy
     state: "{{ state_attr('sensor.spabadet_kwh_man','last_period')|float(0)|round(0) }}"
-    attributes:
-      friendly_name: "Spabadet, energi förra mån [kWh]"
+    name: "Spabadet, energi förra mån [kWh]"
 
   - unique_id: spabadet_energy_lastweek_kwh
     unit_of_measurement: "kWh"
     device_class: energy
     state: "{{ state_attr('sensor.spabadet_kwh_vecka','last_period')|float(0)|round(1) }}"
-    attributes:
-      friendly_name: "Spabadet, energi förra veckan [kWh]"
+    name: "Spabadet, energi förra veckan [kWh]"
 
   - unique_id: spabadet_power_kw
     unit_of_measurement: "kW"
     device_class: power
     state_class: measurement
-    attributes:
-      friendly_name: "Spabadet, effekt [kW]"
+    name: "Spabadet, effekt [kW]"
     state: >-
       {{ ((states('sensor.spabadet_l1_power')|float(0) + states('sensor.spabadet_l2_power')|float(0) + states('sensor.spabadet_l3_power')|float(0))/1000)|round(2) }}
 
@@ -694,8 +667,7 @@
     unit_of_measurement: "A"
     device_class: current
     state_class: measurement
-    attributes:
-      friendly_name: "Spabadet, L1 ström [A]"
+    name: "Spabadet, L1 ström [A]"
     state: >-
       {{ (states('sensor.spabadet_l1_power')|float(0) / states('sensor.hem_gen5_electric_produced_v_2') | float(230)) | round(2) }}
 
@@ -703,8 +675,7 @@
     unit_of_measurement: "A"
     device_class: current
     state_class: measurement
-    attributes:
-      friendly_name: "Spabadet, L2 ström [A]"
+    name: "Spabadet, L2 ström [A]"
     state: >-
       {{ (states('sensor.spabadet_l2_power')|float(0) / states('sensor.hem_gen5_electric_produced_v_2_2') | float(230)) | round(2) }}
 
@@ -712,8 +683,7 @@
     unit_of_measurement: "A"
     device_class: current
     state_class: measurement
-    attributes:
-      friendly_name: "Spabadet, L3 ström [A]"
+    name: "Spabadet, L3 ström [A]"
     state: >-
       {{ (states('sensor.spabadet_l3_power')|float(0) / states('sensor.hem_gen5_electric_produced_v_3') | float(230)) | round(2) }}
 
@@ -722,8 +692,7 @@
     unit_of_measurement: "°C"
     device_class: temperature
     state_class: measurement
-    attributes:
-      friendly_name: "Spabadet, temp [°C]"
+    name: "Spabadet, temp [°C]"
     state: "{{ states('sensor.spabadet_temperatur')|float(20) }}"
 
 - sensor:
@@ -731,8 +700,7 @@
     unit_of_measurement: "min"
     device_class: duration
     state_class: total
-    attributes:
-      friendly_name: "Spabadet, påslaget [min]"
+    name: "Spabadet, påslaget [min]"
     state: >-
       {% if is_state('switch.spabadet_l3', 'on') %}
         {{ ((as_timestamp(now()) - as_timestamp(states.switch.spabadet_l3.last_changed)) / 60)|int(0) }}
@@ -762,6 +730,7 @@
   sensor:
   - unique_id: next_charge
     device_class: timestamp
+    name: "Charge period"
     state: >-
       {% set duration = states('sensor.template_zoe_req_hours')|float(0) if is_state('automation.zoe_charge','on') else 0 %}
       {% set duration = (duration + (states('sensor.template_rya_req_hours')|float(0) if is_state('automation.ladda_bilen_nar_det_ar_billigt','on') else 0))|round(0,'ceil') %}
@@ -805,7 +774,6 @@
         {{ (priceDict.value|sort(attribute='1'))|map(attribute='0')|select('ge',now()-timedelta(minutes=55))|first }}
       {% endif %}
     attributes:
-      friendly_name: "Charge period"
       all: >-
         {% set duration = states('sensor.template_zoe_req_hours')|float(0) if is_state('automation.zoe_charge','on') else 0 %}
         {% set duration = (duration + (states('sensor.template_rya_req_hours')|float(0) if is_state('automation.ladda_bilen_nar_det_ar_billigt','on') else 0))|round(0,'ceil') %}
@@ -816,25 +784,25 @@
         {% if tomorrow | length > 1%}
           {% set prices = prices + tomorrow%}
         {% endif%}
-        {% for p in prices%}
-          {%set priceDict.value = priceDict.value + [(loop.index-1, p)]%}
-        {% endfor%}
-        
+        {% for p in prices -%}
+          {% set priceDict.value = priceDict.value + [(loop.index-1, p)] -%}
+        {% endfor -%}
+
         {% if duration == 0%}
           unavailable
         {% else %}    
           {% set dataDict = dict.from_keys(priceDict.value) %}
-      
+
           {% set priceDict.value = [] %}
-          {% for p in dataDict.items() %}
-            {% set outerIndex = loop.index %}
-            {% if loop.index+duration-1 <= dataDict|length %}
-              {% for i in range(duration) %}
-                {% set grow.value = grow.value + dataDict[i+outerIndex-1] %}
-              {% endfor %}
-              {%- set val = (grow.value|float/duration)|round(3) %}
-              {%- set grow.value = 0 %}
-              {%- set priceDict.value = priceDict.value + [(p[0], val)] %}
+          {% for p in dataDict.items() -%}
+            {% set outerIndex = loop.index -%}
+            {% if loop.index+duration-1 <= dataDict|length -%}
+              {% for i in range(duration) -%}
+                {% set grow.value = grow.value + dataDict[i+outerIndex-1] -%}
+              {% endfor -%}
+              {% set val = (grow.value|float/duration)|round(3) %}
+              {% set grow.value = 0 %}
+              {% set priceDict.value = priceDict.value + [(p[0], val)] %}
             {% else %}
               {% set priceDict.value = priceDict.value + [(p[0], 999.9)] %}
             {% endif %}
@@ -842,10 +810,15 @@
           {% set data = dict.from_values(priceDict.value).items()|sort(attribute='1') %}
           {% set priceDict.value = [] %}
           {% for d in data -%}
-            {% set t1 = '%02d:00' % (d[0] if d[0]<24 else d[0]-24) -%}
-            {% set time1 = '%02d:00' % d[0] if d[0]<24 else '%02d:00⁺¹' % (d[0]-24) -%}
-            {% set time2 = '%02d:00' % (d[0]+duration) if (d[0]+duration)<24 else '%02d:00⁺¹' % (d[0]+duration-24) -%}
+            {% set m1 = ((d[0]/4 - (d[0]/4)|int)*60)|int -%}
+            {% set h1 = (d[0]/4)|int -%}
+            {% set t1 = '%02d:%02d' % (h1 if h1<24 else h1-24, m1) -%}
+            {% set time1 = t1 if h1<24 else t1 ~ '⁺¹' -%}
+            {% set hour2 = '%02d' % (h1+duration if (h1+duration)<24 else h1+duration-24) -%}
+            {% set min2  = ':%02d' % m1 if (h1+duration)<24 else ':%02d⁺¹' % m1 -%}
+            {% set time2 = hour2 ~ min2 -%}
             {% set priceDict.value = priceDict.value + [time1 ~ '-' ~ time2 ~ ' | ' ~ d[1]|round(2)] %}
+            {# {{time1}}-{{time2}} ({{duration}}) #}
           {% endfor -%}
           {{ priceDict.value|replace(",","\xA0")|replace("[","")|replace("]","") }}          
         {% endif %}

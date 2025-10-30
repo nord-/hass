@@ -5,7 +5,7 @@
   "data": {
     "items": [
       {
-        "url": "/hacsfiles/apexcharts-card/apexcharts-card.js?hacstag=331701152212",
+        "url": "/hacsfiles/apexcharts-card/apexcharts-card.js?hacstag=331701152223",
         "type": "module",
         "id": "efe9a700ad09414fa032d32726aee801"
       },
@@ -41,12 +41,12 @@
       },
       {
         "id": "1169ec7667f0408c8147524861c07012",
-        "url": "/hacsfiles/lovelace-card-mod/card-mod.js?hacstag=190927524344",
+        "url": "/hacsfiles/lovelace-card-mod/card-mod.js?hacstag=190927524345",
         "type": "module"
       },
       {
         "id": "6a8cbb425ff447c493dc372dd04c4d34",
-        "url": "/hacsfiles/lovelace-mushroom/mushroom.js?hacstag=444350375440",
+        "url": "/hacsfiles/lovelace-mushroom/mushroom.js?hacstag=444350375508",
         "type": "module"
       },
       {
@@ -61,7 +61,7 @@
       },
       {
         "id": "67fa61aaa27e4df186efb719de996c65",
-        "url": "/hacsfiles/landroid-card/landroid-card.js?hacstag=510045489124",
+        "url": "/hacsfiles/landroid-card/landroid-card.js?hacstag=510045489126",
         "type": "module"
       },
       {
@@ -76,7 +76,7 @@
       },
       {
         "id": "7e3b6caf0a134afea5109910ea1481c8",
-        "url": "/hacsfiles/clock-weather-card/clock-weather-card.js?hacstag=5226340192811",
+        "url": "/hacsfiles/clock-weather-card/clock-weather-card.js?hacstag=522634019291",
         "type": "module"
       },
       {

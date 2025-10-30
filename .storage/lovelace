@@ -17,15 +17,29 @@
               "type": "grid",
               "cards": [
                 {
-                  "show_name": false,
-                  "show_icon": true,
-                  "type": "button",
-                  "tap_action": {
-                    "action": "toggle"
-                  },
+                  "type": "custom:mushroom-template-card",
                   "entity": "script.turn_on_morning_lights",
-                  "icon": "mdi:weather-sunny",
-                  "show_state": false
+                  "icon": "mdi:weather-sunset-up",
+                  "tap_action": {
+                    "action": "perform-action",
+                    "perform_action": "script.turn_on",
+                    "target": {
+                      "entity_id": "script.turn_on_morning_lights"
+                    }
+                  },
+                  "hold_action": {
+                    "action": "more-info"
+                  },
+                  "double_tap_action": {
+                    "action": "none"
+                  },
+                  "color": "{{ \"green\" if is_state('light.sovrumsfonstret','on') else \"#44739e\" }}",
+                  "vertical": true,
+                  "features_position": "bottom",
+                  "grid_options": {
+                    "columns": 3,
+                    "rows": 1
+                  }
                 },
                 {
                   "type": "button",
@@ -42,21 +56,17 @@
                   "primary": "",
                   "secondary": "",
                   "icon": "mdi:projector-screen-outline",
-                  "fill_container": true,
                   "tap_action": {
-                    "action": "perform-action",
-                    "perform_action": "script.movie_time",
-                    "target": {}
+                    "action": "toggle"
                   },
-                  "icon_color": "{{ \"green\" if is_state('switch.tz3000_2_byran_uppe_switch','off') else \"#44739e\" }}",
-                  "entity": "script.movie_time",
                   "grid_options": {
                     "columns": 3,
                     "rows": 1
                   },
-                  "card_mod": {
-                    "style": ":host {\n  --mush-icon-size: 60px;\n}\nmushroom-shape-icon {\n  --shape-color: transparent !important;\n}\n"
-                  }
+                  "entity": "input_boolean.movie_time",
+                  "color": "{{ \"green\" if is_state('input_boolean.movie_time','on') else \"#44739e\" }}",
+                  "features_position": "bottom",
+                  "vertical": true
                 },
                 {
                   "type": "custom:mushroom-template-card",
@@ -72,11 +82,30 @@
                     "rows": 1
                   },
                   "primary": "",
-                  "fill_container": true,
-                  "icon_color": "#44739e",
-                  "card_mod": {
-                    "style": ":host {\n  --mush-icon-size: 60px;\n}\nmushroom-shape-icon {\n  --shape-color: transparent !important;\n}\n"
-                  }
+                  "color": "#44739e",
+                  "features_position": "bottom",
+                  "vertical": true
+                },
+                {
+                  "type": "heading",
+                  "icon": "mdi:hot-tub",
+                  "heading": "Spabadet",
+                  "heading_style": "subtitle",
+                  "tap_action": {
+                    "action": "navigate",
+                    "navigation_path": "/lovelace/spa"
+                  },
+                  "badges": [
+                    {
+                      "type": "entity",
+                      "show_state": true,
+                      "show_icon": true,
+                      "entity": "sensor.spabadet_temperatur",
+                      "tap_action": {
+                        "action": "more-info"
+                      }
+                    }
+                  ]
                 },
                 {
                   "type": "custom:mushroom-template-card",
@@ -152,21 +181,33 @@
                   "tap_action": {
                     "action": "navigate",
                     "navigation_path": "/lovelace/koket"
-                  }
+                  },
+                  "badges": [
+                    {
+                      "type": "entity",
+                      "show_state": true,
+                      "show_icon": true,
+                      "entity": "sensor.wall_e_blades_current_on_time_2",
+                      "tap_action": {
+                        "action": "more-info"
+                      }
+                    }
+                  ]
                 },
                 {
                   "type": "custom:mushroom-template-card",
                   "primary": "Wall-E • {{states(\"lawn_mower.wall_e\")}}",
                   "icon": "mdi:mower",
-                  "icon_color": "{{ \"green\" if states(\"lawn_mower.wall_e\") == \"mowing\" else \"#44739e\" }}",
                   "secondary": "{{ states(\"sensor.wall_e_next_scheduled_start_2\")|as_timestamp|timestamp_custom('%H:%M') }}\n{%- if states('sensor.wall_e_next_scheduled_start_2')|as_timestamp|timestamp_custom('%d') != now().date()|as_timestamp|timestamp_custom('%d') -%}\n⁺¹\n{%-endif-%}",
-                  "badge_icon": "{{ \"mdi:pause\" if states(\"lawn_mower.wall_e\") == \"mowing\" else \"mdi:play\" }}",
-                  "badge_color": "{{ \"green\" if states(\"lawn_mower.wall_e\") == \"mowing\" else \"grey\" }}",
+                  "badge_icon": "{{ \"mdi:pause\" if states(\"lawn_mower.wall_e\") == \"paused\" else \"mdi:play\" }}",
+                  "badge_color": "{% if states(\"lawn_mower.wall_e\") == \"mowing\" %}green{%elif states(\"lawn_mower.wall_e\") == \"error\" or states(\"lawn_mower.wall_e\") == \"unavailable\"%}red{%else%}grey{%endif%}",
                   "entity": "lawn_mower.wall_e",
                   "tap_action": {
                     "action": "perform-action",
                     "perform_action": "lawn_mower.pause",
-                    "target": {}
+                    "target": {
+                      "device_id": "04744719de96abcefa75f8ffeeb42a05"
+                    }
                   },
                   "hold_action": {
                     "action": "perform-action",
@@ -174,7 +215,9 @@
                     "target": {
                       "device_id": "04744719de96abcefa75f8ffeeb42a05"
                     }
-                  }
+                  },
+                  "color": "{{ \"green\" if states(\"lawn_mower.wall_e\") == \"mowing\" else \"#44739e\" }}",
+                  "features_position": "bottom"
                 }
               ]
             },
@@ -195,7 +238,7 @@
                   "compact": true,
                   "weather": {
                     "showCondition": true,
-                    "showTemperature": false,
+                    "showTemperature": true,
                     "showLowTemperature": false,
                     "useTwiceDaily": false,
                     "entity": "weather.smhi_home"
@@ -211,8 +254,8 @@
                   "texts": {
                     "today": "Idag",
                     "tomorrow": "Imorgon",
-                    "noEvents": "Inget… 😴",
-                    "fullDay": "Hela dagen"
+                    "fullDay": "Hela dagen",
+                    "noEvents": " "
                   }
                 }
               ]
@@ -268,8 +311,8 @@
                     "navigation_path": "/lovelace/tesla"
                   },
                   "icon_color": "{% if states(\"automation.ladda_bilen_nar_det_ar_billigt\") == \"off\" -%}\nred\n{%- else -%}\ngreen\n{%- endif -%}",
-                  "badge_color": "{% if states(\"binary_sensor.ev6_ev_battery_plug\") in [ \"off\", \"unavailable\" ]%}\norange\n{% else %}\ngreen\n{% endif %}",
-                  "badge_icon": "{% if states(\"binary_sensor.ev6_ev_charge_port\") in [ \"off\", \"unavailable\" ]%}\nmdi:power-plug-off\n{% elif state_attr(\"automation.ev6_reload_when_charging\",\"current\")|bool(false) %}\nmdi:battery-charging\n{% elif states(\"binary_sensor.ev6_ev_charge_port\") == \"on\" %}\nmdi:power-plug\n{% endif %}"
+                  "badge_color": "{% if states(\"binary_sensor.tesla_plugged_in\") in [ \"off\", \"unavailable\" ]%}\norange\n{% else %}\ngreen\n{% endif %}",
+                  "badge_icon": "{% if states(\"binary_sensor.tesla_charge_port_door_open\") in [ \"off\", \"unavailable\" ]%}\nmdi:power-plug-off\n{% elif state_attr(\"automation.ev6_reload_when_charging\",\"current\")|bool(false) %}\nmdi:battery-charging\n{% elif states(\"binary_sensor.tesla_charge_port_door_open\") == \"on\" %}\nmdi:power-plug\n{% endif %}"
                 },
                 {
                   "type": "heading",
@@ -369,6 +412,28 @@
                     "Björk",
                     "Gräs",
                     "Hassel"
+                  ],
+                  "visibility": [
+                    {
+                      "condition": "and",
+                      "conditions": [
+                        {
+                          "condition": "state",
+                          "entity": "sensor.pollen_goteborg_bjork",
+                          "state_not": "0"
+                        },
+                        {
+                          "condition": "state",
+                          "entity": "sensor.pollen_goteborg_gras",
+                          "state_not": "0"
+                        },
+                        {
+                          "condition": "state",
+                          "entity": "sensor.pollen_goteborg_hassel",
+                          "state_not": "0"
+                        }
+                      ]
+                    }
                   ],
                   "card_mod": {
                     "style": "ha-card {padding-top: 0px;padding-bottom: 0px;}\n.sensor {margin-top: 0px;margin-bottom: 0px;}\n.header {display: none;}\n"
@@ -711,6 +776,14 @@
               "content": "{{'%.1f'|format( states(\"sensor.fronius_inverter_total_power\")|float)|replace('.',',')}} kW",
               "color": "{% if states(\"sensor.fronius_inverter_total_power\")|float < 3 %}\nred\n{% elif states(\"sensor.fronius_inverter_total_power\")|float > 5 %}\ngreen\n{% else %}\nyellow\n{% endif %}",
               "entity": "sensor.fronius_inverter_total_power"
+            },
+            {
+              "type": "entity",
+              "show_name": false,
+              "show_state": true,
+              "show_icon": true,
+              "entity": "sensor.template_home_temp",
+              "icon": "mdi:sun-thermometer-outline"
             }
           ],
           "header": {
@@ -737,8 +810,7 @@
                       "type": "entity",
                       "show_state": true,
                       "show_icon": true,
-                      "entity": "sensor.template_next_charge_time",
-                      "icon": "mdi:battery-clock",
+                      "entity": "sensor.template_next_charge",
                       "tap_action": {
                         "action": "more-info"
                       }
@@ -772,7 +844,7 @@
                 },
                 {
                   "type": "custom:mushroom-entity-card",
-                  "entity": "sensor.tesla_est_battery_range",
+                  "entity": "sensor.tesla_ideal_battery_range",
                   "name": "Räckvidd",
                   "icon": "mdi:gauge",
                   "grid_options": {
@@ -796,49 +868,102 @@
                   }
                 },
                 {
-                  "type": "glance",
-                  "entities": [
-                    {
-                      "entity": "sensor.tesla_charge_limit_soc",
-                      "name": "Ladda till"
-                    },
-                    {
-                      "entity": "sensor.tesla_odometer",
-                      "name": "Körsträcka"
-                    },
-                    {
-                      "entity": "binary_sensor.tesla_charge_port_door_open",
-                      "name": "Laddport",
-                      "icon": "mdi:ev-plug-type2"
-                    }
-                  ],
-                  "grid_options": {
-                    "columns": 9,
-                    "rows": 2
-                  }
-                },
-                {
                   "type": "custom:mushroom-template-card",
-                  "icon": "mdi:update",
-                  "secondary": "{{states(\"sensor.tesla_since\")|as_timestamp|timestamp_custom('%H:%M')}}",
+                  "primary": "{{states(\"sensor.tesla_charge_limit_soc\")}}%",
+                  "secondary": "Ladda till",
+                  "grid_options": {
+                    "columns": 3,
+                    "rows": 2
+                  },
+                  "layout": "vertical",
+                  "entity": "sensor.tesla_charge_limit_soc",
+                  "icon_color": "{% set soc = states('sensor.tesla_charge_limit_soc')|int %}\n{% if soc<51 %}red{% elif soc>71 %}green{% else %}yellow{% endif %}",
+                  "icon": "{{\"mdi:battery-charging-\" + states(\"sensor.tesla_charge_limit_soc\") }}",
                   "tap_action": {
-                    "action": "none"
+                    "action": "more-info"
                   },
                   "hold_action": {
                     "action": "none"
                   },
-                  "icon_color": "blue",
                   "double_tap_action": {
                     "action": "none"
-                  },
-                  "badge_icon": "",
-                  "badge_color": "",
+                  }
+                },
+                {
+                  "type": "custom:mushroom-template-card",
+                  "primary": "{{ '{:,.0f} km'.format(states(\"sensor.tesla_odometer\")|int)|replace(',',' ') }}",
+                  "secondary": "Körsträcka",
+                  "icon": "mdi:counter",
+                  "entity": "sensor.tesla_odometer",
+                  "icon_color": "blue",
                   "layout": "vertical",
                   "grid_options": {
                     "columns": 3,
                     "rows": 2
                   },
-                  "primary": "Uppdaterad"
+                  "tap_action": {
+                    "action": "more-info"
+                  }
+                },
+                {
+                  "type": "custom:mushroom-template-card",
+                  "icon": "mdi:ev-plug-type2",
+                  "entity": "binary_sensor.tesla_charge_port_door_open",
+                  "icon_color": "{{ \"green\" if states(\"binary_sensor.tesla_charge_port_door_open\")|bool else \"grey\" }}",
+                  "layout": "vertical",
+                  "grid_options": {
+                    "columns": 3,
+                    "rows": 1
+                  },
+                  "tap_action": {
+                    "action": "more-info"
+                  },
+                  "hold_action": {
+                    "action": "none"
+                  },
+                  "double_tap_action": {
+                    "action": "none"
+                  },
+                  "secondary": "",
+                  "primary": ""
+                },
+                {
+                  "type": "custom:mushroom-template-card",
+                  "primary": "{{states (\"sensor.tesla_time_to_full_charge\")|float|round(1)|replace('.',',')}} h",
+                  "icon": "mdi:clock-end",
+                  "entity": "sensor.tesla_time_to_full_charge",
+                  "secondary": "Återstår",
+                  "tap_action": {
+                    "action": "more-info"
+                  },
+                  "grid_options": {
+                    "columns": 3,
+                    "rows": 2
+                  },
+                  "layout": "vertical"
+                },
+                {
+                  "type": "custom:mushroom-template-card",
+                  "entity": "binary_sensor.tesla_locked",
+                  "icon_color": "{{\"red\" if states(\"binary_sensor.tesla_locked\")|bool else \"grey\" }}",
+                  "grid_options": {
+                    "columns": 3,
+                    "rows": 1
+                  },
+                  "tap_action": {
+                    "action": "more-info"
+                  },
+                  "hold_action": {
+                    "action": "none"
+                  },
+                  "double_tap_action": {
+                    "action": "none"
+                  },
+                  "icon": "{{\"mdi:lock\" if states(\"binary_sensor.tesla_locked\")==\"off\"\n else \"mdi:lock-open\"}}",
+                  "secondary": "",
+                  "layout": "vertical",
+                  "multiline_secondary": false,
+                  "primary": ""
                 },
                 {
                   "type": "custom:mushroom-template-card",
@@ -846,9 +971,9 @@
                   "entity": "binary_sensor.ev6_ev_battery_charge",
                   "badge_icon": "mdi:robot",
                   "badge_color": "{{\"grey\" if states(\"automation.ladda_bilen_nar_det_ar_billigt\")==\"off\" else \"green\"}}",
-                  "icon_color": "{{\"grey\" if states(\"binary_sensor.ev6_ev_battery_charge\")==\"off\" else \"green\"}}",
+                  "icon_color": "{{\"green\" if states(\"sensor.tesla_state\")==\"charging\" else \"grey\"}}",
                   "primary": "{{ states(\"sensor.template_next_charge_time\") }}",
-                  "secondary": "{{states(\"sensor.template_rya_charging_required_time\")|float(0)|replace(\".\",\",\")}} h",
+                  "secondary": "{{states(\"sensor.template_rya_req_hours\")|float(0)|replace(\".\",\",\")}} h",
                   "tap_action": {
                     "action": "perform-action",
                     "perform_action": "automation.toggle",
@@ -861,31 +986,32 @@
                     "service": "script.charge_the_tesla"
                   },
                   "grid_options": {
-                    "columns": 4,
+                    "columns": 6,
                     "rows": 1
                   }
                 },
                 {
                   "type": "custom:mushroom-template-card",
-                  "entity": "lock.ev6_door_lock",
+                  "icon": "mdi:update",
+                  "secondary": "{{states.sensor.tesla_battery_level.last_updated | as_timestamp | timestamp_custom(\"%H:%M\")}}",
                   "tap_action": {
-                    "action": "none"
-                  },
-                  "icon": "{{ \"mdi:lock-open-variant\" if states(\"binary_sensor.tesla_locked\")==\"on\" else \"mdi:lock\" }}",
-                  "secondary": "",
-                  "badge_color": "",
-                  "icon_color": "{{ \"red\" if states(\"binary_sensor.tesla_locked\")==\"on\" else \"green\" }}",
-                  "grid_options": {
-                    "columns": 4,
-                    "rows": 1
-                  },
-                  "primary": "",
-                  "hold_action": {
                     "action": "more-info"
                   },
+                  "hold_action": {
+                    "action": "none"
+                  },
+                  "icon_color": "blue",
                   "double_tap_action": {
                     "action": "none"
-                  }
+                  },
+                  "badge_icon": "",
+                  "badge_color": "",
+                  "grid_options": {
+                    "columns": 6,
+                    "rows": 1
+                  },
+                  "primary": "Uppdaterad",
+                  "entity": "sensor.tesla_since"
                 },
                 {
                   "type": "custom:collapsable-cards",
@@ -895,13 +1021,12 @@
                       "type": "entities",
                       "entities": [
                         {
-                          "entity": "automation.ev6_scheduled_hvac",
-                          "icon": "mdi:fan-clock",
-                          "name": "AC"
+                          "entity": "input_number.car_1_energy_kwh",
+                          "name": "kWh"
                         },
                         {
-                          "entity": "input_datetime.rya_starta_hvac",
-                          "name": "starta kl.",
+                          "entity": "input_datetime.car_1_time",
+                          "name": "kl.",
                           "icon": "mdi:clock-outline"
                         },
                         {
@@ -909,12 +1034,8 @@
                         },
                         {
                           "entity": "automation.ladda_azarel_pa_klocka",
-                          "name": "Ladda",
+                          "name": "Starta på kl.",
                           "icon": "mdi:car-clock"
-                        },
-                        {
-                          "entity": "input_datetime.car_2_time",
-                          "name": "klockan"
                         }
                       ]
                     }
@@ -936,14 +1057,20 @@
                       "show_state": true,
                       "show_icon": true,
                       "entity": "sensor.template_next_charge_time",
-                      "icon": "mdi:battery-clock"
+                      "icon": "mdi:battery-clock",
+                      "tap_action": {
+                        "action": "more-info"
+                      }
                     },
                     {
                       "type": "entity",
                       "show_state": true,
                       "show_icon": true,
                       "entity": "sensor.template_zoe_charging_required_time",
-                      "icon": "mdi:lightning-bolt"
+                      "icon": "mdi:lightning-bolt",
+                      "tap_action": {
+                        "action": "more-info"
+                      }
                     }
                   ]
                 },
@@ -1011,7 +1138,7 @@
                   "type": "custom:mushroom-template-card",
                   "icon": "mdi:ev-station",
                   "entity": "automation.zoe_charge",
-                  "icon_color": "{{ \"grey\" if states(\"automation.zoe_charge\")==\"off\" else \"green\" }}",
+                  "icon_color": "{{ \"green\" if state_attr('automation.zoe_charge', 'current') > 0 else \"grey\" }}",
                   "secondary": "{{states(\"sensor.template_zoe_req_hours\")|float(0)|replace(\".\",\",\")}} h",
                   "tap_action": {
                     "action": "perform-action",
@@ -1024,7 +1151,19 @@
                   "grid_options": {
                     "columns": 6,
                     "rows": 1
-                  }
+                  },
+                  "hold_action": {
+                    "action": "perform-action",
+                    "perform_action": "automation.trigger",
+                    "target": {
+                      "entity_id": "automation.zoe_charge"
+                    },
+                    "data": {
+                      "skip_condition": true
+                    }
+                  },
+                  "badge_color": "{{\"grey\" if states(\"automation.zoe_charge\")==\"off\" else \"green\"}}",
+                  "badge_icon": "mdi:robot"
                 },
                 {
                   "type": "entities",
@@ -1296,7 +1435,7 @@
                         "legend_value": false,
                         "extremas": true
                       },
-                      "data_generator": "return entity.attributes.today.map((p, index) => {\n  let fee = Number(hass.states['sensor.template_fees_ex_vat'].state);\n  let price = (fee + p)*1.25;        \n  return [new Date().setHours(index,0,0), price];\n});\n"
+                      "data_generator": "return entity.attributes.raw_today.map((p) => {\n        let fee = Number(hass.states['sensor.template_fees_ex_vat'].state);\n        let price = (fee + p[\"value\"])*1.25;        \n        return [new Date(p[\"start\"]).getTime(), price];\n      });    \n"
                     },
                     {
                       "entity": "sensor.nordpool_kwh_se3_sek_3_095_0",
@@ -1313,7 +1452,7 @@
                         "legend_value": false,
                         "extremas": true
                       },
-                      "data_generator": "return entity.attributes.tomorrow.map((p, index) => {\n  let fee = Number(hass.states['sensor.template_fees_ex_vat'].state);\n  let price = (fee + p)*1.25;        \n  return [new Date().setHours(index,0,0), price];\n});\n"
+                      "data_generator": "return entity.attributes.raw_tomorrow.map((p) => {\n  let fee = Number(hass.states['sensor.template_fees_ex_vat'].state);\n  let price = (fee + p[\"value\"])*1.25;\n  let d = new Date(p[\"start\"]);\n  d.setDate(d.getDate() - 1);\n  return [d.getTime(), price];\n});\n"
                     },
                     {
                       "entity": "sensor.template_nordpool_min",
@@ -1428,7 +1567,7 @@
                         "legend_value": false,
                         "extremas": true
                       },
-                      "data_generator": "return entity.attributes.today.map((p, index) => {\n    return [new Date().setHours(index, 0, 0), p];\n}).concat(entity.attributes.tomorrow.map((p, index) => {\n    return [new Date().setHours(24 + index, 0, 0), p];\n}));\n"
+                      "data_generator": "return entity.attributes.raw_today.map((p) => {\n  let price = p[\"value\"];        \n  return [new Date(p[\"start\"]).getTime(), price];\n}).concat(entity.attributes.raw_tomorrow.map((p, index) => {\n  let price = p[\"value\"];\n  return [new Date(p[\"start\"]).getTime(), price];\n}));\n"
                     }
                   ],
                   "now": {
@@ -1682,12 +1821,12 @@
                         "entity": "sensor.template_rya_charging_power",
                         "secondary_info": {},
                         "display_zero": false,
-                        "name": "Kian",
                         "icon": "mdi:car-electric",
                         "tap_action": {
                           "action": "navigate",
                           "navigation_path": "/lovelace/tesla"
-                        }
+                        },
+                        "name": "Eazy"
                       },
                       {
                         "entity": "sensor.template_spabadet_power_kw",
@@ -1745,6 +1884,45 @@
                       "entity": "sensor.template_house_power_kw"
                     }
                   ]
+                },
+                {
+                  "type": "heading",
+                  "icon": "",
+                  "heading": "L1",
+                  "heading_style": "subtitle",
+                  "grid_options": {
+                    "columns": 4,
+                    "rows": "auto"
+                  },
+                  "card_mod": {
+                    "style": "* { \n  color: var(--warning-color) !important;\n}\n"
+                  }
+                },
+                {
+                  "type": "heading",
+                  "icon": "",
+                  "heading": "L2",
+                  "heading_style": "subtitle",
+                  "grid_options": {
+                    "columns": 4,
+                    "rows": "auto"
+                  },
+                  "card_mod": {
+                    "style": "* { \n  color: var(--primary-color) !important;\n}\n"
+                  }
+                },
+                {
+                  "type": "heading",
+                  "icon": "",
+                  "heading": "L3",
+                  "heading_style": "subtitle",
+                  "grid_options": {
+                    "columns": 4,
+                    "rows": "auto"
+                  },
+                  "card_mod": {
+                    "style": "* { \n  color: var(--error-color) !important;\n}\n"
+                  }
                 },
                 {
                   "type": "gauge",
@@ -1808,7 +1986,7 @@
                   "cards": [
                     {
                       "type": "gauge",
-                      "entity": "sensor.shellyem3_c45bbe55c55e_channel_a_current",
+                      "entity": "sensor.shelly_3em_c45bbe55c55e_current_0",
                       "name": " ",
                       "max": 16,
                       "needle": false,
@@ -1821,7 +1999,7 @@
                     },
                     {
                       "type": "gauge",
-                      "entity": "sensor.shellyem3_c45bbe55c55e_channel_b_current",
+                      "entity": "sensor.shelly_3em_c45bbe55c55e_current_1",
                       "name": " ",
                       "needle": false,
                       "severity": {
@@ -1833,7 +2011,7 @@
                     },
                     {
                       "type": "gauge",
-                      "entity": "sensor.shellyem3_c45bbe55c55e_channel_c_current",
+                      "entity": "sensor.shelly_3em_c45bbe55c55e_current_2",
                       "max": 16,
                       "name": " ",
                       "needle": false,
@@ -2303,7 +2481,12 @@
                   "badges": [
                     {
                       "type": "entity",
-                      "entity": "sensor.template_spabadet_temperature"
+                      "show_state": true,
+                      "show_icon": true,
+                      "entity": "sensor.template_spabadet_temperature",
+                      "tap_action": {
+                        "action": "more-info"
+                      }
                     },
                     {
                       "type": "entity",
@@ -2322,13 +2505,10 @@
                   "icon": "mdi:swim",
                   "hold_action": {
                     "action": "more-info"
+                  },
+                  "grid_options": {
+                    "columns": "full"
                   }
-                },
-                {
-                  "type": "custom:mushroom-number-card",
-                  "entity": "input_number.spabadet_target_temp_weekends",
-                  "name": "Helgen",
-                  "display_mode": "buttons"
                 },
                 {
                   "type": "gauge",
@@ -2393,12 +2573,7 @@
                   "heading": "Temperatur",
                   "heading_style": "subtitle",
                   "icon": "mdi:coolant-temperature",
-                  "badges": [
-                    {
-                      "type": "entity",
-                      "entity": "sensor.spabadet_temperatur"
-                    }
-                  ]
+                  "badges": []
                 },
                 {
                   "chart_type": "line",
@@ -2477,6 +2652,20 @@
                       "name": "24h"
                     }
                   ]
+                },
+                {
+                  "type": "custom:mushroom-number-card",
+                  "entity": "input_number.spabadet_target_temp_weekdays",
+                  "name": "Vardag",
+                  "display_mode": "buttons",
+                  "icon_color": "green"
+                },
+                {
+                  "type": "custom:mushroom-number-card",
+                  "entity": "input_number.spabadet_target_temp_weekends",
+                  "name": "Helgen",
+                  "display_mode": "buttons",
+                  "icon_color": "red"
                 }
               ]
             }
@@ -2753,7 +2942,7 @@
             {
               "entities": [
                 {
-                  "entity": "switch.shelly_1pm_485519cb0b57_relay_0",
+                  "entity": "switch.entre",
                   "icon": "mdi:wall-sconce-outline"
                 },
                 {
@@ -3480,8 +3669,51 @@
                 "entity": "sensor.199_temperature",
                 "detail": 1
               }
+            },
+            {
+              "type": "vertical-stack",
+              "cards": [
+                {
+                  "type": "map",
+                  "entities": [
+                    {
+                      "entity": "zone.home"
+                    }
+                  ],
+                  "theme_mode": "auto",
+                  "geo_location_sources": [
+                    "blitzortung"
+                  ],
+                  "title": "Åska",
+                  "auto_fit": true,
+                  "default_zoom": 11
+                },
+                {
+                  "type": "entity",
+                  "entity": "sensor.template_lightning_distance",
+                  "name": "Avstånd"
+                },
+                {
+                  "type": "custom:mushroom-template-card",
+                  "icon": "mdi:weather-lightning",
+                  "entity": "sensor.home_lightning_counter",
+                  "primary": "\n{{ closest(states.geo_location).last_updated | as_timestamp | timestamp_custom(\"%H:%M\") }}",
+                  "secondary": "Uppdaterad",
+                  "tap_action": {
+                    "action": "more-info"
+                  }
+                }
+              ],
+              "visibility": [
+                {
+                  "condition": "numeric_state",
+                  "entity": "sensor.home_lightning_distance",
+                  "below": 9999
+                }
+              ]
             }
-          ]
+          ],
+          "path": "ute"
         },
         {
           "icon": "mdi:weather-sunny",
@@ -3676,18 +3908,22 @@
           "badges": [],
           "cards": [
             {
-              "type": "custom:uptime-card",
-              "entity": "binary_sensor.chargenode_pie",
-              "title_template": "ChargeNode",
-              "icon": "mdi:ev-station",
-              "status_adaptive_color": true,
-              "show": {
-                "footer": false
-              },
-              "update_interval": 60,
-              "tooltip": {
-                "hour24": true
-              }
+              "type": "vertical-stack",
+              "cards": [
+                {
+                  "type": "custom:uptime-card",
+                  "entity": "binary_sensor.chargenode_pie",
+                  "title_template": "ChargeNode",
+                  "icon": "mdi:ev-station",
+                  "status_adaptive_color": true
+                },
+                {
+                  "type": "custom:uptime-card",
+                  "entity": "binary_sensor.teslamate",
+                  "title_template": "teslamate",
+                  "icon": "mdi:car-electric"
+                }
+              ]
             },
             {
               "type": "vertical-stack",
@@ -4877,8 +5113,7 @@
                   "period": "month",
                   "type": "statistics-graph",
                   "entities": [
-                    "sensor.ev6_odometer",
-                    "sensor.zoe_mileage"
+                    "sensor.template_car_2_odometer"
                   ],
                   "stat_types": [
                     "change"
@@ -4890,22 +5125,22 @@
                   "type": "entities",
                   "entities": [
                     {
-                      "entity": "sensor.rya_kostnad",
-                      "icon": "mdi:car-estate",
-                      "name": "EV6"
+                      "entity": "sensor.template_car_1_monthly_cost",
+                      "icon": "mdi:car-sports",
+                      "name": "Eazy"
                     },
                     {
-                      "entity": "sensor.zoe_kostnad",
-                      "name": "Delphine",
-                      "icon": "mdi:car-hatchback"
+                      "entity": "sensor.template_car_2_monthly_cost",
+                      "icon": "mdi:car-hatchback",
+                      "name": "Delphine"
                     },
                     {
                       "type": "divider"
                     },
                     {
                       "entity": "sensor.template_rya_charging_cost_last_period",
-                      "icon": "mdi:car-estate",
-                      "name": "EV6 (förra)"
+                      "icon": "mdi:car-sports",
+                      "name": "Eazy (förra)"
                     },
                     {
                       "entity": "sensor.template_zoe_charging_cost_last_period",

@@ -37,3 +37,17 @@ cn_add_yxx_to_queue:
 # 510 uttag 1, 511 uttag 2, 512 uttag 3
 # UserCarId 642 = Delphine, 697 = EZC
 # (gamla 12 = Azarel, 423 = Zoe, 590 = EV6, )
+
+cn_add_car1_energy:
+  url: "https://dev-app-cn.azurewebsites.net/v2/startcharge"
+  method: post
+  timeout: 60
+  headers: 
+    authorization: !secret cn_rest_authorization
+    accept: 'text/plain, application/json, text/json'
+  content_type:  'application/json; charset=utf-8'
+  payload: '{"ConnectorId":"a5ebcce2-1815-4bda-4c8c-08da08e8bc81", "DepartureTime":"{{today_at(states("input_datetime.zoe_before"))|as_timestamp|timestamp_local if today_at(states("input_datetime.zoe_before"))>now() else (today_at(states("input_datetime.zoe_before"))+timedelta(days=1))|as_timestamp|timestamp_local}}", "SelectedPaymentMethod": 1, "RequestedEnergy": {{(states("input_number.car_1_energy_kwh")|int(0))*1000}}, "UserCarId": 697 }'
+
+
+
+

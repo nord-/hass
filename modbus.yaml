@@ -1,6 +1,6 @@
 - name: "103H182"
   type: tcp
-  host: 192.168.2.29
+  host: 192.168.2.222
   port: 783
   sensors:
     - name: ChargeNode_Port1_State
