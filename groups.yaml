@@ -67,6 +67,7 @@ kontoret:
   entities:
     - light.office_window
     - switch.tz2
+    - light.kontoret_fonstret
 #    - switch.rusta25a
 #    - switch.tz1
 

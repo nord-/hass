@@ -41,7 +41,7 @@
       },
       {
         "id": "1169ec7667f0408c8147524861c07012",
-        "url": "/hacsfiles/lovelace-card-mod/card-mod.js?hacstag=190927524345",
+        "url": "/hacsfiles/lovelace-card-mod/card-mod.js?hacstag=190927524410",
         "type": "module"
       },
       {
@@ -56,7 +56,7 @@
       },
       {
         "id": "df24ae623cc34c4fbe208e77c84f8fde",
-        "url": "/hacsfiles/lovelace-layout-card/layout-card.js?hacstag=156434866246",
+        "url": "/hacsfiles/lovelace-layout-card/layout-card.js?hacstag=156434866247",
         "type": "module"
       },
       {
@@ -81,7 +81,7 @@
       },
       {
         "id": "de0b6069d3b043279f4a15264f7bba36",
-        "url": "/hacsfiles/power-flow-card-plus/power-flow-card-plus.js?hacstag=618081815025",
+        "url": "/hacsfiles/power-flow-card-plus/power-flow-card-plus.js?hacstag=618081815026",
         "type": "module"
       }
     ]

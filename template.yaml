@@ -669,7 +669,7 @@
     state_class: measurement
     name: "Spabadet, L1 ström [A]"
     state: >-
-      {{ (states('sensor.spabadet_l1_power')|float(0) / states('sensor.hem_gen5_electric_produced_v_2') | float(230)) | round(2) }}
+      {{ (states('sensor.spabadet_l1_power')|float(0) / states('sensor.hem_gen5_electric_consumed_v_2') | float(230)) | round(2) }}
 
   - unique_id: spabadet_l2_current_a
     unit_of_measurement: "A"
@@ -677,7 +677,7 @@
     state_class: measurement
     name: "Spabadet, L2 ström [A]"
     state: >-
-      {{ (states('sensor.spabadet_l2_power')|float(0) / states('sensor.hem_gen5_electric_produced_v_2_2') | float(230)) | round(2) }}
+      {{ (states('sensor.spabadet_l2_power')|float(0) / states('sensor.hem_gen5_electric_consumed_v_2_2') | float(230)) | round(2) }}
 
   - unique_id: spabadet_l3_current_a
     unit_of_measurement: "A"
@@ -685,7 +685,7 @@
     state_class: measurement
     name: "Spabadet, L3 ström [A]"
     state: >-
-      {{ (states('sensor.spabadet_l3_power')|float(0) / states('sensor.hem_gen5_electric_produced_v_3') | float(230)) | round(2) }}
+      {{ (states('sensor.spabadet_l3_power')|float(0) / states('sensor.hem_gen5_electric_consumed_v_3') | float(230)) | round(2) }}
 
 - sensor:
   - unique_id: spabadet_temperature

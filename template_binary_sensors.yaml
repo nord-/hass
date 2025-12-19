@@ -1,0 +1,95 @@
+binary_sensor:
+  - name: Lågt elpris
+    unique_id: low_price
+    state: >
+      {{
+        state_attr('sensor.nordpool_kwh_se3_sek_3_095_0', 'low_price')
+        or
+        (
+          states('sensor.template_nordpool_current_price') | float(0)
+          <=
+          states('sensor.elpriset_kr_avg_3') | float(0) * 0.7
+        )
+      }}
+
+  - name: Lågt elpris (off peak)
+    unique_id: low_price_off_peak
+    state: >
+      {{
+        state_attr('sensor.nordpool_kwh_se3_sek_3_095_0', 'current_price') | float(999)
+        <= 0.8
+        and
+        state_attr('sensor.nordpool_kwh_se3_sek_3_095_0', 'current_price') | float(999)
+        <= state_attr('sensor.nordpool_kwh_se3_sek_3_095_0', 'off_peak_1') | float(0)
+        and
+        state_attr('sensor.nordpool_kwh_se3_sek_3_095_0', 'low_price')
+      }}
+
+  - name: Dåligt väder (YR)
+    unique_id: yr_wthr
+    state: >
+      {{
+        states('sensor.yr_symbol') in [
+          'cloudy','fog','heavyrain','heavyrainandthunder',
+          'heavyrainshowers','heavyrainshowersandthunder',
+          'heavysleet','heavysleetandthunder',
+          'heavysleetshowers','heavysleetshowersandthunder',
+          'heavysnow','heavysnowandthunder',
+          'heavysnowshowers','heavysnowshowersandthunder',
+          'lightrain','lightrainandthunder',
+          'lightrainshowers','lightrainshowersandthunder',
+          'lightsleet','lightsleetandthunder',
+          'lightsleetshowers','lightsnow',
+          'lightsnowandthunder','lightsnowshowers',
+          'lightssleetshowersandthunder',
+          'lightssnowshowersandthunder',
+          'rain','rainandthunder','rainshowers',
+          'rainshowersandthunder','sleet','sleetandthunder',
+          'sleetshowers','sleetshowersandthunder',
+          'snow','snowandthunder','snowshowers',
+          'snowshowersandthunder'
+        ]
+      }}
+
+  - name: Dåligt väder
+    unique_id: bad_weather
+    icon: >
+      {% if
+        is_state('binary_sensor.yr_wthr', 'on')
+        and states('sensor.yr_cloudiness') | int(0) > 80
+        and states('sensor.aktuell_effekt') | float(0) < 0.4
+      %}
+        mdi:weather-cloudy-alert
+      {% else %}
+        mdi:weather-partly-cloudy
+      {% endif %}
+    state: >
+      {{
+        is_state('binary_sensor.yr_wthr', 'on')
+        and states('sensor.yr_cloudiness') | int(0) > 80
+        and states('sensor.aktuell_effekt') | float(0) < 0.4
+      }}
+
+  - name: Överström, L2
+    unique_id: l2_overcurrent
+    state: >
+      {{
+        states('sensor.hem_gen5_electric_consumed_2') | float(0) >= 20
+        and
+        states('sensor.template_spabadet_l2_current_a') | float(0) > 0
+      }}
+
+  - name: Värmepump IVT, värme
+    unique_id: heatpump_ivt_heater
+    state: >
+      {{ not states('switch.varmepumpen_a') | bool }}
+
+  - name: Värmepump IVT, varmvatten
+    unique_id: heatpump_ivt_hotwater
+    state: >
+      {{ not states('switch.varmepumpen_b') | bool }}
+
+  - name: Wall-E online
+    unique_id: walle_online
+    state: >
+      {{ state_attr('vacuum.wall_e', 'online') }}

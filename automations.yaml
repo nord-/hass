@@ -601,16 +601,7 @@
   triggers:
   - entity_id:
     - sensor.clever_spz3_electric_consumption_w
-    for:
-      hours: 0
-      minutes: 0
-      seconds: 3
-    above: 5
-    enabled: false
-    trigger: numeric_state
-  - entity_id:
-    - sensor.clever_spz3_electric_consumption_w
-    above: 1
+    above: 2
     trigger: numeric_state
   conditions: []
   actions:
@@ -638,85 +629,66 @@
   - delay:
       hours: 0
       minutes: 0
-      seconds: 1
+      seconds: 5
       milliseconds: 0
-  - metadata: {}
+  - alias: Turn off dishwasher if NOT start now
+    if:
+    - condition: not
+      conditions:
+      - condition: template
+        value_template: '{{start_now}}'
+        alias: start now
+    then:
+    - action: switch.turn_off
+      target:
+        entity_id: switch.clever_spz3
+      data: {}
+  - alias: Write to Logbook
+    metadata: {}
     data:
       name: 30Pqy9tk9Euf9YnbSg8WVh
       message: 'electric_consumption_w: {{ states(''sensor.clever_spz3_electric_consumption_w'')|float(0)
-        }}'
-    alias: Write to Logbook
+        }}
+
+        start_time: {{start_time}} ({{start_time|as_timestamp}})
+
+        now: {{now()}} ({{now()|as_timestamp}})
+
+        condition: {{ start_time|as_datetime <= now() }}'
     action: logbook.log
-  - alias: Wait for Answer or Dishwasher to start
-    wait_for_trigger:
+  - wait_for_trigger:
     - event_type: mobile_app_notification_action
       event_data:
         action: '{{ action_runnow }}'
       id: runnow_id
       trigger: event
-    - event_type: mobile_app_notification_cleared
-      id: clear_id
-      trigger: event
-    - alias: Power >10W
+      alias: Start now
+    - alias: 'Wait until time '
+      value_template: '{{ start_time|as_datetime <= now() }}'
+      trigger: template
+    - alias: Start now time
+      value_template: '{{ start_now }}'
+      trigger: template
+    - trigger: state
       entity_id:
-      - sensor.clever_spz3_electric_consumption_w
-      above: 10
-      id: starting_id
-      trigger: numeric_state
-    continue_on_timeout: false
-  - metadata: {}
+      - switch.clever_spz3
+      to:
+      - 'on'
+  - alias: Notify Starting Now
     data:
-      name: 28Pqy9tk9Euf9YnbSg8WVh
-      message: 'wait_trigger_id: {{ wait.trigger.id }} electric_consumption_w: {{
-        states(''sensor.clever_spz3_electric_consumption_w'')|float(0) }}'
-    alias: Write wait_trigger_id to Logbook
-    action: logbook.log
-  - alias: Run Now OR Wait until time
-    if:
-    - alias: Run Now Action OR Time
-      condition: or
-      conditions:
-      - alias: Run Now Action
-        condition: template
-        value_template: '{{ wait.trigger.id == ''runnow_id'' }}      '
-      - alias: Run Now Time
-        condition: template
-        value_template: '{{ start_now }}'
-    then:
-    - alias: Notify Starting Now
+      title: Diskmaskinen
       data:
-        title: Diskmaskinen
-        data:
-          tag: dishwasher
-          channel: Food
-          sticky: true
-          clickAction: /lovelace/koket
-        message: Diskmaskinen startar nu.
-      action: notify.rickards_devices
-    else:
-    - action: switch.turn_off
-      target:
-        entity_id: switch.clever_spz3
-      data: {}
-    - action: logbook.log
-      data:
-        name: 28Pqy9tk9Euf9YnbSg8WVg
-        message: 'start_time: {{start_time}} ({{start_time|as_timestamp}})
-
-          now: {{now()}} ({{now()|as_timestamp}})
-
-          condition: {{ start_time|as_datetime <= now() }}'
-      alias: Write start_time to Logbook
-    - alias: Wait until it's time to start
-      wait_for_trigger:
-      - alias: Wait until
-        value_template: '{{ start_time|as_datetime <= now() }}'
-        trigger: template
-    - data: {}
-      target:
-        entity_id: switch.clever_spz3
-      enabled: true
-      action: switch.turn_on
+        tag: dishwasher
+        channel: Food
+        sticky: true
+        clickAction: /lovelace/koket
+      message: Diskmaskinen startar
+    action: notify.rickards_devices
+  - data: {}
+    target:
+      entity_id: switch.clever_spz3
+    enabled: true
+    action: switch.turn_on
   - alias: Wait for Dishwasher to stop draw current
     wait_for_trigger:
     - entity_id:
@@ -738,7 +710,7 @@
         - dish_cost|float)|round(2)}} kr
     action: notify.rickards_devices
     alias: Notify Finished
-  mode: single
+  mode: restart
 - id: '1663015641931'
   alias: Tvättmaskinen, starta på klockslag
   description: ''
@@ -1326,10 +1298,9 @@
   actions:
   - choose:
     - conditions:
-      - alias: Elpriset över 2 kr
-        condition: numeric_state
-        entity_id: sensor.template_elpris_kr
-        above: 1.9
+      - condition: numeric_state
+        entity_id: sensor.nordpool_kwh_se3_sek_3_095_0
+        above: 1.5
       sequence:
       - data:
           parameter: '41'
@@ -1340,39 +1311,9 @@
         action: zwave_js.set_config_parameter
     - conditions:
       - condition: numeric_state
-        entity_id: sensor.template_elpris_kr
-        below: 1
-      sequence:
-      - data:
-          parameter: '41'
-          value: '5'
-        target:
-          device_id: aa0c0b41292d62cfbef2a78d19659e46
-        alias: Grön
-        action: zwave_js.set_config_parameter
-      alias: Elpriset under 1 kr
-    - conditions:
-      - condition: state
-        entity_id: binary_sensor.template_nordpool_price_not_high
-        state: 'off'
-        alias: Över 75:e percentilen
-      sequence:
-      - data:
-          parameter: '41'
-          value: '4'
-        target:
-          device_id: aa0c0b41292d62cfbef2a78d19659e46
-        alias: Röd
-        action: zwave_js.set_config_parameter
-    - conditions:
-      - condition: state
-        entity_id: binary_sensor.template_nordpool_price_not_high
-        state: 'on'
-        alias: Under 75:e percentilen
-      - alias: Över median
-        condition: state
-        entity_id: binary_sensor.template_nordpool_price_low
-        state: 'off'
+        entity_id: sensor.nordpool_kwh_se3_sek_3_095_0
+        above: 1
+        below: 1.51
       sequence:
       - alias: Magenta
         data:
@@ -1381,16 +1322,11 @@
         target:
           device_id: aa0c0b41292d62cfbef2a78d19659e46
         action: zwave_js.set_config_parameter
-      alias: Över median
     - conditions:
-      - condition: state
-        entity_id: binary_sensor.template_nordpool_price_low
-        state: 'on'
-        alias: Under median
-      - condition: state
-        entity_id: binary_sensor.template_nordpool_price_reallow
-        state: 'off'
-        alias: Över 25:e percentilen
+      - condition: numeric_state
+        entity_id: sensor.nordpool_kwh_se3_sek_3_095_0
+        above: 0.6
+        below: 1.01
       sequence:
       - alias: Gul
         data:
@@ -1399,21 +1335,14 @@
         target:
           device_id: aa0c0b41292d62cfbef2a78d19659e46
         action: zwave_js.set_config_parameter
-      alias: Under median
-    - conditions:
-      - condition: state
-        entity_id: binary_sensor.template_nordpool_price_reallow
-        state: 'on'
-        alias: Under 25:e percentilen
-      sequence:
-      - data:
-          parameter: '41'
-          value: '5'
-        target:
-          device_id: aa0c0b41292d62cfbef2a78d19659e46
-        alias: Grön
-        action: zwave_js.set_config_parameter
-      alias: Under 25:e percentilen
+    default:
+    - data:
+        parameter: '41'
+        value: '5'
+      target:
+        device_id: aa0c0b41292d62cfbef2a78d19659e46
+      alias: Grön
+      action: zwave_js.set_config_parameter
   mode: single
 - id: '1699976122787'
   alias: Delphine, Charge
@@ -2400,8 +2329,22 @@
     entity_id:
     - input_boolean.movie_time
     to: 'on'
+  - trigger: state
+    entity_id:
+    - media_player.projektorn_2
+    to:
+    - playing
+    for:
+      hours: 0
+      minutes: 1
+      seconds: 0
   conditions: []
   actions:
+  - action: input_boolean.turn_on
+    metadata: {}
+    data: {}
+    target:
+      entity_id: input_boolean.movie_time
   - action: script.movie_time
     metadata: {}
     data: {}
@@ -2530,4 +2473,50 @@
       message: clear_notification
     action: notify.rickards_devices
     alias: Clear notification
+  mode: single
+- id: '1762898096608'
+  alias: Renew Let's Encrypt cert
+  description: ''
+  triggers:
+  - trigger: time
+    at: 03:00:00
+    alias: Trigger at 03:00
+  conditions:
+  - condition: template
+    value_template: '{{ now().date() >= (states(''input_datetime.let_s_encrypt_renewal_date'')|as_datetime).date()
+      }}'
+    alias: If Today >= input_datetime.let_s_encrypt_renewal_date
+  actions:
+  - alias: Renew Let's Encrypt certificate
+    action: hassio.addon_start
+    data:
+      addon: core_letsencrypt
+  - delay:
+      hours: 0
+      minutes: 20
+      seconds: 0
+      milliseconds: 0
+  - alias: Restart NGINX Proxy (if used)
+    action: hassio.addon_restart
+    data:
+      addon: core_nginx_proxy
+  - target:
+      entity_id: input_datetime.let_s_encrypt_renewal_date
+    data:
+      date: '{{ (now() + timedelta(days=62)).date() }}'
+    action: input_datetime.set_datetime
+    alias: Set next renewal date
+  mode: single
+- id: '1764192892508'
+  alias: Ping TeslaMate
+  description: ''
+  triggers:
+  - trigger: time_pattern
+    hours: /1
+  conditions: []
+  actions:
+  - action: homeassistant.update_entity
+    data:
+      entity_id:
+      - binary_sensor.teslamate
   mode: single

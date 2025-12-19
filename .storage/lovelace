@@ -192,6 +192,13 @@
                         "action": "more-info"
                       }
                     }
+                  ],
+                  "visibility": [
+                    {
+                      "condition": "state",
+                      "entity": "lawn_mower.wall_e",
+                      "state_not": "unavailable"
+                    }
                   ]
                 },
                 {
@@ -217,7 +224,14 @@
                     }
                   },
                   "color": "{{ \"green\" if states(\"lawn_mower.wall_e\") == \"mowing\" else \"#44739e\" }}",
-                  "features_position": "bottom"
+                  "features_position": "bottom",
+                  "visibility": [
+                    {
+                      "condition": "state",
+                      "entity": "lawn_mower.wall_e",
+                      "state_not": "unavailable"
+                    }
+                  ]
                 }
               ]
             },
@@ -286,23 +300,48 @@
                   }
                 },
                 {
-                  "type": "tile",
-                  "entity": "binary_sensor.tesla_locked",
-                  "name": "Doors",
-                  "features_position": "bottom",
-                  "vertical": false,
-                  "tap_action": {
-                    "action": "perform-action",
-                    "perform_action": "script.ev6_lock_door",
-                    "target": {}
+                  "type": "custom:mushroom-climate-card",
+                  "entity": "climate.eazy_klimat",
+                  "grid_options": {
+                    "columns": 4,
+                    "rows": 2
                   },
+                  "name": "A/C",
+                  "layout": "vertical"
+                },
+                {
+                  "type": "custom:mushroom-template-card",
+                  "primary": "Dörrar",
+                  "secondary": "{{ \"låsta\" if states(\"binary_sensor.tesla_doors_open\") == \"off\" else \"öppna\" }}",
+                  "icon": "{% if states(\"binary_sensor.tesla_doors_open\") == \"on\" -%}\nmdi:car-door-lock-open\n{%- else -%}\nmdi:car-door-lock\n{%- endif -%}",
+                  "entity": "lock.eazy_las",
+                  "hold_action": {
+                    "action": "perform-action",
+                    "perform_action": "lock.unlock",
+                    "target": {
+                      "entity_id": "lock.eazy_las"
+                    }
+                  },
+                  "badge_color": "{% if states(\"binary_sensor.tesla_windows_open\") in [ \"off\", \"unavailable\" ]%}\ngreen\n{% else %}\nred\n{% endif %}",
+                  "badge_icon": "{% if states(\"binary_sensor.tesla_windows_open\") in [ \"off\", \"unavailable\" ]%}\nmdi:check-bold\n{% else %}\nmdi:exclamation-thick\n{% endif %}",
+                  "color": "{% if states(\"binary_sensor.tesla_doors_open\") == \"on\" -%}\nred\n{%- else -%}\ngrey\n{%- endif -%}",
+                  "features_position": "bottom",
+                  "grid_options": {
+                    "columns": 4,
+                    "rows": 2
+                  },
+                  "vertical": true,
                   "icon_tap_action": {
-                    "action": "more-info"
+                    "action": "perform-action",
+                    "perform_action": "lock.lock",
+                    "target": {
+                      "entity_id": "lock.eazy_las"
+                    }
                   }
                 },
                 {
                   "type": "custom:mushroom-template-card",
-                  "primary": "Charge Time",
+                  "primary": "Ladda",
                   "secondary": "{{states(\"sensor.template_rya_req_hours\")|float(0)|replace(\".\",\",\")}} timmar",
                   "icon": "mdi:power-plug-battery",
                   "entity": "automation.ladda_bilen_nar_det_ar_billigt",
@@ -310,9 +349,22 @@
                     "action": "navigate",
                     "navigation_path": "/lovelace/tesla"
                   },
-                  "icon_color": "{% if states(\"automation.ladda_bilen_nar_det_ar_billigt\") == \"off\" -%}\nred\n{%- else -%}\ngreen\n{%- endif -%}",
                   "badge_color": "{% if states(\"binary_sensor.tesla_plugged_in\") in [ \"off\", \"unavailable\" ]%}\norange\n{% else %}\ngreen\n{% endif %}",
-                  "badge_icon": "{% if states(\"binary_sensor.tesla_charge_port_door_open\") in [ \"off\", \"unavailable\" ]%}\nmdi:power-plug-off\n{% elif state_attr(\"automation.ev6_reload_when_charging\",\"current\")|bool(false) %}\nmdi:battery-charging\n{% elif states(\"binary_sensor.tesla_charge_port_door_open\") == \"on\" %}\nmdi:power-plug\n{% endif %}"
+                  "badge_icon": "{% if states(\"binary_sensor.tesla_charge_port_door_open\") in [ \"off\", \"unavailable\" ]%}\nmdi:power-plug-off\n{% elif state_attr(\"automation.ev6_reload_when_charging\",\"current\")|bool(false) %}\nmdi:battery-charging\n{% elif states(\"binary_sensor.tesla_charge_port_door_open\") == \"on\" %}\nmdi:power-plug\n{% endif %}",
+                  "color": "{% if states(\"automation.ladda_bilen_nar_det_ar_billigt\") == \"off\" -%}\nred\n{%- else -%}\ngreen\n{%- endif -%}",
+                  "features_position": "bottom",
+                  "grid_options": {
+                    "columns": 4,
+                    "rows": 2
+                  },
+                  "vertical": true,
+                  "icon_tap_action": {
+                    "action": "perform-action",
+                    "perform_action": "cover.open_cover",
+                    "target": {
+                      "entity_id": "cover.eazy_lucka_till_laddkontakt"
+                    }
+                  }
                 },
                 {
                   "type": "heading",
@@ -868,49 +920,16 @@
                   }
                 },
                 {
-                  "type": "custom:mushroom-template-card",
-                  "primary": "{{states(\"sensor.tesla_charge_limit_soc\")}}%",
-                  "secondary": "Ladda till",
-                  "grid_options": {
-                    "columns": 3,
-                    "rows": 2
-                  },
-                  "layout": "vertical",
-                  "entity": "sensor.tesla_charge_limit_soc",
-                  "icon_color": "{% set soc = states('sensor.tesla_charge_limit_soc')|int %}\n{% if soc<51 %}red{% elif soc>71 %}green{% else %}yellow{% endif %}",
-                  "icon": "{{\"mdi:battery-charging-\" + states(\"sensor.tesla_charge_limit_soc\") }}",
-                  "tap_action": {
-                    "action": "more-info"
-                  },
-                  "hold_action": {
-                    "action": "none"
-                  },
-                  "double_tap_action": {
-                    "action": "none"
-                  }
+                  "type": "custom:mushroom-number-card",
+                  "entity": "number.eazy_grans_for_laddning",
+                  "name": "Laddning"
                 },
                 {
                   "type": "custom:mushroom-template-card",
-                  "primary": "{{ '{:,.0f} km'.format(states(\"sensor.tesla_odometer\")|int)|replace(',',' ') }}",
+                  "primary": "{{ '{:,.0f}'.format((states(\"sensor.template_car_2_odometer\")|int/10)|round(0))|replace(',',' ')|replace('.',',') }}",
                   "secondary": "Körsträcka",
                   "icon": "mdi:counter",
-                  "entity": "sensor.tesla_odometer",
-                  "icon_color": "blue",
-                  "layout": "vertical",
-                  "grid_options": {
-                    "columns": 3,
-                    "rows": 2
-                  },
-                  "tap_action": {
-                    "action": "more-info"
-                  }
-                },
-                {
-                  "type": "custom:mushroom-template-card",
-                  "icon": "mdi:ev-plug-type2",
-                  "entity": "binary_sensor.tesla_charge_port_door_open",
-                  "icon_color": "{{ \"green\" if states(\"binary_sensor.tesla_charge_port_door_open\")|bool else \"grey\" }}",
-                  "layout": "vertical",
+                  "entity": "sensor.template_car_2_odometer",
                   "grid_options": {
                     "columns": 3,
                     "rows": 1
@@ -918,52 +937,120 @@
                   "tap_action": {
                     "action": "more-info"
                   },
+                  "color": "blue",
+                  "features_position": "bottom"
+                },
+                {
+                  "type": "custom:mushroom-template-card",
+                  "icon": "mdi:ev-plug-type2",
+                  "entity": "cover.eazy_lucka_till_laddkontakt",
+                  "grid_options": {
+                    "columns": 3,
+                    "rows": 1
+                  },
+                  "tap_action": {
+                    "action": "perform-action",
+                    "perform_action": "cover.toggle",
+                    "target": {
+                      "entity_id": "cover.eazy_lucka_till_laddkontakt"
+                    }
+                  },
                   "hold_action": {
-                    "action": "none"
+                    "action": "more-info"
                   },
                   "double_tap_action": {
                     "action": "none"
                   },
                   "secondary": "",
-                  "primary": ""
+                  "primary": "",
+                  "color": "{{ \"green\" if states(\"cover.eazy_lucka_till_laddkontakt\")==\"open\" else \"grey\" }}",
+                  "vertical": true,
+                  "features_position": "bottom",
+                  "badge_icon": "{%if states(\"binary_sensor.tesla_charge_port_door_open\")|bool%}\nmdi:lock-open\n{%else%}\nmdi:lock\n{%endif%}",
+                  "badge_color": "{%if states(\"binary_sensor.tesla_charge_port_door_open\")|bool%}\nred\n{%else%}\ngrey\n{%endif%}",
+                  "icon_tap_action": {
+                    "action": "perform-action",
+                    "perform_action": "cover.toggle",
+                    "target": {
+                      "entity_id": "cover.eazy_lucka_till_laddkontakt"
+                    }
+                  }
                 },
                 {
                   "type": "custom:mushroom-template-card",
-                  "primary": "{{states (\"sensor.tesla_time_to_full_charge\")|float|round(1)|replace('.',',')}} h",
-                  "icon": "mdi:clock-end",
-                  "entity": "sensor.tesla_time_to_full_charge",
-                  "secondary": "Återstår",
-                  "tap_action": {
-                    "action": "more-info"
-                  },
-                  "grid_options": {
-                    "columns": 3,
-                    "rows": 2
-                  },
-                  "layout": "vertical"
-                },
-                {
-                  "type": "custom:mushroom-template-card",
-                  "entity": "binary_sensor.tesla_locked",
-                  "icon_color": "{{\"red\" if states(\"binary_sensor.tesla_locked\")|bool else \"grey\" }}",
+                  "entity": "cover.eazy_frunk_framre_bagageutrymme",
                   "grid_options": {
                     "columns": 3,
                     "rows": 1
                   },
                   "tap_action": {
-                    "action": "more-info"
+                    "action": "perform-action",
+                    "perform_action": "cover.open_cover",
+                    "target": {
+                      "entity_id": "cover.eazy_frunk_framre_bagageutrymme"
+                    }
                   },
                   "hold_action": {
+                    "action": "more-info"
+                  },
+                  "double_tap_action": {
                     "action": "none"
+                  },
+                  "icon": "mdi:car-side",
+                  "secondary": "",
+                  "multiline_secondary": false,
+                  "primary": "",
+                  "color": "{{\"red\" if states(\"binary_sensor.tesla_frunk_open\")|bool else \"grey\" }}",
+                  "vertical": true,
+                  "features_position": "bottom",
+                  "icon_tap_action": {
+                    "action": "perform-action",
+                    "perform_action": "cover.open_cover",
+                    "target": {
+                      "entity_id": "cover.eazy_frunk_framre_bagageutrymme"
+                    }
+                  },
+                  "badge_icon": "{%if states(\"binary_sensor.tesla_frunk_open\")|bool%}\nmdi:lock-open\n{%else%}\nmdi:lock\n{%endif%}",
+                  "badge_color": "{%if states(\"binary_sensor.tesla_frunk_open\")|bool%}\nred\n{%else%}\ngrey\n{%endif%}"
+                },
+                {
+                  "type": "custom:mushroom-template-card",
+                  "entity": "lock.eazy_las",
+                  "grid_options": {
+                    "columns": 3,
+                    "rows": 1
+                  },
+                  "tap_action": {
+                    "action": "perform-action",
+                    "perform_action": "lock.lock",
+                    "target": {
+                      "entity_id": "lock.eazy_las"
+                    }
+                  },
+                  "hold_action": {
+                    "action": "perform-action",
+                    "perform_action": "lock.unlock",
+                    "target": {
+                      "entity_id": "lock.eazy_las"
+                    }
                   },
                   "double_tap_action": {
                     "action": "none"
                   },
                   "icon": "{{\"mdi:lock\" if states(\"binary_sensor.tesla_locked\")==\"off\"\n else \"mdi:lock-open\"}}",
                   "secondary": "",
-                  "layout": "vertical",
                   "multiline_secondary": false,
-                  "primary": ""
+                  "primary": "",
+                  "color": "{{\"red\" if states(\"binary_sensor.tesla_locked\")|bool else \"grey\" }}",
+                  "vertical": true,
+                  "features_position": "bottom",
+                  "icon_tap_action": {
+                    "action": "perform-action",
+                    "perform_action": "lock.lock",
+                    "target": {
+                      "entity_id": "lock.eazy_las"
+                    }
+                  }
                 },
                 {
                   "type": "custom:mushroom-template-card",
@@ -2486,11 +2573,15 @@
                       "entity": "sensor.template_spabadet_temperature",
                       "tap_action": {
                         "action": "more-info"
-                      }
+                      },
+                      "icon": "mdi:pool-thermometer"
                     },
                     {
                       "type": "entity",
-                      "entity": "sensor.template_home_temp"
+                      "show_state": true,
+                      "show_icon": true,
+                      "entity": "sensor.template_home_temp",
+                      "icon": "mdi:home-thermometer"
                     }
                   ]
                 },
@@ -2594,43 +2685,31 @@
                   ]
                 },
                 {
-                  "type": "custom:collapsable-cards",
-                  "title": "Detaljer",
-                  "cards": [
-                    {
-                      "chart_type": "line",
-                      "period": "5minute",
-                      "days_to_show": 1,
-                      "hide_legend": true,
-                      "type": "statistics-graph",
-                      "entities": [
-                        {
-                          "entity": "sensor.template_spabadet_temperature",
-                          "name": "Spabadet"
-                        },
-                        {
-                          "entity": "sensor.template_home_temp",
-                          "name": "Ute",
-                          "color": "Yellow"
-                        }
-                      ],
-                      "stat_types": [
-                        "mean"
-                      ]
-                    },
-                    {
-                      "type": "statistics-graph",
-                      "period": "5minute",
-                      "entities": [
-                        "sensor.template_spabadet_temperature"
-                      ],
-                      "days_to_show": 0.2,
-                      "hide_legend": true,
-                      "stat_types": [
-                        "mean"
-                      ]
-                    }
-                  ]
+                  "type": "statistics-graph",
+                  "chart_type": "line",
+                  "period": "5minute",
+                  "entities": [
+                    "sensor.template_spabadet_temperature",
+                    "sensor.template_home_temp"
+                  ],
+                  "stat_types": [
+                    "mean"
+                  ],
+                  "days_to_show": 1,
+                  "hide_legend": true
+                },
+                {
+                  "type": "statistics-graph",
+                  "chart_type": "line",
+                  "period": "5minute",
+                  "entities": [
+                    "sensor.template_spabadet_temperature"
+                  ],
+                  "stat_types": [
+                    "mean"
+                  ],
+                  "days_to_show": 0.2,
+                  "hide_legend": true
                 }
               ]
             },
@@ -2921,13 +3000,12 @@
               "entities": [
                 {
                   "entity": "switch.tz2",
-                  "icon": "mdi:lamp",
+                  "icon": "mdi:desk-lamp",
                   "name": "Skrivbordet"
                 },
                 {
-                  "entity": "light.office_window",
-                  "icon": "mdi:lamp",
-                  "name": "Fönstret"
+                  "entity": "light.kontoret_fonstret",
+                  "icon": "mdi:lamp"
                 }
               ],
               "type": "entities",
@@ -3008,55 +3086,6 @@
           "icon": "mdi:silverware-variant",
           "path": "koket",
           "sections": [
-            {
-              "type": "grid",
-              "cards": [
-                {
-                  "type": "heading",
-                  "heading": "iGrill",
-                  "heading_style": "subtitle",
-                  "icon": "mdi:grill",
-                  "badges": [
-                    {
-                      "type": "entity",
-                      "show_state": true,
-                      "show_icon": true,
-                      "entity": "sensor.igrill_probe_1",
-                      "icon": "mdi:thermometer",
-                      "tap_action": {
-                        "action": "more-info"
-                      }
-                    },
-                    {
-                      "type": "entity",
-                      "show_state": true,
-                      "show_icon": true,
-                      "entity": "sensor.igrill_battery",
-                      "icon": "mdi:battery-outline"
-                    }
-                  ]
-                },
-                {
-                  "type": "history-graph",
-                  "entities": [
-                    {
-                      "entity": "sensor.igrill_probe_1"
-                    }
-                  ],
-                  "hours_to_show": 1,
-                  "show_names": false
-                },
-                {
-                  "type": "custom:mushroom-number-card",
-                  "entity": "input_number.igrill_target_temp",
-                  "display_mode": "slider",
-                  "icon": "mdi:grill",
-                  "name": "Mål [°C]",
-                  "layout": "horizontal",
-                  "fill_container": false
-                }
-              ]
-            },
             {
               "type": "grid",
               "cards": [
@@ -3216,6 +3245,67 @@
               "cards": [
                 {
                   "type": "heading",
+                  "heading": "iGrill",
+                  "heading_style": "subtitle",
+                  "icon": "mdi:grill",
+                  "badges": [
+                    {
+                      "type": "entity",
+                      "show_state": true,
+                      "show_icon": true,
+                      "entity": "sensor.igrill_probe_1",
+                      "icon": "mdi:thermometer",
+                      "tap_action": {
+                        "action": "more-info"
+                      }
+                    },
+                    {
+                      "type": "entity",
+                      "show_state": true,
+                      "show_icon": true,
+                      "entity": "sensor.igrill_battery",
+                      "icon": "mdi:battery-outline"
+                    }
+                  ]
+                },
+                {
+                  "type": "history-graph",
+                  "entities": [
+                    {
+                      "entity": "sensor.igrill_probe_1"
+                    }
+                  ],
+                  "hours_to_show": 1,
+                  "show_names": false
+                },
+                {
+                  "type": "custom:mushroom-number-card",
+                  "entity": "input_number.igrill_target_temp",
+                  "display_mode": "slider",
+                  "icon": "mdi:grill",
+                  "name": "Mål [°C]",
+                  "layout": "horizontal",
+                  "fill_container": false
+                }
+              ],
+              "visibility": [
+                {
+                  "condition": "not",
+                  "conditions": [
+                    {
+                      "condition": "state",
+                      "entity": "sensor.igrill_probe_1",
+                      "state": "unknown"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "grid",
+              "cards": [
+                {
+                  "type": "heading",
                   "heading": "Gräsklipparen",
                   "heading_style": "subtitle",
                   "icon": "mdi:robot-mower",
@@ -3302,6 +3392,13 @@
                     "columns": 6,
                     "rows": "auto"
                   }
+                }
+              ],
+              "visibility": [
+                {
+                  "condition": "state",
+                  "entity": "lawn_mower.wall_e",
+                  "state_not": "unavailable"
                 }
               ]
             },
@@ -3492,187 +3589,231 @@
           "theme": "Backend-selected",
           "title": "Ute",
           "icon": "mdi:home-thermometer-outline",
-          "type": "sidebar",
-          "badges": [],
-          "cards": [
+          "type": "sections",
+          "badges": [
             {
-              "type": "custom:mushroom-chips-card",
-              "chips": [
+              "type": "entity",
+              "show_name": false,
+              "show_state": true,
+              "show_icon": true,
+              "entity": "sensor.lumi_lumi_sen_ill_agl01_illuminance",
+              "icon": "mdi:sun-wireless-outline"
+            }
+          ],
+          "cards": [],
+          "path": "ute",
+          "sections": [
+            {
+              "type": "grid",
+              "cards": [
                 {
-                  "type": "entity",
+                  "type": "custom:mushroom-entity-card",
                   "entity": "sensor.template_home_temp",
-                  "icon": "mdi:flower"
+                  "name": "Ute",
+                  "grid_options": {
+                    "columns": 4,
+                    "rows": 1
+                  },
+                  "icon": "mdi:home-thermometer"
                 },
                 {
-                  "type": "entity",
+                  "type": "custom:mushroom-entity-card",
                   "entity": "sensor.vardagsrummet_temperature",
-                  "icon": "mdi:television-classic"
-                },
-                {
-                  "type": "entity",
-                  "entity": "sensor.215_temperature",
-                  "icon": "mdi:bed"
-                },
-                {
-                  "type": "template",
-                  "icon": "mdi:office-building",
-                  "entity": "sensor.kontoret_temperature",
-                  "icon_color": "{% if states(\"sensor.kontoret_temperature\")|round > 24 %}\nred\n{% elif states(\"sensor.kontoret_temperature\")|round < 22 %}\nblue\n{% else %}\ngreen\n{% endif %}",
-                  "content": "{{ states(\"sensor.kontoret_temperature\") }}°C",
-                  "tap_action": {
-                    "action": "more-info"
+                  "icon": "mdi:television-classic",
+                  "name": "V-rum",
+                  "grid_options": {
+                    "columns": 4,
+                    "rows": 1
                   }
                 },
                 {
-                  "type": "entity",
+                  "type": "custom:mushroom-entity-card",
+                  "entity": "sensor.215_temperature",
+                  "icon": "mdi:bed",
+                  "name": "Sovrum",
+                  "grid_options": {
+                    "columns": 4,
+                    "rows": 1
+                  }
+                },
+                {
+                  "type": "custom:mushroom-template-card",
+                  "icon": "mdi:office-building",
+                  "entity": "sensor.kontoret_temperature",
+                  "tap_action": {
+                    "action": "more-info"
+                  },
+                  "grid_options": {
+                    "columns": 4,
+                    "rows": 1
+                  },
+                  "color": "{% if states(\"sensor.kontoret_temperature\")|round > 24 %}\nred\n{% elif states(\"sensor.kontoret_temperature\")|round < 22 %}\nblue\n{% else %}\ngreen\n{% endif %}",
+                  "features_position": "bottom",
+                  "secondary": "{{ states(\"sensor.kontoret_temperature\")|round(1)|replace('.',',') }} °C",
+                  "primary": "Kontoret"
+                },
+                {
+                  "type": "custom:mushroom-entity-card",
                   "entity": "sensor.xiaomi_lys2_temperatur",
-                  "icon": "mdi:human-male-child"
+                  "icon": "mdi:human-male-child",
+                  "name": "Felix",
+                  "grid_options": {
+                    "columns": 4,
+                    "rows": 1
+                  }
                 },
                 {
-                  "type": "entity",
+                  "type": "custom:mushroom-entity-card",
                   "entity": "sensor.felix_rum_temperature",
-                  "icon": "mdi:washing-machine"
+                  "icon": "mdi:washing-machine",
+                  "name": "Tvätt",
+                  "grid_options": {
+                    "columns": 4,
+                    "rows": 1
+                  }
                 },
                 {
-                  "type": "entity",
+                  "type": "custom:mushroom-entity-card",
                   "entity": "sensor.xiaomi_lys1_temperatur",
-                  "icon": "mdi:projector-screen-outline"
+                  "icon": "mdi:projector-screen-outline",
+                  "name": "Uppe",
+                  "grid_options": {
+                    "columns": 4,
+                    "rows": 1
+                  }
                 },
                 {
-                  "type": "entity",
+                  "type": "custom:mushroom-entity-card",
                   "entity": "sensor.xiaomi_lys3_temperatur",
-                  "icon": "mdi:silverware-fork-knife"
+                  "icon": "mdi:silverware-fork-knife",
+                  "name": "Köket",
+                  "grid_options": {
+                    "columns": 4,
+                    "rows": 1
+                  }
                 },
                 {
-                  "type": "entity",
+                  "type": "custom:mushroom-entity-card",
                   "entity": "sensor.xiaomi_lys4_temperatur",
-                  "icon": "mdi:toilet"
+                  "icon": "mdi:toilet",
+                  "name": "Toalett",
+                  "grid_options": {
+                    "columns": 4,
+                    "rows": 1
+                  }
                 },
                 {
-                  "type": "entity",
-                  "entity": "sensor.framsidan_temperature",
-                  "icon": "mdi:flower-outline"
-                },
-                {
-                  "type": "entity",
-                  "entity": "sensor.231_temperature",
-                  "icon": "mdi:greenhouse"
-                },
-                {
-                  "type": "entity",
+                  "type": "custom:mushroom-entity-card",
                   "entity": "sensor.199_temperature",
-                  "icon": "mdi:bike"
+                  "icon": "mdi:bike",
+                  "name": "Förråd",
+                  "grid_options": {
+                    "columns": 4,
+                    "rows": 1
+                  }
                 },
                 {
-                  "type": "entity",
-                  "entity": "sensor.lumi_lumi_sen_ill_agl01_illuminance"
-                }
-              ]
-            },
-            {
-              "entity": "weather.smhi_home",
-              "type": "weather-forecast"
-            },
-            {
-              "type": "horizontal-stack",
-              "cards": [
-                {
-                  "type": "entity",
-                  "entity": "weather.smhi_home",
-                  "state_color": false,
-                  "attribute": "cloud_coverage",
-                  "unit": "%",
-                  "name": " ",
-                  "icon": "mdi:cloud-outline"
-                },
-                {
-                  "type": "entity",
-                  "entity": "weather.smhi_home",
-                  "attribute": "pressure",
-                  "name": " ",
-                  "icon": "mdi:gauge"
-                },
-                {
-                  "type": "entity",
-                  "entity": "weather.smhi_home",
-                  "attribute": "wind_speed",
-                  "icon": "mdi:weather-windy",
-                  "unit": "m/s",
-                  "name": " "
-                },
-                {
-                  "type": "entity",
-                  "entity": "weather.smhi_home",
-                  "name": " ",
-                  "attribute": "wind_bearing",
-                  "unit": "°",
-                  "icon": "mdi:windsock"
-                }
-              ]
-            },
-            {
-              "chart_type": "line",
-              "period": "week",
-              "type": "statistics-graph",
-              "days_to_show": 365,
-              "entities": [
-                {
+                  "type": "custom:mushroom-entity-card",
                   "entity": "sensor.framsidan_temperature",
-                  "name": " "
-                },
-                "sensor.template_home_temp"
-              ],
-              "stat_types": [
-                "mean",
-                "min",
-                "max"
-              ],
-              "hide_legend": true
-            },
-            {
-              "title": "Uteförrådet",
-              "type": "entities",
-              "entities": [
-                {
-                  "entity": "switch.popp_outdoor",
-                  "icon": "mdi:radiator",
-                  "secondary_info": "last-changed"
+                  "icon": "mdi:flower-outline",
+                  "name": "Framsida",
+                  "grid_options": {
+                    "columns": 4,
+                    "rows": 1
+                  }
                 },
                 {
-                  "entity": "sensor.garage_energi_man",
-                  "icon": "mdi:garage-open",
-                  "name": "Förbrukning"
-                },
-                {
-                  "entity": "sensor.garage_kr_man",
-                  "name": "Kostnad",
-                  "icon": "mdi:cash"
-                },
-                {
-                  "type": "divider"
-                },
-                {
-                  "entity": "sensor.garage_kr_man",
-                  "type": "attribute",
-                  "attribute": "last_period",
-                  "suffix": "kr",
-                  "name": "Förra mån",
-                  "icon": "mdi:cash"
-                },
-                {
-                  "entity": "sensor.popp_outdoor_power",
-                  "name": "Effekt"
+                  "type": "custom:mushroom-entity-card",
+                  "entity": "sensor.231_temperature",
+                  "icon": "mdi:greenhouse",
+                  "name": "Altan",
+                  "grid_options": {
+                    "columns": 4,
+                    "rows": 1
+                  }
                 }
-              ],
-              "footer": {
-                "type": "graph",
-                "entity": "sensor.199_temperature",
-                "detail": 1
-              }
+              ]
             },
             {
-              "type": "vertical-stack",
+              "type": "grid",
               "cards": [
+                {
+                  "type": "heading",
+                  "heading": "Vädret",
+                  "heading_style": "subtitle",
+                  "icon": "mdi:weather-partly-rainy"
+                },
+                {
+                  "entity": "weather.smhi_home",
+                  "type": "weather-forecast"
+                },
+                {
+                  "type": "horizontal-stack",
+                  "cards": [
+                    {
+                      "type": "entity",
+                      "entity": "weather.smhi_home",
+                      "state_color": false,
+                      "attribute": "cloud_coverage",
+                      "unit": "%",
+                      "name": " ",
+                      "icon": "mdi:cloud-outline"
+                    },
+                    {
+                      "type": "entity",
+                      "entity": "weather.smhi_home",
+                      "attribute": "pressure",
+                      "name": " ",
+                      "icon": "mdi:gauge"
+                    },
+                    {
+                      "type": "entity",
+                      "entity": "weather.smhi_home",
+                      "attribute": "wind_speed",
+                      "icon": "mdi:weather-windy",
+                      "unit": "m/s",
+                      "name": " "
+                    },
+                    {
+                      "type": "entity",
+                      "entity": "weather.smhi_home",
+                      "name": " ",
+                      "attribute": "wind_bearing",
+                      "unit": "°",
+                      "icon": "mdi:windsock"
+                    }
+                  ]
+                },
+                {
+                  "chart_type": "line",
+                  "period": "week",
+                  "type": "statistics-graph",
+                  "days_to_show": 365,
+                  "entities": [
+                    {
+                      "entity": "sensor.framsidan_temperature",
+                      "name": " "
+                    },
+                    "sensor.template_home_temp"
+                  ],
+                  "stat_types": [
+                    "mean",
+                    "min",
+                    "max"
+                  ],
+                  "hide_legend": true
+                }
+              ]
+            },
+            {
+              "type": "grid",
+              "cards": [
+                {
+                  "type": "heading",
+                  "heading": "Åska",
+                  "heading_style": "subtitle",
+                  "icon": "mdi:weather-lightning"
+                },
                 {
                   "type": "map",
                   "entities": [
@@ -3684,9 +3825,19 @@
                   "geo_location_sources": [
                     "blitzortung"
                   ],
-                  "title": "Åska",
                   "auto_fit": true,
                   "default_zoom": 11
+                },
+                {
+                  "type": "vertical-stack",
+                  "cards": [],
+                  "visibility": [
+                    {
+                      "condition": "numeric_state",
+                      "entity": "sensor.home_lightning_distance",
+                      "below": 9999
+                    }
+                  ]
                 },
                 {
                   "type": "entity",
@@ -3701,19 +3852,79 @@
                   "secondary": "Uppdaterad",
                   "tap_action": {
                     "action": "more-info"
-                  }
+                  },
+                  "features_position": "bottom"
                 }
               ],
               "visibility": [
                 {
                   "condition": "numeric_state",
-                  "entity": "sensor.home_lightning_distance",
+                  "entity": "sensor.template_lightning_distance",
                   "below": 9999
+                }
+              ]
+            },
+            {
+              "type": "grid",
+              "cards": [
+                {
+                  "type": "heading",
+                  "heading": "Uteförrådet",
+                  "heading_style": "subtitle",
+                  "icon": "mdi:bike",
+                  "badges": [
+                    {
+                      "type": "entity",
+                      "show_state": true,
+                      "show_icon": true,
+                      "entity": "sensor.199_temperature",
+                      "icon": "mdi:thermometer",
+                      "tap_action": {
+                        "action": "more-info"
+                      }
+                    }
+                  ]
+                },
+                {
+                  "type": "entities",
+                  "entities": [
+                    {
+                      "entity": "switch.popp_outdoor",
+                      "icon": "mdi:radiator",
+                      "secondary_info": "last-changed",
+                      "name": "Förrådet"
+                    },
+                    {
+                      "entity": "sensor.garage_energi_man",
+                      "icon": "mdi:garage-open",
+                      "name": "Förbrukning"
+                    },
+                    {
+                      "entity": "sensor.garage_kr_man",
+                      "name": "Kostnad",
+                      "icon": "mdi:cash"
+                    },
+                    {
+                      "type": "divider"
+                    },
+                    {
+                      "entity": "sensor.garage_kr_man",
+                      "type": "attribute",
+                      "attribute": "last_period",
+                      "suffix": "kr",
+                      "name": "Förra mån",
+                      "icon": "mdi:cash"
+                    },
+                    {
+                      "entity": "sensor.popp_outdoor_power",
+                      "name": "Effekt"
+                    }
+                  ]
                 }
               ]
             }
           ],
-          "path": "ute"
+          "max_columns": 4
         },
         {
           "icon": "mdi:weather-sunny",

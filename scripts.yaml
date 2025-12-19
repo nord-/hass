@@ -177,8 +177,7 @@ turn_on_all_lights:
 turn_on_morning_lights:
   alias: Tänd morgonbelysning
   sequence:
-  - service: homeassistant.turn_on
-    data: {}
+  - data: {}
     target:
       entity_id:
       - group.grovkoket
@@ -188,11 +187,13 @@ turn_on_morning_lights:
       - light.fibaro_system_fgd212_dimmer_2_level_2
       - group.sovrummet
       - switch.tz3000_2_byran_uppe_switch
-  - service: light.turn_on
-    data:
+      - light.kontoret_fonstret
+    action: homeassistant.turn_on
+  - data:
       brightness_pct: 1
     target:
       entity_id: light.spelrummet_fonstret
+    action: light.turn_on
   mode: single
 early_morning_lights_on:
   alias: Tänd tidig morgon
@@ -625,3 +626,55 @@ byd_stop_charge:
   mode: single
   icon: mdi:ev-station
   description: ''
+car_1_hvac:
+  sequence:
+  - action: climate.turn_on
+    metadata: {}
+    data: {}
+    target:
+      entity_id: climate.eazy_klimat
+  - choose:
+    - conditions:
+      - condition: numeric_state
+        entity_id: sensor.template_home_temp
+        below: 13
+        above: -0.01
+      sequence:
+      - device_id: 35a9884d62ae059a250b96a757ade8b2
+        domain: select
+        entity_id: 8f2bb56491711faee9d559c51e136ab3
+        type: select_last
+      - device_id: 35a9884d62ae059a250b96a757ade8b2
+        domain: select
+        entity_id: 6f9828d6aea98b7e6d0b32c3cd0b9b5d
+        type: select_last
+      - device_id: 35a9884d62ae059a250b96a757ade8b2
+        domain: select
+        entity_id: 1e7cb4da69136a7e58509f03bf2d533c
+        type: select_last
+      alias: If Temp <13°
+    - conditions:
+      - condition: numeric_state
+        entity_id: sensor.tesla_outside_temp
+        below: 0
+      sequence:
+      - device_id: 35a9884d62ae059a250b96a757ade8b2
+        domain: select
+        entity_id: 8f2bb56491711faee9d559c51e136ab3
+        type: select_last
+      - device_id: 35a9884d62ae059a250b96a757ade8b2
+        domain: select
+        entity_id: 6f9828d6aea98b7e6d0b32c3cd0b9b5d
+        type: select_last
+      - device_id: 35a9884d62ae059a250b96a757ade8b2
+        domain: select
+        entity_id: 1e7cb4da69136a7e58509f03bf2d533c
+        type: select_last
+      - type: turn_on
+        device_id: 35a9884d62ae059a250b96a757ade8b2
+        entity_id: 0cc3fa74905528176091a4352a093b1f
+        domain: switch
+      alias: If Temp sub-zero
+  alias: Tesla, Start A/C
+  description: ''
+  icon: mdi:fan-auto

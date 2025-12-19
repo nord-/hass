@@ -39,8 +39,10 @@ sun:
 
 sensor: !include sensors.yaml
 # sensor: !include sensors-integration.yaml
-template: !include template.yaml
-binary_sensor: !include binary_sensors.yaml
+template: 
+  - !include template.yaml
+  - !include template_binary_sensors.yaml
+#binary_sensor: !include binary_sensors.yaml
 #mqtt: !include mqtt.yaml
 mqtt: !include_dir_list mqtt/
 utility_meter: !include sensors_utility.yaml
