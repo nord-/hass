@@ -20,3 +20,5 @@ google_service_account.json
 .ssh
 custom_components
 blueprints
+
+.claude/settings.local.json
