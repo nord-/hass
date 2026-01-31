@@ -1,0 +1,82 @@
+# solcellerna
+- sensor:
+  - unique_id: fronius_solar_energy
+    unit_of_measurement: "kWh"
+    device_class: energy
+    state_class: total_increasing
+    state: "{{ states('var.solarenergy') }}"
+    name: "Fronius solenergi (totalt)"
+
+  - unique_id: fronius_solar_daily_energy
+    unit_of_measurement: "kWh"
+    device_class: energy
+    state_class: total_increasing
+    state: "{{ states('var.solarenergy_daily') }}"
+    name: "Fronius solenergi (idag)"
+
+  - unique_id: fronius_solar_power
+    unit_of_measurement: "kW"
+    device_class: power
+    state_class: measurement
+    state: "{{ (states('sensor.power_ac_fronius_inverter_1_192_168_2_31') | float(0) / 1000.0) | round(2) }}"
+    name: "Fronius soleffekt"
+
+  - unique_id: last_solarenergy_value
+    unit_of_measurement: 'kWh'
+    device_class: energy
+    state_class: total_increasing
+    state: >-
+      {% if is_state('sensor.energy_total_fronius_inverter_1_192_168_2_31', 'unavailable') or is_state('sensor.energy_total_fronius_inverter_1_192_168_2_31', 'unknown') %}
+        {{ states('sensor.last_solarenergy_value') }}
+      {% else %}
+        {% set last_solarenergy_value = ((states('sensor.energy_total_fronius_inverter_1_192_168_2_31') | float / 1000) | float) %}
+        {{ (states('sensor.energy_total_fronius_inverter_1_192_168_2_31')|float / 1000) | float }}
+      {% endif %}
+    name: "Solpanelerna, senaste energi"
+
+  - unique_id: last_sp_kw
+    unit_of_measurement: "kW"
+    name: "Senaste effekt"
+    state: >
+      {{ states('sensor.aktuell_effekt') | float(this.state | float(0)) }}
+
+  - unique_id: fronius_solar_current
+    unit_of_measurement: "A"
+    device_class: current
+    state_class: measurement
+    state: "{{ (states('sensor.fronius_inverter_total_current')|float(0)/3)|round(1) }}"
+    name: "Fronius ström (per fas) [A]"
+
+  - unique_id: fronius_target_pct
+    name: "Fronius effektmål [%]"
+    unit_of_measurement: "%"
+    state: >-
+      {% set sell_price = states('sensor.template_elpris_solar_kr') | float(0) %}
+      {% set net_kw = states('sensor.template_house_net_power_kw') | float(0) %}
+      {% set current = states('input_number.fronius_power_limit_pct') | float(100) %}
+      {% set pv_max_kw = 8.2 %}
+      {% set deadband = 0.1 %}
+
+      {% if sell_price >= 0 %}
+        100
+
+      {% elif net_kw > deadband %}
+        {# Export → sänk #}
+        {% set reduction_pct = (net_kw / pv_max_kw) * 100 %}
+        {{ [ [current - reduction_pct, 0] | max, 100 ] | min | round(0) }}
+
+      {% elif net_kw < -deadband %}
+        {# Import → höj #}
+        {% set increase_pct = (-net_kw / pv_max_kw) * 100 %}
+        {{ [ [current + increase_pct, 0] | max, 100 ] | min | round(0) }}
+
+      {% else %}
+        {{ current }}
+      {% endif %}
+
+  - unique_id: fronius_solar_energy_last_month
+    name: "Fronius solenergi (förra månaden)"
+    unit_of_measurement: "kWh"
+    device_class: energy
+    state_class: total_increasing
+    state: "{{ state_attr('sensor.solenergi_kwh_man_2','last_period')|float(0)|round(0) }}"

@@ -126,7 +126,7 @@
   name: "Charge EZC SessionId"
   scan_interval: 43200
   resource: https://dev-app-cn.azurewebsites.net/v2/sessions/active
-  value_template: "{{ as_timestamp(states.sensor.charge_rya_sessionid.last_updated) | timestamp_custom('%Y-%m-%d %H:%M:%S') }}"
+  value_template: "{{ now().strftime('%Y-%m-%d %H:%M:%S') }}"
   json_attributes_path: "$.data[?(@.vehicle.userCarId==697)]"
   json_attributes:
     - id
@@ -140,7 +140,7 @@
   name: "Charge HRY SessionId"
   scan_interval: 43200
   resource: https://dev-app-cn.azurewebsites.net/v2/sessions/active
-  value_template: "{{ as_timestamp(states.sensor.charge_yxx_sessionid.last_updated) | timestamp_custom('%Y-%m-%d %H:%M:%S') }}"
+  value_template: "{{ now().strftime('%Y-%m-%d %H:%M:%S') }}"
   json_attributes_path: "$.data[?(@.vehicle.userCarId==642)]"
   json_attributes:
     - id

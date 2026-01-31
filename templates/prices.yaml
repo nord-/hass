@@ -1,0 +1,228 @@
+# elpriser
+- sensor: 
+  - unique_id: nordpool_current_price
+    device_class: monetary
+    state_class: measurement
+    unit_of_measurement: "kr"
+    state: "{{ states('sensor.nordpool_kwh_se3_sek_3_095_0') | float(0) | round(2) }}"
+    name: "Aktuellt elpris (ex. moms)"
+  - unique_id: nordpool_avg_price_vat
+    device_class: monetary
+    state_class: measurement
+    unit_of_measurement: "kr"
+    state: "{{ (state_attr('sensor.nordpool_kwh_se3_sek_3_095_0', 'average')|float(0)*1.25)|round(2) }}"
+    name: "Genomsnittligt elpris (inkl. moms)"
+  - unique_id: nordpool_current_price_vat
+    device_class: monetary
+    state_class: measurement
+    unit_of_measurement: "kr"
+    state: "{{ (states('sensor.nordpool_kwh_se3_sek_3_095_0') | float(0) * 1.25) | round(2) }}"
+    name: "Aktuellt elpris (inkl. moms)"    
+  - unique_id: nordpool_tomorrow_avg
+    state: >-
+      {% set nordpool = namespace(tomorrow = []) -%}
+      {% set fees = states("sensor.template_fees_ex_vat")|float(0) %}
+      {%- if not is_state("binary_sensor.template_nordpool_tomorrow_valid","off") -%}
+        {%- for num in state_attr("sensor.nordpool_kwh_se3_sek_3_095_0","tomorrow") -%}
+            {%- set nordpool.tomorrow = nordpool.tomorrow + [num+fees] -%}
+        {%- endfor -%}
+        {{ "%.2f" | format(((nordpool.tomorrow | sum / nordpool.tomorrow | count) | float(0) * 1.25)|float(0))  }}
+      {%- endif %}
+  - unique_id: nordpool_tomorrow_max
+    state: >-
+      {% set nordpool = namespace(tomorrow = []) %}
+      {% set fees = states("sensor.template_fees_ex_vat")|float(0) %}
+      {% if not is_state("binary_sensor.template_nordpool_tomorrow_valid","off") %}
+        {% for num in state_attr("sensor.nordpool_kwh_se3_sek_3_095_0","tomorrow") %}
+            {% set nordpool.tomorrow = nordpool.tomorrow + [num+fees] %}
+        {% endfor %}
+        {{ "%.2f" | format((nordpool.tomorrow | max | float(0) * 1.25)|float(0)) }}
+      {% endif %}
+  - unique_id: nordpool_tomorrow_min
+    state: >-
+      {% set nordpool = namespace(tomorrow = []) %}
+      {% set fees = states("sensor.template_fees_ex_vat")|float(0) %}
+      {% if not is_state("binary_sensor.template_nordpool_tomorrow_valid","off") %}
+        {% for num in state_attr("sensor.nordpool_kwh_se3_sek_3_095_0","tomorrow") %}
+            {% set nordpool.tomorrow = nordpool.tomorrow + [num+fees] %}
+        {% endfor %}
+        {{ "%.2f" | format((nordpool.tomorrow | min | float(0) * 1.25)|float(0)) }}
+      {% endif %}
+  - unique_id: nordpool_avg
+    device_class: monetary
+    state_class: measurement
+    unit_of_measurement: "kr"
+    name: "Elpriset (avg)"
+    state: >-
+      {% set nordpool = namespace(today = []) -%}
+      {% set fees = states("sensor.template_fees_ex_vat")|float(0) %}
+      {%- for num in state_attr("sensor.nordpool_kwh_se3_sek_3_095_0","today") -%}
+          {%- set nordpool.today = nordpool.today + [num+fees] -%}
+      {%- endfor -%}
+      {{ "%.2f" | format(((nordpool.today | sum / nordpool.today | count) | float(0) * 1.25)|float(0))  }}
+  - unique_id: nordpool_max
+    device_class: monetary
+    state_class: measurement
+    unit_of_measurement: "kr"
+    name: "Elpriset (max)"
+    state: >-
+      {% set nordpool = namespace(today = []) %}
+      {% set fees = states("sensor.template_fees_ex_vat")|float(0) %}
+      {% for num in state_attr("sensor.nordpool_kwh_se3_sek_3_095_0","today") %}
+          {% set nordpool.today = nordpool.today + [num+fees] %}
+      {% endfor %}
+      {{ "%.2f" | format((nordpool.today | max | float(0) * 1.25)|float(0)) }}
+  - unique_id: nordpool_min
+    device_class: monetary
+    state_class: measurement
+    unit_of_measurement: "kr"
+    name: "Elpriset (min)"
+    state: >-
+      {% set nordpool = namespace(today = []) %}
+      {% set fees = states("sensor.template_fees_ex_vat")|float(0) %}
+      {% for num in state_attr("sensor.nordpool_kwh_se3_sek_3_095_0","today") %}
+          {% set nordpool.today = nordpool.today + [num+fees] %}
+      {% endfor %}
+      {{ "%.2f" | format((nordpool.today | min | float(0) * 1.25)|float(0)) }}      
+
+  - unique_id: elpris_kr
+    state: >-
+      {{ '%.2f' | format((states('sensor.nordpool_kwh_se3_sek_3_095_0')|float(0) + states("sensor.template_fees_ex_vat")|float(0))*1.25) }}
+    unit_of_measurement: kr
+    device_class: monetary
+    state_class: measurement
+    availability: >-
+      {{ states('sensor.nordpool_kwh_se3_sek_3_095_0') not in ['unknown','unavailable'] }}
+    name: "Elpris, totalt [kr]"
+  - unique_id: elpris_solar_kr
+    state: >-
+      {{ states('sensor.nordpool_kwh_se3_sek_3_095_0')|float(0) + states("sensor.template_fees_solar")|float(0) }}
+    unit_of_measurement: kr
+    device_class: monetary
+    state_class: measurement
+    name: "Elpris försäljning, totalt [kr]"
+
+  - unique_id: fees_ex_vat
+    name: "Elavgifter, exkl. moms [kr]"
+    unit_of_measurement: "kr"
+    device_class: monetary
+    state_class: measurement
+    state: "{{(states('var.electric_tax')|float(0) + states('var.electric_transfer_cost')|float(0) + states('var.electric_fee')|float(0))*0.008}}"
+  - unique_id: fees_inc_vat
+    name: "Elavgifter, inkl. moms [kr]"
+    unit_of_measurement: "kr"
+    device_class: monetary
+    state_class: measurement
+    state: "{{((states('var.electric_tax')|float(0) + states('var.electric_transfer_cost')|float(0) + states('var.electric_fee')|float(0))/100.0)|round(2)}}"
+  - unique_id: fees_solar
+    name: "Solel, påslag [kr]"
+    unit_of_measurement: "kr"
+    device_class: monetary
+    state_class: measurement
+    state: "{{((states('var.electric_solar_markup')|float(0) + states('var.electric_solar_net_markup')|float(0) + states('var.electric_solar_tax_refund')|float(0))/100.0)|round(2)}}"
+  
+
+  - unique_id: nordpool_median
+    name: "Nordpool, median [kr]"
+    state: >-
+      {% set fees = states('sensor.template_fees_ex_vat')|float(0) -%}
+      {% set nordpool = namespace(price = []) -%}
+      {% for num in state_attr('sensor.nordpool_kwh_se3_sek_3_095_0','today') -%}
+      {%   set nordpool.price = nordpool.price + [(num+fees)*1.25] -%}
+      {% endfor -%}
+      {% if not is_state('binary_sensor.template_nordpool_tomorrow_valid','off') -%}
+      {%   for num in state_attr('sensor.nordpool_kwh_se3_sek_3_095_0','tomorrow') -%}
+      {%     set nordpool.price = nordpool.price + [(num+fees)*1.25] -%}
+      {%   endfor -%}
+      {% endif -%}
+      {% set sortednp = nordpool.price|sort -%}
+      {% set ix = namespace(x = 0) %}
+      {% for n in sortednp -%}
+      {%   if ix.x == ((sortednp|count)/2-1)|int -%}
+      {{ '%.2f' | format(n) }}
+      {%   endif -%}
+      {%   set ix.x = ix.x + 1 -%}
+      {% endfor -%}
+  - unique_id: nordpool_75perc
+    name: "Nordpool, 75 percentilen [kr]"
+    state: >-
+      {% set fees = states('sensor.template_fees_ex_vat')|float(0) -%}
+      {% set nordpool = namespace(price = []) -%}
+      {% for num in state_attr('sensor.nordpool_kwh_se3_sek_3_095_0','today') -%}
+      {%   set nordpool.price = nordpool.price + [(num+fees)*1.25] -%}
+      {% endfor -%}
+      {% if not is_state('binary_sensor.template_nordpool_tomorrow_valid','off') -%}
+      {%   for num in state_attr('sensor.nordpool_kwh_se3_sek_3_095_0','tomorrow') -%}
+      {%     set nordpool.price = nordpool.price + [(num+fees)*1.25] -%}
+      {%   endfor -%}
+      {% endif -%}
+      {% set sortednp = nordpool.price|sort -%}
+      {% set ix = namespace(x = 0) %}
+      {% for n in sortednp -%}
+      {%   if ix.x == ((sortednp|count)*0.75-1)|int -%}
+      {{ '%.2f' | format(n) }}
+      {%   endif -%}
+      {%   set ix.x = ix.x + 1 -%}
+      {% endfor -%}
+  - unique_id: nordpool_25perc
+    name: "Nordpool, 25 percentilen [kr]"
+    state: >-
+      {% set fees = states('sensor.template_fees_ex_vat')|float(0) -%}
+      {% set nordpool = namespace(price = []) -%}
+      {% for num in state_attr('sensor.nordpool_kwh_se3_sek_3_095_0','today') -%}
+      {%   set nordpool.price = nordpool.price + [(num+fees)*1.25] -%}
+      {% endfor -%}
+      {% if not is_state('binary_sensor.template_nordpool_tomorrow_valid','off') -%}
+      {%   for num in state_attr('sensor.nordpool_kwh_se3_sek_3_095_0','tomorrow') -%}
+      {%     set nordpool.price = nordpool.price + [(num+fees)*1.25] -%}
+      {%   endfor -%}
+      {% endif -%}
+      {% set sortednp = nordpool.price|sort -%}
+      {% set ix = namespace(x = 0) %}
+      {% for n in sortednp -%}
+      {%   if ix.x == ((sortednp|count)*0.25-1)|int -%}
+      {{ '%.2f' | format(n) }}
+      {%   endif -%}
+      {%   set ix.x = ix.x + 1 -%}
+      {% endfor -%}
+
+# - sensor:
+#   - unique_id: elpris_avg_kr
+#     state: >-
+#       {{ states('sensor.template_nordpool_avg_price_vat') | float(0) 
+#           + ((states('var.electric_tax') | float / 100.0)|float) 
+#           + ((states('var.electric_transfer_cost') | float / 100.0)|float) 
+#           + ((states('var.electric_fee') | float / 100.0)|float) }}
+#     unit_of_measurement: kr
+#     device_class: monetary
+#     attributes:
+#       friendly_name: "Elpris, genomsnitt (kr)"
+      
+- sensor:
+    - name: "Elpris total (inkl avgifter)"
+      unique_id: elpris_total_inkl_avgifter
+      icon: mdi:currency-sek
+      unit_of_measurement: öre
+      device_class: monetary
+      state_class: measurement
+      state: >
+        {{ ((states('sensor.nordpool_kwh_se3_sek_3_095_0')|float(0) + states('sensor.template_fees_ex_vat')|float(0)) * 125)|round(0) }}
+      attributes:
+        Today: >
+          {% set fee = states('sensor.template_fees_ex_vat') | float(0) %}
+          {% set prices = state_attr('sensor.nordpool_kwh_se3_sek_3_095_0', 'raw_today') or [] %}
+          {% set ns = namespace(result=[]) %}
+          {% for p in prices %}
+            {% set price = (fee + p.value) * 125 %}              
+            {% set ns.result = ns.result + [price | round(0)] %}
+          {% endfor %}
+          {{ ns.result }}
+        Tomorrow: >
+          {% set fee = states('sensor.template_fees_ex_vat') | float(0) %}
+          {% set prices = state_attr('sensor.nordpool_kwh_se3_sek_3_095_0', 'raw_tomorrow') or [] %}
+          {% set ns = namespace(result=[]) %}
+          {% for p in prices %}
+            {% set price = (fee + p.value) * 125 %}              
+            {% set ns.result = ns.result + [price | round(0)] %}
+          {% endfor %}
+          {{ ns.result }}

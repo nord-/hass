@@ -1,0 +1,55 @@
+# väder
+- sensor:
+  - unique_id: yrwthr
+    state: "{%set badWeatherList = 'cloudy','fog','heavyrain','heavyrainandthunder','heavyrainshowers','heavyrainshowersandthunder','heavysleet','heavysleetandthunder','heavysleetshowers','heavysleetshowersandthunder','heavysnow','heavysnowandthunder','heavysnowshowers','heavysnowshowersandthunder','lightrain','lightrainandthunder','lightrainshowers','lightrainshowersandthunder','lightsleet','lightsleetandthunder','lightsleetshowers','lightsnow','lightsnowandthunder','lightsnowshowers','lightssleetshowersandthunder','lightssnowshowersandthunder','rain','rainandthunder','rainshowers','rainshowersandthunder','sleet','sleetandthunder','sleetshowers','sleetshowersandthunder','snow','snowandthunder','snowshowers','snowshowersandthunder'%}{{states('sensor.yr_symbol') in badWeatherList}}"
+    name: "Dåligt väder enligt YR"
+
+  - unique_id: sunelevation
+    unit_of_measurement: "°"
+    state: "{{ states.sun.sun.attributes.elevation | round(1) }}"
+    name: "Solvinkel"
+      
+  # - unique_id: home_temp
+  #   unit_of_measurement: "°C"
+  #   device_class: temperature
+  #   state_class: measurement
+  #   name: "Hemma [°C]"
+  #   state: >-
+  #     {{ states('sensor.231_temperature')|float|round(1) if states('sensor.231_temperature')|float(99) < states('sensor.framsidan_temperature')|float(98) else states('sensor.framsidan_temperature')|float(99)|round(1) }}
+  #   icon: >-
+  #     {% if states("sensor.template_home_temp")|int < 0 -%}
+  #     mdi:thermometer-minus
+  #     {%- elif states("sensor.template_home_temp")|int < 15 -%}
+  #     mdi:thermometer-low
+  #     {%- elif states("sensor.template_home_temp")|int > 25 -%}
+  #     mdi:thermometer-high
+  #     {%- else -%}
+  #     mdi:thermometer
+  #     {%- endif %}
+  - unique_id: home_temp
+    unit_of_measurement: "°C"
+    device_class: temperature
+    state_class: measurement
+    name: "Hemma [°C]"
+    state: >-
+      {% set t1 = states('sensor.231_temperature') | float(99) %}
+      {% set t2 = states('sensor.framsidan_temperature') | float(98) %}
+      {{ (t1 if t1 < t2 else t2) | round(1) }}
+    icon: >-
+      {% set t = states('sensor.template_home_temp') | float(none) %}
+      {% if t is none %}
+        mdi:thermometer
+      {% elif t < 0 %}
+        mdi:thermometer-minus
+      {% elif t < 15 %}
+        mdi:thermometer-low
+      {% elif t > 25 %}
+        mdi:thermometer-high
+      {% else %}
+        mdi:thermometer
+      {% endif %}
+  - unique_id: lightning_distance
+    state: "{{ distance(states.device_tracker.rickards_gs24, closest(states.device_tracker.rickards_gs24, states.geo_location))|float(9999)|round(1) }}"
+    unit_of_measurement: km
+    icon: mdi:lightning-bolt-circle
+    

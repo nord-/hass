@@ -695,7 +695,7 @@
       - sensor.clever_spz3_electric_consumption_w
       for:
         hours: 0
-        minutes: 2
+        minutes: 1
         seconds: 0
       below: 1
       trigger: numeric_state
@@ -710,7 +710,7 @@
         - dish_cost|float)|round(2)}} kr
     action: notify.rickards_devices
     alias: Notify Finished
-  mode: restart
+  mode: single
 - id: '1663015641931'
   alias: Tvättmaskinen, starta på klockslag
   description: ''
@@ -884,9 +884,8 @@
 - id: '1671363832692'
   alias: 'ALARM: Enheter offline'
   description: ''
-  trigger:
-  - platform: state
-    entity_id:
+  triggers:
+  - entity_id:
     - sensor.node_18_node_status
     - sensor.node_17_node_status
     from: alive
@@ -894,12 +893,16 @@
       hours: 0
       minutes: 2
       seconds: 0
-  condition: []
-  action:
-  - service: notify.rickards_devices
-    data:
-      message: Tvätt- eller diskmaskinen är offline.
+    trigger: state
+  conditions: []
+  actions:
+  - data:
+      message: ⚠️ Tvätt- eller diskmaskinen är offline.
       title: Enheter är offline
+      data:
+        channel: Alarm
+        priority: high
+    action: notify.rickards_devices
   mode: single
 - id: '1672646126224'
   alias: Förrådet, Turn On Heat
@@ -917,6 +920,11 @@
   - condition: state
     state: 'on'
     entity_id: binary_sensor.low_price
+    enabled: false
+  - condition: state
+    state:
+    - 'on'
+    entity_id: binary_sensor.template_nordpool_price_not_high
   - condition: numeric_state
     entity_id: sensor.199_temperature
     below: 10
@@ -936,8 +944,9 @@
     above: 12
     trigger: numeric_state
   - entity_id:
-    - binary_sensor.low_price
-    to: 'off'
+    - binary_sensor.template_nordpool_price_not_high
+    to:
+    - 'off'
     trigger: state
   conditions: []
   actions:
@@ -1345,17 +1354,17 @@
       action: zwave_js.set_config_parameter
   mode: single
 - id: '1699976122787'
-  alias: Delphine, Charge
+  alias: Dolphin, Charge
   description: ''
   triggers:
   - at: sensor.template_next_charge
     alias: When at Start time
     trigger: time
   conditions:
-  - condition: numeric_state
-    entity_id: sensor.template_zoe_battery
+  - alias: When SoC is below limit
+    condition: numeric_state
+    entity_id: sensor.byd_dolphin_soc
     below: input_number.zoe_soc_upper_limit
-    alias: When SoC is below limit
   - condition: template
     value_template: '{{ now() >= as_datetime(states("sensor.template_next_charge"))
       }}'
@@ -1373,7 +1382,7 @@
     target:
       entity_id: script.ladda_bilen_uppstart
     alias: Turn off household consumers
-  - alias: Try Add Zoe to queue
+  - alias: Try Add BYD to queue
     data:
       sequence:
       - action: rest_command.cn_add_yxx_to_queue
@@ -1381,19 +1390,20 @@
         data: {}
     action: retry.actions
   - data:
-      title: Delphine börjar ladda
+      title: Dolphin börjar ladda
       data:
         clickAction: /lovelace/tesla
         channel: ev
-      message: 'SoC:    {{states("sensor.template_zoe_battery")}}%\n Priset: {{states("sensor.template_nordpool_current_price_vat")
+      message: 'SoC:    {{states("sensor.byd_dolphin_soc")}}%\n Priset: {{states("sensor.template_nordpool_current_price_vat")
         }} kr\n {{now().strftime(''%d %H:%M'')}}'
     alias: Send message
     action: notify.rickards_devices
-  - data:
+  - alias: 'Turn off automation '
+    data:
       stop_actions: true
     target:
-      entity_id: automation.ladda_fridas_bil
-    alias: 'Turn off automation '
+      entity_id:
+      - automation.zoe_charge
     action: automation.turn_off
   - delay:
       hours: 0
@@ -1405,11 +1415,12 @@
     target:
       entity_id: sensor.charge_yxx_sessionid
     action: homeassistant.update_entity
+    enabled: true
   - alias: Wait for SoC > Limit (max 6h)
     wait_for_trigger:
     - entity_id:
-      - sensor.template_zoe_battery
-      above: input_number.zoe_soc_upper_limit
+      - sensor.byd_dolphin_soc
+      above: input_number.byd_soc_upper_limit
       trigger: numeric_state
     timeout:
       hours: 6
@@ -1419,14 +1430,14 @@
   - alias: If SoC > Limit
     if:
     - condition: numeric_state
-      entity_id: sensor.template_zoe_battery
-      above: input_number.zoe_soc_upper_limit
+      entity_id: sensor.byd_dolphin_soc
+      above: input_number.byd_soc_upper_limit
     then:
     - data: {}
-      action: rest_command.cn_remove_yxx_from_queue
+      action: rest_command.cn_remove_byd_from_queue
     - data:
-        title: Delphine har laddat färdigt
-        message: 'SoC:    {{states("sensor.template_zoe_battery")}}%\n Priset: {{states("sensor.template_nordpool_current_price_vat")}}
+        title: Dolphin har laddat färdigt
+        message: 'SoC:    {{states("sensor.byd_dolphin_soc")}}%\n Priset: {{states("sensor.template_nordpool_current_price_vat")}}
           kr\n {{now().strftime(''%m-%d %H:%M'')}}'
         data:
           clickAction: /lovelace/tesla
@@ -1446,7 +1457,7 @@
   description: ''
   triggers:
   - entity_id:
-    - sensor.shellyem3_c45bbe55c55e_channel_a_current
+    - sensor.shelly_3em_c45bbe55c55e_current_0
     above: 1
     trigger: numeric_state
   conditions: []
@@ -1724,8 +1735,8 @@
     action: automation.turn_on
   mode: single
 - id: '1717930116901'
-  alias: Delphine, show SoC while charging
-  description: Notify Delphine charging status every 15 min
+  alias: Dolphin, show SoC while charging
+  description: Notify Dolphin charging status every 15 min using real SoC sensor
   triggers:
   - entity_id:
     - sensor.chargenode_port2_state
@@ -1733,38 +1744,21 @@
     trigger: state
   conditions: []
   actions:
-  - variables:
-      kwh_start: '{{ states(''sensor.zoe_kwh'')|float }}'
-      soc_start: '{{ states(''input_number.car_2_soc'')|int }}'
-  - data:
-      stop_actions: false
-    target:
-      entity_id: automation.zoe_charge
-    enabled: false
-    action: automation.turn_off
   - repeat:
       while:
       - condition: state
         entity_id: sensor.chargenode_port2_state
         state: '3'
       sequence:
-      - alias: Update SoC
-        metadata: {}
-        data:
-          value: '{{(soc_start + ((states(''sensor.zoe_kwh'')|float - kwh_start)*0.9/(states(''input_number.car_2_battery'')|int)*100))|int}}'
-        target:
-          entity_id: input_number.car_2_soc
-        action: input_number.set_value
       - data:
-          message: 'SoC: {{states(''sensor.template_zoe_battery'')}}% ({{states.sensor.template_zoe_battery.last_updated|as_local|as_timestamp|timestamp_custom(''%H:%M'')}})\n
-            {{states(''sensor.template_zoe_charging_power'')}} kW • {{(states(''sensor.zoe_kwh'')|float
-            - kwh_start)|int}} kWh\n {{now().strftime(''%H:%M'')}}'
-          title: Delphine laddar
+          message: 'SoC: {{states(''sensor.byd_dolphin_soc'')}}% ({{states.sensor.byd_dolphin_soc.last_updated|as_local|as_timestamp|timestamp_custom(''%H:%M'')}})\n
+            {{now().strftime(''%H:%M'')}}'
+          title: Dolphin laddar
           data:
             clickAction: /lovelace/tesla
             sticky: true
             persistent: true
-            tag: car_2_charging
+            tag: dolphin_charging
             channel: ev
         alias: Send persistent notification
         action: notify.mobile_app_op9_pro
@@ -1773,29 +1767,20 @@
           minutes: 15
           seconds: 0
           milliseconds: 0
-        enabled: true
   - alias: Dismiss persistent notification
     data:
       message: clear_notification
       data:
-        tag: car_2_charging
+        tag: dolphin_charging
     action: notify.rickards_devices
-  - alias: Update SoC
-    metadata: {}
-    data:
-      value: '{{(soc_start + ((states(''sensor.zoe_kwh'')|float - kwh_start)*0.9/(states(''input_number.car_2_battery'')|int)*100))|int}}'
-    target:
-      entity_id: input_number.car_2_soc
-    action: input_number.set_value
   - data:
-      message: 'SoC: {{states(''sensor.template_zoe_battery'')}}% ({{states.sensor.template_zoe_battery.last_updated|as_local|as_timestamp|timestamp_custom(''%m-%d
-        %H:%M'')}})\n {{(states(''sensor.zoe_kwh'')|float - kwh_start)|int}} kWh laddat\n
-        {{now().strftime(''%m-%d %H:%M'')}}'
-      title: Delphine slutat ladda
+      message: 'SoC: {{states(''sensor.byd_dolphin_soc'')}}% ({{states.sensor.byd_dolphin_soc.last_updated|as_local|as_timestamp|timestamp_custom(''%m-%d
+        %H:%M'')}})\n {{now().strftime(''%m-%d %H:%M'')}}'
+      title: Dolphin slutat ladda
       data:
         clickAction: /lovelace/tesla
         sticky: true
-        tag: car_2_stop_charge
+        tag: dolphin_stop_charge
         channel: ev
     alias: Send notification
     action: notify.rickards_devices
@@ -2230,7 +2215,14 @@
   - action: notify.rickards_devices
     metadata: {}
     data:
-      message: "\U0001F50B Lågt batteri!\nframsidan {{states(\"sensor.framsidan_batteri\")}}%"
+      message: "\U0001F50B framsidan {{states(\"sensor.framsidan_batteri\")}}%\nLYS1
+        {{states(\"sensor.xiaomi_lys1_batteri\")}}%\nLYS2 {{states(\"sensor.xiaomi_lys2_batteri\")}}%\nLYS3
+        {{states(\"sensor.xiaomi_lys3_batteri\")}}%\nLYS4 {{states(\"sensor.xiaomi_lys4_batteri\")}}%"
+      data:
+        channel: Alarm
+        priority: high
+        clickAction: /lovelace/9
+      title: ⚠️ Låg batterinivå
   mode: single
 - id: '1753717461777'
   alias: Tesla, Charge soon when low SoC
@@ -2443,7 +2435,13 @@
   - data:
       message: ⚠️ SMA offline (eller ogiltigt värde)\n ({{states("sensor.chargenode_sma_current_l1")|float(0)}})
       data:
+        push:
+          sound:
+            name: default
+            critical: 1
+            volume: 1
         channel: Alarm
+        ttl: 0
         priority: high
         clickAction: /lovelace/9
         tag: sma_offline
@@ -2519,4 +2517,137 @@
     data:
       entity_id:
       - binary_sensor.teslamate
+  mode: single
+- id: '1767178983878'
+  alias: Nordpool - reload prices
+  description: ''
+  triggers:
+  - trigger: time
+    at: '15:00:00'
+  conditions:
+  - condition: state
+    entity_id: binary_sensor.template_nordpool_tomorrow_valid
+    state:
+    - 'off'
+  actions:
+  - data:
+      message: "\U0001F4B6 Morgondagens priser är fortfarande inte uppdaterade\\r\\n\nFörsöker
+        ladda om integrationen."
+      title: Elpriser inte uppdaterade
+      data:
+        clickAction: /lovelace/2
+    action: notify.rickards_devices
+  - action: homeassistant.reload_config_entry
+    data:
+      entry_id: bd131422275293dc529a0f460e6c5cb6
+  mode: single
+- id: '1767969815543'
+  alias: Fronius exportreglering – negativt försäljningspris
+  description: ''
+  triggers:
+  - entity_id: sensor.template_elpris_solar_kr
+    below: 0
+    trigger: numeric_state
+  actions:
+  - alias: 'Modbus: Set WMaxLimPct_RvrtTms'
+    data:
+      hub: froniussymo
+      unit: 1
+      address: 40244
+      value: 60
+    action: modbus.write_register
+  - repeat:
+      while:
+      - condition: numeric_state
+        entity_id: sensor.template_elpris_solar_kr
+        below: 0
+      sequence:
+      - variables:
+          target: '{{ states(''sensor.template_fronius_target_pct'') | int }}'
+          current: '{{ states(''input_number.fronius_power_limit_pct'') | int }}'
+          delta: '{{ target - current }}'
+          limited: "{% if delta > 10 %}\n  {{ current + 10 }}\n{% elif delta < -10
+            %}\n  {{ current - 10 }}\n{% else %}\n  {{ target }}\n{% endif %}\n"
+      - data:
+          hub: froniussymo
+          unit: 1
+          address: 40242
+          value: '{{ limited * 100 }}'
+        action: modbus.write_register
+        alias: 'Modbus: Sätt effektgräns WMaxLimPct'
+      - data:
+          hub: froniussymo
+          unit: 1
+          address: 40246
+          value: 1
+        action: modbus.write_register
+        alias: 'Modbus: Aktivera läget WMaxLim_Ena'
+      - data:
+          entity_id: input_number.fronius_power_limit_pct
+          value: '{{ limited }}'
+        action: input_number.set_value
+      - delay:
+          seconds: 10
+  - alias: Avsluta FixedW-läge WMaxLim_Ena
+    action: modbus.write_register
+    metadata: {}
+    data:
+      hub: froniussymo
+      unit: 1
+      address: 40246
+      value: 0
+  - alias: Återställ full produktion
+    action: modbus.write_register
+    metadata: {}
+    data:
+      hub: froniussymo
+      unit: 1
+      address: 40242
+      value: 10000
+  - action: input_number.set_value
+    metadata: {}
+    target:
+      entity_id: input_number.fronius_power_limit_pct
+    data:
+      value: 100
+  mode: restart
+- id: '1768584573377'
+  alias: Lights, Felix rum toggle
+  description: ''
+  triggers:
+  - trigger: event
+    event_type: zha_event
+    event_data:
+      device_ieee: 54:ef:44:10:01:22:a1:4c
+      command: toggle
+      cluster_id: 6
+      endpoint_id: 1
+  conditions: []
+  actions:
+  - action: light.toggle
+    target:
+      entity_id: light.felix_rum_taket_light
+  mode: single
+- id: '1769553241596'
+  alias: 'ALARM: bydpi offline'
+  description: ''
+  triggers:
+  - entity_id:
+    - binary_sensor.byd_monitor_pi_online
+    to:
+    - 'off'
+    trigger: state
+    for:
+      hours: 0
+      minutes: 10
+      seconds: 0
+  conditions: []
+  actions:
+  - data:
+      message: ⚠️ bydpi är offline!
+      data:
+        channel: Alarm
+        priority: high
+        clickAction: /lovelace/9
+    action: notify.rickards_devices
   mode: single

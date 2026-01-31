@@ -1,4 +1,4 @@
-binary_sensor:
+- binary_sensor:
   - name: Lågt elpris
     unique_id: low_price
     state: >
@@ -93,3 +93,21 @@ binary_sensor:
     unique_id: walle_online
     state: >
       {{ state_attr('vacuum.wall_e', 'online') }}
+
+
+- binary_sensor:
+  - unique_id: nordpool_tomorrow_valid
+    state: "{{ state_attr('sensor.nordpool_kwh_se3_sek_3_095_0', 'tomorrow_valid') and state_attr('sensor.nordpool_kwh_se3_sek_3_095_0', 'tomorrow')|length > 23 }}"
+  - unique_id: nordpool_price_low
+    name: "Nordpool, under median"
+    state: >-
+      {{ states('sensor.template_elpris_kr') <= states('sensor.template_nordpool_median') }}
+  - unique_id: nordpool_price_not_high
+    name: "Nordpool, under 75:e percentilen"
+    state: >-
+      {{ states('sensor.template_elpris_kr') <= states('sensor.template_nordpool_75perc') or states('sensor.template_elpris_kr') < states('sensor.elpriset_kr_avg_3') }}
+    # {{ states('sensor.template_elpris_kr') <= states('sensor.template_nordpool_75perc') }}
+  - unique_id: nordpool_price_reallow
+    name: "Nordpool, under 25:e percentilen"
+    state: >-
+      {{ states('sensor.template_elpris_kr') <= states('sensor.template_nordpool_25perc') }}

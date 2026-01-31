@@ -1,0 +1,157 @@
+## Spabadet
+- sensor:
+  - unique_id: spabadet_energy_kwh_corrected
+    unit_of_measurement: "kWh"
+    device_class: energy
+    state_class: total_increasing
+    name: "Spabadet, energi [kWh] (korrigerad)"
+    state: >-
+      {% set l1 = states('sensor.spabadet_l1_energy_monotonic')|float(0)/1000 %}
+      {% set l2 = states('sensor.spabadet_l2_energy_monotonic')|float(0)/1000 %}
+      {% set l3 = states('sensor.spabadet_l3_energy_monotonic')|float(0)/1000 %}
+      {% set total = l1 + l2 + l3 %}
+      {% set old = this.state|float(0) %}
+
+      {{ total }}
+      {# if total < old #}
+        {# old #}
+      {# elif (total - old) > 10 #}
+        {# old #}
+      {# else #}
+        {# total #}
+      {# endif #}    
+
+  - unique_id: spabadet_energy_lastmonth_kwh
+    unit_of_measurement: "kWh"
+    device_class: energy
+    state: "{{ state_attr('sensor.spabadet_kwh_man','last_period')|float(0)|round(0) }}"
+    name: "Spabadet, energi förra mån [kWh]"
+
+  - unique_id: spabadet_energy_lastweek_kwh
+    unit_of_measurement: "kWh"
+    device_class: energy
+    state: "{{ state_attr('sensor.spabadet_kwh_vecka','last_period')|float(0)|round(1) }}"
+    name: "Spabadet, energi förra veckan [kWh]"
+
+  - unique_id: spabadet_power_kw
+    unit_of_measurement: "kW"
+    device_class: power
+    state_class: measurement
+    name: "Spabadet, effekt [kW]"
+    state: >-
+      {{ ((states('sensor.spabadet_l1_power')|float(0) + states('sensor.spabadet_l2_power')|float(0) + states('sensor.spabadet_l3_power')|float(0))/1000)|round(2) }}
+
+  - unique_id: spabadet_cost_kr
+    unit_of_measurement: "kr"
+    device_class: monetary
+    state_class: measurement
+    state: "{{ states('sensor.template_elpris_kr')|float(0) * states('sensor.template_spabadet_power_kw')|float(0) }}"
+
+  - unique_id: spabadet_l1_current_a
+    unit_of_measurement: "A"
+    device_class: current
+    state_class: measurement
+    name: "Spabadet, L1 ström [A]"
+    state: >-
+      {{ (states('sensor.spabadet_l1_power')|float(0) / states('sensor.hem_gen5_electric_consumed_v_2') | float(230)) | round(2) }}
+
+  - unique_id: spabadet_l2_current_a
+    unit_of_measurement: "A"
+    device_class: current
+    state_class: measurement
+    name: "Spabadet, L2 ström [A]"
+    state: >-
+      {{ (states('sensor.spabadet_l2_power')|float(0) / states('sensor.hem_gen5_electric_consumed_v_2_2') | float(230)) | round(2) }}
+
+  - unique_id: spabadet_l3_current_a
+    unit_of_measurement: "A"
+    device_class: current
+    state_class: measurement
+    name: "Spabadet, L3 ström [A]"
+    state: >-
+      {{ (states('sensor.spabadet_l3_power')|float(0) / states('sensor.hem_gen5_electric_consumed_v_3') | float(230)) | round(2) }}
+
+  - unique_id: spabadet_temperature
+    unit_of_measurement: "°C"
+    device_class: temperature
+    state_class: measurement
+    name: "Spabadet, temp [°C]"
+    state: "{{ states('sensor.spabadet_temperatur')|float(20) }}"
+
+  - unique_id: spabadet_pump_active
+    unit_of_measurement: "min"
+    device_class: duration
+    state_class: total
+    name: "Spabadet, påslaget [min]"
+    state: >-
+      {% if is_state('switch.spabadet_l3', 'on') %}
+        {{ ((as_timestamp(now()) - as_timestamp(states.switch.spabadet_l3.last_changed)) / 60)|int(0) }}
+      {% else %}
+        0
+      {% endif %}
+
+- trigger:
+    - platform: state
+      entity_id: sensor.spabadet_l1_energy_filtered
+  sensor:
+    - name: "Spabadet L1 Energy Monotonic"
+      unit_of_measurement: "Wh"
+      device_class: energy
+      state_class: total_increasing
+      state: >
+        {% set new = states('sensor.spabadet_l1_energy_filtered')|float(none) %}
+        {% set old = this.state|float(none) %}
+
+        {% if new is none %}
+          {{ old }}
+        {% elif old is none %}
+          {{ new }}
+        {% elif new < old %}
+          {{ old }}
+        {% else %}
+          {{ new }}
+        {% endif %}
+
+- trigger:
+    - platform: state
+      entity_id: sensor.spabadet_l2_energy_filtered
+  sensor:
+    - name: "Spabadet L2 Energy Monotonic"
+      unit_of_measurement: "Wh"
+      device_class: energy
+      state_class: total_increasing
+      state: >
+        {% set new = states('sensor.spabadet_l2_energy_filtered')|float(none) %}
+        {% set old = this.state|float(none) %}
+
+        {% if new is none %}
+          {{ old }}
+        {% elif old is none %}
+          {{ new }}
+        {% elif new < old %}
+          {{ old }}
+        {% else %}
+          {{ new }}
+        {% endif %}
+
+- trigger:
+    - platform: state
+      entity_id: sensor.spabadet_l3_energy_filtered
+  sensor:
+    - name: "Spabadet L3 Energy Monotonic"
+      unit_of_measurement: "Wh"
+      device_class: energy
+      state_class: total_increasing
+      state: >
+        {% set new = states('sensor.spabadet_l3_energy_filtered')|float(none) %}
+        {% set old = this.state|float(none) %}
+
+        {% if new is none %}
+          {{ old }}
+        {% elif old is none %}
+          {{ new }}
+        {% elif new < old %}
+          {{ old }}
+        {% else %}
+          {{ new }}
+        {% endif %}

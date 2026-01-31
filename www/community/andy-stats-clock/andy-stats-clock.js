@@ -1,0 +1,4496 @@
+(() => {
+/**
+ * Andy Stats Clock
+ * v1.0.6
+ * ------------------------------------------------------------------
+ * Developed by: Andreas ("AndyBonde") with some help from AI :).
+ *
+ * License / Disclaimer:
+ * - Free to use, copy, modify, redistribute.
+ * - Provided "AS IS" without warranty. No liability.
+ * - Not affiliated with Home Assistant / Nabu Casa.
+ * - Runs fully in the browser.
+ *
+ * Compatibility notes:
+ * - Stats uses REST history endpoint via hass.callApi("GET", "history/period/...")
+ *
+ * Install: Se README.md in GITHUB
+ *
+ *
+ */
+  const CARD_TAG = "andy-stats-clock";
+  const EDITOR_TAG = "andy-stats-clock-editor";
+  const VERSION = "v1.0.6"
+
+  console.info(
+    `%c Andy Stats Clock %c ${VERSION} loaded `,
+    "color: white; background: #4A148C; padding: 4px 8px; border-radius: 4px 0 0 4px;",
+    "color: white; background: #6A1B9A; padding: 4px 8px; border-radius: 0 4px 4px 0;"
+  );
+
+  const fireEvent = (node, type, detail, options) => {
+    options = options || {};
+    detail = detail === null || detail === undefined ? {} : detail;
+    const event = new Event(type, {
+      bubbles: options.bubbles ?? true,
+      cancelable: options.cancelable ?? false,
+      composed: options.composed ?? true,
+    });
+    event.detail = detail;
+    node.dispatchEvent(event);
+    return event;
+  };
+
+  // ----------------------------------------------------------
+  // Shared helpers / defaults
+  // ----------------------------------------------------------
+
+  const StatsClockDefaultConfig = {
+    type: `custom:${CARD_TAG}`,
+    clock_mode: "24h", // "24h" | "12h"
+    show_hour_labels: true,
+    start_angle: -7.5,
+    end_angle: 352.5,
+    radius: 45,
+    layer_gap: 2,
+    hands_center_pivot: true, // shared hub
+    scale: 1, //v1.04
+
+    // Outer minute ticks
+    outer_ticks: {
+      enabled: true,
+    },
+
+    // Backwards compatible sweeper (hour hand)
+    sweeper: {
+      enabled: true,
+      use_system_time: true,
+      entity: "",
+      color: "#FFFFFF",
+      width: 1.5,
+      opacity: 1,
+    },
+    hour_sweeper: {
+      enabled: true,
+      use_system_time: true,
+      entity: "",
+      color: "#03a9f4",
+      width: 1.5,
+      opacity: 0.8,
+      show_dash: false,
+      length_scale: 0.75,
+    },
+
+    // Minute hand
+    minute_sweeper: {
+      enabled: true,
+      color: "#FFFFFF",
+      width: 1.2,
+      opacity: 0.8,
+      show_dash: false,
+      length_scale: 0.9,
+    },
+
+    // Second hand
+    second_sweeper: {
+      enabled: true,
+      color: "#f50049",
+      width: 1.0,
+      opacity: 1,
+      show_dash: false,
+      length_scale: 1.0,
+    },
+
+    // Hub in center (when hands_center_pivot = true)
+    hub: {
+      color: "rgba(255,255,255,0.9)",
+      radius: 2.3,
+      opacity: 1,
+    },
+
+    style: {
+      background: "var(--ha-card-background, rgba(0,0,0,0.4))",
+      text_color: "var(--primary-text-color)",
+      font_family:
+        'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+    },
+    layers: [],
+    center_layers: [],
+    bottom_layers: [],
+  };
+
+  function deepMerge(target, source) {
+    const out = { ...(target || {}) };
+    Object.keys(source || {}).forEach((key) => {
+      const sv = source[key];
+      if (sv && typeof sv === "object" && !Array.isArray(sv)) {
+        out[key] = deepMerge(out[key] || {}, sv);
+      } else {
+        out[key] = sv;
+      }
+    });
+    return out;
+  }
+
+  function polarToCartesian(r, angleDeg) {
+    const rad = ((angleDeg - 90) * Math.PI) / 180;
+    return {
+      x: r * Math.cos(rad),
+      y: r * Math.sin(rad),
+    };
+  }
+
+  function makeRingSegmentPath(rInner, rOuter, angleStart, angleEnd) {
+    const startOuter = polarToCartesian(rOuter, angleStart);
+    const endOuter = polarToCartesian(rOuter, angleEnd);
+    const startInner = polarToCartesian(rInner, angleEnd);
+    const endInner = polarToCartesian(rInner, angleStart);
+    const sweepAngle = Math.abs(angleEnd - angleStart);
+    const largeArc = sweepAngle <= 180 ? 0 : 1;
+    const sweepFlag = angleEnd > angleStart ? 1 : 0;
+
+    return [
+      "M", startOuter.x, startOuter.y,
+      "A", rOuter, rOuter, 0, largeArc, sweepFlag, endOuter.x, endOuter.y,
+      "L", startInner.x, startInner.y,
+      "A", rInner, rInner, 0, largeArc, sweepFlag ? 0 : 1, endInner.x, endInner.y,
+      "Z",
+    ].join(" ");
+  }
+
+  function hexToRgb(hex) {
+    const h = hex.replace("#", "");
+    const full = h.length === 3 ? h.split("").map((c) => c + c).join("") : h;
+    const bigint = parseInt(full, 16);
+    const r = (bigint >> 16) & 255;
+    const g = (bigint >> 8) & 255;
+    const b = bigint & 255;
+    return { r, g, b };
+  }
+
+  function lerpColor(a, b, t) {
+    try {
+      const ca = hexToRgb(a);
+      const cb = hexToRgb(b);
+      const r = Math.round(ca.r + (cb.r - ca.r) * t);
+      const g = Math.round(ca.g + (cb.g - ca.g) * t);
+      const bb = Math.round(ca.b + (cb.b - ca.b) * t);
+      return `rgb(${r},${g},${bb})`;
+    } catch (e) {
+      return a;
+    }
+  }
+
+  function valueToIntervalColor(value, intervals) {
+    if (!intervals || !intervals.length) return "#28c76f";
+    if (value == null || isNaN(value)) {
+      return intervals[0].color_from || intervals[0].color_to || "#28c76f";
+    }
+
+    let chosen = null;
+    for (const intv of intervals) {
+      const from = Number(intv.from);
+      const to = Number(intv.to);
+      if (!isNaN(from) && !isNaN(to) && value >= from && value < to) {
+        chosen = intv;
+        break;
+      }
+    }
+    if (!chosen) {
+      let last = intervals[0];
+      for (const intv of intervals) {
+        if (value >= intv.from) last = intv;
+      }
+      chosen = last;
+    }
+
+    const cf = chosen.color_from || chosen.color_to || "#28c76f";
+    const ct = chosen.color_to || cf;
+    const from = Number(chosen.from);
+    const to = Number(chosen.to);
+    if (isNaN(from) || isNaN(to) || from === to) return cf;
+
+    const t = Math.max(0, Math.min(1, (value - from) / (to - from || 1)));
+    return lerpColor(cf, ct, t);
+  }
+
+  function valueToGradientColor(value, min, max, gradient) {
+    const from = (gradient && gradient.from) || "#28c76f";
+    const to = (gradient && gradient.to) || "#ea5455";
+    if (value == null || isNaN(value) || max === min) return from;
+    const t = Math.max(0, Math.min(1, (value - min) / (max - min || 1)));
+    return lerpColor(from, to, t);
+  }
+  
+  function sliceValuesForClockMode(values, cfg) {
+  const mode = cfg.clock_mode || "24h";
+  if (mode !== "12h") return values;
+  if (!values || !values.length) return values;
+
+  const len = values.length;
+
+  // Helper: slice and preserve meta arrays (e.g. __prevMask, __todayOnly) when possible
+  const sliceWithMeta = (arr, start, end) => {
+    const sliced = arr.slice(start, end);
+
+    try {
+      if (Array.isArray(arr.__prevMask) && arr.__prevMask.length === arr.length) {
+        sliced.__prevMask = arr.__prevMask.slice(start, end);
+      }
+      if (Array.isArray(arr.__todayOnly) && arr.__todayOnly.length === arr.length) {
+        sliced.__todayOnly = arr.__todayOnly.slice(start, end);
+      }
+    } catch (e) {}
+    return sliced;
+  };
+
+  // Om vi har data för ett helt dygn (eller multiplar av 24)
+  // tolkar vi det som tidslinje över dygnet (t.ex. Nordpool, Tibber,
+  // 24h-förbrukning, 96 x 15-min osv).
+  if (len >= 24 && len % 24 === 0) {
+    const itemsPerHour = len / 24; // 1 = timvärden, 4 = 15-min, osv
+    const hour = getSystemHour(); // 0–23
+    const isPm = hour >= 12;
+
+    const startHour = isPm ? 12 : 0;   // 00–11 eller 12–23
+    const endHour = isPm ? 24 : 12;
+
+    const startIndex = startHour * itemsPerHour;
+    const endIndex = endHour * itemsPerHour;
+
+    return sliceWithMeta(values, startIndex, endIndex);
+  }
+
+  // Annars: generisk historik – visa de senaste 12 värdena (upp till nu)
+  if (len > 12) {
+    return sliceWithMeta(values, len - 12, len);
+  }
+
+  // Kortare listor: visa allt
+  return values;
+}
+
+
+
+  function getEntityState(hass, entityId) {
+    if (!hass || !entityId) return null;
+    return hass.states[entityId] || null;
+  }
+
+  function parseAttributeArray(stateObj, attribute, valuePath) {
+    if (!stateObj) return [];
+    const attr = attribute || "today";
+    const raw = stateObj.attributes[attr];
+    if (!Array.isArray(raw)) return [];
+    if (!valuePath) return raw.map((v) => (v == null ? null : Number(v)));
+    return raw.map((item) => {
+      if (item && typeof item === "object" && valuePath in item) {
+        const val = item[valuePath];
+        return val == null ? null : Number(val);
+      }
+      return item == null ? null : Number(item);
+    });
+  }
+
+  // Always system hour (for AM/PM, 12h slicing)
+  function getSystemHour() {
+    return new Date().getHours();
+    //Turn on below to be able to force time change for testing
+    //const forced = window.__andy_stats_clock_force_hour;
+   //if (forced !== undefined && forced !== null && forced !== "" && !isNaN(Number(forced))) {
+    // return Number(forced);
+   //}
+   //return new Date().getHours();    
+    
+    
+    
+  }
+
+  // ----------------------------------------------------------
+  // CARD (DISPLAY)
+  // ----------------------------------------------------------
+
+  if (!customElements.get(CARD_TAG)) {
+    class AndyStatsClockCard extends HTMLElement {
+      constructor() {
+        super();
+        this._config = null;
+        this._hass = null;
+        this._historyCache = {};
+        this.attachShadow({ mode: "open" });
+
+      }
+
+      static getConfigElement() {
+        return document.createElement(EDITOR_TAG);
+      }
+
+      static getStubConfig(hass, entities) {
+        const first = entities && entities.length ? entities[0] : "sensor.example";
+        return deepMerge(StatsClockDefaultConfig, {
+          clock_mode: "24h",
+          layers: [
+            {
+              id: "price_today",
+              name: "Price today",
+              type: "price",
+              entity: first,
+              price_source: "array",
+              attribute: "today",
+              value_path: "value",
+              radius: 45,
+              thickness: 8,
+              opacity: 1.0,
+              color_mode: "intervals",
+              segment_count: null,
+              intervals: [
+                { from: 0, to: 50, color_from: "#28c76f", color_to: "#9be15d" },
+                { from: 50, to: 100, color_from: "#ff9f43", color_to: "#ffc26a" },
+                { from: 100, to: 1000, color_from: "#ea5455", color_to: "#f86c7d" },
+              ],
+              gradient: {
+                from: "#28c76f",
+                to: "#ea5455",
+              },
+              stats_markers: {
+                show_min: true,
+                show_max: true,
+                show_avg: false,
+                color: "rgba(255,255,255,0.9)",
+                font_size: 3,
+                radius_offset: 2,
+                decimals: 1,
+                outline: false,
+                outline_color: "rgba(0,0,0,0.65)",
+                outline_width: 0.8,
+                min_label: "",
+                max_label: "",
+                avg_label: "",
+              },
+            },
+          ],
+          center_layers: [
+            {
+              id: "time",
+              type: "entity",
+              entity: "sensor.time",
+              show_icon: true,
+              icon: "mdi:watch-variant",
+              label_template: "<state>",
+              decimals: 0,
+              font_size: 26,
+              font_weight: 700,
+              color: "var(--primary-text-color)",
+            },
+            {
+              id: "subtitle",
+              type: "static",
+              text: "Andy Stats Clock",
+              font_size: 13,
+              font_weight: 500,
+              color: "var(--secondary-text-color)",
+            },
+          ],
+          bottom_layers: [
+            {
+              id: "explanation",
+              type: "static",
+              text: "Price intensity over the next 24 hours",
+              font_size: 11,
+              font_weight: 400,
+              color: "var(--secondary-text-color)",
+            },
+          ],
+        });
+      }
+
+      setConfig(config) {
+        if (!config) throw new Error("Configuration is required");
+        this._config = deepMerge(StatsClockDefaultConfig, config);
+
+        // Backwards compatibility: copy old sweeper → hour_sweeper
+        if (config.sweeper && !config.hour_sweeper) {
+          this._config.hour_sweeper = deepMerge(
+            this._config.hour_sweeper || {},
+            config.sweeper
+          );
+        }
+
+        if (!Array.isArray(this._config.layers)) this._config.layers = [];
+        if (!Array.isArray(this._config.center_layers))
+          this._config.center_layers = [];
+        if (!Array.isArray(this._config.bottom_layers))
+          this._config.bottom_layers = [];
+        this._render();
+      }
+
+      set hass(hass) {
+        this._hass = hass;
+        this._render();
+      }
+
+      get hass() {
+        return this._hass;
+      }
+
+      getCardSize() {
+        return 3;
+      }
+
+      connectedCallback() {
+        this._render();
+      }
+
+      //disconnectedCallback() {}
+      disconnectedCallback() {
+        try {
+          if (this._scaleResizeObs) this._scaleResizeObs.disconnect();
+        } catch (e) {}
+      }      
+
+      _getPeriodString(cfg) {
+        const mode = cfg.clock_mode || "24h";
+        if (mode !== "12h") return "";
+        const h = getSystemHour();
+        return h < 12 ? "AM" : "PM";
+      }
+
+            _getHistory24ForLayer(lc, hass, stateObj) {
+        if (!hass || !lc || !lc.entity) return [];
+        const entityId = lc.entity;
+
+        // History/consumption can optionally render multiple sub-segments per hour.
+        // Semantics (per request):
+        //   segment_count = 0/empty  -> 1 segment per hour (legacy behaviour)
+        //   segment_count = N (1..60)-> split each hour into N sub-segments
+        // This only applies to history/consumption layers (NOT price/attribute arrays).
+        const isHistLayer = lc.price_source === "history" || lc.type === "history" || lc.type === "consumption";
+        const perHour = isHistLayer && lc.segment_count != null && Number(lc.segment_count) > 0
+          ? Math.max(1, Math.min(60, Math.floor(Number(lc.segment_count))))
+          : 1;
+        const bucketsLen = 24 * perHour;
+
+        // Cache per entity + layer + keep-mode
+        const cacheKey = `${entityId}::${lc.id || "layer"}::hist24::seg${perHour}::${lc.keep_across_midnight ? "keep" : "reset"}`;
+        const now = Date.now();
+        const ttlMs = 5 * 60 * 1000;
+
+        const existing = this._historyCache[cacheKey];
+        if (existing && existing.values && now - existing.fetchedAt < ttlMs) {
+          return existing.values;
+        }
+        if (existing && existing.loading) {
+          return existing.values || [];
+        }
+
+        this._historyCache[cacheKey] = {
+          loading: true,
+          values: existing?.values || [],
+        };
+
+        try {
+          const nowDate = new Date();
+          const nowHour = nowDate.getHours(); // 0..23
+          const nowMin = nowDate.getMinutes();
+          const nowIndex = (nowHour * perHour) + Math.min(perHour - 1, Math.floor((nowMin * perHour) / 60));
+
+          const mkKey = (d) => {
+            const y = d.getFullYear();
+            const m = String(d.getMonth() + 1).padStart(2, "0");
+            const da = String(d.getDate()).padStart(2, "0");
+            return `${y}-${m}-${da}`;
+          };
+
+          const todayKey = mkKey(nowDate);
+          const yd = new Date(nowDate);
+          yd.setDate(yd.getDate() - 1);
+          const yKey = mkKey(yd);
+
+          // If keep is enabled: fetch from yesterday 00:00 so we can backfill "future hours"
+          const start = new Date(nowDate);
+          if (lc.keep_across_midnight === true) start.setDate(start.getDate() - 1);
+          start.setHours(0, 0, 0, 0);
+
+          const iso = start.toISOString();
+          const url = `history/period/${iso}?filter_entity_id=${encodeURIComponent(
+            entityId
+          )}&minimal_response&significant_changes_only=0`;
+
+          hass
+            .callApi("GET", url)
+            .then((res) => {
+              let series = [];
+              if (Array.isArray(res) && res.length > 0 && Array.isArray(res[0])) {
+                series = res[0];
+              }
+
+              const todayBuckets = new Array(bucketsLen).fill(null);
+              const yestBuckets = new Array(bucketsLen).fill(null);
+
+              series.forEach((pt) => {
+                const ts = pt.last_updated || pt.last_changed || pt.time || pt.timestamp;
+                const d = ts ? new Date(ts) : null;
+                if (!d || isNaN(d.getTime())) return;
+                const h = d.getHours();
+                if (h < 0 || h > 23) return;
+                const m = d.getMinutes();
+                const sub = perHour <= 1 ? 0 : Math.min(perHour - 1, Math.floor((m * perHour) / 60));
+                const idx = (h * perHour) + sub;
+                const v = Number(pt.state);
+                if (isNaN(v)) return;
+
+                const dk = mkKey(d);
+                if (dk === todayKey) todayBuckets[idx] = v;
+                else if (dk === yKey) yestBuckets[idx] = v;
+              });
+
+              // Build final buckets:
+              // - For hours already passed today (<= nowHour): use today's value (filled-forward if needed), NEVER backfill from yesterday.
+              // - For future hours (> nowHour): use today's value if present; otherwise (if keep enabled) backfill from yesterday and mark prevMask.
+              //
+              // NOTE: History can be sparse (only changes). To keep the ring stable, we fill-forward within today for passed hours.
+              const todayFilled = todayBuckets.slice();
+
+// History can be sparse. For hours that already happened today we "fill forward" so we don't lose
+// already-known segments when keep is toggled.
+// If we don't have any bucket yet for today (0..nowHour), fall back to current state as the baseline.
+let baselineToday = null;
+for (let i = 0; i <= nowIndex; i++) {
+  if (todayBuckets[i] != null && !isNaN(todayBuckets[i])) { baselineToday = todayBuckets[i]; break; }
+}
+if (baselineToday == null) {
+  const cur = Number(stateObj.state);
+  baselineToday = isNaN(cur) ? null : cur;
+}
+
+let lastToday = baselineToday;
+for (let i = 0; i < bucketsLen; i++) {
+  if (todayBuckets[i] != null && !isNaN(todayBuckets[i])) lastToday = todayBuckets[i];
+  if (i <= nowIndex) {
+    todayFilled[i] = lastToday;
+  } else {
+    // Future should be empty in the base series
+    todayFilled[i] = null;
+  }
+}
+
+const buckets = new Array(bucketsLen).fill(null);
+const prevMask = new Array(bucketsLen).fill(false); // true where value comes from yesterday
+
+for (let i = 0; i < bucketsLen; i++) {
+  if (i <= nowIndex) {
+    // Past/now: ALWAYS today's values (filled-forward), never backfill from yesterday
+    buckets[i] = todayFilled[i];
+  } else if (lc.keep_across_midnight === true) {
+    // Future: keep today's if present, otherwise backfill from yesterday and mark for fading
+    if (todayBuckets[i] != null && !isNaN(todayBuckets[i])) {
+      buckets[i] = todayBuckets[i];
+    } else if (yestBuckets[i] != null && !isNaN(yestBuckets[i])) {
+      buckets[i] = yestBuckets[i];
+      prevMask[i] = true;
+    } else {
+      buckets[i] = null;
+    }
+  } else {
+    // Future: no keep -> remain empty
+    buckets[i] = null;
+  }
+}
+
+
+              // For stable gradients: compute min/max on today's known window only (no backfilled values)
+              const todayOnly = todayFilled.slice();
+              for (let i = nowIndex + 1; i < bucketsLen; i++) todayOnly[i] = null;
+
+              // IMPORTANT: Turning on Keep must NOT change today's colors.
+              // If we have a fresh "reset" (keep=false) cache for this layer, use its values as the
+              // authoritative "today-only" series (and for past hours) so min/max and colors remain identical.
+              if (lc.keep_across_midnight === true) {
+                const resetKey = `${entityId}::${lc.id || "layer"}::hist24::seg${perHour}::reset`;
+                const resetCached = this._historyCache[resetKey];
+                if (resetCached && resetCached.values && !resetCached.loading && resetCached.fetchedAt && (Date.now() - resetCached.fetchedAt) < ttlMs) {
+                  try {
+                    const resetVals = resetCached.values;
+                    // Ensure past/now hours match reset mode exactly
+                    for (let i = 0; i <= nowIndex && i < bucketsLen && i < resetVals.length; i++) {
+                      buckets[i] = resetVals[i];
+                      prevMask[i] = false;
+                    }
+                    // And ensure today's min/max basis matches reset mode
+                    for (let i = 0; i < bucketsLen && i < resetVals.length; i++) {
+                      todayOnly[i] = (i <= nowIndex) ? resetVals[i] : null;
+                    }
+                  } catch (e) {}
+                }
+              }
+
+              const hasAny = buckets.some((v) => v != null && !isNaN(v));
+              let finalValues;
+              if (!hasAny) {
+                // No history at all: fallback to current state repeated
+                const cur = Number(stateObj.state);
+                finalValues = isNaN(cur) ? [] : new Array(bucketsLen).fill(cur);
+              } else {
+                finalValues = buckets;
+              }
+
+              // Attach meta for fade + stable min/max. (Properties survive as long as array is not sliced.)
+              try {
+                finalValues.__prevMask = prevMask;
+                finalValues.__todayOnly = todayOnly;
+                finalValues.__todayBuckets = todayBuckets;
+                finalValues.__yestBuckets = yestBuckets;
+                finalValues.__nowHour = nowHour;
+                finalValues.__perHour = perHour;
+                finalValues.__nowIndex = nowIndex;
+              } catch (e) {}
+
+              this._historyCache[cacheKey] = {
+                loading: false,
+                fetchedAt: Date.now(),
+                values: finalValues,
+              };
+              this._render();
+            })
+            .catch((err) => {
+              this._historyCache[cacheKey] = {
+                loading: false,
+                fetchedAt: Date.now(),
+                values: existing?.values || [],
+              };
+              this._render();
+            });
+        } catch (e) {
+          this._historyCache[cacheKey] = {
+            loading: false,
+            fetchedAt: Date.now(),
+            values: existing?.values || [],
+          };
+        }
+
+        return existing?.values || [];
+      }
+
+_getYesterday24ForLayer(lc, hass) {
+  if (!hass || !lc || !lc.entity) return [];
+  const entityId = lc.entity;
+
+  const isHistLayer = lc.price_source === "history" || lc.type === "history" || lc.type === "consumption";
+  const perHour = isHistLayer && lc.segment_count != null && Number(lc.segment_count) > 0
+    ? Math.max(1, Math.min(60, Math.floor(Number(lc.segment_count))))
+    : 1;
+  const bucketsLen = 24 * perHour;
+
+  // Cache yesterday buckets separately (do NOT depend on keep toggle)
+  const cacheKey = `${entityId}::${lc.id || "layer"}::yest24::seg${perHour}`;
+  const now = Date.now();
+  const ttlMs = 10 * 60 * 1000;
+
+  const existing = this._historyCache[cacheKey];
+  if (existing && existing.values && now - existing.fetchedAt < ttlMs) {
+    return existing.values;
+  }
+  if (existing && existing.loading) {
+    return existing.values || [];
+  }
+
+  this._historyCache[cacheKey] = {
+    loading: true,
+    fetchedAt: now,
+    values: existing?.values || [],
+  };
+
+  try {
+    const nowDate = new Date();
+    // local-day boundaries (avoid UTC/local mixing)
+    const todayStart = new Date(nowDate);
+    todayStart.setHours(0, 0, 0, 0);
+    const yStart = new Date(todayStart);
+    yStart.setDate(yStart.getDate() - 1);
+
+    const iso = yStart.toISOString();
+    const url = `history/period/${iso}?filter_entity_id=${encodeURIComponent(
+      entityId
+    )}&minimal_response&significant_changes_only=0`;
+
+    hass
+      .callApi("GET", url)
+      .then((res) => {
+        let series = [];
+        if (Array.isArray(res) && res.length > 0 && Array.isArray(res[0])) {
+          series = res[0];
+        }
+
+        const buckets = new Array(bucketsLen).fill(null);
+
+        // Put last known value per hour for yesterday (local time)
+        series.forEach((pt) => {
+          const ts =
+            pt.last_updated ||
+            pt.last_changed ||
+            pt.time ||
+            pt.timestamp ||
+            pt["last_updated"];
+          const d = ts ? new Date(ts) : null;
+          if (!d || isNaN(d.getTime())) return;
+
+          // only yesterday window [yStart, todayStart)
+          if (d < yStart || d >= todayStart) return;
+
+          const h = d.getHours();
+          if (h < 0 || h > 23) return;
+
+          const m = d.getMinutes();
+          const sub = perHour <= 1 ? 0 : Math.min(perHour - 1, Math.floor((m * perHour) / 60));
+          const idx = (h * perHour) + sub;
+
+          const v = Number(pt.state);
+          if (isNaN(v)) return;
+          buckets[idx] = v;
+        });
+
+        // Fill-forward so each segment has a stable value (avoids nulls due to sparse history)
+        let last = null;
+        for (let i = 0; i < bucketsLen; i++) {
+          if (buckets[i] != null && !isNaN(buckets[i])) {
+            last = buckets[i];
+          } else if (last != null) {
+            buckets[i] = last;
+          }
+        }
+
+        // Fill-backward as well (if the first change happened late in the day,
+        // early hours would stay null with only forward-fill). This makes the
+        // overlay robust and always able to show *something* for every hour.
+        let next = null;
+        for (let i = bucketsLen - 1; i >= 0; i--) {
+          if (buckets[i] != null && !isNaN(buckets[i])) {
+            next = buckets[i];
+          } else if (next != null) {
+            buckets[i] = next;
+          }
+        }
+
+        this._historyCache[cacheKey] = {
+          loading: false,
+          fetchedAt: Date.now(),
+          values: buckets,
+        };
+
+        // This card uses a manual render() pipeline (not Lit's reactive update).
+        // Force a re-render so the keep-overlay becomes visible immediately.
+        this._render();
+      })
+      .catch((e) => {
+        this._historyCache[cacheKey] = {
+          loading: false,
+          fetchedAt: Date.now(),
+          values: [],
+          error: e,
+        };
+
+        // Force re-render so any UI depending on this cache updates.
+        this._render();
+      });
+  } catch (e) {
+    this._historyCache[cacheKey] = {
+      loading: false,
+      fetchedAt: Date.now(),
+      values: [],
+      error: e,
+    };
+  }
+
+  return this._historyCache[cacheKey]?.values || [];
+}
+
+
+      // ------------------------------------------------------
+      // RENDER
+      // ------------------------------------------------------
+
+      _render() {
+        if (!this.shadowRoot) return;
+        const cfg = this._config;
+        const hass = this._hass;
+
+        this.shadowRoot.innerHTML = "";
+
+        const style = document.createElement("style");
+        style.textContent = `
+          :host {
+            display: block;
+          }
+          ha-card {
+            position: relative;
+            overflow: hidden;
+            padding: 12px;
+            box-sizing: border-box;
+            background: var(--ha-card-background, rgba(0,0,0,0.3));
+          }
+          .wrapper {
+            position: relative;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+          }
+          
+         .scale-host {
+            width: 100%;
+            position: relative;
+            display: block;
+          }
+
+         .scale-wrap {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            backface-visibility: hidden;
+            transform-origin: top center;
+          }
+          
+          
+          svg {
+            width: 100%;
+            height: auto;
+            display: block;
+          }
+          .center-content {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            pointer-events: none;
+            padding: 4px;
+            text-align: center;
+          }
+          .center-line {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+          }
+          .center-line.icon-line {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+          }
+          .center-line ha-icon {
+            --mdc-icon-size: 18px;
+          }
+          .bottom-strip {
+            margin-top: 8px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px 12px;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+          }
+          .bottom-item {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            max-width: 100%;
+          }
+          .bottom-item ha-icon {
+            --mdc-icon-size: 16px;
+          }
+
+          .second-sweeper-group {
+            transform-origin: 0 0;
+            animation: stats-second-sweep 60s linear infinite;
+          }
+
+          @keyframes stats-second-sweep {
+            from {
+              transform: rotate(calc(var(--second-start-angle, 0) * 1deg));
+            }
+            to {
+              transform: rotate(calc(var(--second-end-angle, 360) * 1deg));
+            }
+          }
+        `;
+        this.shadowRoot.appendChild(style);
+
+        const card = document.createElement("ha-card");
+        
+        //v1.0.4 Scale
+        // Global scale (keeps proportions). Defaults to 1.
+        const sNum = Number(cfg?.scale);
+        const scale = !isNaN(sNum) ? Math.max(0.1, Math.min(4, sNum)) : 1;
+        
+        const scaleHost = document.createElement("div");
+        scaleHost.classList.add("scale-host");        
+        
+        
+        const scaleWrap = document.createElement("div");
+        scaleWrap.classList.add("scale-wrap");
+        scaleWrap.style.transform = `scale(${scale})`;
+        scaleWrap.style.transformOrigin = "top center";
+        //scaleWrap.style.height = `${Math.round(400 * scale)}px`;
+
+        // Prevent clipping when scaled up (CSS sets overflow:hidden by default)
+        if (scale !== 1) card.style.overflow = "visible";
+        
+        const wrapper = document.createElement("div");
+        wrapper.classList.add("wrapper");
+        //v1.0.4 card.appendChild(wrapper);
+        scaleWrap.appendChild(wrapper);
+        //card.appendChild(scaleWrap);
+        
+        scaleHost.appendChild(scaleWrap);
+        card.appendChild(scaleHost);
+
+        // store refs for dynamic height updates
+        this._scaleHostEl = scaleHost;
+        this._scaleWrapEl = scaleWrap;
+        
+
+        
+        this.shadowRoot.appendChild(card);
+
+        if (!cfg || !hass) {
+          card.innerHTML = "<div>Andy Stats Clock - not configured</div>";
+          return;
+        }
+
+        const radius = cfg.radius || 45;
+        const layers = this._buildLayerData(cfg, hass);
+        const hourSweeper = this._buildHourSweeper(cfg, hass);
+        const minuteSweeper = this._buildMinuteSweeper(cfg);
+        const secondSweeper = this._buildSecondSweeper(cfg);
+        const maxRadius = Math.max(
+          radius + 4,
+          ...layers.map((l) => l.rOuter + 4)
+        );
+        const viewSize = (maxRadius + 4) * 2;
+        const viewMin = -maxRadius - 4;
+
+        let svg = "";
+        svg += `<svg viewBox="${viewMin} ${viewMin} ${viewSize} ${viewSize}" xmlns="http://www.w3.org/2000/svg">`;
+        svg += `
+          <defs>
+            <filter id="stats-clock-glow">
+              <feGaussianBlur stdDeviation="0.8" result="coloredBlur" />
+              <feMerge>
+                <feMergeNode in="coloredBlur" />
+                <feMergeNode in="SourceGraphic" />
+              </feMerge>
+            </filter>
+          </defs>
+        `;
+
+        svg += `
+          <circle
+            cx="0"
+            cy="0"
+            r="${radius + 2}"
+            fill="rgba(0,0,0,0.45)"
+            stroke="rgba(255,255,255,0.06)"
+            stroke-width="1.4"
+          />
+        `;
+
+        // Outer minute ticks
+        if (cfg.outer_ticks && cfg.outer_ticks.enabled) {
+          svg += this._renderOuterTicksSvg(cfg, maxRadius - 1);
+        }
+
+        // Ring layers
+        layers.forEach((layer) => {
+          svg += this._renderLayerSvg(cfg, layer);
+        });
+
+        const useCenterPivot = cfg.hands_center_pivot === true;
+
+        if (cfg.show_hour_labels !== false) {
+          svg += this._renderHourLabelsSvg(cfg, maxRadius - 2);
+        }
+
+        if (hourSweeper) {
+          svg += this._renderHourSweeperSvg(hourSweeper, maxRadius - 4, useCenterPivot);
+        }
+
+        if (minuteSweeper) {
+          svg += this._renderMinuteSweeperSvg(minuteSweeper, maxRadius - 3, useCenterPivot);
+        }
+
+        if (secondSweeper) {
+          svg += this._renderSecondSweeperSvgSmooth(cfg, secondSweeper, maxRadius - 2, useCenterPivot);
+        }
+
+        // Hub
+        if (useCenterPivot) {
+          const hub = cfg.hub || {};
+          const hubRadius = hub.radius ?? 2.3;
+          const hubOpacity = hub.opacity ?? 1;
+          const hubColor = hub.color || "rgba(255,255,255,0.9)";
+          svg += `
+            <g opacity="${hubOpacity}">
+              <circle
+                cx="0"
+                cy="0"
+                r="${hubRadius}"
+                fill="rgba(0,0,0,0.7)"
+                stroke="${hubColor}"
+                stroke-width="0.5"
+              ></circle>
+            </g>
+          `;
+        }
+
+        svg += `</svg>`;
+
+        wrapper.innerHTML = svg;
+
+        const centerDiv = document.createElement("div");
+        centerDiv.classList.add("center-content");
+        centerDiv.style.color =
+          cfg.style.text_color || "var(--primary-text-color)";
+        centerDiv.style.fontFamily =
+          cfg.style.font_family ||
+          'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
+
+        const centerHtml = this._renderCenterLayersHtml(cfg, hass);
+        centerDiv.innerHTML = centerHtml;
+        wrapper.appendChild(centerDiv);
+
+        const bottomDiv = document.createElement("div");
+        bottomDiv.classList.add("bottom-strip");
+        bottomDiv.innerHTML = this._renderBottomLayersHtml(cfg, hass);
+        //v1.0.4 card.appendChild(bottomDiv);
+        scaleWrap.appendChild(bottomDiv);
+
+        card.style.background = cfg.style.background || card.style.background;
+        
+        // Recompute layout height after all content exists (SVG + center + bottom)
+        requestAnimationFrame(() => this._updateScaleLayout());
+        this._ensureScaleObserver(card);
+      }
+      
+      
+      _updateScaleLayout() {
+        if (!this._config || !this._scaleHostEl || !this._scaleWrapEl) return;
+
+        const sNum = Number(this._config.scale);
+        const scale = !isNaN(sNum) ? Math.max(0.1, Math.min(4, sNum)) : 1;
+
+        // Apply visual scale
+        //this._scaleWrapEl.style.transform = `scale(${scale})`;
+        if (Math.abs(scale - 1) < 0.0001) {
+          this._scaleWrapEl.style.transform = "";
+        } else {
+          this._scaleWrapEl.style.transform = `scale(${scale})`;
+        }
+
+        
+        
+        this._scaleWrapEl.style.transformOrigin = "top center";
+
+        // Measure unscaled content height (includes SVG + bottom layers)
+        // transform does NOT affect offsetHeight/scrollHeight
+        const naturalH = this._scaleWrapEl.scrollHeight || this._scaleWrapEl.offsetHeight || 0;
+        const scaledH = Math.max(1, Math.ceil(naturalH * scale));
+
+        // Make HA layout follow the scaled visual height -> no empty space, no clipping
+        this._scaleHostEl.style.height = `${scaledH}px`;
+
+        // Avoid clipping when scaled up
+        const card = this.shadowRoot?.querySelector("ha-card");
+        if (card) card.style.overflow = scale > 1 ? "visible" : "hidden";
+      }
+
+      _ensureScaleObserver(cardEl) {
+        if (!cardEl) return;
+        if (!this._scaleResizeObs) {
+          this._scaleResizeObs = new ResizeObserver(() => {
+            // Wait one frame so layout has settled
+            requestAnimationFrame(() => this._updateScaleLayout());
+          });
+        }
+        this._scaleResizeObs.disconnect();
+        this._scaleResizeObs.observe(cardEl);
+      }
+
+      
+      
+      
+
+
+      // ---- building data ----
+
+_buildLayerData(cfg, hass) {
+  const layers = [];
+  (cfg.layers || []).forEach((lc, index) => {
+    const baseRadius =
+      (lc.radius != null ? lc.radius : cfg.radius) -
+      index * ((lc.thickness || 6) + (cfg.layer_gap || 2));
+    const thickness = lc.thickness || 6;
+    const rOuter = baseRadius;
+    const rInner = baseRadius - thickness;
+
+    const stateObj = getEntityState(hass, lc.entity);
+    if (!stateObj) return;
+
+    // ---- Hämta råvärden för lagret ----
+    let values = this._resolveLayerValues(lc, hass, stateObj);
+    if (!values || !values.length) return;
+
+    // If the value source is a plain array (e.g. attribute array) it won't have __todayOnly.
+    // Create it so gradient range stays consistent between 24h and 12h views.
+    if (values && Array.isArray(values) && !values.__todayOnly && values.length >= 24 && values.length % 24 === 0) {
+      try { values.__todayOnly = values.slice(); } catch (e) {}
+    }
+
+    //v1.0.4
+    // Preserve meta from history arrays (used for keep+fade and stable gradient range)
+    const __prevMaskFull = values && values.__prevMask ? values.__prevMask : null;
+    const __todayOnlyFull = values && values.__todayOnly ? values.__todayOnly : null;
+    const __yestBucketsFull = values && values.__yestBuckets ? values.__yestBuckets : null;
+
+    // Slice to current half-day in 12h mode so geometry stays correct.
+    if ((cfg.clock_mode || "24h") === "12h") {
+      values = sliceValuesForClockMode(values, cfg);
+
+      if (__prevMaskFull && Array.isArray(__prevMaskFull) && __prevMaskFull.length) {
+        const m2 = sliceValuesForClockMode(__prevMaskFull, cfg);
+        try { values.__prevMask = m2; } catch(e) {}
+      }
+      if (__todayOnlyFull && Array.isArray(__todayOnlyFull) && __todayOnlyFull.length) {
+        const t2 = sliceValuesForClockMode(__todayOnlyFull, cfg);
+        try { values.__todayOnly = t2; } catch(e) {}
+      }
+      if (__yestBucketsFull && Array.isArray(__yestBucketsFull) && __yestBucketsFull.length) {
+        const y2 = sliceValuesForClockMode(__yestBucketsFull, cfg);
+        try { values.__yestBuckets = y2; } catch(e) {}
+      }
+    } else {
+      // 24h mode: keep full day buckets
+      try { if (__prevMaskFull) values.__prevMask = __prevMaskFull; } catch(e) {}
+      try { if (__todayOnlyFull) values.__todayOnly = __todayOnlyFull; } catch(e) {}
+      try { if (__yestBucketsFull) values.__yestBuckets = __yestBucketsFull; } catch(e) {}
+    }
+if (!values || !values.length) return;
+
+    const unit =
+      stateObj.attributes.unit_of_measurement ||
+      stateObj.attributes.price_unit ||
+      stateObj.attributes.unit ||
+      "";
+
+    let min = null;
+    let max = null;
+    let sum = 0;
+    let count = 0;
+    let minIndex = -1;
+    let maxIndex = -1;
+
+    const statsValues = (values && values.__todayOnly && Array.isArray(values.__todayOnly) && values.__todayOnly.length)
+      ? values.__todayOnly
+      : values;
+
+    statsValues.forEach((v, i) => {
+      if (v == null) return;
+      const num = Number(v);
+      if (isNaN(num)) return;
+      if (min === null || num < min) {
+        min = num;
+        minIndex = i;
+      }
+      if (max === null || num > max) {
+        max = num;
+        maxIndex = i;
+      }
+      sum += num;
+      count += 1;
+    });
+
+    const avg = count > 0 ? sum / count : null;
+    let avgIndex = -1;
+    if (avg != null) {
+      let bestDiff = null;
+      statsValues.forEach((v, i) => {
+        const num = Number(v);
+        if (isNaN(num)) return;
+        const diff = Math.abs(num - avg);
+        if (bestDiff === null || diff < bestDiff) {
+          bestDiff = diff;
+          avgIndex = i;
+        }
+      });
+    }
+    // Separate gradient range for previous-day values (so turning on Keep doesn't recolor today's segments)
+    let prevMin = null;
+    let prevMax = null;
+    const __yb = values && values.__yestBuckets && Array.isArray(values.__yestBuckets) ? values.__yestBuckets : null;
+    if (__yb && __yb.length) {
+      __yb.forEach((v) => {
+        if (v == null) return;
+        const num = Number(v);
+        if (isNaN(num)) return;
+        if (prevMin == null || num < prevMin) prevMin = num;
+        if (prevMax == null || num > prevMax) prevMax = num;
+      });
+    }
+
+
+    const isHistoryLayer =
+      lc.price_source === "history" || lc.type === "history" || lc.type === "consumption";
+
+    // Segment count:
+    // - For history/consumption layers we derive it from the computed values array,
+    //   which may be 24*N (or 12*N in 12h mode) when segment_count is used to split each hour.
+    // - For other layers we keep the legacy behaviour: lc.segment_count can directly control how
+    //   many segments that layer uses.
+    const segmentCount = isHistoryLayer
+      ? (values?.length || 0)
+      : (lc.segment_count && Number(lc.segment_count) > 0 ? Number(lc.segment_count) : (values?.length || 0));
+
+
+// --- Keep across midnight overlay (ONLY for history-based layers) ---
+let overlayValues = null;
+let overlayMask = null;
+let overlayMin = null;
+let overlayMax = null;
+
+if (isHistoryLayer && lc.keep_across_midnight === true) {
+  const y24 = this._getYesterday24ForLayer(lc, hass);
+  if (Array.isArray(y24) && y24.length >= 24 && y24.length % 24 === 0) {
+    const nowHour = getSystemHour(); // 0..23
+    const yView = (cfg.clock_mode || "24h") === "12h"
+      ? sliceValuesForClockMode(y24, cfg)
+      : y24.slice();
+
+    // Build overlay only for future buckets (so today's part is NEVER affected)
+    const nView = values.length;
+    overlayValues = new Array(nView).fill(null);
+    overlayMask = new Array(nView).fill(false);
+
+    const viewHours = (cfg.clock_mode || "24h") === "12h" ? 12 : 24;
+    const itemsPerHour = Math.max(1, Math.floor(nView / viewHours));
+
+    for (let i = 0; i < nView; i++) {
+      let bucketHour = Math.floor(i / itemsPerHour);
+      if ((cfg.clock_mode || "24h") === "12h") {
+        const offset = nowHour >= 12 ? 12 : 0;
+        bucketHour = offset + bucketHour;
+      }
+      if (bucketHour > nowHour) {
+        const v = yView[i];
+        if (v != null && !isNaN(Number(v))) {
+          overlayValues[i] = Number(v);
+          overlayMask[i] = true;
+          if (overlayMin === null || overlayValues[i] < overlayMin) overlayMin = overlayValues[i];
+          if (overlayMax === null || overlayValues[i] > overlayMax) overlayMax = overlayValues[i];
+        }
+      }
+    }
+  }
+}
+
+    layers.push({
+      cfg: lc,
+      values,
+      overlayValues,
+      overlayMask,
+      overlayMin,
+      overlayMax,
+      prevMin,
+      prevMax,
+      min,
+      max,
+      avg,
+      minIndex,
+      maxIndex,
+      avgIndex,
+      rInner,
+      rOuter,
+      unit,
+      segmentCount,
+    });
+  });
+  return layers;
+}
+
+
+
+      _buildLayerDataOld(cfg, hass) {
+        const layers = [];
+        const clockMode = cfg.clock_mode || "24h";
+        const systemHour = getSystemHour();
+
+        (cfg.layers || []).forEach((lc, index) => {
+          const baseRadius =
+            (lc.radius != null ? lc.radius : cfg.radius) -
+            index * ((lc.thickness || 6) + (cfg.layer_gap || 2));
+          const thickness = lc.thickness || 6;
+          const rOuter = baseRadius;
+          const rInner = baseRadius - thickness;
+
+          const stateObj = getEntityState(hass, lc.entity);
+          if (!stateObj) return;
+
+          const rawValues = this._resolveLayerValues(lc, hass, stateObj);
+          if (!rawValues || !rawValues.length) return;
+
+          let values = rawValues;
+          if (clockMode === "12h") {
+            if (rawValues.length >= 24) {
+              const isDay = systemHour >= 12;
+              const start = isDay ? 12 : 0;
+              const end = start + 12;
+              values = rawValues.slice(start, end);
+            } else {
+              values = rawValues.slice(0, Math.min(12, rawValues.length));
+            }
+          }
+
+          const unit =
+            stateObj.attributes.unit_of_measurement ||
+            stateObj.attributes.price_unit ||
+            stateObj.attributes.unit ||
+            "";
+
+          let min = null;
+          let max = null;
+          let sum = 0;
+          let count = 0;
+          let minIndex = -1;
+          let maxIndex = -1;
+
+          values.forEach((v, i) => {
+            if (v == null) return;
+            const num = Number(v);
+            if (isNaN(num)) return;
+            if (min === null || num < min) {
+              min = num;
+              minIndex = i;
+            }
+            if (max === null || num > max) {
+              max = num;
+              maxIndex = i;
+            }
+            sum += num;
+            count += 1;
+          });
+
+          const avg = count > 0 ? sum / count : null;
+          let avgIndex = -1;
+          if (avg != null) {
+            let bestDiff = null;
+            values.forEach((v, i) => {
+              if (v == null) return;
+              const num = Number(v);
+              if (isNaN(num)) return;
+              const diff = Math.abs(num - avg);
+              if (bestDiff === null || diff < bestDiff) {
+                bestDiff = diff;
+                avgIndex = i;
+              }
+            });
+          }
+
+          const segmentCount =
+            lc.segment_count && Number(lc.segment_count) > 0
+              ? Number(lc.segment_count)
+              : clockMode === "12h"
+                ? 12
+                : values.length;
+
+          layers.push({
+            cfg: lc,
+            values,
+            min,
+            max,
+            avg,
+            minIndex,
+            maxIndex,
+            avgIndex,
+            rInner,
+            rOuter,
+            unit,
+            segmentCount,
+          });
+        });
+        return layers;
+      }
+
+      _resolveLayerValues(lc, hass, stateObj) {
+        const entityId = lc.entity;
+        const type = lc.type || "price";
+        const st = stateObj || getEntityState(hass, entityId);
+        if (!entityId || !st) return [];
+
+        if (type === "price" && lc.price_source === "array") {
+          const vals = parseAttributeArray(
+            st,
+            lc.attribute || "today",
+            lc.value_path || "value"
+          );
+          return vals;
+        }
+
+        if (
+          lc.price_source === "history" ||
+          type === "consumption" ||
+          type === "history"
+        ) {
+          const attrName = lc.attribute || "";
+          if (attrName && Array.isArray(st.attributes[attrName])) {
+            // Assume attribute array is already one slot per hour or similar
+            return st.attributes[attrName].map((v) =>
+              v == null ? null : Number(v)
+            );
+          }
+
+          const s = st.state;
+          if (s && typeof s === "string" && s.trim().startsWith("[")) {
+            try {
+              const json = JSON.parse(s);
+              if (Array.isArray(json)) {
+                return json.map((v) => (v == null ? null : Number(v)));
+              }
+            } catch (e) {}
+          }
+
+          // IMPORTANT:
+          // Turning on "Keep values" must NEVER change how today's values/colors are calculated.
+          // So we ALWAYS compute the base (today) series in "reset" mode, and only use
+          // yesterday data as an overlay in the renderer.
+          const baseLc = lc && lc.keep_across_midnight === true
+            ? { ...lc, keep_across_midnight: false }
+            : lc;
+
+          const historyVals = this._getHistory24ForLayer(baseLc, hass, st);
+          if (historyVals && historyVals.length) {
+            return historyVals;
+          }
+
+          const val = Number(s);
+          return isNaN(val) ? [] : [val];
+        }
+
+        return [];
+      }
+
+      // ---- outer ticks (minutes) ----
+
+      _renderOuterTicksSvg(cfg, rOuter) {
+        const ticks = 60;
+        const span = 360; //cfg.end_angle - cfg.start_angle || 360;
+        let out = "";
+        const baseColor = "rgba(255,255,255,0.35)";
+        for (let i = 0; i < ticks; i++) {
+          const isBig = i % 5 === 0;
+          const len = isBig ? 2.5 : 1.5;
+          const width = isBig ? 0.7 : 0.4;
+          //const angle = cfg.start_angle + (span * i) / ticks;
+          const angle = 0 + (span * i) / ticks;
+          const p1 = polarToCartesian(rOuter - len, angle);
+          const p2 = polarToCartesian(rOuter, angle);
+          out += `
+            <line
+              x1="${p1.x}"
+              y1="${p1.y}"
+              x2="${p2.x}"
+              y2="${p2.y}"
+              stroke="${baseColor}"
+              stroke-width="${width}"
+              stroke-linecap="round"
+            ></line>
+          `;
+        }
+        return out;
+      }
+
+  _getClockGeometry(cfg) {
+  const mode = cfg.clock_mode || "24h";
+
+//  const startCfg =
+//    typeof cfg.start_angle === "number" ? cfg.start_angle : -7.5;
+//  const endCfg =
+//    typeof cfg.end_angle === "number" ? cfg.end_angle : 352.5;
+  const startCfg = 0;
+  const endCfg = 360;
+
+  let span = 360; //endCfg - startCfg;
+  if (!span) span = 360;
+
+  if (mode === "12h") {
+    // Default-vinklarna är gjorda för 24 segment.
+    // För 12h måste vi rotera ca ett halvt 24h-segment (7.5°)
+    // så att 12/6 hamnar exakt upp/ner.
+    const step12 = span / 12;
+    const step24 = span / 24;
+    const rotationFix = step12 / 2 - step24 / 2; // ≈ 7.5°
+    const adjustedStart = 0; //startCfg - rotationFix;
+
+    return {
+      mode,
+      hours: 12,
+      start: adjustedStart,
+      span,
+    };
+  }
+
+  return {
+    mode,
+    hours: 24,
+    start: startCfg,
+    span,
+  };
+}
+
+_getClockGeometryLabels(cfg) {
+  const mode = cfg.clock_mode || "24h";
+
+  const startCfg =
+    typeof cfg.start_angle === "number" ? cfg.start_angle : -7.5;
+  const endCfg =
+    typeof cfg.end_angle === "number" ? cfg.end_angle : 352.5;
+
+  let span = endCfg - startCfg;
+  if (!span) span = 360;
+
+  if (mode === "12h") {
+    // Default-vinklarna är gjorda för 24 segment.
+    // För 12h måste vi rotera ca ett halvt 24h-segment (7.5°)
+    // så att 12/6 hamnar exakt upp/ner.
+    const step12 = span / 12;
+    const step24 = span / 24;
+    const rotationFix = step12 / 2 - step24 / 2; // ≈ 7.5°
+    const adjustedStart = startCfg - rotationFix;
+
+    return {
+      mode,
+      hours: 12,
+      start: adjustedStart,
+      span,
+    };
+  }
+
+  return {
+    mode,
+    hours: 24,
+    start: startCfg,
+    span,
+  };
+}
+
+      // ---- svg rendering ----
+  
+  
+            // ---- svg rendering ----
+      _renderLayerSvg(cfg, layer) {
+        const {
+          values,
+          overlayValues,
+          overlayMask,
+          overlayMin,
+          overlayMax,
+          prevMin,
+          prevMax,
+          min,
+          max,
+          rInner,
+          rOuter,
+          cfg: lc,
+          unit,
+          minIndex,
+          maxIndex,
+          avgIndex,
+          avg,
+          segmentCount,
+        } = layer;
+
+        const n = values.length;
+        if (!n) return "";
+
+        const geom = this._getClockGeometry(cfg);
+        const span = geom.span;
+        const segments = segmentCount || n;
+        const step = span / segments;
+        const baseStart = 0; //geom.start;
+
+        let segs = "";
+
+        for (let i = 0; i < n; i++) {
+          const raw = values[i];
+
+          const angleStart = baseStart + step * i;
+          const angleEnd = baseStart + step * (i + 1);
+          const path = makeRingSegmentPath(rInner, rOuter, angleStart, angleEnd);
+
+          const hasOverlay =
+            overlayMask &&
+            overlayMask[i] &&
+            overlayValues &&
+            overlayValues[i] != null &&
+            !isNaN(Number(overlayValues[i]));
+
+          // When Keep is ON and this slot has overlay (future hour), the base (today) must NOT draw here.
+          // This guarantees today's colors never overwrite yesterday overlay in future segments.
+          const skipBase =
+            lc.keep_across_midnight === true &&
+            overlayMask &&
+            overlayMask[i] === true;
+
+          // -----------------------
+          // Base segment (today)
+          // -----------------------
+          if (!skipBase) {
+            // Viktigt: saknas data (null / NaN) -> inget segment ritas
+            if (raw != null && !isNaN(Number(raw))) {
+              const val = Number(raw);
+
+              let color = "#28c76f";
+              const __mask = values && values.__prevMask ? values.__prevMask : null;
+              const __isPrev = __mask && __mask[i] === true;
+
+              if (lc.color_mode === "gradient") {
+                // Use separate min/max for previous-day values so Keep doesn't recolor today's segments
+                const gMin = (__isPrev && prevMin != null) ? prevMin : min;
+                const gMax = (__isPrev && prevMax != null) ? prevMax : max;
+                color = valueToGradientColor(val, gMin, gMax, lc.gradient);
+              } else {
+                const intervals =
+                  lc.intervals && lc.intervals.length
+                    ? lc.intervals
+                    : [
+                        { from: 0, to: 50, color_from: "#28c76f", color_to: "#9be15d" },
+                        { from: 50, to: 100, color_from: "#ff9f43", color_to: "#ffc26a" },
+                        {
+                          from: 100,
+                          to: 1000,
+                          color_from: "#ea5455",
+                          color_to: "#f86c7d",
+                        },
+                      ];
+                color = valueToIntervalColor(val, intervals);
+              }
+
+              const baseOpacity = lc.opacity != null ? lc.opacity : 1.0;
+
+              // Fade "previous day" segments when keeping across midnight.
+              // Works for both 24h (values[0..23]) and 12h (values[0..11] == AM/PM window).
+              let opacity = baseOpacity;
+              if (lc.keep_across_midnight === true && lc.fade_previous_day === true) {
+                if (__isPrev) {
+                  const fRaw = Number(lc.fade_previous_day_opacity ?? 0.25);
+                  const fade = isNaN(fRaw) ? 0.25 : Math.max(0, Math.min(1, fRaw));
+                  opacity = baseOpacity * fade;
+                }
+              }
+
+              segs += `
+            <path
+              d="${path}"
+              fill="${color}"
+              fill-opacity="${opacity}"
+              stroke="rgba(0,0,0,0.3)"
+              stroke-width="0.1"
+              filter="url(#stats-clock-glow)"
+            ></path>
+          `;
+            }
+          }
+
+          // -----------------------
+          // Overlay segment (yesterday) for future hours
+          // -----------------------
+          if (hasOverlay) {
+            const oVal = Number(overlayValues[i]);
+            const baseOpacity2 = lc.opacity != null ? lc.opacity : 1.0;
+            let oOpacity = baseOpacity2;
+            if (lc.fade_previous_day === true) {
+              const fRaw = Number(lc.fade_previous_day_opacity ?? 0.25);
+              const fade = isNaN(fRaw) ? 0.25 : Math.max(0, Math.min(1, fRaw));
+              oOpacity = baseOpacity2 * fade;
+            }
+
+            // Use separate range for yesterday overlay if gradient mode
+            const oMin = (overlayMin != null ? overlayMin : min);
+            const oMax = (overlayMax != null ? overlayMax : max);
+
+            let oColor = "#28c76f";
+            if (lc.color_mode === "gradient") {
+              oColor = valueToGradientColor(oVal, oMin, oMax, lc.gradient);
+            } else {
+              const intervals = lc.intervals && lc.intervals.length ? lc.intervals : [];
+              oColor = valueToIntervalColor(oVal, intervals);
+            }
+
+            segs += `
+    <path
+      d="${path}"
+      fill="${oColor}"
+      fill-opacity="${oOpacity}"
+      stroke="rgba(0,0,0,0.25)"
+      stroke-width="0.1"
+      filter="url(#stats-clock-glow)"
+    ></path>
+  `;
+          }
+        }
+
+        // Stats badges (min / max / avg)
+        const markersCfg = lc.stats_markers || {};
+        let markersSvg = "";
+        const markerColor = markersCfg.color || "rgba(255,255,255,0.9)";
+        const decimals =
+          markersCfg.decimals !== undefined && markersCfg.decimals !== null
+            ? Number(markersCfg.decimals)
+            : 1;
+
+        const radiusOffset = markersCfg.radius_offset;
+        const fontSize = markersCfg.font_size;
+        const minLabel = markersCfg.min_label ?? "";
+        const maxLabel = markersCfg.max_label ?? "";
+        const avgLabel = markersCfg.avg_label ?? "";
+
+        if (markersCfg.show_min && minIndex >= 0 && min != null) {
+          markersSvg += this._renderStatsMarker(
+            cfg,
+            layer,
+            minIndex,
+            min,
+            unit,
+            "min",
+            markerColor,
+            decimals,
+            radiusOffset,
+            fontSize,
+            minLabel
+          );
+        }
+        if (markersCfg.show_max && maxIndex >= 0 && max != null) {
+          markersSvg += this._renderStatsMarker(
+            cfg,
+            layer,
+            maxIndex,
+            max,
+            unit,
+            "max",
+            markerColor,
+            decimals,
+            radiusOffset,
+            fontSize,
+            maxLabel
+          );
+        }
+        if (markersCfg.show_avg && avgIndex >= 0 && avg != null) {
+          markersSvg += this._renderStatsMarker(
+            cfg,
+            layer,
+            avgIndex,
+            avg,
+            unit,
+            "avg",
+            markerColor,
+            decimals,
+            radiusOffset,
+            fontSize,
+            avgLabel
+          );
+        }
+
+        return segs + markersSvg;
+      }
+
+      
+
+
+    _renderStatsMarker(
+        cfg,
+        layer,
+        idx,
+        value,
+        unit,
+        type,
+        color,
+        decimals,
+        radiusOffset,
+        fontSize,
+        label
+      ) {
+        const n = layer.values.length;
+        if (!n) return "";
+
+        const geom = this._getClockGeometry(cfg);
+        const span = geom.span;
+        const segments = layer.segmentCount || n;
+        const step = span / segments;
+        const angleCenter = geom.start + step * (idx + 0.5);
+
+        const offset = radiusOffset != null ? Number(radiusOffset) : 2;
+        const rDot = layer.rOuter + offset;
+        const rText = rDot + 4;
+
+        const pDot = polarToCartesian(rDot, angleCenter);
+        const pText = polarToCartesian(rText, angleCenter);
+
+        let valStr;
+        if (isNaN(value)) {
+          valStr = String(value);
+        } else if (!isNaN(decimals)) {
+          valStr = Number(value).toFixed(decimals);
+        } else {
+          valStr = String(value);
+        }
+        if (unit) valStr += unit;
+
+        let textStr = valStr;
+        if (label && String(label).trim() !== "") {
+          textStr = `${String(label).trim()} ${valStr}`;
+        }
+
+        const size = fontSize != null ? Number(fontSize) : 3;
+
+        // Outline is configured per-layer (Layer → Stats markers). We also allow an optional
+        // global default under General, but the layer config takes precedence.
+        const layerSm = layer && layer.cfg && layer.cfg.stats_markers ? layer.cfg.stats_markers : {};
+        const generalSm = cfg && cfg.general && cfg.general.stats_markers ? cfg.general.stats_markers : {};
+        const sm = { ...generalSm, ...layerSm };
+        const outline = !!sm.outline;
+        const outlineColor = sm.outline_color || "rgba(0,0,0,0.65)";
+        const outlineWidth = sm.outline_width != null && !isNaN(Number(sm.outline_width)) ? Number(sm.outline_width) : 0.8;
+
+        return `
+          <circle
+            cx="${pDot.x}"
+            cy="${pDot.y}"
+            r="1.1"
+            fill="${color}"
+          ></circle>
+          <text
+            x="${pText.x}"
+            y="${pText.y}"
+            text-anchor="middle"
+            alignment-baseline="middle"
+            font-size="${size}"
+            fill="${color}"
+            ${outline ? `stroke="${outlineColor}" stroke-width="${outlineWidth}" paint-order="stroke fill"` : ""}
+          >
+            ${textStr}
+          </text>
+        `;
+      }
+
+
+      
+
+_renderHourLabelsSvg(cfg, r) {
+  const geom = this._getClockGeometryLabels(cfg);
+  const mode = geom.mode;
+  const hours = geom.hours;
+  const span = geom.span;
+  const step = span / hours;
+
+  let out = "";
+
+  for (let i = 0; i < hours; i++) {
+    const angleCenter = geom.start + step * (i + 0.5);
+    const p = polarToCartesian(r, angleCenter);
+
+    let label;
+    if (mode === "12h") {
+      // 0..11 -> 12,1,2,...,11
+      label = i === 0 ? 12 : i;
+    } else {
+      label = i;
+    }
+
+    out += `
+      <text
+        x="${p.x}"
+        y="${p.y }"
+        text-anchor="middle"
+        alignment-baseline="middle"
+        font-size="4"
+        fill="rgba(255,255,255,0.7)"
+      >
+        ${label}
+      </text>
+    `;
+  }
+
+  return out;
+}
+
+      
+      _renderHourLabelsSvgOld(cfg, r) {
+        const mode = cfg.clock_mode || "24h";
+        let out = "";
+
+        if (mode === "12h") {
+          const hours = 12;
+          const span = cfg.end_angle - cfg.start_angle;
+          const step = span / hours;
+          for (let i = 0; i < hours; i++) {
+            const angleCenter = cfg.start_angle + step * (i + 0.5);
+            const p = polarToCartesian(r, angleCenter);
+            const label = i === 0 ? 12 : i;
+            out += `
+              <text
+                x="${p.x}"
+                y="${p.y + 2}"
+                text-anchor="middle"
+                alignment-baseline="middle"
+                font-size="4"
+                fill="rgba(255,255,255,0.7)"
+              >
+                ${label}
+              </text>
+            `;
+          }
+          return out;
+        }
+
+        const hours = 24;
+        const span = cfg.end_angle - cfg.start_angle;
+        const step = span / hours;
+
+        for (let i = 0; i < hours; i++) {
+          const angleCenter = cfg.start_angle + step * (i + 0.5);
+          const p = polarToCartesian(r, angleCenter);
+          const label = i;
+
+          out += `
+            <text
+              x="${p.x}"
+              y="${p.y + 2}"
+              text-anchor="middle"
+              alignment-baseline="middle"
+              font-size="4"
+              fill="rgba(255,255,255,0.7)"
+            >
+              ${label}
+            </text>
+          `;
+        }
+        return out;
+      }
+
+      // --------- Hour / Minute / Second sweepers ---------
+      _buildHourSweeper(cfg, hass) {
+        const sw = cfg.hour_sweeper || cfg.sweeper || {};
+        if (sw.enabled === false) return null;
+
+        const geom = this._getClockGeometryLabels(cfg);
+        const totalHours = geom.hours;
+
+        let hourFraction = 0;
+
+        const now = new Date();
+        hourFraction = now.getHours() + now.getMinutes() / 60;
+        
+
+        if (geom.mode === "12h") {
+          hourFraction = ((hourFraction % 12) + 12) % 12;
+        } else {
+          hourFraction = ((hourFraction % 24) + 24) % 24;
+        }
+
+        const t = hourFraction / totalHours;
+        const span = geom.span;
+        const step = span / totalHours;
+        const angle = geom.start + span * t + step / 2;
+
+        return {
+          angle,
+          color: sw.color || "#FFFFFF",
+          width: sw.width || 1.5,
+          opacity: sw.opacity != null ? sw.opacity : 1,
+          show_dash: sw.show_dash !== false,
+          dash_radius: sw.dash_radius != null ? Number(sw.dash_radius) : 1.3,
+          length_scale: sw.length_scale != null ? Number(sw.length_scale) : 1.0,
+        };
+      }
+
+      _buildMinuteSweeper(cfg) {
+        const ms = cfg.minute_sweeper || {};
+        if (ms.enabled === false) return null;
+
+        const now = new Date();
+        const minutes = now.getMinutes() + now.getSeconds() / 60;
+        const t = minutes / 60; // 0..1 över timmen
+
+        const geom = this._getClockGeometry(cfg);
+        const span = geom.span;
+        //const angle = geom.start + span * t;
+        const angle = span * t;
+
+        return {
+          angle,
+          color: ms.color || "#FFFFFF",
+          width: ms.width || 1.2,
+          opacity: ms.opacity ?? 1,
+          show_dash: ms.show_dash !== false,
+          dash_radius: ms.dash_radius != null ? Number(ms.dash_radius) : 1.1,
+          length_scale: ms.length_scale != null ? Number(ms.length_scale) : 1.0,
+        };
+      }
+
+      _buildSecondSweeper(cfg) {
+        const sw = cfg.second_sweeper || {};
+        if (sw.enabled === false) return null;
+        const now = new Date();
+        const seconds = now.getSeconds() + now.getMilliseconds() / 1000;
+        return {
+          seconds,
+          color: sw.color || "#FF4081",
+          width: sw.width || 1.0,
+          opacity: sw.opacity ?? 1,
+          show_dash: sw.show_dash !== false,
+          dash_radius: sw.dash_radius != null ? Number(sw.dash_radius) : 1.1,
+          length_scale: sw.length_scale != null ? Number(sw.length_scale) : 1.0
+        };
+      }
+
+ 
+
+      _renderHourSweeperSvg(sw, radius, centerPivot) {
+        const inner = centerPivot ? 0 : radius * 0.1;
+        
+        const lengthScale = sw.length_scale != null ? Number(sw.length_scale) : 1.0;
+        const outer = radius * lengthScale;
+
+        const pInner = polarToCartesian(inner, sw.angle);
+        const pOuter = polarToCartesian(outer, sw.angle);
+
+        const lineSvg = `
+          <line
+            x1="${pInner.x}"
+            y1="${pInner.y}"
+            x2="${pOuter.x}"
+            y2="${pOuter.y}"
+            stroke="${sw.color}"
+            stroke-width="${sw.width}"
+            stroke-linecap="round"
+            stroke-opacity="${sw.opacity ?? 1}"
+          ></line>
+        `;
+
+        const dashRadius = sw.dash_radius != null ? Number(sw.dash_radius) : 1.3;
+        const dashSvg =
+          sw.show_dash === false
+            ? ""
+            : `
+          <circle
+            cx="${pOuter.x}"
+            cy="${pOuter.y}"
+            r="${dashRadius}"
+            fill="${sw.color}"
+            fill-opacity="${sw.opacity ?? 1}"
+          ></circle>
+        `;
+
+        return lineSvg + dashSvg;
+      }
+
+      _renderMinuteSweeperSvg(sw, radius, centerPivot) {
+        const inner = centerPivot ? 0 : radius * 0.06;
+        //const outer = radius - 1.5;
+        const baseOuter = radius - 1.5;
+        const lengthScale = sw.length_scale != null ? Number(sw.length_scale) : 1.0;
+        const outer = baseOuter * lengthScale
+        
+        const pInner = polarToCartesian(inner, sw.angle);
+        const pOuter = polarToCartesian(outer, sw.angle);
+
+        const lineSvg = `
+          <line
+            x1="${pInner.x}"
+            y1="${pInner.y}"
+            x2="${pOuter.x}"
+            y2="${pOuter.y}"
+            stroke="${sw.color}"
+            stroke-width="${sw.width}"
+            stroke-linecap="round"
+            stroke-opacity="${sw.opacity ?? 1}"
+          ></line>
+        `;
+
+        const dashRadius = sw.dash_radius != null ? Number(sw.dash_radius) : 1.1;
+        const dashSvg =
+          sw.show_dash === false
+            ? ""
+            : `
+          <circle
+            cx="${pOuter.x}"
+            cy="${pOuter.y}"
+            r="${dashRadius}"
+            fill="${sw.color}"
+            fill-opacity="${sw.opacity ?? 1}"
+          ></circle>
+        `;
+
+        return lineSvg + dashSvg;
+      }
+
+      _renderSecondSweeperSvgSmooth(cfg, sw, radius, centerPivot) {
+        const inner = centerPivot ? 0 : radius * 0.1;
+        const lengthScale = sw.length_scale != null ? Number(sw.length_scale) : 1.0;
+        const outer = radius * lengthScale;
+        const dashRadius = sw.dash_radius != null ? Number(sw.dash_radius) : 1.1;
+
+        const dashSvg =
+          sw.show_dash === false
+            ? ""
+            : `
+            <circle
+              cx="0"
+              cy="${-outer}"
+              r="${dashRadius}"
+              fill="${sw.color}"
+            ></circle>
+          `;
+
+        return `
+          <g
+            class="second-sweeper-group"
+            style="
+              --second-start-angle:${cfg.start_angle};
+              --second-end-angle:${cfg.end_angle};
+              animation-delay:-${sw.seconds}s;
+            "
+            opacity="${sw.opacity ?? 1}"
+          >
+            <line
+              x1="0"
+              y1="${-inner}"
+              x2="0"
+              y2="${-outer}"
+              stroke="${sw.color}"
+              stroke-width="${sw.width}"
+              stroke-linecap="round"
+            ></line>
+            ${dashSvg}
+          </g>
+        `;
+      }
+
+
+      _renderCenterLayersHtml(cfg, hass) {
+        const layers = cfg.center_layers || [];
+        let htmlStr = "";
+        const period = this._getPeriodString(cfg);
+
+        layers.forEach((lc) => {
+          let text = "";
+          let icon = null;
+
+          if (lc.type === "entity") {
+            const st = getEntityState(hass, lc.entity);
+            const tpl = lc.label_template || "<state>";
+            if (st) {
+              const attrs = st.attributes || {};
+              const unit = attrs.unit_of_measurement || "";
+              const rawState = st.state != null ? String(st.state) : "";
+              let stateForTpl = rawState;
+              const num = Number(rawState);
+              if (!isNaN(num) && lc.decimals != null && lc.decimals !== "") {
+                const dec = Number(lc.decimals);
+                stateForTpl = isNaN(dec) ? rawState : num.toFixed(dec);
+              }
+
+              text = tpl
+                .replace(/<state>/g, stateForTpl)
+                .replace(/<raw_state>/g, rawState)
+                .replace(/<unit>/g, unit)
+                .replace(
+                  /<name>/g,
+                  st.attributes.friendly_name || lc.entity || ""
+                )
+                .replace(/<time>/g, new Date().toLocaleTimeString())
+                .replace(/<period>/g, period);
+
+              if (lc.show_icon) {
+                icon = lc.icon || attrs.icon || "";
+              }
+            } else {
+              text = (lc.label_template || "<state>").replace(/<period>/g, period);
+            }
+          } else if (lc.type === "static") {
+            const baseText = lc.text || "";
+            text = baseText.replace(/<period>/g, period);
+          }
+
+          if (!text) return;
+          
+          // Optional per-item vertical offset (px). If empty/undefined -> keep current auto layout.
+          let marginTopCss = "";
+          if (lc.top_margin !== undefined && lc.top_margin !== null && lc.top_margin !== "") {
+            const mt = Number(lc.top_margin);
+            if (!isNaN(mt)) marginTopCss = `transform: translateY(${mt}px)`; //marginTopCss = `margin-top:${mt}px`;
+          }          
+
+          const style = [
+            `font-size:${lc.font_size || 14}px`,
+            `font-weight:${lc.font_weight || 400}`,
+            `color:${lc.color || "var(--primary-text-color)"}`,marginTopCss,
+          ].join(";");
+
+          const cls = icon ? "center-line icon-line" : "center-line";
+
+          if (icon) {
+            htmlStr += `
+              <div class="${cls}" style="${style}">
+                <ha-icon icon="${icon}"></ha-icon>
+                <span>${text}</span>
+              </div>
+            `;
+          } else {
+            htmlStr += `<div class="${cls}" style="${style}">${text}</div>`;
+          }
+        });
+
+        return htmlStr;
+      }
+
+      _renderBottomLayersHtml(cfg, hass) {
+        const layers = cfg.bottom_layers || [];
+        let htmlStr = "";
+        const period = this._getPeriodString(cfg);
+
+        layers.forEach((lc) => {
+          let text = "";
+          let icon = null;
+
+          if (lc.type === "entity") {
+            const st = getEntityState(hass, lc.entity);
+            const tpl = lc.label_template || "<name>: <state><unit>";
+            if (st) {
+              const attrs = st.attributes || {};
+              const unit = attrs.unit_of_measurement || "";
+              const rawState = st.state != null ? String(st.state) : "";
+              let stateForTpl = rawState;
+              const num = Number(rawState);
+              if (!isNaN(num) && lc.decimals != null && lc.decimals !== "") {
+                const dec = Number(lc.decimals);
+                stateForTpl = isNaN(dec) ? rawState : num.toFixed(dec);
+              }
+
+              text = tpl
+                .replace(/<state>/g, stateForTpl)
+                .replace(/<raw_state>/g, rawState)
+                .replace(/<unit>/g, unit)
+                .replace(
+                  /<name>/g,
+                  st.attributes.friendly_name || lc.entity || ""
+                )
+                .replace(/<time>/g, new Date().toLocaleTimeString())
+                .replace(/<period>/g, period);
+
+              if (lc.show_icon) {
+                icon = lc.icon || attrs.icon || "";
+              }
+            } else {
+              text = (lc.label_template || "<name>: <state><unit>").replace(
+                /<period>/g,
+                period
+              );
+            }
+          } else if (lc.type === "static") {
+            const baseText = lc.text || "";
+            text = baseText.replace(/<period>/g, period);
+          }
+
+          if (!text) return;
+
+          const style = [
+            `font-size:${lc.font_size || 11}px`,
+            `font-weight:${lc.font_weight || 400}`,
+            `color:${lc.color || "var(--secondary-text-color)"}`,
+          ].join(";");
+
+          if (icon) {
+            htmlStr += `
+              <div class="bottom-item" style="${style}">
+                <ha-icon icon="${icon}"></ha-icon>
+                <span>${text}</span>
+              </div>
+            `;
+          } else {
+            htmlStr += `<div class="bottom-item" style="${style}">${text}</div>`;
+          }
+        });
+
+        return htmlStr;
+      }
+    }
+
+    customElements.define(CARD_TAG, AndyStatsClockCard);
+
+    window.customCards = window.customCards || [];
+    if (!window.customCards.some((c) => c.type === CARD_TAG)) {
+      window.customCards.push({
+        type: CARD_TAG,
+        name: "Andy Stats Clock",
+        description:
+          "Layer-based statistics clock for prices, consumption and sensors.",
+      });
+    }
+  }
+
+  // ----------------------------------------------------------
+  // EDITOR (VISUAL)
+  // ----------------------------------------------------------
+
+  if (!customElements.get(EDITOR_TAG)) {
+    const LitBase =
+      customElements.get("hui-masonry-view") ||
+      customElements.get("ha-panel-lovelace");
+    const LitElement = Object.getPrototypeOf(LitBase);
+    const html = LitElement.prototype.html;
+    const css = LitElement.prototype.css;
+
+    class AndyStatsClockEditor extends LitElement {
+      static get properties() {
+        return {
+          hass: {},
+          _config: {},
+          _expandedLayerIndex: { type: Number },
+          _expandedCenterIndex: { type: Number },
+          _expandedBottomIndex: { type: Number },
+        };
+      }
+
+      constructor() {
+        super();
+        this._config = deepMerge(StatsClockDefaultConfig, {});
+        // All collapsed initially
+        this._expandedLayerIndex = -1;
+        this._expandedCenterIndex = -1;
+        this._expandedBottomIndex = -1;
+      }
+
+      setConfig(config) {
+        this._config = deepMerge(StatsClockDefaultConfig, config || {});
+
+        if (config && config.sweeper && !config.hour_sweeper) {
+          this._config.hour_sweeper = deepMerge(
+            this._config.hour_sweeper || {},
+            config.sweeper
+          );
+        }
+
+        if (!Array.isArray(this._config.layers)) this._config.layers = [];
+        if (!Array.isArray(this._config.center_layers))
+          this._config.center_layers = [];
+        if (!Array.isArray(this._config.bottom_layers))
+          this._config.bottom_layers = [];
+      }
+
+      get hass() {
+        return this._hass;
+      }
+
+      set hass(hass) {
+        this._hass = hass;
+        this.requestUpdate();
+      }
+
+      _emitConfigChanged() {
+        fireEvent(this, "config-changed", { config: this._config });
+      }
+
+      _stopPropagation(ev) {
+        ev.stopPropagation();
+      }
+
+      _normalizeColorInput(val) {
+        if (typeof val !== "string") return "#ffffff";
+        const t = val.trim();
+        const m = t.match(/^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/);
+        return m ? m[0] : "#ffffff";
+      }
+
+      _mkEntityControl(label, value, onChange) {
+        const stop = (e) => e.stopPropagation();
+        const hasSelector = !!customElements.get("ha-selector");
+
+        if (hasSelector) {
+          const sel = document.createElement("ha-selector");
+          sel.label = label;
+          sel.selector = { entity: {} };
+          sel.value = value;
+          sel.hass = this.hass;
+          sel.addEventListener("value-changed", (e) => {
+            const v = e.detail?.value ?? e.target.value;
+            onChange(v);
+          });
+          sel.addEventListener("click", stop);
+          return sel;
+        }
+
+        const ep = document.createElement("ha-entity-picker");
+        ep.label = label;
+        ep.allowCustomEntity = true;
+        ep.value = value;
+        ep.hass = this.hass;
+        ep.addEventListener("value-changed", (e) => {
+          const v = e.detail?.value ?? e.target.value;
+          onChange(v);
+        });
+        ep.addEventListener("click", stop);
+        return ep;
+      }
+
+      updated() {
+        const root = this.renderRoot;
+        const cfg = this._config;
+
+        (cfg.layers || []).forEach((layer, idx) => {
+          const container = root.querySelector(
+            `#layer-entity-picker-${idx}`
+          );
+          if (container && !container._controlAttached) {
+            container.innerHTML = "";
+            const ctrl = this._mkEntityControl(
+              "Entity",
+              layer.entity || "",
+              (val) => {
+                this._config.layers[idx].entity = val;
+                this._emitConfigChanged();
+              }
+            );
+            container.appendChild(ctrl);
+            container._controlAttached = true;
+          }
+        });
+
+        (cfg.center_layers || []).forEach((cl, idx) => {
+          if (cl.type !== "entity") return;
+          const container = root.querySelector(
+            `#center-entity-picker-${idx}`
+          );
+          if (container && !container._controlAttached) {
+            container.innerHTML = "";
+            const ctrl = this._mkEntityControl(
+              "Entity",
+              cl.entity || "",
+              (val) => {
+                this._config.center_layers[idx].entity = val;
+                this._emitConfigChanged();
+              }
+            );
+            container.appendChild(ctrl);
+            container._controlAttached = true;
+          }
+        });
+
+        (cfg.bottom_layers || []).forEach((cl, idx) => {
+          if (cl.type !== "entity") return;
+          const container = root.querySelector(
+            `#bottom-entity-picker-${idx}`
+          );
+          if (container && !container._controlAttached) {
+            container.innerHTML = "";
+            const ctrl = this._mkEntityControl(
+              "Entity",
+              cl.entity || "",
+              (val) => {
+                this._config.bottom_layers[idx].entity = val;
+                this._emitConfigChanged();
+              }
+            );
+            container.appendChild(ctrl);
+            container._controlAttached = true;
+          }
+        });
+      }
+
+      static get styles() {
+        return css`
+          :host {
+            display: block;
+          }
+          .section {
+            margin-bottom: 16px;
+          }
+          .section-header-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+            padding: 6px 10px;
+            border-radius: 8px;
+            background: #03a9f4;
+            border: 1px solid var(--divider-color, rgba(0, 0, 0, 0.2));
+          }
+          .section-header {
+            font-weight: 600;
+            font-size: 0.95rem;
+          }
+          .section-header-right {
+            font-size: 0.8rem;
+            opacity: 0.8;
+          }
+          .row-inline {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            align-items: center;
+            margin-bottom: 6px;
+          }
+          .small {
+            font-size: 0.75rem;
+            opacity: 0.8;
+            margin-top: 2px;
+          }
+          ha-textfield,
+          ha-select,
+          ha-entity-picker,
+          ha-icon-picker {
+            min-width: 180px;
+            flex: 1 1 160px;
+          }
+          .color-group {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            flex: 1 1 180px;
+          }
+          .color-input {
+            width: 36px;
+            height: 36px;
+            padding: 0;
+            border-radius: 6px;
+            border: 1px solid rgba(0, 0, 0, 0.4);
+            background: transparent;
+            cursor: pointer;
+            flex: 0 0 auto;
+          }
+          .layer-block,
+          .center-block,
+          .bottom-block {
+            border-radius: 8px;
+            border: 1px solid var(--divider-color, rgba(0, 0, 0, 0.15));
+            background: var(--card-background-color, #fff);
+            padding: 8px;
+            margin-bottom: 10px;
+          }
+          .layer-header,
+          .center-header,
+          .bottom-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+            padding: 4px 2px;
+          }
+          .layer-header-title,
+          .center-header-title,
+          .bottom-header-title {
+            display: flex;
+            flex-direction: column;
+          }
+          .layer-header-main {
+            font-weight: 500;
+          }
+          .layer-header-sub {
+            font-size: 0.75rem;
+            opacity: 0.7;
+          }
+          .header-buttons {
+            display: flex;
+            gap: 4px;
+            align-items: center;
+          }
+          .chevron {
+            transition: transform 0.2s ease;
+          }
+          .chevron.expanded {
+            transform: rotate(90deg);
+          }
+          .interval-block {
+            border-radius: 6px;
+            border: 1px solid var(--divider-color, rgba(0, 0, 0, 0.15));
+            padding: 6px;
+            margin-bottom: 6px;
+          }
+          mwc-button {
+            --mdc-theme-primary: var(--primary-color);
+            text-transform: none;
+            font-weight: 500;
+            display: inline-block;
+            padding: 4px 10px;
+            margin: 2px 0;
+            border-radius: 4px;
+            border: none;
+            cursor: pointer;
+            font-size: 0.8rem;
+            background: var(--primary-color, #03a9f4);
+            color: #fff;
+          }
+          mwc-button.danger {
+            --mdc-theme-primary: var(--error-color);
+            background: var(--error-color, #ff5252);
+          }
+          mwc-button[disabled] {
+            opacity: 0.5;
+            cursor: default;
+          }
+          ha-switch {
+            margin-right: 4px;
+          }
+        `;
+      }
+
+      render() {
+        if (!this._config) return html``;
+        const cfg = this._config;
+        const layers = cfg.layers || [];
+        const centerLayers = cfg.center_layers || [];
+        const bottomLayers = cfg.bottom_layers || [];
+
+        return html`
+          <div class="section">
+            <div class="section-header-bar">
+              <div class="section-header">General</div>
+              <div class="section-header-right">${VERSION}</div>
+            </div>
+            <div class="row-inline">
+              <ha-select
+                label="Clock mode"
+                .value=${cfg.clock_mode || "24h"}
+                @selected=${(e) =>
+                  this._updateRoot("clock_mode", e.target.value || "24h")}
+                @closed=${this._stopPropagation}
+              >
+                <mwc-list-item value="24h">24h</mwc-list-item>
+                <mwc-list-item value="12h">12h</mwc-list-item>
+              </ha-select>
+
+              <ha-select
+                label="Show hour labels"
+                .value=${cfg.show_hour_labels === false ? "false" : "true"}
+                @selected=${(e) =>
+                  this._updateRoot(
+                    "show_hour_labels",
+                    e.target.value === "true"
+                  )}
+                @closed=${this._stopPropagation}
+              >
+                <mwc-list-item value="true">Yes</mwc-list-item>
+                <mwc-list-item value="false">No</mwc-list-item>
+              </ha-select>
+
+              <ha-select
+                label="Show minute ticks on outer ring"
+                .value=${cfg.outer_ticks && cfg.outer_ticks.enabled ? "true" : "false"}
+                @selected=${(e) =>
+                  this._updateOuterTicks("enabled", e.target.value === "true")}
+                @closed=${this._stopPropagation}
+              >
+                <mwc-list-item value="true">Yes</mwc-list-item>
+                <mwc-list-item value="false">No</mwc-list-item>
+              </ha-select>
+              
+            </div>
+
+
+            <div class="row-inline">
+              <ha-textfield
+                type="number"
+                label="Base radius"
+                .value=${cfg.radius ?? 45}
+                @input=${(e) =>
+                  this._updateRoot("radius", Number(e.target.value))}
+              ></ha-textfield>
+              <ha-textfield
+                type="number"
+                label="Layer gap"
+                step="0.1"
+                .value=${cfg.layer_gap ?? 2}
+                @input=${(e) =>
+                  this._updateRoot("layer_gap", Number(e.target.value))}
+              ></ha-textfield>
+            </div>
+
+            <div class="row-inline">
+              <ha-textfield
+                label="Background CSS"
+                .value=${cfg.style.background || ""}
+                @input=${(e) =>
+                  this._updateStyle("background", e.target.value)}
+              ></ha-textfield>
+            </div>
+
+            <div class="row-inline" style="margin-top:4px;">
+              <ha-select
+                label="Hands share center pivot"
+                .value=${cfg.hands_center_pivot ? "true" : "false"}
+                @selected=${(e) =>
+                  this._updateRoot(
+                    "hands_center_pivot",
+                    e.target.value === "true"
+                  )}
+                @closed=${this._stopPropagation}
+              >
+                <mwc-list-item value="true">Yes</mwc-list-item>
+                <mwc-list-item value="false">No</mwc-list-item>
+              </ha-select>
+
+              <div class="color-group">
+                <input
+                  type="color"
+                  class="color-input"
+                  .value=${this._normalizeColorInput(
+                    (cfg.hub && cfg.hub.color) || "#ffffff"
+                  )}
+                  @input=${(e) => this._updateHub("color", e.target.value)}
+                  @click=${this._stopPropagation}
+                />
+                <ha-textfield
+                  label="Hub color"
+                  .value=${(cfg.hub && cfg.hub.color) || ""}
+                  @input=${(e) => this._updateHub("color", e.target.value)}
+                ></ha-textfield>
+              </div>
+
+              <ha-textfield
+                type="number"
+                label="Hub radius"
+                step="0.1"
+                .value=${(cfg.hub && cfg.hub.radius) ?? 2.3}
+                @input=${(e) =>
+                  this._updateHub("radius", Number(e.target.value))}
+              ></ha-textfield>
+
+              <ha-textfield
+                type="number"
+                label="Hub opacity (0-1)"
+                step="0.1"
+                .value=${(cfg.hub && cfg.hub.opacity) ?? 1}
+                @input=${(e) =>
+                  this._updateHub("opacity", Number(e.target.value))}
+              ></ha-textfield>
+              
+              <ha-textfield
+                type="number"
+                step="0.01"
+                min="0.1"
+                max="4"
+                label="Card scale (0.1-4)"
+                .value=${cfg.scale ?? 1}
+                @input=${(e) =>
+                  this._updateRoot("scale", Number(e.target.value))}
+              ></ha-textfield>
+              
+              
+              
+            </div>
+          </div>
+
+          <div class="section">
+            <div class="section-header-bar">
+              <div class="section-header">Hour sweeper</div>
+            </div>
+            ${this._renderHourSweeperSection()}
+          </div>
+
+          <div class="section">
+            <div class="section-header-bar">
+              <div class="section-header">Minute sweeper</div>
+            </div>
+            ${this._renderMinuteSweeperSection()}
+          </div>
+
+          <div class="section">
+            <div class="section-header-bar">
+              <div class="section-header">Second sweeper</div>
+            </div>
+            ${this._renderSecondSweeperSection()}
+          </div>
+
+          <div class="section">
+            <div class="section-header-bar">
+              <div class="section-header">Layers (rings)</div>
+              <mwc-button dense @click=${() => this._addLayer()}
+                >Add layer</mwc-button
+              >
+            </div>
+
+            ${layers.length === 0
+              ? html`<div class="small">No layers yet.</div>`
+              : layers.map((layer, idx) =>
+                  this._renderLayerEditor(layer, idx, this._expandedLayerIndex === idx)
+                )}
+          </div>
+
+          <div class="section">
+            <div class="section-header-bar">
+              <div class="section-header">CenterWatch</div>
+              <mwc-button dense @click=${() => this._addCenterLayer()}
+                >Add center item</mwc-button
+              >
+            </div>
+
+            ${centerLayers.length === 0
+              ? html`<div class="small">No center items yet.</div>`
+              : centerLayers.map((cl, idx) =>
+                  this._renderCenterLayerEditor(cl, idx, this._expandedCenterIndex === idx)
+                )}
+          </div>
+
+          <div class="section">
+            <div class="section-header-bar">
+              <div class="section-header">Bottom (explanations / badges)</div>
+              <mwc-button dense @click=${() => this._addBottomLayer()}
+                >Add bottom item</mwc-button
+              >
+            </div>
+
+            ${bottomLayers.length === 0
+              ? html`<div class="small">No bottom items yet.</div>`
+              : bottomLayers.map((cl, idx) =>
+                  this._renderBottomLayerEditor(cl, idx, this._expandedBottomIndex === idx)
+                )}
+          </div>
+        `;
+      }
+
+      // ---------- Root updates ----------
+
+      _updateRoot(key, value) {
+        this._config = { ...this._config, [key]: value };
+        this._emitConfigChanged();
+      }
+
+      _updateStyle(key, value) {
+        const style = { ...(this._config.style || {}) };
+        style[key] = value;
+        this._config = { ...this._config, style };
+        this._emitConfigChanged();
+      }
+
+      _updateOuterTicks(key, value) {
+        const ot = { ...(this._config.outer_ticks || {}) };
+        ot[key] = value;
+        this._config = { ...this._config, outer_ticks: ot };
+        this._emitConfigChanged();
+      }
+
+      _updateHub(key, value) {
+        const hub = { ...(this._config.hub || {}) };
+        hub[key] = value;
+        this._config = { ...this._config, hub };
+        this._emitConfigChanged();
+      }
+
+      // ---------- Hour / minute / second sweeper sections ----------
+
+      _updateHourSweeper(key, value) {
+        const sw = { ...(this._config.hour_sweeper || {}) };
+        sw[key] = value;
+        this._config = {
+          ...this._config,
+          hour_sweeper: sw,
+          sweeper: sw,
+        };
+        this._emitConfigChanged();
+      }
+
+      _updateMinuteSweeper(key, value) {
+        const sw = { ...(this._config.minute_sweeper || {}) };
+        sw[key] = value;
+        this._config = { ...this._config, minute_sweeper: sw };
+        this._emitConfigChanged();
+      }
+
+      _updateSecondSweeper(key, value) {
+        const sw = { ...(this._config.second_sweeper || {}) };
+        sw[key] = value;
+        this._config = { ...this._config, second_sweeper: sw };
+        this._emitConfigChanged();
+      }
+
+      _renderHourSweeperSection() {
+        const sw = this._config.hour_sweeper || this._config.sweeper || {};
+        return html`
+          <div class="row-inline">
+            <ha-select
+              label="Enable hour hand"
+              .value=${sw.enabled === false ? "false" : "true"}
+              @selected=${(e) =>
+                this._updateHourSweeper("enabled", e.target.value === "true")}
+              @closed=${this._stopPropagation}
+            >
+              <mwc-list-item value="true">Enabled</mwc-list-item>
+              <mwc-list-item value="false">Disabled</mwc-list-item>
+            </ha-select>
+
+
+          </div>
+
+          <div class="row-inline">
+            <div class="color-group">
+              <input
+                type="color"
+                class="color-input"
+                .value=${this._normalizeColorInput(sw.color || "#FFFFFF")}
+                @input=${(e) =>
+                  this._updateHourSweeper("color", e.target.value)}
+                @click=${this._stopPropagation}
+              />
+              <ha-textfield
+                label="Hour hand color"
+                .value=${sw.color || ""}
+                @input=${(e) =>
+                  this._updateHourSweeper("color", e.target.value)}
+              ></ha-textfield>
+            </div>
+            
+            <ha-textfield
+  type="number"
+  label="Hour hand length (scale)"
+  step="0.05"
+  .value=${sw.length_scale ?? 1}
+  @input=${(e) =>
+    this._updateHourSweeper(
+      "length_scale",
+      Number(e.target.value)
+    )}
+></ha-textfield>
+
+            <ha-textfield
+              type="number"
+              label="Hour hand width"
+              step="0.1"
+              .value=${sw.width ?? 1.5}
+              @input=${(e) =>
+                this._updateHourSweeper("width", Number(e.target.value))}
+            ></ha-textfield>
+            
+
+            <ha-textfield
+              type="number"
+              label="Hour hand opacity (0-1)"
+              step="0.1"
+              .value=${sw.opacity ?? 1}
+              @input=${(e) =>
+                this._updateHourSweeper("opacity", Number(e.target.value))}
+            ></ha-textfield>
+          </div>
+          
+        <div class="row-inline">
+          <ha-formfield label="Show hour tip">
+            <ha-switch
+              .checked=${sw.show_dash !== false}
+              @change=${(e) =>
+                this._updateHourSweeper("show_dash", e.target.checked)}
+            ></ha-switch>
+          </ha-formfield>
+          <ha-textfield
+            type="number"
+            label="Hour tip radius"
+            step="0.1"
+            .value=${sw.dash_radius ?? 1.3}
+            @input=${(e) =>
+              this._updateHourSweeper(
+                "dash_radius",
+                Number(e.target.value)
+              )}
+          ></ha-textfield>
+        </div>
+
+
+
+        `;
+      }
+
+      _renderMinuteSweeperSection() {
+        const sw = this._config.minute_sweeper || {};
+        return html`
+          <div class="row-inline">
+            <ha-select
+              label="Enable minute hand"
+              .value=${sw.enabled ? "true" : "false"}
+              @selected=${(e) =>
+                this._updateMinuteSweeper(
+                  "enabled",
+                  e.target.value === "true"
+                )}
+              @closed=${this._stopPropagation}
+            >
+              <mwc-list-item value="true">Enabled</mwc-list-item>
+              <mwc-list-item value="false">Disabled</mwc-list-item>
+            </ha-select>
+          </div>
+
+          <div class="row-inline">
+            <div class="color-group">
+              <input
+                type="color"
+                class="color-input"
+                .value=${this._normalizeColorInput(
+                  sw.color || "#FFFFFF"
+                )}
+                @input=${(e) =>
+                  this._updateMinuteSweeper("color", e.target.value)}
+                @click=${this._stopPropagation}
+              />
+              <ha-textfield
+                label="Minute hand color"
+                .value=${sw.color || ""}
+                @input=${(e) =>
+                  this._updateMinuteSweeper("color", e.target.value)}
+              ></ha-textfield>
+            </div>
+            
+            <ha-textfield
+  type="number"
+  label="Minute hand length (scale)"
+  step="0.05"
+  .value=${sw.length_scale ?? 1}
+  @input=${(e) =>
+    this._updateMinuteSweeper(
+      "length_scale",
+      Number(e.target.value)
+    )}
+></ha-textfield>
+
+            
+            
+
+            <ha-textfield
+              type="number"
+              label="Minute hand width"
+              step="0.1"
+              .value=${sw.width ?? 1.2}
+              @input=${(e) =>
+                this._updateMinuteSweeper(
+                  "width",
+                  Number(e.target.value)
+                )}
+            ></ha-textfield>
+
+            <ha-textfield
+              type="number"
+              label="Minute hand opacity (0-1)"
+              step="0.1"
+              .value=${sw.opacity ?? 1}
+              @input=${(e) =>
+                this._updateMinuteSweeper(
+                  "opacity",
+                  Number(e.target.value)
+                )}
+            ></ha-textfield>
+          </div>
+          
+        <div class="row-inline">
+          <ha-formfield label="Show minute tip">
+            <ha-switch
+              .checked=${sw.show_dash !== false}
+              @change=${(e) =>
+                this._updateMinuteSweeper("show_dash", e.target.checked)}
+            ></ha-switch>
+          </ha-formfield>
+          <ha-textfield
+            type="number"
+            label="Minute tip radius"
+            step="0.1"
+            .value=${sw.dash_radius ?? 1.1}
+            @input=${(e) =>
+              this._updateMinuteSweeper(
+                "dash_radius",
+                Number(e.target.value)
+              )}
+          ></ha-textfield>
+        </div>
+
+        `;
+      }
+
+      _renderSecondSweeperSection() {
+        const sw = this._config.second_sweeper || {};
+        return html`
+          <div class="row-inline">
+            <ha-select
+              label="Enable second hand"
+              .value=${sw.enabled ? "true" : "false"}
+              @selected=${(e) =>
+                this._updateSecondSweeper(
+                  "enabled",
+                  e.target.value === "true"
+                )}
+              @closed=${this._stopPropagation}
+            >
+              <mwc-list-item value="true">Enabled</mwc-list-item>
+              <mwc-list-item value="false">Disabled</mwc-list-item>
+            </ha-select>
+          </div>
+
+          <div class="row-inline">
+            <div class="color-group">
+              <input
+                type="color"
+                class="color-input"
+                .value=${this._normalizeColorInput(
+                  sw.color || "#FF4081"
+                )}
+                @input=${(e) =>
+                  this._updateSecondSweeper("color", e.target.value)}
+                @click=${this._stopPropagation}
+              />
+              <ha-textfield
+                label="Second hand color"
+                .value=${sw.color || ""}
+                @input=${(e) =>
+                  this._updateSecondSweeper("color", e.target.value)}
+              ></ha-textfield>
+            </div>
+            
+            <ha-textfield
+  type="number"
+  label="Second hand length (scale)"
+  step="0.05"
+  .value=${sw.length_scale ?? 1}
+  @input=${(e) =>
+    this._updateSecondSweeper(
+      "length_scale",
+      Number(e.target.value)
+    )}
+></ha-textfield>
+
+            
+
+            <ha-textfield
+              type="number"
+              label="Second hand width"
+              step="0.1"
+              .value=${sw.width ?? 1.0}
+              @input=${(e) =>
+                this._updateSecondSweeper(
+                  "width",
+                  Number(e.target.value)
+                )}
+            ></ha-textfield>
+
+            <ha-textfield
+              type="number"
+              label="Second hand opacity (0-1)"
+              step="0.1"
+              .value=${sw.opacity ?? 1}
+              @input=${(e) =>
+                this._updateSecondSweeper(
+                  "opacity",
+                  Number(e.target.value)
+                )}
+            ></ha-textfield>
+          </div>
+          
+        <div class="row-inline">
+          <ha-formfield label="Show second tip">
+            <ha-switch
+              .checked=${sw.show_dash !== false}
+              @change=${(e) =>
+                this._updateSecondSweeper("show_dash", e.target.checked)}
+            ></ha-switch>
+          </ha-formfield>
+          <ha-textfield
+            type="number"
+            label="Second tip radius"
+            step="0.1"
+            .value=${sw.dash_radius ?? 1.1}
+            @input=${(e) =>
+              this._updateSecondSweeper(
+                "dash_radius",
+                Number(e.target.value)
+              )}
+          ></ha-textfield>
+        </div>
+
+          
+
+          <div class="small">
+            Second hand is smooth (continuous) and rotates one full lap every 60 seconds.
+          </div>
+        `;
+      }
+
+      // ---------- Layers ----------
+
+      _addLayer() {
+        const layers = [...(this._config.layers || [])];
+        layers.push({
+          id: `layer_${layers.length + 1}`,
+          name: `Layer ${layers.length + 1}`,
+          type: "price",
+          entity: "",
+          price_source: "array",
+          attribute: "today",
+          value_path: "value",
+          radius: this._config.radius ?? 45,
+          thickness: 8,
+          opacity: 1.0,
+          color_mode: "intervals",
+          segment_count: null,
+          intervals: [
+            { from: 0, to: 50, color_from: "#28c76f", color_to: "#9be15d" },
+            { from: 50, to: 100, color_from: "#ff9f43", color_to: "#ffc26a" },
+            { from: 100, to: 1000, color_from: "#ea5455", color_to: "#f86c7d" },
+          ],
+          gradient: {
+            from: "#28c76f",
+            to: "#ea5455",
+          },
+          stats_markers: {
+            show_min: true,
+            show_max: true,
+            show_avg: false,
+            color: "rgba(255,255,255,0.9)",
+            font_size: 3,
+            radius_offset: 2,
+            decimals: 1,
+            min_label: "",
+            max_label: "",
+            avg_label: "",
+          },
+          //v1.0.4
+          keep_across_midnight: false,
+          fade_previous_day: false,
+          fade_previous_day_opacity: 0.25,
+        });
+        this._config = { ...this._config, layers };
+        this._expandedLayerIndex = layers.length - 1;
+        this._emitConfigChanged();
+      }
+
+      _removeLayer(idx) {
+        const layers = [...(this._config.layers || [])];
+        layers.splice(idx, 1);
+        this._config = { ...this._config, layers };
+        if (this._expandedLayerIndex >= layers.length) {
+          this._expandedLayerIndex = layers.length - 1;
+        }
+        this._emitConfigChanged();
+      }
+
+      _moveLayer(idx, dir) {
+        const layers = [...(this._config.layers || [])];
+        const newIndex = idx + dir;
+        if (newIndex < 0 || newIndex >= layers.length) return;
+        const [item] = layers.splice(idx, 1);
+        layers.splice(newIndex, 0, item);
+        this._config = { ...this._config, layers };
+        this._expandedLayerIndex = newIndex;
+        this._emitConfigChanged();
+      }
+
+      _updateLayer(idx, key, value) {
+        const layers = [...(this._config.layers || [])];
+        const layer = { ...(layers[idx] || {}) };
+        layer[key] = value;
+        layers[idx] = layer;
+        this._config = { ...this._config, layers };
+        this._emitConfigChanged();
+      }
+
+      _updateLayerGradient(idx, key, value) {
+        const layers = [...(this._config.layers || [])];
+        const layer = { ...(layers[idx] || {}) };
+        const grad = { ...(layer.gradient || {}) };
+        grad[key] = value;
+        layer.gradient = grad;
+        layers[idx] = layer;
+        this._config = { ...this._config, layers };
+        this._emitConfigChanged();
+      }
+
+      _updateLayerIntervalField(layerIdx, intIdx, field, value) {
+        const layers = [...(this._config.layers || [])];
+        const layer = { ...(layers[layerIdx] || {}) };
+        const intervals = [...(layer.intervals || [])];
+        if (!intervals[intIdx]) {
+          intervals[intIdx] = {
+            from: 0,
+            to: 100,
+            color_from: "#28c76f",
+            color_to: "#ea5455",
+          };
+        }
+        intervals[intIdx] = {
+          ...intervals[intIdx],
+          [field]: field === "from" || field === "to" ? Number(value) : value,
+        };
+        layer.intervals = intervals;
+        layers[layerIdx] = layer;
+        this._config = { ...this._config, layers };
+        this._emitConfigChanged();
+      }
+
+      _updateLayerStatsMarkers(idx, key, value) {
+        const layers = [...(this._config.layers || [])];
+        const layer = { ...(layers[idx] || {}) };
+        const sm = { ...(layer.stats_markers || {}) };
+        sm[key] = value;
+        layer.stats_markers = sm;
+        layers[idx] = layer;
+        this._config = { ...this._config, layers };
+        this._emitConfigChanged();
+      }
+
+      _toggleLayerExpanded(idx) {
+        this._expandedLayerIndex = this._expandedLayerIndex === idx ? -1 : idx;
+      }
+
+      _renderLayerEditor(layer, idx, expanded) {
+        const intervals = layer.intervals || [];
+        const sm = layer.stats_markers || {};
+
+        return html`
+          <div class="layer-block">
+            <div
+              class="layer-header"
+              @click=${() => this._toggleLayerExpanded(idx)}
+            >
+              <div class="layer-header-title">
+                <span class="layer-header-main">${layer.name || "Layer"}</span>
+                <span class="layer-header-sub">
+                  Type: ${layer.type || "price"}
+                </span>
+              </div>
+              <div class="header-buttons" @click=${this._stopPropagation}>
+                <mwc-button
+                  dense
+                  @click=${() => this._moveLayer(idx, -1)}
+                  ?disabled=${idx === 0}
+                  >Up</mwc-button
+                >
+                <mwc-button
+                  dense
+                  @click=${() => this._moveLayer(idx, 1)}
+                  ?disabled=${idx === (this._config.layers || []).length - 1}
+                  >Down</mwc-button
+                >
+                <mwc-button
+                  dense
+                  class="danger"
+                  @click=${() => this._removeLayer(idx)}
+                  >Delete</mwc-button
+                >
+                <ha-icon
+                  class="chevron ${expanded ? "expanded" : ""}"
+                  icon="mdi:chevron-right"
+                ></ha-icon>
+              </div>
+            </div>
+
+            ${!expanded
+              ? html``
+              : html`
+                  <div class="row-inline">
+                    <ha-textfield
+                      label="Layer name"
+                      .value=${layer.name || ""}
+                      @input=${(e) =>
+                        this._updateLayer(idx, "name", e.target.value)}
+                    ></ha-textfield>
+                  </div>
+
+                  <div class="row-inline">
+                    <ha-select
+                      label="Layer type"
+                      .value=${layer.type || "price"}
+                      @selected=${(e) =>
+                        this._updateLayer(
+                          idx,
+                          "type",
+                          e.target.value || "price"
+                        )}
+                      @closed=${this._stopPropagation}
+                    >
+                      <mwc-list-item value="price">Electricity price</mwc-list-item>
+                      <mwc-list-item value="consumption">Consumption</mwc-list-item>
+                      <mwc-list-item value="history">Generic history</mwc-list-item>
+                    </ha-select>
+
+                    <div
+                      class="color-group"
+                      id=${`layer-entity-picker-${idx}`}
+                    ></div>
+                  </div>
+
+                  <div class="row-inline">
+                    <ha-select
+                      label="Value source"
+                      .value=${layer.price_source || "array"}
+                      @selected=${(e) =>
+                        this._updateLayer(
+                          idx,
+                          "price_source",
+                          e.target.value || "array"
+                        )}
+                      @closed=${this._stopPropagation}
+                    >
+                      <mwc-list-item value="array"
+                        >Array attribute (Nordpool/Tibber)</mwc-list-item
+                      >
+                      <mwc-list-item value="history"
+                        >History/helper (array, JSON or attribute)</mwc-list-item
+                      >
+                    </ha-select>
+
+                    <ha-textfield
+                      label="Attribute (for array / history)"
+                      .value=${layer.attribute || "today"}
+                      @input=${(e) =>
+                        this._updateLayer(idx, "attribute", e.target.value)}
+                    ></ha-textfield>
+
+                    <ha-textfield
+                      label="Value path (if objects)"
+                      .value=${layer.value_path || "value"}
+                      @input=${(e) =>
+                        this._updateLayer(idx, "value_path", e.target.value)}
+                    ></ha-textfield>
+                  </div>
+                  <div class="small">
+                    Attribute: name of the array attribute on the entity
+                    (e.g. <code>today</code> for Nordpool).
+                    Value path: property inside each array item (e.g. <code>value</code>).
+                  </div>
+                  
+                  
+                  ${(
+                    layer.price_source === "history" ||
+                    layer.type === "consumption" ||
+                    layer.type === "history"
+                  )
+                    ? html`
+                        <div class="row-inline" style="margin-top:4px;">
+                          <ha-switch
+                            .checked=${layer.keep_across_midnight === true}
+                            @change=${(e) =>
+                              this._updateLayer(
+                                idx,
+                                "keep_across_midnight",
+                                e.target.checked
+                              )}
+                          ></ha-switch>
+                          <span class="small"
+                            >Keep values across midnight (overwrite per hour)</span
+                          >
+                        </div>
+
+                        ${layer.keep_across_midnight === true
+                          ? html`
+                              <div class="row-inline" style="margin-top:4px;">
+                                <ha-switch
+                                  .checked=${layer.fade_previous_day === true}
+                                  @change=${(e) =>
+                                    this._updateLayer(
+                                      idx,
+                                      "fade_previous_day",
+                                      e.target.checked
+                                    )}
+                                ></ha-switch>
+                                <span class="small">Fade previous-day segments</span>
+                              </div>
+
+                              ${layer.fade_previous_day === true
+                                ? html`
+                                    <div class="row-inline">
+                                      <ha-textfield
+                                        type="number"
+                                        step="0.01"
+                                        min="0"
+                                        max="1"
+                                        label="Previous-day opacity (0–1)"
+                                        .value=${layer.fade_previous_day_opacity ?? 0.25}
+                                        @input=${(e) =>
+                                          this._updateLayer(
+                                            idx,
+                                            "fade_previous_day_opacity",
+                                            Number(e.target.value)
+                                          )}
+                                      ></ha-textfield>
+                                    </div>
+                                  `
+                                : html``}
+                            `
+                          : html``}
+                      `
+                    : html``}
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+                  
+
+                  <div class="row-inline" style="margin-top:4px;">
+                    <ha-textfield
+                      type="number"
+                      label="Radius"
+                      .value=${layer.radius ?? this._config.radius ?? 45}
+                      @input=${(e) =>
+                        this._updateLayer(idx, "radius", Number(e.target.value))}
+                    ></ha-textfield>
+                    <ha-textfield
+                      type="number"
+                      step="0.1"
+                      label="Thickness"
+                      .value=${layer.thickness ?? 8}
+                      @input=${(e) =>
+                        this._updateLayer(
+                          idx,
+                          "thickness",
+                          Number(e.target.value)
+                        )}
+                    ></ha-textfield>
+                    <ha-textfield
+                      type="number"
+                      label="Opacity (0-1)"
+                      step="0.1"
+                      .value=${layer.opacity ?? 1}
+                      @input=${(e) =>
+                        this._updateLayer(
+                          idx,
+                          "opacity",
+                          Number(e.target.value)
+                        )}
+                    ></ha-textfield>
+                    <ha-textfield
+                      type="number"
+                      step="1"
+                      label="Segment count (optional)"
+                      .value=${layer.segment_count ?? ""}
+                      @input=${(e) =>
+                        this._updateLayer(
+                          idx,
+                          "segment_count",
+                          e.target.value === ""
+                            ? null
+                            : Number(e.target.value)
+                        )}
+                    ></ha-textfield>
+                  </div>
+                  <div class="small">
+                    Segment count:
+                    <ul>
+                      <li><b>History / Consumption layers:</b> 0/empty = 1 segment per hour. N (1..60) = split each hour into N sub-segments (minute resolution at 60).</li>
+                      <li><b>Other layers:</b> total number of slots around the ring.</li>
+                    </ul>
+                  </div>
+
+                  <div class="row-inline" style="margin-top:4px;">
+                    <ha-select
+                      label="Color mode"
+                      .value=${layer.color_mode || "intervals"}
+                      @selected=${(e) =>
+                        this._updateLayer(
+                          idx,
+                          "color_mode",
+                          e.target.value || "intervals"
+                        )}
+                      @closed=${this._stopPropagation}
+                    >
+                      <mwc-list-item value="intervals"
+                        >Intervals (value-based gradients)</mwc-list-item
+                      >
+                      <mwc-list-item value="gradient"
+                        >Single gradient (min-max)</mwc-list-item
+                      >
+                    </ha-select>
+                  </div>
+
+                  ${layer.color_mode === "gradient"
+                    ? html`
+                        <div class="row-inline">
+                          <div class="color-group">
+                            <input
+                              type="color"
+                              class="color-input"
+                              .value=${this._normalizeColorInput(
+                                (layer.gradient && layer.gradient.from) ||
+                                  "#28c76f"
+                              )}
+                              @input=${(e) =>
+                                this._updateLayerGradient(
+                                  idx,
+                                  "from",
+                                  e.target.value
+                                )}
+                              @click=${this._stopPropagation}
+                            />
+                            <ha-textfield
+                              label="Gradient from"
+                              .value=${(layer.gradient && layer.gradient.from) ||
+                              ""}
+                              @input=${(e) =>
+                                this._updateLayerGradient(
+                                  idx,
+                                  "from",
+                                  e.target.value
+                                )}
+                            ></ha-textfield>
+                          </div>
+
+                          <div class="color-group">
+                            <input
+                              type="color"
+                              class="color-input"
+                              .value=${this._normalizeColorInput(
+                                (layer.gradient && layer.gradient.to) ||
+                                  "#ea5455"
+                              )}
+                              @input=${(e) =>
+                                this._updateLayerGradient(
+                                  idx,
+                                  "to",
+                                  e.target.value
+                                )}
+                              @click=${this._stopPropagation}
+                            />
+                            <ha-textfield
+                              label="Gradient to"
+                              .value=${(layer.gradient && layer.gradient.to) ||
+                              ""}
+                              @input=${(e) =>
+                                this._updateLayerGradient(
+                                  idx,
+                                  "to",
+                                  e.target.value
+                                )}
+                            ></ha-textfield>
+                          </div>
+                        </div>
+                      `
+                    : html`
+                        <div class="small">
+                          Intervals are based on actual value (e.g. öre/kWh).
+                          The gradient runs inside each interval.
+                        </div>
+                        ${intervals.map(
+                          (intv, intIdx) => html`
+                            <div class="interval-block">
+                              <div class="row-inline">
+                                <ha-textfield
+                                  type="number"
+                                  label="From"
+                                  .value=${intv.from ?? 0}
+                                  @input=${(e) =>
+                                    this._updateLayerIntervalField(
+                                      idx,
+                                      intIdx,
+                                      "from",
+                                      e.target.value
+                                    )}
+                                ></ha-textfield>
+                                <ha-textfield
+                                  type="number"
+                                  label="To"
+                                  .value=${intv.to ?? 100}
+                                  @input=${(e) =>
+                                    this._updateLayerIntervalField(
+                                      idx,
+                                      intIdx,
+                                      "to",
+                                      e.target.value
+                                    )}
+                                ></ha-textfield>
+                              </div>
+                              <div class="row-inline">
+                                <div class="color-group">
+                                  <input
+                                    type="color"
+                                    class="color-input"
+                                    .value=${this._normalizeColorInput(
+                                      intv.color_from || "#28c76f"
+                                    )}
+                                    @input=${(e) =>
+                                      this._updateLayerIntervalField(
+                                        idx,
+                                        intIdx,
+                                        "color_from",
+                                        e.target.value
+                                      )}
+                                    @click=${this._stopPropagation}
+                                  />
+                                  <ha-textfield
+                                    label="Color from"
+                                    .value=${intv.color_from || ""}
+                                    @input=${(e) =>
+                                      this._updateLayerIntervalField(
+                                        idx,
+                                        intIdx,
+                                        "color_from",
+                                        e.target.value
+                                      )}
+                                  ></ha-textfield>
+                                </div>
+                                <div class="color-group">
+                                  <input
+                                    type="color"
+                                    class="color-input"
+                                    .value=${this._normalizeColorInput(
+                                      intv.color_to || "#28c76f"
+                                    )}
+                                    @input=${(e) =>
+                                      this._updateLayerIntervalField(
+                                        idx,
+                                        intIdx,
+                                        "color_to",
+                                        e.target.value
+                                      )}
+                                    @click=${this._stopPropagation}
+                                  />
+                                  <ha-textfield
+                                    label="Color to"
+                                    .value=${intv.color_to || ""}
+                                    @input=${(e) =>
+                                      this._updateLayerIntervalField(
+                                        idx,
+                                        intIdx,
+                                        "color_to",
+                                        e.target.value
+                                      )}
+                                  ></ha-textfield>
+                                </div>
+                              </div>
+                              <mwc-button
+                                dense
+                                class="danger"
+                                @click=${() => {
+                                  const layers = [...(this._config.layers || [])];
+                                  const l = { ...(layers[idx] || {}) };
+                                  const ints = [...(l.intervals || [])];
+                                  ints.splice(intIdx, 1);
+                                  l.intervals = ints;
+                                  layers[idx] = l;
+                                  this._config = { ...this._config, layers };
+                                  this._emitConfigChanged();
+                                }}
+                                >Delete interval</mwc-button
+                              >
+                            </div>
+                          `
+                        )}
+                        <mwc-button
+                          dense
+                          @click=${() => {
+                            const layers = [...(this._config.layers || [])];
+                            const l = { ...(layers[idx] || {}) };
+                            const ints = [...(l.intervals || [])];
+                            ints.push({
+                              from: 0,
+                              to: 100,
+                              color_from: "#28c76f",
+                              color_to: "#ea5455",
+                            });
+                            l.intervals = ints;
+                            layers[idx] = l;
+                            this._config = { ...this._config, layers };
+                            this._emitConfigChanged();
+                          }}
+                          >Add interval</mwc-button
+                        >
+                      `}
+
+                  <div class="small" style="margin-top:8px;">Stats markers (badges on ring)</div>
+                  <div class="row-inline">
+                    <ha-switch
+                      .checked=${sm.show_min !== false}
+                      @change=${(e) =>
+                        this._updateLayerStatsMarkers(
+                          idx,
+                          "show_min",
+                          e.target.checked
+                        )}
+                    ></ha-switch>
+                    <span class="small">Show min</span>
+
+                    <ha-switch
+                      .checked=${sm.show_max !== false}
+                      @change=${(e) =>
+                        this._updateLayerStatsMarkers(
+                          idx,
+                          "show_max",
+                          e.target.checked
+                        )}
+                    ></ha-switch>
+                    <span class="small">Show max</span>
+
+                    <ha-switch
+                      .checked=${!!sm.show_avg}
+                      @change=${(e) =>
+                        this._updateLayerStatsMarkers(
+                          idx,
+                          "show_avg",
+                          e.target.checked
+                        )}
+                    ></ha-switch>
+                    <span class="small">Show avg</span>
+                  </div>
+                  <div class="row-inline" style="margin-top:6px;">
+                    <ha-switch
+                      .checked=${!!sm.outline}
+                      @change=${(e) =>
+                        this._updateLayerStatsMarkers(
+                          idx,
+                          "outline",
+                          e.target.checked
+                        )}
+                    ></ha-switch>
+                    <span class="small">Text outline</span>
+                  </div>
+
+
+                  <div class="row-inline">
+                    <ha-textfield
+                      label="Label for min badge"
+                      .value=${sm.min_label ?? ""}
+                      @input=${(e) =>
+                        this._updateLayerStatsMarkers(
+                          idx,
+                          "min_label",
+                          e.target.value
+                        )}
+                    ></ha-textfield>
+                    <ha-textfield
+                      label="Label for max badge"
+                      .value=${sm.max_label ?? ""}
+                      @input=${(e) =>
+                        this._updateLayerStatsMarkers(
+                          idx,
+                          "max_label",
+                          e.target.value
+                        )}
+                    ></ha-textfield>
+                    <ha-textfield
+                      label="Label for avg badge"
+                      .value=${sm.avg_label ?? ""}
+                      @input=${(e) =>
+                        this._updateLayerStatsMarkers(
+                          idx,
+                          "avg_label",
+                          e.target.value
+                        )}
+                    ></ha-textfield>
+                  </div>
+                  <div class="small">
+                    Leave empty to show only value, or set e.g. "min", "max", "avg".
+                  </div>
+
+                  <div class="row-inline">
+                    <div class="color-group">
+                      <input
+                        type="color"
+                        class="color-input"
+                        .value=${this._normalizeColorInput(
+                          sm.color || "#ffffff"
+                        )}
+                        @input=${(e) =>
+                          this._updateLayerStatsMarkers(
+                            idx,
+                            "color",
+                            e.target.value
+                          )}
+                        @click=${this._stopPropagation}
+                      />
+                      <ha-textfield
+                        label="Badge color"
+                        .value=${sm.color || ""}
+                        @input=${(e) =>
+                          this._updateLayerStatsMarkers(
+                            idx,
+                            "color",
+                            e.target.value
+                          )}
+                      ></ha-textfield>
+                    </div>
+
+                    <ha-textfield
+                      type="number"
+                      label="Badge font size (SVG units)"
+                      step="0.1"
+                      .value=${sm.font_size ?? 3}
+                      @input=${(e) =>
+                        this._updateLayerStatsMarkers(
+                          idx,
+                          "font_size",
+                          Number(e.target.value)
+                        )}
+                    ></ha-textfield>
+
+                    <ha-textfield
+                      type="number"
+                      label="Radius offset"
+                      step="0.1"
+                      .value=${sm.radius_offset ?? 2}
+                      @input=${(e) =>
+                        this._updateLayerStatsMarkers(
+                          idx,
+                          "radius_offset",
+                          Number(e.target.value)
+                        )}
+                    ></ha-textfield>
+
+                    <ha-textfield
+                      type="number"
+                      label="Decimals"
+                      .value=${sm.decimals ?? 1}
+                      @input=${(e) =>
+                        this._updateLayerStatsMarkers(
+                          idx,
+                          "decimals",
+                          Number(e.target.value)
+                        )}
+                    ></ha-textfield>
+                  </div>
+                `}
+          </div>
+        `;
+      }
+
+      // ---------- Center layers ----------
+
+      _addCenterLayer() {
+        const center_layers = [...(this._config.center_layers || [])];
+        center_layers.push({
+          id: `center_${center_layers.length + 1}`,
+          type: "entity",
+          entity: "sensor.time",
+          show_icon: false,
+          label_template: "<state>",
+          decimals: "",
+          font_size: 24,
+          font_weight: 600,
+          color: "var(--primary-text-color)",
+          top_margin: "",
+        });
+        this._config = { ...this._config, center_layers };
+        this._expandedCenterIndex = center_layers.length - 1;
+        this._emitConfigChanged();
+      }
+
+      _removeCenterLayer(idx) {
+        const center_layers = [...(this._config.center_layers || [])];
+        center_layers.splice(idx, 1);
+        this._config = { ...this._config, center_layers };
+        if (this._expandedCenterIndex >= center_layers.length) {
+          this._expandedCenterIndex = center_layers.length - 1;
+        }
+        this._emitConfigChanged();
+      }
+
+      _moveCenterLayer(idx, dir) {
+        const arr = [...(this._config.center_layers || [])];
+        const newIndex = idx + dir;
+        if (newIndex < 0 || newIndex >= arr.length) return;
+        const [item] = arr.splice(idx, 1);
+        arr.splice(newIndex, 0, item);
+        this._config = { ...this._config, center_layers: arr };
+        this._expandedCenterIndex = newIndex;
+        this._emitConfigChanged();
+      }
+
+      _updateCenterLayer(idx, key, value) {
+        const arr = [...(this._config.center_layers || [])];
+        const cl = { ...(arr[idx] || {}) };
+        cl[key] = value;
+        arr[idx] = cl;
+        this._config = { ...this._config, center_layers: arr };
+        this._emitConfigChanged();
+      }
+
+      _toggleCenterExpanded(idx) {
+        this._expandedCenterIndex =
+          this._expandedCenterIndex === idx ? -1 : idx;
+      }
+
+      _renderCenterLayerEditor(cl, idx, expanded) {
+        return html`
+          <div class="center-block">
+            <div
+              class="center-header"
+              @click=${() => this._toggleCenterExpanded(idx)}
+            >
+              <div class="center-header-title">
+                <span class="layer-header-main">${cl.id || "Center item"}</span>
+                <span class="layer-header-sub">
+                  Type: ${cl.type || "entity"}
+                </span>
+              </div>
+              <div class="header-buttons" @click=${this._stopPropagation}>
+                <mwc-button
+                  dense
+                  @click=${() => this._moveCenterLayer(idx, -1)}
+                  ?disabled=${idx === 0}
+                  >Up</mwc-button
+                >
+                <mwc-button
+                  dense
+                  @click=${() => this._moveCenterLayer(idx, 1)}
+                  ?disabled=${idx === (this._config.center_layers || []).length - 1}
+                  >Down</mwc-button
+                >
+                <mwc-button
+                  dense
+                  class="danger"
+                  @click=${() => this._removeCenterLayer(idx)}
+                  >Delete</mwc-button
+                >
+                <ha-icon
+                  class="chevron ${expanded ? "expanded" : ""}"
+                  icon="mdi:chevron-right"
+                ></ha-icon>
+              </div>
+            </div>
+
+            ${!expanded
+              ? html``
+              : html`
+                  <div class="row-inline">
+                    <ha-select
+                      label="Type"
+                      .value=${cl.type || "entity"}
+                      @selected=${(e) =>
+                        this._updateCenterLayer(
+                          idx,
+                          "type",
+                          e.target.value || "entity"
+                        )}
+                      @closed=${this._stopPropagation}
+                    >
+                      <mwc-list-item value="entity">Entity</mwc-list-item>
+                      <mwc-list-item value="static">Static text</mwc-list-item>
+                    </ha-select>
+                  </div>
+
+                  ${cl.type === "entity"
+                    ? html`
+                        <div class="row-inline">
+                          <div
+                            class="color-group"
+                            id=${`center-entity-picker-${idx}`}
+                          ></div>
+
+                          <ha-textfield
+                            label="Label template"
+                            .value=${cl.label_template || "<state>"}
+                            @input=${(e) =>
+                              this._updateCenterLayer(
+                                idx,
+                                "label_template",
+                                e.target.value
+                              )}
+                          ></ha-textfield>
+                        </div>
+
+                        <div class="row-inline">
+                          <ha-textfield
+                            type="number"
+                            label="Decimals for numeric state (empty = raw)"
+                            .value=${cl.decimals ?? ""}
+                            @input=${(e) =>
+                              this._updateCenterLayer(
+                                idx,
+                                "decimals",
+                                e.target.value
+                              )}
+                          ></ha-textfield>
+                        </div>
+
+                        <div class="row-inline">
+                          <ha-select
+                            label="Show icon"
+                            .value=${cl.show_icon ? "true" : "false"}
+                            @selected=${(e) =>
+                              this._updateCenterLayer(
+                                idx,
+                                "show_icon",
+                                e.target.value === "true"
+                              )}
+                            @closed=${this._stopPropagation}
+                          >
+                            <mwc-list-item value="true">Yes</mwc-list-item>
+                            <mwc-list-item value="false">No</mwc-list-item>
+                          </ha-select>
+
+                          <ha-icon-picker
+                            label="Icon (optional)"
+                            .hass=${this.hass}
+                            .value=${cl.icon || ""}
+                            @value-changed=${(e) =>
+                              this._updateCenterLayer(
+                                idx,
+                                "icon",
+                                e.detail.value
+                              )}
+                            @closed=${this._stopPropagation}
+                          ></ha-icon-picker>
+                        </div>
+                      `
+                    : html`
+                        <div class="row-inline">
+                          <ha-textfield
+                            label="Text"
+                            .value=${cl.text || ""}
+                            @input=${(e) =>
+                              this._updateCenterLayer(
+                                idx,
+                                "text",
+                                e.target.value
+                              )}
+                          ></ha-textfield>
+                        </div>
+                      `}
+
+                  <div class="row-inline">
+                    <ha-textfield
+                      type="number"
+                      label="Top margin (px) (optional)"
+                      .value=${cl.top_margin ?? ""}
+                      @input=${(e) =>
+                        this._updateCenterLayer(
+                          idx,
+                          "top_margin",
+                          e.target.value === "" ? "" : Number(e.target.value)
+                        )}
+                    ></ha-textfield> 
+
+
+
+                    <ha-textfield
+                      type="number"
+                      label="Font size (px)"
+                      step="0.1"
+                      .value=${cl.font_size ?? 16}
+                      @input=${(e) =>
+                        this._updateCenterLayer(
+                          idx,
+                          "font_size",
+                          Number(e.target.value)
+                        )}
+                    ></ha-textfield>
+                    <ha-textfield
+                      label="Font weight"
+                      .value=${cl.font_weight ?? 400}
+                      @input=${(e) =>
+                        this._updateCenterLayer(
+                          idx,
+                          "font_weight",
+                          e.target.value
+                        )}
+                    ></ha-textfield>
+                    <div class="color-group">
+                      <input
+                        type="color"
+                        class="color-input"
+                        .value=${this._normalizeColorInput(
+                          cl.color || "#ffffff"
+                        )}
+                        @input=${(e) =>
+                          this._updateCenterLayer(
+                            idx,
+                            "color",
+                            e.target.value
+                          )}
+                        @click=${this._stopPropagation}
+                      />
+                      <ha-textfield
+                        label="Color"
+                        .value=${cl.color || ""}
+                        @input=${(e) =>
+                          this._updateCenterLayer(
+                            idx,
+                            "color",
+                            e.target.value
+                          )}
+                      ></ha-textfield>
+                    </div>
+                  </div>
+                `}
+          </div>
+        `;
+      }
+
+      // ---------- Bottom layers ----------
+
+      _addBottomLayer() {
+        const bottom_layers = [...(this._config.bottom_layers || [])];
+        bottom_layers.push({
+          id: `bottom_${bottom_layers.length + 1}`,
+          type: "static",
+          text: "Explanation text",
+          font_size: 11,
+          font_weight: 400,
+          color: "var(--secondary-text-color)",
+        });
+        this._config = { ...this._config, bottom_layers };
+        this._expandedBottomIndex = bottom_layers.length - 1;
+        this._emitConfigChanged();
+      }
+
+      _removeBottomLayer(idx) {
+        const bottom_layers = [...(this._config.bottom_layers || [])];
+        bottom_layers.splice(idx, 1);
+        this._config = { ...this._config, bottom_layers };
+        if (this._expandedBottomIndex >= bottom_layers.length) {
+          this._expandedBottomIndex = bottom_layers.length - 1;
+        }
+        this._emitConfigChanged();
+      }
+
+      _moveBottomLayer(idx, dir) {
+        const arr = [...(this._config.bottom_layers || [])];
+        const newIndex = idx + dir;
+        if (newIndex < 0 || newIndex >= arr.length) return;
+        const [item] = arr.splice(idx, 1);
+        arr.splice(newIndex, 0, item);
+        this._config = { ...this._config, bottom_layers: arr };
+        this._expandedBottomIndex = newIndex;
+        this._emitConfigChanged();
+      }
+
+      _updateBottomLayer(idx, key, value) {
+        const arr = [...(this._config.bottom_layers || [])];
+        const cl = { ...(arr[idx] || {}) };
+        cl[key] = value;
+        arr[idx] = cl;
+        this._config = { ...this._config, bottom_layers: arr };
+        this._emitConfigChanged();
+      }
+
+      _toggleBottomExpanded(idx) {
+        this._expandedBottomIndex =
+          this._expandedBottomIndex === idx ? -1 : idx;
+      }
+
+      _renderBottomLayerEditor(cl, idx, expanded) {
+        return html`
+          <div class="bottom-block">
+            <div
+              class="bottom-header"
+              @click=${() => this._toggleBottomExpanded(idx)}
+            >
+              <div class="bottom-header-title">
+                <span class="layer-header-main">${cl.id || "Bottom item"}</span>
+                <span class="layer-header-sub">
+                  Type: ${cl.type || "static"}
+                </span>
+              </div>
+              <div class="header-buttons" @click=${this._stopPropagation}>
+                <mwc-button
+                  dense
+                  @click=${() => this._moveBottomLayer(idx, -1)}
+                  ?disabled=${idx === 0}
+                  >Up</mwc-button
+                >
+                <mwc-button
+                  dense
+                  @click=${() => this._moveBottomLayer(idx, 1)}
+                  ?disabled=${idx === (this._config.bottom_layers || []).length - 1}
+                  >Down</mwc-button
+                >
+                <mwc-button
+                  dense
+                  class="danger"
+                  @click=${() => this._removeBottomLayer(idx)}
+                  >Delete</mwc-button
+                >
+                <ha-icon
+                  class="chevron ${expanded ? "expanded" : ""}"
+                  icon="mdi:chevron-right"
+                ></ha-icon>
+              </div>
+            </div>
+
+            ${!expanded
+              ? html``
+              : html`
+                  <div class="row-inline">
+                    <ha-select
+                      label="Type"
+                      .value=${cl.type || "static"}
+                      @selected=${(e) =>
+                        this._updateBottomLayer(
+                          idx,
+                          "type",
+                          e.target.value || "static"
+                        )}
+                      @closed=${this._stopPropagation}
+                    >
+                      <mwc-list-item value="static">Static text</mwc-list-item>
+                      <mwc-list-item value="entity">Entity</mwc-list-item>
+                    </ha-select>
+                  </div>
+
+                  ${cl.type === "entity"
+                    ? html`
+                        <div class="row-inline">
+                          <div
+                            class="color-group"
+                            id=${`bottom-entity-picker-${idx}`}
+                          ></div>
+
+                          <ha-textfield
+                            label="Label template"
+                            .value=${cl.label_template ||
+                            "<name>: <state><unit>"}
+                            @input=${(e) =>
+                              this._updateBottomLayer(
+                                idx,
+                                "label_template",
+                                e.target.value
+                              )}
+                          ></ha-textfield>
+                        </div>
+                        <div class="row-inline">
+                          <ha-textfield
+                            type="number"
+                            label="Decimals for numeric state (empty = raw)"
+                            .value=${cl.decimals ?? ""}
+                            @input=${(e) =>
+                              this._updateBottomLayer(
+                                idx,
+                                "decimals",
+                                e.target.value
+                              )}
+                          ></ha-textfield>
+                        </div>
+                        <div class="row-inline">
+                          <ha-select
+                            label="Show icon"
+                            .value=${cl.show_icon ? "true" : "false"}
+                            @selected=${(e) =>
+                              this._updateBottomLayer(
+                                idx,
+                                "show_icon",
+                                e.target.value === "true"
+                              )}
+                            @closed=${this._stopPropagation}
+                          >
+                            <mwc-list-item value="true">Yes</mwc-list-item>
+                            <mwc-list-item value="false">No</mwc-list-item>
+                          </ha-select>
+
+                          <ha-icon-picker
+                            label="Icon (optional)"
+                            .hass=${this.hass}
+                            .value=${cl.icon || ""}
+                            @value-changed=${(e) =>
+                              this._updateBottomLayer(
+                                idx,
+                                "icon",
+                                e.detail.value
+                              )}
+                            @closed=${this._stopPropagation}
+                          ></ha-icon-picker>
+                        </div>
+                      `
+                    : html`
+                        <div class="row-inline">
+                          <ha-textfield
+                            label="Text"
+                            .value=${cl.text || ""}
+                            @input=${(e) =>
+                              this._updateBottomLayer(
+                                idx,
+                                "text",
+                                e.target.value
+                              )}
+                          ></ha-textfield>
+                        </div>
+                      `}
+
+                  <div class="row-inline">
+                    <ha-textfield
+                      type="number"
+                      label="Font size (px)"
+                      step="0.1"
+                      .value=${cl.font_size ?? 11}
+                      @input=${(e) =>
+                        this._updateBottomLayer(
+                          idx,
+                          "font_size",
+                          Number(e.target.value)
+                        )}
+                    ></ha-textfield>
+                    <ha-textfield
+                      label="Font weight"
+                      .value=${cl.font_weight ?? 400}
+                      @input=${(e) =>
+                        this._updateBottomLayer(
+                          idx,
+                          "font_weight",
+                          e.target.value
+                        )}
+                    ></ha-textfield>
+                    <div class="color-group">
+                      <input
+                        type="color"
+                        class="color-input"
+                        .value=${this._normalizeColorInput(
+                          cl.color || "#ffffff"
+                        )}
+                        @input=${(e) =>
+                          this._updateBottomLayer(
+                            idx,
+                            "color",
+                            e.target.value
+                          )}
+                        @click=${this._stopPropagation}
+                      />
+                      <ha-textfield
+                        label="Color"
+                        .value=${cl.color || ""}
+                        @input=${(e) =>
+                          this._updateBottomLayer(
+                            idx,
+                            "color",
+                            e.target.value
+                          )}
+                      ></ha-textfield>
+                    </div>
+                  </div>
+                `}
+          </div>
+        `;
+      }
+    }
+
+    customElements.define(EDITOR_TAG, AndyStatsClockEditor);
+  }
+})();

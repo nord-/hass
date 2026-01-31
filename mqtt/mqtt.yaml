@@ -9,6 +9,27 @@ sensor:
     state_topic: "cooking/grill/battery"
     qos: 0
     unit_of_measurement: "%"
+  
+  - name: "BYD Dolphin SoC"
+    unique_id: "byd_dolphin_soc"
+    state_topic: "byd/soc"
+    qos: 1
+    unit_of_measurement: "%"
+    value_template: "{{ value_json.soc }}"
+    icon: mdi:car-electric
+    device_class: battery
+    
+  - name: "BYD Dolphin Status"
+    unique_id: "byd_dolphin_status"
+    state_topic: "byd/car_status"
+    qos: 1
+    icon: mdi:car-connected
+    
+  - name: "BYD Monitor Pi Status"
+    unique_id: "byd_monitor_pi_status"
+    state_topic: "byd/pi_status"
+    qos: 1
+    icon: mdi:raspberry-pi
 
 light:
   - name: "Utebaren mqtt"
@@ -20,6 +41,15 @@ light:
     command_topic: "shellies/shelly1-68C63AFA72FB/relay/0/command"
     json_attributes_topic: "shellies/shelly1-68C63AFA72FB/info"
     retain: false
+
+binary_sensor:
+  - name: "BYD Monitor Pi Online"
+    unique_id: "byd_monitor_pi_online"
+    state_topic: "byd/pi_status"
+    payload_on: "online"
+    payload_off: "offline"
+    device_class: connectivity
+    icon: mdi:raspberry-pi
 
 # - platform: mqtt
 #   name: "Shelly1PM-example"

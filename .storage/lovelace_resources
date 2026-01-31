@@ -46,7 +46,7 @@
       },
       {
         "id": "6a8cbb425ff447c493dc372dd04c4d34",
-        "url": "/hacsfiles/lovelace-mushroom/mushroom.js?hacstag=444350375508",
+        "url": "/hacsfiles/lovelace-mushroom/mushroom.js?hacstag=4443503755010",
         "type": "module"
       },
       {
@@ -66,7 +66,7 @@
       },
       {
         "id": "298a447adfa64c4d850150fe5d46b709",
-        "url": "/hacsfiles/week-planner-card/week-planner-card.js?hacstag=7717287661121",
+        "url": "/hacsfiles/week-planner-card/week-planner-card.js?hacstag=7717287661141",
         "type": "module"
       },
       {
@@ -76,12 +76,22 @@
       },
       {
         "id": "7e3b6caf0a134afea5109910ea1481c8",
-        "url": "/hacsfiles/clock-weather-card/clock-weather-card.js?hacstag=522634019291",
+        "url": "/hacsfiles/clock-weather-card/clock-weather-card.js?hacstag=522634019292",
         "type": "module"
       },
       {
         "id": "de0b6069d3b043279f4a15264f7bba36",
         "url": "/hacsfiles/power-flow-card-plus/power-flow-card-plus.js?hacstag=618081815026",
+        "type": "module"
+      },
+      {
+        "id": "ecaf0d658c844673ae390465f410276c",
+        "url": "/hacsfiles/andy-stats-clock/andy-stats-clock.js?hacstag=1132141954106",
+        "type": "module"
+      },
+      {
+        "id": "584ddfef30b8410494d1553a62b10241",
+        "url": "/hacsfiles/andy-temperature-card/andy-temperature-card.js?hacstag=11266229901052",
         "type": "module"
       }
     ]

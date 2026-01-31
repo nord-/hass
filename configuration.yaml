@@ -39,9 +39,10 @@ sun:
 
 sensor: !include sensors.yaml
 # sensor: !include sensors-integration.yaml
-template: 
-  - !include template.yaml
-  - !include template_binary_sensors.yaml
+template: !include_dir_merge_list templates/
+# template: 
+#   - sensor: !include template.yaml
+#   - binary_sensor: !include template_binary_sensors.yaml
 #binary_sensor: !include binary_sensors.yaml
 #mqtt: !include mqtt.yaml
 mqtt: !include_dir_list mqtt/
@@ -104,19 +105,21 @@ var: !include vars.yaml
 logger:
   default: error
   # logs: 
+  #   zigpy: debug
+  #   zigpy.quirks: debug
+  #   zhaquirks: debug
+  #   homeassistant.components.zha: debug
     # homeassistant.components.rest: debug
     # homeassistant.components.modbus: debug
     # pymodbus: debug
 
-    # homeassistant.components.zha: debug
-    # zigpy: debug
 
 # modbus for a TCP connection
 modbus: !include modbus.yaml
 
 # Zigbee Home Assistant
 zha:
-  custom_quirks_path: /config/custom_zha_quirks
+  custom_quirks_path: custom_zha_quirks
   database_path: /config/zigbee.db 
   enable_quirks: true
   zigpy_config:
