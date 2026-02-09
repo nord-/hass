@@ -56,7 +56,9 @@ Running Home Assistant 2026.1.3 with MariaDB on Synology NAS for history storage
 
 ## Template Patterns
 
-Templates in `/templates/` use Jinja2 heavily. Common patterns:
+Templates in `/templates/` use Jinja2 heavily. **Naming**: older template entities have a `template_` prefix (e.g. `sensor.template_spabadet_temperature`), but newer HA versions use the `unique_id` directly (e.g. `binary_sensor.spabadet_deadline_heating`). Don't add the prefix for new entities.
+
+Common patterns:
 
 ```yaml
 # State-based calculations
@@ -79,7 +81,7 @@ Controlled via 3 switched phases: `switch.spabadet_l2` (heater), `switch.spabade
 - **Heater ON** if: temp below `input_number.spabadet_lower_temp_limit`, OR price is cheap, OR deadline heating active — AND temp below target (`input_number.spabadet_target_temp_weekdays` / `input_number.spabadet_target_temp_weekends`)
 - **Pump ON** if: outdoor temp < 0°C (freeze protection), water temp below limit, deadline heating active, or every 4h when pump ran < 7h/day
 
-**Deadline heating** (`binary_sensor.template_spabadet_deadline_heating` in `templates/hottub.yaml`):
+**Deadline heating** (`binary_sensor.spabadet_deadline_heating` in `templates/hottub.yaml`):
 - Three modes: **pre-tomorrow** (Thu/Fri when tomorrow_valid), **same-day** (Fri/Sat before 16:00), **bath maintenance** (Fri/Sat 16:00–20:00)
 - Pre-tomorrow: on Thu after ~13:00 (when NordPool tomorrow_valid), picks cheapest hours from today+tomorrow prices through Fri 16:00. Same on Fri evening for Sat.
 - Same-day: picks cheapest hours from today's prices to reach target by 16:00
