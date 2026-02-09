@@ -1083,6 +1083,62 @@
         action: notify.rickards_devices
         alias: Notify Rickard
   mode: single
+- id: '1739100000000'
+  alias: Spabadet, statusnotis helg
+  description: Notifiering om spabadets status på fredag morgon och lördag lunch
+  triggers:
+  - trigger: time
+    at: '07:30:00'
+    id: friday_morning
+  - trigger: time
+    at: '12:00:00'
+    id: saturday_noon
+  conditions:
+  - condition: template
+    value_template: >-
+      {{ (trigger.id == 'friday_morning' and now().weekday() == 4) or
+         (trigger.id == 'saturday_noon' and now().weekday() == 5) }}
+  actions:
+  - action: notify.rickards_devices
+    data:
+      title: Spabadet
+      data:
+        tag: spa_status
+        channel: Spa
+        clickAction: /lovelace/spa
+      message: >-
+        {% set target = states('input_number.spabadet_target_temp_weekends') | float(0) %}
+        {% set current_temp = states('sensor.template_spabadet_temperature') | float(0) %}
+        {% set outside_temp = states('sensor.template_home_temp') | float(0) %}
+        {% set current_hour = now().hour %}
+        {% if current_temp >= target %}
+        {{ current_temp }}°C (mål {{ target|int }}°C)
+        Ute: {{ outside_temp }}°C
+        Redan vid måltemperatur!
+        {% else %}
+        {% set hours_left = 16 - current_hour %}
+        {% set hours_needed = ((target + 1 - current_temp + hours_left * 0.2) / 2.0) | round(0, 'ceil') | int %}
+        {% set hours_needed = [hours_needed, 0] | max %}
+        {% set prices = state_attr('sensor.nordpool_kwh_se3_sek_3_095_0', 'today') %}
+        {% if prices is not none and hours_needed > 0 and hours_left > 0 %}
+        {% set remaining = prices[current_hour:16] | sort %}
+        {% set ix = [hours_needed - 1, remaining | length - 1] | min %}
+        {% set threshold = remaining[ix] %}
+        {% set ns = namespace(last_hour = current_hour) %}
+        {% for i in range(current_hour, 16) %}
+        {% if prices[i] <= threshold %}
+        {% set ns.last_hour = i %}
+        {% endif %}
+        {% endfor %}
+        {{ current_temp }}°C → {{ target|int }}°C
+        Ute: {{ outside_temp }}°C
+        Klart ca kl {{ '%02d:00' | format([ns.last_hour + 1, 16] | min) }} ({{ hours_needed }} tim uppvärmning)
+        {% else %}
+        {{ current_temp }}°C → {{ target|int }}°C
+        Ute: {{ outside_temp }}°C
+        {% endif %}
+        {% endif %}
+  mode: single
 - id: '1684931331914'
   alias: 'Wall-E: Query Status'
   description: Tvinga uppdatering av Wall-E
@@ -1841,6 +1897,7 @@
   alias: Kontrollera spabadets värme och pump
   description: Automatiserar styrning av spabadets värme och pump baserat på temperatur,
     elpris, schema och driftstider.
+  enabled: false
   triggers:
   - minutes: /10
     trigger: time_pattern
@@ -1995,6 +2052,7 @@
   alias: Värma spabadet med billigaste elpris på fredagar
   description: Hitta billigaste 7-timmarsperioden (torsdag från 13 och fredag) för
     uppvärmning.
+  enabled: false
   triggers:
   - trigger: state
     entity_id:

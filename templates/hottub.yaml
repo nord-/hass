@@ -90,6 +90,56 @@
         0
       {% endif %}
 
+- binary_sensor:
+  - unique_id: spabadet_deadline_heating
+    name: "Spabadet, deadline heating"
+    state: >-
+      {% set today_wd = now().weekday() %}
+      {% set current_hour = now().hour %}
+      {% set target = states('input_number.spabadet_target_temp_weekends') | float(0) %}
+      {% set current_temp = states('sensor.template_spabadet_temperature') | float(0) %}
+      {% set tomorrow_valid = state_attr('sensor.nordpool_kwh_se3_sek_3_095_0', 'tomorrow_valid') | bool(false) %}
+      {% set today_prices = state_attr('sensor.nordpool_kwh_se3_sek_3_095_0', 'today') %}
+      {% set tomorrow_prices = state_attr('sensor.nordpool_kwh_se3_sek_3_095_0', 'tomorrow') %}
+      {% set is_bath_today = today_wd in [4, 5] and current_hour < 20 %}
+      {% set is_bath_tomorrow = today_wd in [3, 4] and tomorrow_valid %}
+      {% if is_bath_today and current_hour >= 16 %}
+        {{ current_temp < target }}
+      {% elif is_bath_today %}
+        {% set hours_left = 16 - current_hour %}
+        {% set hours_needed = ((target + 1 - current_temp + hours_left * 0.2) / 2.0) | round(0, 'ceil') | int %}
+        {% set hours_needed = [hours_needed, 0] | max %}
+        {% if hours_needed <= 0 %}
+          {{ false }}
+        {% elif hours_left <= hours_needed %}
+          {{ true }}
+        {% elif today_prices is not none and today_prices | length >= 16 %}
+          {% set remaining = today_prices[current_hour:16] | sort %}
+          {% set ix = [hours_needed - 1, remaining | length - 1] | min %}
+          {{ today_prices[current_hour] <= remaining[ix] }}
+        {% else %}
+          {{ true }}
+        {% endif %}
+      {% elif is_bath_tomorrow %}
+        {% set hours_left = (24 - current_hour) + 16 %}
+        {% set hours_needed = ((target + 1 - current_temp + hours_left * 0.2) / 2.0) | round(0, 'ceil') | int %}
+        {% set hours_needed = [hours_needed, 0] | max %}
+        {% if hours_needed <= 0 %}
+          {{ false }}
+        {% elif hours_left <= hours_needed %}
+          {{ true }}
+        {% elif today_prices is not none and tomorrow_prices is not none and tomorrow_prices | length >= 16 %}
+          {% set combined = today_prices[current_hour:] + tomorrow_prices[:16] %}
+          {% set sorted_prices = combined | sort %}
+          {% set ix = [hours_needed - 1, sorted_prices | length - 1] | min %}
+          {{ today_prices[current_hour] <= sorted_prices[ix] }}
+        {% else %}
+          {{ true }}
+        {% endif %}
+      {% else %}
+        {{ false }}
+      {% endif %}
+
 - trigger:
     - platform: state
       entity_id: sensor.spabadet_l1_energy_filtered
