@@ -913,8 +913,9 @@
     alias: When Förrådet temp <10
     trigger: numeric_state
   - entity_id:
-    - binary_sensor.low_price
-    to: 'on'
+    - binary_sensor.template_nordpool_price_not_high
+    to:
+    - 'on'
     trigger: state
   conditions:
   - condition: state

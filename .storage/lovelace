@@ -872,9 +872,9 @@
                   "name": " ",
                   "needle": true,
                   "severity": {
-                    "green": 40,
-                    "yellow": 20,
-                    "red": 0
+                    "green": 20,
+                    "yellow": 80,
+                    "red": 90
                   },
                   "grid_options": {
                     "rows": 1,
@@ -1074,9 +1074,9 @@
                   "type": "gauge",
                   "needle": true,
                   "severity": {
-                    "green": 40,
-                    "yellow": 20,
-                    "red": 0
+                    "green": 20,
+                    "yellow": 80,
+                    "red": 90
                   },
                   "entity": "sensor.template_zoe_battery",
                   "name": " ",
@@ -3501,12 +3501,25 @@
                   "chips": [
                     {
                       "type": "entity",
-                      "entity": "sensor.diskmaskinen_kwh_man"
+                      "entity": "sensor.diskmaskinen_kwh_man",
+                      "tap_action": {
+                        "action": "more-info"
+                      },
+                      "hold_action": {
+                        "action": "more-info"
+                      }
                     },
                     {
                       "type": "template",
                       "icon": "mdi:cash",
-                      "content": "{{states(\"sensor.diskmaskinen_kostnad\")|replace('.',',')}} kr"
+                      "content": "{{states(\"sensor.diskmaskinen_kostnad\")|replace('.',',')}} kr",
+                      "tap_action": {
+                        "action": "more-info"
+                      },
+                      "hold_action": {
+                        "action": "more-info"
+                      },
+                      "entity": "sensor.diskmaskinen_kostnad"
                     },
                     {
                       "type": "spacer"
@@ -3514,7 +3527,14 @@
                     {
                       "type": "template",
                       "icon": "mdi:cash",
-                      "content": "{{state_attr(\"sensor.diskmaskinen_kostnad\",\"last_period\")|replace('.',',')}} kr"
+                      "content": "{{state_attr(\"sensor.diskmaskinen_kostnad\",\"last_period\")|replace('.',',')}} kr",
+                      "tap_action": {
+                        "action": "more-info"
+                      },
+                      "hold_action": {
+                        "action": "more-info"
+                      },
+                      "entity": "sensor.diskmaskinen_kostnad"
                     }
                   ]
                 },
@@ -5606,16 +5626,17 @@
                   "days_to_show": 70
                 },
                 {
-                  "type": "statistics-graph",
                   "chart_type": "bar",
                   "period": "month",
+                  "type": "statistics-graph",
                   "entities": [
                     "sensor.template_chargenode_energy_kwh"
                   ],
                   "stat_types": [
                     "change"
                   ],
-                  "hide_legend": true
+                  "hide_legend": true,
+                  "days_to_show": 40
                 },
                 {
                   "type": "heading",
@@ -5634,7 +5655,8 @@
                     "change"
                   ],
                   "hide_legend": true,
-                  "logarithmic_scale": false
+                  "logarithmic_scale": false,
+                  "days_to_show": 40
                 },
                 {
                   "type": "entities",
