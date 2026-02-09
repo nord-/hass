@@ -1897,7 +1897,6 @@
   alias: Kontrollera spabadets värme och pump
   description: Automatiserar styrning av spabadets värme och pump baserat på temperatur,
     elpris, schema och driftstider.
-  enabled: false
   triggers:
   - minutes: /10
     trigger: time_pattern
@@ -2052,7 +2051,6 @@
   alias: Värma spabadet med billigaste elpris på fredagar
   description: Hitta billigaste 7-timmarsperioden (torsdag från 13 och fredag) för
     uppvärmning.
-  enabled: false
   triggers:
   - trigger: state
     entity_id:
