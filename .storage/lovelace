@@ -4540,6 +4540,16 @@
                 },
                 {
                   "entity": "sensor.template_home_temp"
+                },
+                {
+                  "entity": "sensor.framsidan_temperature",
+                  "name": {
+                    "type": "device"
+                  }
+                },
+                {
+                  "entity": "sensor.231_temperature",
+                  "name": "Altan"
                 }
               ]
             },
