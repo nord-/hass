@@ -1088,16 +1088,15 @@
   description: Notifiering om spabadets status på fredag morgon och lördag lunch
   triggers:
   - trigger: time
-    at: '07:30:00'
+    at: 07:30:00
     id: friday_morning
   - trigger: time
     at: '12:00:00'
     id: saturday_noon
   conditions:
   - condition: template
-    value_template: >-
-      {{ (trigger.id == 'friday_morning' and now().weekday() == 4) or
-         (trigger.id == 'saturday_noon' and now().weekday() == 5) }}
+    value_template: "{{ (trigger.id == 'friday_morning' and now().weekday() == 4)
+      or\n   (trigger.id == 'saturday_noon' and now().weekday() == 5) }}"
   actions:
   - action: notify.rickards_devices
     data:
@@ -1106,33 +1105,25 @@
         tag: spa_status
         channel: Spa
         clickAction: /lovelace/spa
-      message: >-
-        {% set target = states('input_number.spabadet_target_temp_weekends') | float(0) %}
-        {% set current_temp = states('sensor.template_spabadet_temperature') | float(0) %}
-        {% set outside_temp = states('sensor.template_home_temp') | float(0) %}
-        {% set current_hour = now().hour %}
-        {% if current_temp >= target %}
-        🌡️ {{ current_temp }}°C (mål {{ target|int }}°C)\n🌿 Ute: {{ outside_temp }}°C\n✅ Redan vid måltemperatur!
-        {% else %}
-        {% set hours_left = 16 - current_hour %}
-        {% set hours_needed = ((target + 1 - current_temp + hours_left * 0.2) / 2.0) | round(0, 'ceil') | int %}
-        {% set hours_needed = [hours_needed, 0] | max %}
-        {% set prices = state_attr('sensor.nordpool_kwh_se3_sek_3_095_0', 'today') %}
-        {% if prices is not none and hours_needed > 0 and hours_left > 0 %}
-        {% set remaining = prices[current_hour:16] | sort %}
-        {% set ix = [hours_needed - 1, remaining | length - 1] | min %}
-        {% set threshold = remaining[ix] %}
-        {% set ns = namespace(last_hour = current_hour) %}
-        {% for i in range(current_hour, 16) %}
-        {% if prices[i] <= threshold %}
-        {% set ns.last_hour = i %}
-        {% endif %}
-        {% endfor %}
-        🌡️ {{ current_temp }}°C → {{ target|int }}°C\n🌿 Ute: {{ outside_temp }}°C\n⏰ Klart ca kl {{ '%02d:00' | format([ns.last_hour + 1, 16] | min) }} ({{ hours_needed }} tim)
-        {% else %}
-        🌡️ {{ current_temp }}°C → {{ target|int }}°C\n🌿 Ute: {{ outside_temp }}°C
-        {% endif %}
-        {% endif %}
+      message: "{% set target = states('input_number.spabadet_target_temp_weekends')
+        | float(0) %} {% set current_temp = states('sensor.template_spabadet_temperature')
+        | float(0) %} {% set outside_temp = states('sensor.template_home_temp') |
+        float(0) %} {% set current_hour = now().hour %} {% if current_temp >= target
+        %} \U0001F321️ {{ current_temp }}°C (mål {{ target|int }}°C)\\n\U0001F33F
+        Ute: {{ outside_temp }}°C\\n✅ Redan vid måltemperatur! {% else %} {% set hours_left
+        = 16 - current_hour %} {% set hours_needed = ((target + 1 - current_temp +
+        hours_left * 0.2) / 2.0) | round(0, 'ceil') | int %} {% set hours_needed =
+        [hours_needed, 0] | max %} {% set prices = state_attr('sensor.nordpool_kwh_se3_sek_3_095_0',
+        'today') %} {% if prices is not none and hours_needed > 0 and hours_left >
+        0 %} {% set remaining = prices[current_hour:16] | sort %} {% set ix = [hours_needed
+        - 1, remaining | length - 1] | min %} {% set threshold = remaining[ix] %}
+        {% set ns = namespace(last_hour = current_hour) %} {% for i in range(current_hour,
+        16) %} {% if prices[i] <= threshold %} {% set ns.last_hour = i %} {% endif
+        %} {% endfor %} \U0001F321️ {{ current_temp }}°C → {{ target|int }}°C\\n\U0001F33F
+        Ute: {{ outside_temp }}°C\\n⏰ Klart ca kl {{ '%02d:00' | format([ns.last_hour
+        + 1, 16] | min) }} ({{ hours_needed }} tim) {% else %} \U0001F321️ {{ current_temp
+        }}°C → {{ target|int }}°C\\n\U0001F33F Ute: {{ outside_temp }}°C {% endif
+        %} {% endif %}"
   mode: single
 - id: '1684931331914'
   alias: 'Wall-E: Query Status'
@@ -1754,24 +1745,18 @@
   mode: single
 - id: '1717686782989'
   alias: Tesla, Charge Port connected
-  description: Enable charge automation for EV6 when plugged in at home
+  description: Enable charge automation for Eazy when plugged in at home
   triggers:
   - entity_id:
     - binary_sensor.tesla_plugged_in
     to: 'on'
-    id: Cp_open
-    enabled: true
-    trigger: state
-  - entity_id:
-    - binary_sensor.tesla_plugged_in
-    to: 'on'
+    id: cp_open
     trigger: state
   conditions:
   - alias: 'Car is at home '
     condition: zone
     entity_id: device_tracker.tesla_location
     zone: zone.home
-    enabled: true
   - condition: state
     entity_id: automation.ladda_bilen_nar_det_ar_billigt
     state: 'off'
@@ -2702,4 +2687,30 @@
         priority: high
         clickAction: /lovelace/9
     action: notify.rickards_devices
+  mode: single
+- id: '1770658598483'
+  alias: Dolphin, enable charge when at home
+  description: Enable charge automation for Dolphin when plugged in at home
+  triggers:
+  - trigger: state
+    entity_id:
+    - sensor.byd_dolphin_status
+    to:
+    - connected
+  conditions:
+  - condition: state
+    entity_id: automation.zoe_charge
+    state:
+    - 'off'
+  - condition: state
+    entity_id: sensor.byd_dolphin_status
+    state:
+    - connected
+  actions:
+  - alias: Enable Automation Dolphin, Charge
+    data: {}
+    target:
+      entity_id:
+      - automation.zoe_charge
+    action: automation.turn_on
   mode: single
