@@ -1112,9 +1112,7 @@
         {% set outside_temp = states('sensor.template_home_temp') | float(0) %}
         {% set current_hour = now().hour %}
         {% if current_temp >= target %}
-        {{ current_temp }}°C (mål {{ target|int }}°C)
-        Ute: {{ outside_temp }}°C
-        Redan vid måltemperatur!
+        🌡️ {{ current_temp }}°C (mål {{ target|int }}°C)\n🌿 Ute: {{ outside_temp }}°C\n✅ Redan vid måltemperatur!
         {% else %}
         {% set hours_left = 16 - current_hour %}
         {% set hours_needed = ((target + 1 - current_temp + hours_left * 0.2) / 2.0) | round(0, 'ceil') | int %}
@@ -1130,12 +1128,9 @@
         {% set ns.last_hour = i %}
         {% endif %}
         {% endfor %}
-        {{ current_temp }}°C → {{ target|int }}°C
-        Ute: {{ outside_temp }}°C
-        Klart ca kl {{ '%02d:00' | format([ns.last_hour + 1, 16] | min) }} ({{ hours_needed }} tim uppvärmning)
+        🌡️ {{ current_temp }}°C → {{ target|int }}°C\n🌿 Ute: {{ outside_temp }}°C\n⏰ Klart ca kl {{ '%02d:00' | format([ns.last_hour + 1, 16] | min) }} ({{ hours_needed }} tim)
         {% else %}
-        {{ current_temp }}°C → {{ target|int }}°C
-        Ute: {{ outside_temp }}°C
+        🌡️ {{ current_temp }}°C → {{ target|int }}°C\n🌿 Ute: {{ outside_temp }}°C
         {% endif %}
         {% endif %}
   mode: single
