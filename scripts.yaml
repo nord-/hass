@@ -458,10 +458,11 @@ spabadet_pump_and_heater_v2:
         state: 'on'
         alias: Below 25%
         enabled: true
-      - condition: state
-        entity_id: binary_sensor.template_spabadet_deadline_heating
-        state: 'on'
-        alias: Weekend deadline heating
+      - alias: Weekend deadline heating
+        condition: state
+        entity_id: binary_sensor.spabadet_deadline_heating
+        state:
+        - 'on'
     - condition: or
       conditions:
       - alias: I veckan
@@ -530,10 +531,11 @@ spabadet_pump_and_heater_v2:
         state: 'on'
         alias: Below 25%
         enabled: true
-      - condition: state
-        entity_id: binary_sensor.template_spabadet_deadline_heating
-        state: 'on'
-        alias: Weekend deadline heating
+      - alias: Weekend deadline heating
+        condition: state
+        entity_id: binary_sensor.spabadet_deadline_heating
+        state:
+        - 'on'
       - condition: and
         conditions:
         - condition: template
