@@ -148,18 +148,24 @@
       unit_of_measurement: "Wh"
       device_class: energy
       state_class: total_increasing
+      attributes:
+        last_raw: >
+          {{ states('sensor.spabadet_l1_energy_filtered')|float(none) }}
       state: >
         {% set new = states('sensor.spabadet_l1_energy_filtered')|float(none) %}
-        {% set old = this.state|float(none) %}
+        {% set old = this.state|float(0) %}
+        {% set last_raw = this.attributes.get('last_raw', none)|float(none) %}
 
         {% if new is none %}
           {{ old }}
-        {% elif old is none %}
-          {{ new }}
-        {% elif new < old %}
+        {% elif last_raw is none %}
           {{ old }}
+        {% elif new >= last_raw %}
+          {{ (old + new - last_raw)|round(1) }}
+        {% elif (last_raw - new) > 1000 %}
+          {{ (old + new)|round(1) }}
         {% else %}
-          {{ new }}
+          {{ old }}
         {% endif %}
 
 - trigger:
@@ -170,18 +176,24 @@
       unit_of_measurement: "Wh"
       device_class: energy
       state_class: total_increasing
+      attributes:
+        last_raw: >
+          {{ states('sensor.spabadet_l2_energy_filtered')|float(none) }}
       state: >
         {% set new = states('sensor.spabadet_l2_energy_filtered')|float(none) %}
-        {% set old = this.state|float(none) %}
+        {% set old = this.state|float(0) %}
+        {% set last_raw = this.attributes.get('last_raw', none)|float(none) %}
 
         {% if new is none %}
           {{ old }}
-        {% elif old is none %}
-          {{ new }}
-        {% elif new < old %}
+        {% elif last_raw is none %}
           {{ old }}
+        {% elif new >= last_raw %}
+          {{ (old + new - last_raw)|round(1) }}
+        {% elif (last_raw - new) > 1000 %}
+          {{ (old + new)|round(1) }}
         {% else %}
-          {{ new }}
+          {{ old }}
         {% endif %}
 
 - trigger:
@@ -192,16 +204,22 @@
       unit_of_measurement: "Wh"
       device_class: energy
       state_class: total_increasing
+      attributes:
+        last_raw: >
+          {{ states('sensor.spabadet_l3_energy_filtered')|float(none) }}
       state: >
         {% set new = states('sensor.spabadet_l3_energy_filtered')|float(none) %}
-        {% set old = this.state|float(none) %}
+        {% set old = this.state|float(0) %}
+        {% set last_raw = this.attributes.get('last_raw', none)|float(none) %}
 
         {% if new is none %}
           {{ old }}
-        {% elif old is none %}
-          {{ new }}
-        {% elif new < old %}
+        {% elif last_raw is none %}
           {{ old }}
+        {% elif new >= last_raw %}
+          {{ (old + new - last_raw)|round(1) }}
+        {% elif (last_raw - new) > 1000 %}
+          {{ (old + new)|round(1) }}
         {% else %}
-          {{ new }}
+          {{ old }}
         {% endif %}
