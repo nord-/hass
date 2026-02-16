@@ -5,21 +5,15 @@
     device_class: energy
     state_class: total_increasing
     name: "Spabadet, energi [kWh] (korrigerad)"
+    availability: >-
+      {{ states('sensor.spabadet_l1_energy_monotonic') not in ['unknown', 'unavailable']
+         and states('sensor.spabadet_l2_energy_monotonic') not in ['unknown', 'unavailable']
+         and states('sensor.spabadet_l3_energy_monotonic') not in ['unknown', 'unavailable'] }}
     state: >-
       {% set l1 = states('sensor.spabadet_l1_energy_monotonic')|float(0)/1000 %}
       {% set l2 = states('sensor.spabadet_l2_energy_monotonic')|float(0)/1000 %}
       {% set l3 = states('sensor.spabadet_l3_energy_monotonic')|float(0)/1000 %}
-      {% set total = l1 + l2 + l3 %}
-      {% set old = this.state|float(0) %}
-
-      {{ total }}
-      {# if total < old #}
-        {# old #}
-      {# elif (total - old) > 10 #}
-        {# old #}
-      {# else #}
-        {# total #}
-      {# endif #}    
+      {{ l1 + l2 + l3 }}
 
   - unique_id: spabadet_energy_lastmonth_kwh
     unit_of_measurement: "kWh"
