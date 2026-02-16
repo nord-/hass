@@ -2285,7 +2285,34 @@
                 },
                 {
                   "type": "heading",
+                  "icon": "mdi:bike",
+                  "heading": "Förrådet",
+                  "heading_style": "subtitle"
+                },
+                {
+                  "type": "gauge",
+                  "grid_options": {
+                    "columns": 4,
+                    "rows": 2
+                  },
+                  "entity": "sensor.popp_outdoor_current",
+                  "max": 10,
+                  "severity": {
+                    "green": 1,
+                    "yellow": 5,
+                    "red": 10
+                  },
+                  "name": "Värme"
+                },
+                {
+                  "type": "heading",
                   "icon": "mdi:hot-tub",
+                  "heading": "Spa",
+                  "heading_style": "subtitle"
+                },
+                {
+                  "type": "heading",
+                  "icon": "",
                   "heading": "Jet",
                   "heading_style": "subtitle",
                   "grid_options": {
@@ -3236,6 +3263,27 @@
                     "entity": "sensor.felix_rum_temperature",
                     "detail": 2
                   }
+                }
+              ]
+            },
+            {
+              "type": "grid",
+              "cards": [
+                {
+                  "type": "heading",
+                  "heading_style": "subtitle",
+                  "heading": "Hallen ",
+                  "icon": "mdi:hanger"
+                },
+                {
+                  "type": "entities",
+                  "entities": [
+                    {
+                      "entity": "switch.tz1",
+                      "name": "Hallbyrån",
+                      "icon": "mdi:lamp"
+                    }
+                  ]
                 }
               ]
             }

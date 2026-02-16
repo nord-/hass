@@ -1003,10 +1003,10 @@
     alias: When Nordpool median price changes
     trigger: state
     enabled: false
-  - trigger: state
+  - alias: When Nordpool low price changes
+    trigger: state
     entity_id:
-    - sensor.template_nordpool_25perc
-    alias: When Nordpool low price changes
+    - binary_sensor.template_nordpool_price_reallow
   conditions: []
   actions:
   - delay:
@@ -1506,8 +1506,8 @@
   conditions: []
   actions:
   - data:
-      message: 'Elpatronen är tillslagen på värmepumpen.\n Elpriset: {{states(''sensor.template_elpris_kr'')}}
-        kr\n Temp: {{states(''sensor.framsidan_temperature'')}}°C\n {{now().strftime(''%H:%M'')}}'
+      message: "Elpatronen är tillslagen.\\n\n\U0001F4B0 Elpriset: {{states('sensor.template_elpris_kr')}}
+        kr\\n\n\U0001F321️ Temp: {{states('sensor.template_home_temp')}}°C"
       title: VP elpatron
       data:
         clickAction: /lovelace/huset
