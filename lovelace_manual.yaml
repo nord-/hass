@@ -1387,42 +1387,44 @@ views:
                 icon_color: >-
                   {% if
                   states("binary_sensor.template_nordpool_price_reallow")|bool%}
-    
+
                   green
-    
-                  {% elif states("binary_sensor.template_nordpool_price_low")|bool%}
-    
+
+                  {% elif
+                  states("binary_sensor.template_nordpool_price_low")|bool%}
+
                   yellow
-    
+
                   {% elif
                   states("binary_sensor.template_nordpool_price_not_high")|bool%}
-    
+
                   orange
-    
+
                   {%else%}
-    
+
                   red
-    
+
                   {%endif%}
                 icon: >-
                   {% if
                   states("binary_sensor.template_nordpool_price_reallow")|bool%}
-    
+
                   mdi:arrow-down-thick
-    
-                  {% elif states("binary_sensor.template_nordpool_price_low")|bool%}
-    
+
+                  {% elif
+                  states("binary_sensor.template_nordpool_price_low")|bool%}
+
                   mdi:arrow-right-thick
-    
+
                   {% elif
                   states("binary_sensor.template_nordpool_price_not_high")|bool%}
-    
+
                   mdi:arrow-top-right-thick
-    
+
                   {%else%}
-    
+
                   mdi:arrow-up-thick
-    
+
                   {%endif%}
                 tap_action:
                   action: navigate
@@ -1480,7 +1482,9 @@ views:
             style:
               background: var(--ha-card-background, rgba(0,0,0,0.4))
               text_color: var(--primary-text-color)
-              font_family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif
+              font_family: >-
+                system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+                sans-serif
             layers:
               - id: price_today
                 name: Price today
@@ -1989,6 +1993,18 @@ views:
             watt_threshold: 1000
             transparency_zero_lines: 0
             sort_individual_devices: false
+          - type: gauge
+            entity: sensor.grid_buy_power_kw
+            name: Köper
+            grid_options:
+              columns: 6
+              rows: auto
+          - type: gauge
+            entity: sensor.grid_sell_power_kw
+            name: Säljer
+            grid_options:
+              columns: 6
+              rows: auto
       - type: grid
         cards:
           - type: heading
