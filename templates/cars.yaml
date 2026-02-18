@@ -69,11 +69,15 @@
 
   - unique_id: zoe_charging_required_time
     name: "Required charging time Delphine"
-    state: >-      
+    state: >-
       {%- set time = (states('input_number.zoe_soc_upper_limit')|float(0) - states('sensor.template_zoe_battery')|float(0)) /100*(states('input_number.car_2_battery')|int)/(states('sensor.template_car_2_season_power')|int) -%}
-      {%- set hours = time|int -%}
-      {%- set minutes = ((time - hours)*60)|int -%}
-      {{ '{:02}:{:02}'.format(hours, minutes) }}
+      {% if time <= 0 -%}
+        --:--
+      {%- else -%}
+        {%- set hours = time|int -%}
+        {%- set minutes = ((time - hours)*60)|int -%}
+        {{ '{:02}:{:02}'.format(hours, minutes) }}
+      {%- endif %}
   - unique_id: zoe_req_hours
     state: >-
       {{ ((states('input_number.zoe_soc_upper_limit')|float(0) - states('sensor.byd_dolphin_soc')|int) /100*(states('input_number.car_2_battery')|int)/(states('sensor.template_car_2_season_power')|int) * 4)|round(0, 'ceil') / 4 }}
@@ -105,9 +109,13 @@
     name: "Required charging time Eazy"
     state: >-
       {%- set time = (states('sensor.tesla_charge_limit_soc')|float(0) - states('sensor.tesla_battery_level')|float(0)) /100*(states('input_number.car_1_battery')|int)/(states('sensor.template_car_1_season_power')|int) -%}
-      {%- set hours = time|int -%}
-      {%- set minutes = ((time - hours)*60)|int -%}
-      {{ '{:02}:{:02}'.format(hours, minutes) }}
+      {% if time <= 0 -%}
+        --:--
+      {%- else -%}
+        {%- set hours = time|int -%}
+        {%- set minutes = ((time - hours)*60)|int -%}
+        {{ '{:02}:{:02}'.format(hours, minutes) }}
+      {%- endif %}
   - unique_id: rya_req_hours
     state: >-
       {{ ((states('sensor.tesla_charge_limit_soc')|float(0) - states('sensor.tesla_battery_level')|float(0)) /100*(states('input_number.car_1_battery')|int)/(states('sensor.template_car_1_season_power')|int) * 4)|round(0, 'ceil') / 4 }}
