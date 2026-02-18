@@ -22,3 +22,4 @@ custom_components
 blueprints
 
 .claude/settings.local.json
+.ha_run.lock
