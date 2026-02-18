@@ -1049,8 +1049,10 @@ views:
               states("automation.ladda_bilen_nar_det_ar_billigt")=="off" else
               "green"}}
             primary: >-
-              {{ states("sensor.car_1_charge_period") if not ("unknown") else
-              "-" }}
+              {{ (states('sensor.car_1_charge_period')|as_datetime|
+              as_local).strftime('%H:%M') if
+              states('sensor.car_1_charge_period') not in ['unknown',
+              'unavailable'] else '-' }}
             secondary: >-
               {%if states("sensor.template_rya_req_hours")|float(0) > 0%}
 
@@ -1255,8 +1257,10 @@ views:
               target:
                 entity_id: automation.zoe_charge
             primary: >-
-              {{ states("sensor.car_2_charge_period") if not ("unknown") else
-              "-" }}
+              {{ (states('sensor.car_2_charge_period')|as_datetime|
+              as_local).strftime('%H:%M') if
+              states('sensor.car_2_charge_period') not in ['unknown',
+              'unavailable'] else '-' }}
             grid_options:
               columns: 4
               rows: 1
@@ -1999,12 +2003,22 @@ views:
             grid_options:
               columns: 6
               rows: auto
+            max: 14
+            severity:
+              green: 0
+              yellow: 4
+              red: 7
           - type: gauge
             entity: sensor.grid_sell_power_kw
             name: Säljer
             grid_options:
               columns: 6
               rows: auto
+            max: 8
+            severity:
+              green: 3
+              yellow: 8
+              red: 8
       - type: grid
         cards:
           - type: heading
