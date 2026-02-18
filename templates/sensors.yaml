@@ -1,54 +1,36 @@
+#───────────────────────────────────────────
+# ELNÄT — mätning vid inkommande servis (HEM Gen5)
+#───────────────────────────────────────────
+# grid_power_kw:     Netto alla faser (positiv = import, negativ = export)
+# house_net_power_kw: Inverterat (för Fronius-styrning / power-flow-card)
+# house_power_w:     Köpt effekt — summa positiva faser [W]
+# current_sold_grid: Såld effekt — summa |negativa| faser [W]
+# grid_buy_power_kw: Köpt effekt [kW]
+# grid_sell_power_kw: Såld effekt [kW]
+#───────────────────────────────────────────
 
-# elförbrukning, huset
 - sensor:
   - unique_id: grid_power_kw
     state: "{{((states('sensor.hem_gen5_electric_consumed_v')|float(0) * states('sensor.hem_gen5_electric_consumed')|float)/1000.0)|round(2)}}"
     unit_of_measurement: "kW"
     device_class: power
     state_class: measurement
-    name: "Näteffekt [kW]"
+    name: "Elnät, netto [kW]"
 
   - unique_id: house_net_power_kw
     unit_of_measurement: "kW"
     device_class: power
     state_class: measurement
     state: "{{ (states('sensor.template_grid_power_kw')|float(0) * -1)|round(2) }}"
-    name: "Husets nettoeffekt"
+    name: "Elnät, netto inverterat [kW]"
 
-  - unique_id: house_power_kw
-    unit_of_measurement: "kW"
-    device_class: power
-    state_class: measurement
-    state: "{{(((states('sensor.power_ac_fronius_inverter_1_192_168_2_31')|float(default=0))/1000)|float + states('sensor.template_grid_power_kw')|float)|round(2)}}"
-    name: "Husets effekt (kW)"
-
-  - unique_id: house_net_energy_kwh
-    unit_of_measurement: "kWh"
-    device_class: energy
-    state_class: total
-    state: >-
-      {% if states('sensor.hem_gen5_electric_consumed_kwh')|is_number and 
-            states('var.solarenergy')|is_number %}
-        {{ states('sensor.hem_gen5_electric_consumed_kwh')|float(0) + states('var.solarenergy')|float(0) }}
-      {% else %}
-        {{ this.state }}
-      {% endif %}
-    name: "Husets nettoenergi"
-
-  - unique_id: house_energy_wo_evcharging
-    unit_of_measurement: "kWh"
-    device_class: energy
-    state_class: total
-    state: "{{ states('sensor.template_house_net_energy_kwh')|float(0) - states('sensor.template_chargenode_energy_kwh')|float(0) }}"
-    name: "Husets nettoenergi exkl laddning [kWh]"
-
-## house consumed from grid
+## Köpt effekt per fas (import)
 - sensor:
   - unique_id: house_power_w
     unit_of_measurement: "W"
     device_class: power
     state_class: measurement
-    name: "Husets effekt (W)"
+    name: "Köpt effekt [W]"
     state: >-
       {% set pwr = 0.0 -%}
       {%- if (states('sensor.hem_gen5_electric_consumed_v_2')|float(0) * states('sensor.hem_gen5_electric_consumed_1')|float(0)) > 0 -%}
@@ -62,7 +44,7 @@
       {%- endif %}
       {{pwr}}
 
-## sold to grid
+## Såld effekt per fas (export)
 - sensor:
   - unique_id: current_sold_grid
     device_class: power
@@ -80,8 +62,63 @@
         {%- set sold = (states('sensor.hem_gen5_electric_consumed_v_3')|float(0) * states('sensor.hem_gen5_electric_consumed_3')|float(0)) + sold -%}
       {%- endif %}
       {{sold | float(0) * -1}}
-    name: "Såld effekt"
-## värmepumpen 
+    name: "Såld effekt [W]"
+
+## Köpt/såld i kW (för dashboards)
+- sensor:
+  - unique_id: grid_buy_power_kw
+    unit_of_measurement: "kW"
+    device_class: power
+    state_class: measurement
+    state: "{{ (states('sensor.template_house_power_w')|float(0) / 1000)|round(3) }}"
+
+  - unique_id: grid_sell_power_kw
+    unit_of_measurement: "kW"
+    device_class: power
+    state_class: measurement
+    state: "{{ (states('sensor.template_current_sold_grid')|float(0) / 1000)|round(3) }}"
+
+#───────────────────────────────────────────
+# HUSETS FÖRBRUKNING = sol + nät (netto)
+#───────────────────────────────────────────
+# house_power_kw:             Realtid [kW]
+# house_net_energy_kwh:       Ackumulerad energi [kWh]
+# house_energy_wo_evcharging: Exkl. EV-laddning [kWh]
+# house_cost:                 Kostnad för köpt el [kr]
+#───────────────────────────────────────────
+
+- sensor:
+  - unique_id: house_power_kw
+    unit_of_measurement: "kW"
+    device_class: power
+    state_class: measurement
+    state: "{{(((states('sensor.power_ac_fronius_inverter_1_192_168_2_31')|float(default=0))/1000)|float + states('sensor.template_grid_power_kw')|float)|round(2)}}"
+    name: "Husets förbrukning [kW]"
+
+  - unique_id: house_net_energy_kwh
+    unit_of_measurement: "kWh"
+    device_class: energy
+    state_class: total
+    state: >-
+      {% if states('sensor.hem_gen5_electric_consumed_kwh')|is_number and
+            states('var.solarenergy')|is_number %}
+        {{ states('sensor.hem_gen5_electric_consumed_kwh')|float(0) + states('var.solarenergy')|float(0) }}
+      {% else %}
+        {{ this.state }}
+      {% endif %}
+    name: "Husets energiförbrukning [kWh]"
+
+  - unique_id: house_energy_wo_evcharging
+    unit_of_measurement: "kWh"
+    device_class: energy
+    state_class: total
+    state: "{{ states('sensor.template_house_net_energy_kwh')|float(0) - states('sensor.template_chargenode_energy_kwh')|float(0) }}"
+    name: "Husets energi exkl. EV [kWh]"
+
+#───────────────────────────────────────────
+# VÄRMEPUMP
+#───────────────────────────────────────────
+
 - sensor:
   - unique_id: heatpump_ivt_power
     device_class: power
@@ -90,10 +127,10 @@
     name: "Värmepump IVT, effekt [W]"
     state: >-
       {% if states('sensor.shelly_3em_c45bbe55c55e_power_0')|is_number and
-            states('sensor.shelly_3em_c45bbe55c55e_power_1')|is_number and 
+            states('sensor.shelly_3em_c45bbe55c55e_power_1')|is_number and
             states('sensor.shelly_3em_c45bbe55c55e_power_2')|is_number %}
         {{ states('sensor.shelly_3em_c45bbe55c55e_power_0')|float(0) +
-            states('sensor.shelly_3em_c45bbe55c55e_power_1')|float(0) + 
+            states('sensor.shelly_3em_c45bbe55c55e_power_1')|float(0) +
             states('sensor.shelly_3em_c45bbe55c55e_power_2')|float(0) }}
       {% else %}
         {{ this.state }}
@@ -105,14 +142,18 @@
     name: "Värmepump IVT, energi [kWh]"
     state: >-
       {% if states('sensor.shelly_3em_c45bbe55c55e_energy_0')|is_number and
-            states('sensor.shelly_3em_c45bbe55c55e_energy_1')|is_number and 
+            states('sensor.shelly_3em_c45bbe55c55e_energy_1')|is_number and
             states('sensor.shelly_3em_c45bbe55c55e_energy_2')|is_number %}
         {{ states('sensor.shelly_3em_c45bbe55c55e_energy_0')|float(0) +
-            states('sensor.shelly_3em_c45bbe55c55e_energy_1')|float(0) + 
+            states('sensor.shelly_3em_c45bbe55c55e_energy_1')|float(0) +
             states('sensor.shelly_3em_c45bbe55c55e_energy_2')|float(0) }}
       {% else %}
         {{ this.state }}
       {% endif %}
+
+#───────────────────────────────────────────
+# VITVAROR
+#───────────────────────────────────────────
 
 - sensor:
   - unique_id: dishwasher_current
@@ -126,8 +167,10 @@
     name: "Tvättmaskinen [A]"
     state: "{{(states('sensor.clever_spz2_electric_consumption_w_2')|float(0) / states('sensor.hem_gen5_electric_consumed_v_2')|float(230))|round(1)}}"
 
+#───────────────────────────────────────────
+# FÖRBRUKNING / KOSTNAD
+#───────────────────────────────────────────
 
-# förbrukning/kostnad
 - sensor:
   - unique_id: washing_machine_cost
     state: "{{ (states('sensor.clever_spz2_electric_consumption_w_2') | float(0)/1000) * states('sensor.template_elpris_kr') | float(0) }}"
@@ -149,6 +192,7 @@
     state: "{{ (states('sensor.template_house_power_w')|float(0)/1000.0) * states('sensor.template_elpris_kr')|float(0) }}"
     unit_of_measurement: kr
     device_class: monetary
+    name: "Kostnad köpt el [kr]"
 
   - unique_id: spot_gain_loss_daily
     unit_of_measurement: '%'
@@ -181,4 +225,3 @@
     device_class: monetary
     state_class: measurement
     name: "Snittpris (24 hrs)"
-
