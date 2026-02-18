@@ -77,7 +77,7 @@
     unit_of_measurement: "kW"
     device_class: power
     state_class: measurement
-    state: "{{ (states('sensor.template_current_sold_grid')|float(0) / 1000)|round(3) }}"
+    state: "{{ (states('sensor.template_current_sold_grid')|float(0) / -1000)|round(3) }}"
     name: "Såld effekt [kW]"
 
 #───────────────────────────────────────────
