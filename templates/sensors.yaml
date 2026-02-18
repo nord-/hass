@@ -71,12 +71,14 @@
     device_class: power
     state_class: measurement
     state: "{{ (states('sensor.template_house_power_w')|float(0) / 1000)|round(3) }}"
+    name: "Köpt effekt [kW]"
 
   - unique_id: grid_sell_power_kw
     unit_of_measurement: "kW"
     device_class: power
     state_class: measurement
     state: "{{ (states('sensor.template_current_sold_grid')|float(0) / 1000)|round(3) }}"
+    name: "Såld effekt [kW]"
 
 #───────────────────────────────────────────
 # HUSETS FÖRBRUKNING = sol + nät (netto)
