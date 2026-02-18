@@ -1,0 +1,4452 @@
+title: Hem
+views:
+  - type: sections
+    max_columns: 3
+    icon: mdi:home
+    subview: false
+    path: default_view
+    sections:
+      - type: grid
+        cards:
+          - type: custom:mushroom-template-card
+            entity: script.turn_on_morning_lights
+            icon: mdi:weather-sunset-up
+            tap_action:
+              action: perform-action
+              perform_action: script.turn_on
+              target:
+                entity_id: script.turn_on_morning_lights
+            hold_action:
+              action: more-info
+            double_tap_action:
+              action: none
+            color: >-
+              {{ "green" if is_state('light.sovrumsfonstret','on') else
+              "#44739e" }}
+            vertical: true
+            features_position: bottom
+            grid_options:
+              columns: 3
+              rows: 1
+          - type: button
+            show_name: false
+            show_icon: true
+            tap_action:
+              action: toggle
+            entity: script.turn_off_general_lights
+            icon: mdi:weather-night
+          - type: custom:mushroom-template-card
+            primary: ''
+            secondary: ''
+            icon: mdi:projector-screen-outline
+            tap_action:
+              action: toggle
+            grid_options:
+              columns: 3
+              rows: 1
+            entity: input_boolean.movie_time
+            color: >-
+              {{ "green" if is_state('input_boolean.movie_time','on') else
+              "#44739e" }}
+            features_position: bottom
+            vertical: true
+          - type: custom:mushroom-template-card
+            icon: mdi:bed
+            entity: script.turn_off_uppe
+            secondary: ''
+            hold_action:
+              action: navigate
+              navigation_path: /lovelace/5
+            grid_options:
+              columns: 3
+              rows: 1
+            primary: ''
+            color: '#44739e'
+            features_position: bottom
+            vertical: true
+          - type: heading
+            icon: mdi:hot-tub
+            heading: Spabadet
+            heading_style: subtitle
+            tap_action:
+              action: navigate
+              navigation_path: /lovelace/spa
+            badges:
+              - type: entity
+                show_state: true
+                show_icon: true
+                entity: sensor.spabadet_temperatur
+                tap_action:
+                  action: more-info
+          - type: custom:mushroom-template-card
+            primary: Hot Tub
+            secondary: >-
+              {{states("sensor.spabadet_temperatur")|round}}° •
+              {{states.input_boolean.spabadet_manual.last_updated|as_timestamp|timestamp_custom('%H:%M')}}
+            icon: mdi:hot-tub
+            fill_container: false
+            multiline_secondary: false
+            icon_color: |-
+              {% if states("input_boolean.spabadet_manual") == "off" -%}
+              red
+              {%- else -%}
+              green
+              {%- endif -%}
+            badge_icon: |-
+              {% if states("switch.spabadet_l2") == "on" %}
+              mdi:lightning-bolt
+              {% elif states("switch.spabadet_l3") == "on" %}
+              mdi:play
+              {% endif %}
+            badge_color: |-
+              {% if states("switch.spabadet_l2") == "on" %}
+              red
+              {% else %}
+              orange
+              {% endif %}
+            hold_action:
+              action: navigate
+              navigation_path: /lovelace/spa
+            entity: input_boolean.spabadet_manual
+          - type: heading
+            icon: mdi:dishwasher
+            heading: Disk & tvätt
+            heading_style: subtitle
+            tap_action:
+              action: navigate
+              navigation_path: /lovelace/koket
+          - type: custom:mushroom-template-card
+            icon: mdi:dishwasher
+            entity: automation.diskmaskinen_starta_pa_klocka
+            secondary: |-
+              {% if states("sensor.peaqnext_dishwasher")=="unknown" -%}
+                --:--
+              {%- else-%}
+                {{states("sensor.peaqnext_dishwasher") | regex_replace('(>>)*(\d{2}:\d{2}).*', '\\2')}}
+              {%- endif %}
+               • {{states("sensor.peaqnext_dishwasher") | regex_replace('^(.*)(\d+\.\d+)(.*)','\\2') | replace('.',',')}} kr
+            primary: Disk
+            badge_icon: mdi:robot
+            icon_color: |-
+              {%if states('switch.clever_spz3') == 'on' %}
+              green
+              {%endif%}
+            badge_color: |-
+              {%if states('automation.diskmaskinen_starta_pa_klocka') == 'on' %}
+              green
+              {%endif%}
+            hold_action:
+              action: toggle
+            tap_action:
+              action: perform-action
+              perform_action: switch.toggle
+              target:
+                entity_id: switch.clever_spz3
+          - type: custom:mushroom-template-card
+            icon: mdi:washing-machine
+            entity: automation.tvattmaskinen_starta_pa_klockslag
+            secondary: >-
+              {% if states("sensor.peaqnext_washing_machine")=="unknown" -%}
+
+              --:--
+
+              {%- else-%}
+
+              {{states("sensor.peaqnext_washing_machine") |     
+              regex_replace('(>>)*(\d{2}:\d{2}).*', '\\2')}}
+
+              {%- endif %}
+
+              •
+
+              {{states("sensor.peaqnext_washing_machine") |     
+              regex_replace('^(.*)(\d+\.\d+)(.*)','\\2') | replace('.',',')}} kr
+            badge_icon: mdi:robot
+            icon_color: |-
+              {%if states('switch.clever_spz2') == 'on' %}
+              green
+              {%endif%}
+            badge_color: >-
+              {%if states('automation.tvattmaskinen_starta_pa_klockslag') ==
+              'on' %}
+
+              green
+
+              {%endif%}
+            hold_action:
+              action: toggle
+            tap_action:
+              action: perform-action
+              perform_action: switch.toggle
+              target:
+                entity_id: switch.clever_spz2
+            primary: Tvätt
+          - type: heading
+            icon: mdi:flower
+            heading: Ute
+            heading_style: subtitle
+            tap_action:
+              action: navigate
+              navigation_path: /lovelace/koket
+            badges:
+              - type: entity
+                show_state: true
+                show_icon: true
+                entity: sensor.wall_e_blades_current_on_time_2
+                tap_action:
+                  action: more-info
+            visibility:
+              - condition: state
+                entity: lawn_mower.wall_e
+                state_not: unavailable
+          - type: custom:mushroom-template-card
+            primary: Wall-E • {{states("lawn_mower.wall_e")}}
+            icon: mdi:mower
+            secondary: >-
+              {{
+              states("sensor.wall_e_next_scheduled_start_2")|as_timestamp|timestamp_custom('%H:%M')
+              }}
+
+              {%- if
+              states('sensor.wall_e_next_scheduled_start_2')|as_timestamp|timestamp_custom('%d')
+              != now().date()|as_timestamp|timestamp_custom('%d') -%}
+
+              ⁺¹
+
+              {%-endif-%}
+            badge_icon: >-
+              {{ "mdi:pause" if states("lawn_mower.wall_e") == "paused" else
+              "mdi:play" }}
+            badge_color: >-
+              {% if states("lawn_mower.wall_e") == "mowing" %}green{%elif
+              states("lawn_mower.wall_e") == "error" or
+              states("lawn_mower.wall_e") ==
+              "unavailable"%}red{%else%}grey{%endif%}
+            entity: lawn_mower.wall_e
+            tap_action:
+              action: perform-action
+              perform_action: lawn_mower.pause
+              target:
+                device_id: 04744719de96abcefa75f8ffeeb42a05
+            hold_action:
+              action: perform-action
+              perform_action: lawn_mower.dock
+              target:
+                device_id: 04744719de96abcefa75f8ffeeb42a05
+            color: >-
+              {{ "green" if states("lawn_mower.wall_e") == "mowing" else
+              "#44739e" }}
+            features_position: bottom
+            visibility:
+              - condition: state
+                entity: lawn_mower.wall_e
+                state_not: unavailable
+      - type: grid
+        cards:
+          - type: custom:week-planner-card
+            calendars:
+              - entity: calendar.family
+            days: 7
+            startingDayOffset: 0
+            hideWeekend: false
+            noCardBackground: false
+            compact: true
+            weather:
+              showCondition: true
+              showTemperature: true
+              showLowTemperature: false
+              useTwiceDaily: false
+              entity: weather.smhi_home
+            locale: sv
+            showLocation: false
+            hidePastEvents: false
+            hideDaysWithoutEvents: false
+            hideTodayWithoutEvents: false
+            combineSimilarEvents: false
+            showLegend: false
+            startingDay: today
+            texts:
+              today: Idag
+              tomorrow: Imorgon
+              fullDay: Hela dagen
+              noEvents: ' '
+      - type: grid
+        cards:
+          - type: heading
+            icon: mdi:car
+            heading: Eazy
+            heading_style: title
+            badges:
+              - type: entity
+                show_state: true
+                show_icon: true
+                entity: sensor.tesla_battery_level
+                color: green
+            tap_action:
+              action: navigate
+              navigation_path: /lovelace/tesla
+          - type: custom:mushroom-climate-card
+            entity: climate.eazy_klimat
+            grid_options:
+              columns: 4
+              rows: 2
+            name: A/C
+            layout: vertical
+          - type: custom:mushroom-template-card
+            primary: Dörrar
+            secondary: >-
+              {{ "låsta" if states("binary_sensor.tesla_doors_open") == "off"
+              else "öppna" }}
+            icon: |-
+              {% if states("binary_sensor.tesla_doors_open") == "on" -%}
+              mdi:car-door-lock-open
+              {%- else -%}
+              mdi:car-door-lock
+              {%- endif -%}
+            entity: lock.eazy_las
+            hold_action:
+              action: perform-action
+              perform_action: lock.unlock
+              target:
+                entity_id: lock.eazy_las
+            badge_color: >-
+              {% if states("binary_sensor.tesla_windows_open") in [ "off",
+              "unavailable" ]%}
+
+              green
+
+              {% else %}
+
+              red
+
+              {% endif %}
+            badge_icon: >-
+              {% if states("binary_sensor.tesla_windows_open") in [ "off",
+              "unavailable" ]%}
+
+              mdi:check-bold
+
+              {% else %}
+
+              mdi:exclamation-thick
+
+              {% endif %}
+            color: |-
+              {% if states("binary_sensor.tesla_doors_open") == "on" -%}
+              red
+              {%- else -%}
+              grey
+              {%- endif -%}
+            features_position: bottom
+            grid_options:
+              columns: 4
+              rows: 2
+            vertical: true
+            icon_tap_action:
+              action: perform-action
+              perform_action: lock.lock
+              target:
+                entity_id: lock.eazy_las
+          - type: custom:mushroom-template-card
+            primary: Ladda
+            secondary: >-
+              {{states("sensor.template_rya_req_hours")|float(0)|replace(".",",")}}
+              timmar
+            icon: mdi:power-plug-battery
+            entity: automation.ladda_bilen_nar_det_ar_billigt
+            hold_action:
+              action: navigate
+              navigation_path: /lovelace/tesla
+            badge_color: >-
+              {% if states("binary_sensor.tesla_plugged_in") in [ "off",
+              "unavailable" ]%}
+
+              orange
+
+              {% else %}
+
+              green
+
+              {% endif %}
+            badge_icon: >-
+              {% if states("binary_sensor.tesla_charge_port_door_open") in [
+              "off", "unavailable" ]%}
+
+              mdi:power-plug-off
+
+              {% elif
+              state_attr("automation.ev6_reload_when_charging","current")|bool(false)
+              %}
+
+              mdi:battery-charging
+
+              {% elif states("binary_sensor.tesla_charge_port_door_open") ==
+              "on" %}
+
+              mdi:power-plug
+
+              {% endif %}
+            color: >-
+              {% if states("automation.ladda_bilen_nar_det_ar_billigt") == "off"
+              -%}
+
+              red
+
+              {%- else -%}
+
+              green
+
+              {%- endif -%}
+            features_position: bottom
+            grid_options:
+              columns: 4
+              rows: 2
+            vertical: true
+            icon_tap_action:
+              action: perform-action
+              perform_action: cover.open_cover
+              target:
+                entity_id: cover.eazy_lucka_till_laddkontakt
+          - type: heading
+            icon: mdi:car-hatchback
+            heading: Delphine
+            heading_style: title
+            badges:
+              - type: entity
+                entity: sensor.template_zoe_battery
+              - type: entity
+                show_state: true
+                show_icon: true
+                entity: sensor.car_2_charge_period
+                icon: mdi:battery-clock
+            tap_action:
+              action: navigate
+              navigation_path: /lovelace/tesla
+          - type: tile
+            entity: sensor.template_car_2_range
+            name: Range
+            icon: mdi:road-variant
+          - type: custom:mushroom-template-card
+            primary: Charge Time
+            secondary: >
+              {{states("sensor.template_zoe_req_hours")|float(0)|replace(".",",")}}
+              timmar
+            icon: mdi:power-plug-battery
+            badge_color: green
+            badge_icon: >-
+              {% if
+              state_attr("automation.car_2_show_soc_while_charging","current")|bool(false)
+              %}
+
+              mdi:battery-charging
+
+              {% endif %}
+            icon_color: |-
+              {% if states("automation.zoe_charge") == "off" -%}
+              red
+              {%- else -%}
+              green
+              {%- endif -%}
+            entity: automation.zoe_charge
+            hold_action:
+              action: navigate
+              navigation_path: /lovelace/tesla
+          - type: custom:mushroom-number-card
+            entity: input_number.zoe_soc_upper_limit
+            name: Limit
+      - type: grid
+        cards:
+          - type: heading
+            heading: Vädret
+            heading_style: title
+            badges:
+              - type: entity
+                show_state: true
+                show_icon: true
+                entity: sensor.template_home_temp
+                icon: mdi:sun-thermometer-outline
+              - type: entity
+                show_state: true
+                show_icon: true
+                entity: sensor.felix_rum_temperature
+                icon: mdi:home-thermometer-outline
+          - type: custom:clock-weather-card
+            entity: weather.smhi_home
+            apparent_sensor: sensor.feel
+            temperature_sensor: sensor.smhi_temperatur
+            animated_icon: true
+            time_format: 24
+            forecast_rows: 5
+            weather_icon_type: fill
+            hourly_forecast: false
+            show_decimal: true
+          - type: custom:pollenprognos-card
+            city: Göteborg
+            allergens:
+              - Björk
+              - Gräs
+              - Hassel
+            visibility:
+              - condition: and
+                conditions:
+                  - condition: state
+                    entity: sensor.pollen_goteborg_bjork
+                    state_not: '0'
+                  - condition: state
+                    entity: sensor.pollen_goteborg_gras
+                    state_not: '0'
+                  - condition: state
+                    entity: sensor.pollen_goteborg_hassel
+                    state_not: '0'
+            card_mod:
+              style: |
+                ha-card {padding-top: 0px;padding-bottom: 0px;}
+                .sensor {margin-top: 0px;margin-bottom: 0px;}
+                .header {display: none;}
+      - type: grid
+        cards:
+          - type: heading
+            heading: Rummen
+          - square: false
+            columns: 2
+            type: grid
+            cards:
+              - type: custom:vertical-stack-in-card
+                cards:
+                  - type: custom:mushroom-template-card
+                    entity: group.vrum_nere
+                    primary: Vardagsrummet
+                    secondary: >
+                      {{ states('sensor.vardagsrummet_temperature')|round }}°C
+                      •🔋{{ states('sensor.vardagsrummet_power')|round }}%
+                    icon: mdi:sofa
+                    icon_color: >-
+                      {% if states('sensor.vardagsrummet_temperature')|round >
+                      24 %}
+
+                      red
+
+                      {% elif states('sensor.vardagsrummet_temperature')|round >
+                      21 %}
+
+                      green
+
+                      {% else %}
+
+                      blue
+
+                      {% endif %}
+                    tap_action:
+                      action: more-info
+                  - type: custom:mushroom-chips-card
+                    chips:
+                      - type: template
+                        entity: group.vrum_nere
+                        icon: mdi:lightbulb-group
+                        icon_color: |-
+                          {%if states('group.vrum_nere') == 'on' %}
+                            orange
+                          {%endif%}
+                        tap_action:
+                          action: toggle
+                    alignment: center
+                    card_mod:
+                      style: |
+                        ha-card {
+                          margin: -4px 0px 5px;
+                          --chip-border-width: 0;
+                          --chip-height: 40px;      
+                        }
+              - type: custom:vertical-stack-in-card
+                cards:
+                  - type: custom:mushroom-template-card
+                    entity: group.sovrummet
+                    primary: Sovrummet
+                    secondary: |
+                      {{states('sensor.215_temperature')|round}}°C
+                    icon: mdi:bed-double
+                    icon_color: |-
+                      {% if states('sensor.215_temperature')|round > 24 %}
+                      red
+                      {% elif states('sensor.215_temperature')|round > 21 %}
+                      green
+                      {% else %}
+                      blue
+                      {% endif %}
+                    tap_action:
+                      action: more-info
+                  - type: custom:mushroom-chips-card
+                    chips:
+                      - type: template
+                        entity: group.sovrummet
+                        icon: mdi:lightbulb-group
+                        icon_color: |-
+                          {%if states('group.sovrummet') == 'on' %}
+                            orange
+                          {%endif%}
+                        tap_action:
+                          action: toggle
+                    alignment: center
+                    card_mod:
+                      style: |
+                        ha-card {
+                          margin: -4px 0px 5px;
+                          --chip-border-width: 0;
+                          --chip-height: 40px;      
+                        }
+              - type: custom:vertical-stack-in-card
+                cards:
+                  - type: custom:mushroom-template-card
+                    entity: sensor.template_home_temp
+                    primary: Ute
+                    secondary: >
+                      {{states('sensor.template_home_temp')|round}}°C
+                      •🔋{{states('sensor.framsidan_batteri')|round }}%
+                    icon: mdi:home
+                    icon_color: |-
+                      {% if states('sensor.template_home_temp')|round > 26 %}
+                      red
+                      {% elif states('sensor.template_home_temp')|round > 15 %}
+                      green
+                      {% else %}
+                      blue
+                      {% endif %}
+                    tap_action:
+                      action: more-info
+                  - type: custom:mushroom-chips-card
+                    chips:
+                      - type: template
+                        entity: group.ute
+                        icon: mdi:lightbulb-group
+                        icon_color: |-
+                          {%if states('group.ute') == 'on' %}
+                            orange
+                          {%endif%}
+                        tap_action:
+                          action: toggle
+                      - type: template
+                        entity: lawn_mower.wall_e
+                        icon: mdi:robot-mower
+                        tap_action:
+                          action: more-info
+                        icon_color: |-
+                          {%if states('lawn_mower.wall_e') == 'mowing' %}
+                            green
+                          {% elif states('lawn_mower.wall_e') == 'returning' %}
+                            orange
+                          {% elif states('lawn_mower.wall_e') == 'docked' %}
+                            yellow
+                          {% elif states('lawn_mower.wall_e') == 'error' %}
+                            red
+                          {%endif%}
+                        hold_action:
+                          action: navigate
+                          navigation_path: /lovelace/koket
+                    alignment: center
+                    card_mod:
+                      style: |
+                        ha-card {
+                          margin: -4px 0px 5px;
+                          --chip-border-width: 0;
+                          --chip-height: 40px;      
+                        }
+              - type: custom:vertical-stack-in-card
+                cards:
+                  - type: custom:mushroom-template-card
+                    entity: sensor.xiaomi_lys3_temperatur
+                    primary: Köket
+                    secondary: >
+                      {{ states('sensor.xiaomi_lys3_temperatur')|round }}°C
+                      •🔋{{ states('sensor.xiaomi_lys3_batteri')|round }}%
+                    icon: mdi:silverware-fork-knife
+                    icon_color: >-
+                      {% if states('sensor.xiaomi_lys3_temperatur')|round > 24
+                      %}
+
+                      red
+
+                      {% elif states('sensor.xiaomi_lys3_temperatur')|round > 21
+                      %}
+
+                      green
+
+                      {% else %}
+
+                      blue
+
+                      {% endif %}
+                    tap_action:
+                      action: more-info
+                  - type: custom:mushroom-chips-card
+                    chips:
+                      - type: template
+                        entity: group.koket
+                        icon: mdi:lightbulb-group
+                        tap_action:
+                          action: toggle
+                        icon_color: |-
+                          {%if states('group.koket') == 'on' %}
+                            orange
+                          {%endif%}
+                      - type: template
+                        entity: automation.diskmaskinen_starta_pa_klocka
+                        icon: mdi:dishwasher
+                        icon_color: >-
+                          {%if
+                          states('automation.diskmaskinen_starta_pa_klocka') ==
+                          'on' %}
+                            green
+                          {%endif%}
+                        tap_action:
+                          action: toggle
+                        hold_action:
+                          action: navigate
+                          navigation_path: /lovelace/koket
+                        content: >-
+                          {% if states("sensor.peaqnext_dishwasher")=="unknown"
+                          -%}
+
+                          --:--
+
+                          {%- else -%}
+
+                          {{states("sensor.peaqnext_dishwasher") |
+                          regex_replace('(>> )*(\d{2}:\d{2}).*', '\\2')}}
+
+                          {%- endif -%}
+                      - type: template
+                        tap_action:
+                          action: more-info
+                        hold_action:
+                          action: navigate
+                          navigation_path: /lovelace/koket
+                        entity: sensor.igrill_probe_1
+                        icon: mdi:grill
+                        icon_color: >-
+                          {% set temp_diff =
+                          states("input_number.igrill_target_temp")|int -
+                          states("sensor.igrill_probe_1")|int(0) -%}
+
+                          {%if temp_diff > 10 %}
+
+                          blue
+
+                          {%elif temp_diff > 5 %}
+
+                          yellow
+
+                          {%elif temp_diff > 0 %}
+
+                          orange
+
+                          {%else%}
+
+                          red
+
+                          {%endif%}
+                        content: '{{states("sensor.igrill_probe_1")|int(0)}}°C'
+                    alignment: center
+                    card_mod:
+                      style: |
+                        ha-card {
+                          margin: -4px 0px 5px;
+                          --chip-border-width: 0;
+                          --chip-height: 40px;      
+                        }
+              - type: custom:vertical-stack-in-card
+                cards:
+                  - type: custom:mushroom-template-card
+                    entity: group.kontoret
+                    primary: Kontoret
+                    secondary: >
+                      {{states('sensor.kontoret_temperature')|round}}°C
+                      •🔋{{states('sensor.kontoret_power')|round }}%
+                    icon: mdi:office-building
+                    icon_color: >-
+                      {% if states('sensor.kontoret_temperature')|round > 24 %}
+
+                      red
+
+                      {% elif states('sensor.kontoret_temperature')|round > 21
+                      %}
+
+                      green
+
+                      {% else %}
+
+                      blue
+
+                      {% endif %}
+                    tap_action:
+                      action: more-info
+                  - type: custom:mushroom-chips-card
+                    chips:
+                      - type: template
+                        entity: group.kontoret
+                        icon: mdi:lightbulb-group
+                        icon_color: |-
+                          {%if states('group.kontoret') == 'on' %}
+                            orange
+                          {%endif%}
+                        tap_action:
+                          action: toggle
+                      - type: template
+                        entity: switch.tz2
+                        icon: |-
+                          {%if states('switch.tz2') == 'on'%}
+                            mdi:desk-lamp-on
+                          {%else%}
+                            mdi:desk-lamp-off
+                          {%endif%}
+                        icon_color: |-
+                          {%if states('switch.tz2') == 'on' %}
+                            orange
+                          {%endif%}
+                        content_info: none
+                        tap_action:
+                          action: toggle
+                        hold_action:
+                          action: more-info
+                        double_tap_action:
+                          action: navigate
+                          navigation_path: /lovelace/5
+                      - type: light
+                        entity: light.office_window
+                        content_info: none
+                        icon: mdi:lamp
+                    alignment: center
+                    card_mod:
+                      style: |
+                        ha-card {
+                          margin: -4px 0px 5px;
+                          --chip-border-width: 0;
+                          --chip-height: 40px;      
+                        }
+              - type: custom:vertical-stack-in-card
+                cards:
+                  - type: custom:mushroom-template-card
+                    entity: sensor.xiaomi_lys2_temperatur
+                    primary: Felix
+                    secondary: >
+                      {{ states('sensor.xiaomi_lys2_temperatur')|round }}°C
+                      •🔋{{ states('sensor.xiaomi_lys2_batteri')|round }}%
+                    icon: mdi:human-male-child
+                    icon_color: >-
+                      {% if states('sensor.xiaomi_lys2_temperatur')|round > 24
+                      %}
+
+                      red
+
+                      {% elif states('sensor.xiaomi_lys2_temperatur')|round > 21
+                      %}
+
+                      green
+
+                      {% else %}
+
+                      blue
+
+                      {% endif %}
+                    tap_action:
+                      action: more-info
+                    hold_action:
+                      action: navigate
+                      navigation_path: /lovelace/5
+                  - type: custom:mushroom-chips-card
+                    chips:
+                      - type: template
+                        entity: group.felix_rum
+                        icon: mdi:lightbulb-group
+                        tap_action:
+                          action: toggle
+                        icon_color: |-
+                          {%if states('group.felix_rum') == 'on' %}
+                            orange
+                          {%endif%}
+                      - type: template
+                        entity: light.felix_rum_taket_light
+                        icon: mdi:ceiling-light
+                        icon_color: |-
+                          {%if states('light.felix_rum_taket_light') == 'on' %}
+                            orange
+                          {%endif%}
+                        tap_action:
+                          action: more-info
+                        hold_action:
+                          action: toggle
+                    alignment: center
+                    card_mod:
+                      style: |
+                        ha-card {
+                          margin: -4px 0px 5px;
+                          --chip-border-width: 0;
+                          --chip-height: 40px;      
+                        }
+    cards: []
+    badges:
+      - type: custom:mushroom-template-badge
+        icon: >-
+          {% if states("binary_sensor.template_nordpool_price_reallow")|bool%}
+
+          mdi:arrow-down-thick
+
+          {% elif states("binary_sensor.template_nordpool_price_low")|bool%}
+
+          mdi:arrow-bottom-right-thick
+
+          {% elif
+          states("binary_sensor.template_nordpool_price_not_high")|bool%}
+
+          mdi:arrow-top-right-thick
+
+          {%else%}
+
+          mdi:arrow-up-thick
+
+          {%endif%}
+        entity: sensor.template_elpris_kr
+        tap_action:
+          action: navigate
+          navigation_path: /lovelace/prices
+        content: >-
+          {{'%.2f'|format(states('sensor.template_elpris_kr')|float)|replace('.',',')}}
+          kr
+        color: |2
+            {% if
+          states("binary_sensor.template_nordpool_price_reallow")|bool%}
+            green
+            {% elif states("binary_sensor.template_nordpool_price_low")|bool%}
+            yellow
+            {% elif
+            states("binary_sensor.template_nordpool_price_not_high")|bool%}
+            orange
+            {%else%}
+            red
+            {%endif%}
+      - type: custom:mushroom-template-badge
+        icon: mdi:home-lightning-bolt
+        content: >-
+          {{'%.1f'|format(
+          states("sensor.template_house_power_kw")|float)|replace('.',',')}} kW
+        color: |-
+          {% if states("sensor.template_house_power_kw")|float < 2.3 %}
+          green
+          {% elif states("sensor.template_house_power_kw")|float > 3.7 %}
+          red
+          {% else %}
+          yellow
+          {% endif %}
+        entity: sensor.template_house_power_kw
+        tap_action:
+          action: navigate
+          navigation_path: /lovelace/huset
+      - type: custom:mushroom-template-badge
+        tap_action:
+          action: navigate
+          navigation_path: /lovelace/8
+        icon: mdi:weather-sunny
+        content: >-
+          {{'%.1f'|format(
+          states("sensor.fronius_inverter_total_power")|float)|replace('.',',')}}
+          kW
+        color: |-
+          {% if states("sensor.fronius_inverter_total_power")|float < 3 %}
+          red
+          {% elif states("sensor.fronius_inverter_total_power")|float > 5 %}
+          green
+          {% else %}
+          yellow
+          {% endif %}
+        entity: sensor.fronius_inverter_total_power
+      - type: entity
+        show_name: false
+        show_state: true
+        show_icon: true
+        entity: sensor.template_home_temp
+        icon: mdi:sun-thermometer-outline
+    header:
+      layout: center
+      badges_position: top
+  - type: sections
+    max_columns: 4
+    icon: mdi:car
+    path: tesla
+    sections:
+      - type: grid
+        cards:
+          - type: heading
+            heading: Eazy
+            heading_style: title
+            icon: mdi:car
+            badges:
+              - type: entity
+                entity: sensor.tesla_inside_temp
+              - type: entity
+                show_state: true
+                show_icon: true
+                entity: sensor.template_rya_charging_required_time
+                icon: mdi:lightning-bolt
+                tap_action:
+                  action: more-info
+          - type: gauge
+            entity: sensor.tesla_battery_level
+            name: ' '
+            needle: true
+            severity:
+              green: 20
+              yellow: 80
+              red: 90
+            grid_options:
+              rows: 1
+              columns: 4
+          - type: custom:mushroom-entity-card
+            entity: sensor.tesla_ideal_battery_range
+            name: Räckvidd
+            icon: mdi:gauge
+            grid_options:
+              columns: 4
+          - type: gauge
+            entity: sensor.template_rya_charging_power
+            name: ' '
+            severity:
+              green: 0
+              yellow: 5.5
+              red: 8
+            max: 11
+            needle: true
+            grid_options:
+              columns: 4
+              rows: 1
+          - type: tile
+            entity: sensor.tesla_charge_limit_soc
+            name: Ladda till
+            vertical: false
+            features_position: bottom
+          - type: custom:mushroom-template-card
+            primary: >-
+              {{
+              '{:,.0f}'.format((states("sensor.template_car_2_odometer")|int/10)|round(0))|replace(',','
+              ')|replace('.',',') }}
+            secondary: Körsträcka
+            icon: mdi:counter
+            entity: sensor.template_car_2_odometer
+            grid_options:
+              columns: 6
+              rows: 1
+            tap_action:
+              action: more-info
+            color: blue
+            features_position: bottom
+          - type: custom:mushroom-template-card
+            icon: mdi:ev-station
+            entity: binary_sensor.tesla_plugged_in
+            badge_icon: mdi:robot
+            badge_color: >-
+              {{"grey" if
+              states("automation.ladda_bilen_nar_det_ar_billigt")=="off" else
+              "green"}}
+            primary: >-
+              {{ states("sensor.car_1_charge_period") if not ("unknown") else
+              "-" }}
+            secondary: >-
+              {%if states("sensor.template_rya_req_hours")|float(0) > 0%}
+
+              {{states("sensor.template_rya_req_hours")|float(0)|replace(".",",")}}
+              h
+
+              {%else%}
+
+              0 h
+
+              {%endif%}
+            tap_action:
+              action: perform-action
+              perform_action: automation.toggle
+              target:
+                entity_id: automation.ladda_bilen_nar_det_ar_billigt
+            hold_action:
+              action: call-service
+              service: script.charge_the_tesla
+            grid_options:
+              columns: 4
+              rows: 1
+            color: >-
+              {{"green" if states("sensor.tesla_state")=="charging" else
+              "grey"}}
+            features_position: bottom
+          - type: entities
+            entities:
+              - entity: input_datetime.rya_before
+                name: Före kl.
+                icon: mdi:battery-clock-outline
+                card_mod:
+                  style:
+                    ha-date-input:
+                      $:
+                        ha-textfield $: |
+                          .mdc-text-field {
+                            height: 40px !important;
+                          }
+                          .mdc-text-field__input {
+                            align-self: end;
+                          }
+                      .: |
+                        ha-date-input {
+                          height: 40px;
+                        }
+                    ha-time-input $ ha-base-time-input $:
+                      ha-textfield:
+                        $: |
+                          .mdc-text-field {
+                            height: 40px !important;
+                          }
+                      ha-select $: |
+                        .mdc-select__anchor {
+                          height: 40px !important;
+                        }
+                    .: |
+                      :host {
+                        --mdc-text-field-fill-color: transparent;
+                        --mdc-select-fill-color: transparent;
+                      }
+            show_header_toggle: false
+            grid_options:
+              columns: 8
+              rows: 1
+            card_mod:
+              style: |
+                div.card-content { padding: 8px 4px; }
+          - type: custom:mushroom-template-card
+            icon: mdi:update
+            secondary: >-
+              {{states.sensor.tesla_battery_level.last_updated | as_timestamp |
+              timestamp_custom("%H:%M")}}
+            tap_action:
+              action: more-info
+            hold_action:
+              action: none
+            icon_color: blue
+            double_tap_action:
+              action: none
+            badge_icon: ''
+            badge_color: ''
+            grid_options:
+              columns: 6
+              rows: 1
+            primary: Uppdaterad
+            entity: sensor.tesla_since
+          - type: custom:collapsable-cards
+            title: Schemalagt
+            cards:
+              - type: entities
+                entities:
+                  - entity: input_number.car_1_energy_kwh
+                    name: kWh
+                  - entity: input_datetime.car_1_time
+                    name: kl.
+                    icon: mdi:clock-outline
+                  - type: divider
+                  - entity: automation.ladda_azarel_pa_klocka
+                    name: Starta på kl.
+                    icon: mdi:car-clock
+          - type: custom:mushroom-entity-card
+            entity: sensor.tesla_inside_temp
+            name: Inne
+            grid_options:
+              columns: 4
+              rows: 1
+          - type: custom:mushroom-entity-card
+            entity: sensor.tesla_outside_temp
+            name: Ute
+            grid_options:
+              columns: 4
+              rows: 1
+          - type: custom:mushroom-template-card
+            icon: mdi:air-conditioner
+            features_position: bottom
+            entity: binary_sensor.tesla_is_climate_on
+            primary: '{{ states(''binary_sensor.tesla_is_climate_on'') }}'
+            color: >
+              {{ 'orange' if is_state('binary_sensor.tesla_is_climate_on', 'on')
+              else 'grey' }}
+            secondary: HVAC
+            grid_options:
+              columns: 4
+              rows: 1
+      - type: grid
+        cards:
+          - type: heading
+            heading: Delphine
+            heading_style: title
+            icon: mdi:car-2-plus
+            badges:
+              - type: entity
+                show_state: true
+                show_icon: true
+                entity: sensor.car_2_charge_period
+                icon: mdi:battery-clock
+                tap_action:
+                  action: more-info
+              - type: entity
+                show_state: true
+                show_icon: true
+                entity: sensor.template_zoe_charging_required_time
+                icon: mdi:lightning-bolt
+                tap_action:
+                  action: more-info
+          - type: gauge
+            needle: true
+            severity:
+              green: 20
+              yellow: 80
+              red: 90
+            entity: sensor.template_zoe_battery
+            name: ' '
+            grid_options:
+              columns: 4
+              rows: 1
+          - type: custom:mushroom-entity-card
+            entity: sensor.template_car_2_range
+            icon: mdi:road-variant
+            tap_action:
+              action: more-info
+            name: Räckvidd
+            grid_options:
+              columns: 4
+          - type: gauge
+            entity: sensor.template_zoe_charging_power
+            name: ' '
+            severity:
+              green: 0
+              yellow: 5.5
+              red: 8
+            max: 11
+            needle: true
+            grid_options:
+              columns: 4
+              rows: 1
+          - type: custom:mushroom-number-card
+            entity: input_number.zoe_soc_upper_limit
+            name: Ladda till
+            display_mode: buttons
+            grid_options:
+              columns: 4
+              rows: 2
+          - type: custom:mushroom-template-card
+            icon: mdi:ev-station
+            entity: automation.zoe_charge
+            secondary: >-
+              {%if states("sensor.template_zoe_req_hours")|float(0) > 0%}
+
+              {{states("sensor.template_zoe_req_hours")|float(0)|replace(".",",")}}
+              h
+
+              {%else%}
+
+              0 h
+
+              {%endif%}
+            tap_action:
+              action: perform-action
+              perform_action: automation.toggle
+              target:
+                entity_id: automation.zoe_charge
+            primary: >-
+              {{ states("sensor.car_2_charge_period") if not ("unknown") else
+              "-" }}
+            grid_options:
+              columns: 4
+              rows: 1
+            hold_action:
+              action: perform-action
+              perform_action: automation.trigger
+              target:
+                entity_id: automation.zoe_charge
+              data:
+                skip_condition: true
+            badge_color: '{{"grey" if states("automation.zoe_charge")=="off" else "green"}}'
+            badge_icon: mdi:robot
+            color: >-
+              {{ "green" if state_attr('automation.zoe_charge', 'current') > 0
+              else "grey" }}
+            features_position: bottom
+          - type: custom:mushroom-template-card
+            icon: |-
+              {%if states('sensor.byd_dolphin_status')=='connected'%}
+              mdi:car-connected
+              {%else%}
+              mdi:connection 
+              {%endif%}
+            features_position: bottom
+            entity: sensor.byd_dolphin_status
+            primary: Status
+            secondary: '{{states(''sensor.byd_dolphin_status'')}}'
+            color: |-
+              {%if states('sensor.byd_dolphin_status')=='connected'%}
+              green
+              {%else%}
+              grey
+              {%endif%}
+            icon_tap_action:
+              action: more-info
+            grid_options:
+              columns: 4
+              rows: 1
+          - type: entities
+            entities:
+              - entity: input_datetime.zoe_before
+                name: Före kl.
+                icon: mdi:battery-clock-outline
+                card_mod:
+                  style:
+                    ha-date-input:
+                      $:
+                        ha-textfield $: |
+                          .mdc-text-field {
+                            height: 40px !important;
+                          }
+                          .mdc-text-field__input {
+                            align-self: end;
+                          }
+                      .: |
+                        ha-date-input {
+                          height: 40px;
+                        }
+                    ha-time-input $ ha-base-time-input $:
+                      ha-textfield:
+                        $: |
+                          .mdc-text-field {
+                            height: 40px !important;
+                          }
+                      ha-select $: |
+                        .mdc-select__anchor {
+                          height: 40px !important;
+                        }
+                    .: |
+                      :host {
+                        --mdc-text-field-fill-color: transparent;
+                        --mdc-select-fill-color: transparent;
+                      }
+            show_header_toggle: false
+            grid_options:
+              columns: 8
+              rows: 1
+            card_mod:
+              style: |
+                div.card-content { padding: 8px 4px; }
+          - type: custom:collapsable-cards
+            title: Schemalagt
+            cards:
+              - type: entities
+                entities:
+                  - entity: automation.ladda_zoe_pa_tid
+                    icon: mdi:car-clock
+                    name: Ladda
+                  - entity: input_datetime.zoe_hour
+                    name: Klockan
+                    icon: mdi:clock-outline
+    cards: []
+  - icon: mdi:cash-multiple
+    type: sidebar
+    title: Elpriset
+    cards:
+      - type: custom:mushroom-chips-card
+        chips:
+          - type: entity
+            entity: sensor.template_home_temp
+            tap_action:
+              action: more-info
+            icon: mdi:flower
+          - type: entity
+            entity: sensor.felix_rum_temperature
+            tap_action:
+              action: more-info
+            icon: mdi:home
+          - type: spacer
+          - type: entity
+            entity: sensor.template_next_low_price
+            tap_action:
+              action: more-info
+            hold_action:
+              action: none
+            double_tap_action:
+              action: none
+            icon: mdi:arrow-down
+            name: Lågt pris
+          - type: template
+            icon_color: >-
+              {% if
+              states("binary_sensor.template_nordpool_price_reallow")|bool%}
+
+              green
+
+              {% elif states("binary_sensor.template_nordpool_price_low")|bool%}
+
+              yellow
+
+              {% elif
+              states("binary_sensor.template_nordpool_price_not_high")|bool%}
+
+              orange
+
+              {%else%}
+
+              red
+
+              {%endif%}
+            icon: >-
+              {% if
+              states("binary_sensor.template_nordpool_price_reallow")|bool%}
+
+              mdi:arrow-down-thick
+
+              {% elif states("binary_sensor.template_nordpool_price_low")|bool%}
+
+              mdi:arrow-right-thick
+
+              {% elif
+              states("binary_sensor.template_nordpool_price_not_high")|bool%}
+
+              mdi:arrow-top-right-thick
+
+              {%else%}
+
+              mdi:arrow-up-thick
+
+              {%endif%}
+            tap_action:
+              action: navigate
+              navigation_path: /lovelace/prices
+            hold_action:
+              action: more-info
+            entity: sensor.nordpool_kwh_se3_sek_3_095_0
+      - type: custom:andy-stats-clock
+        clock_mode: 24h
+        show_hour_labels: true
+        start_angle: -7.5
+        end_angle: 352.5
+        radius: 35
+        layer_gap: 2
+        hands_center_pivot: true
+        scale: 1
+        outer_ticks:
+          enabled: false
+        sweeper:
+          enabled: true
+          use_system_time: true
+          entity: ''
+          color: '#ffffff'
+          width: 1.5
+          opacity: 0.8
+          show_dash: false
+          length_scale: 0.95
+        hour_sweeper:
+          enabled: true
+          use_system_time: true
+          entity: ''
+          color: '#ffffff'
+          width: 1.5
+          opacity: 0.8
+          show_dash: false
+          length_scale: 0.95
+        minute_sweeper:
+          enabled: false
+          color: '#FFFFFF'
+          width: 1.2
+          opacity: 0.8
+          show_dash: false
+          length_scale: 0.9
+        second_sweeper:
+          enabled: false
+          color: '#f50049'
+          width: 1
+          opacity: 1
+          show_dash: false
+          length_scale: 1
+        hub:
+          color: rgba(255,255,255,0.7)
+          radius: 2.3
+          opacity: 1
+        style:
+          background: var(--ha-card-background, rgba(0,0,0,0.4))
+          text_color: var(--primary-text-color)
+          font_family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif
+        layers:
+          - id: price_today
+            name: Price today
+            type: price
+            entity: sensor.elpris_total_inkl_avgifter
+            price_source: array
+            attribute: Today
+            value_path: value
+            radius: 45
+            thickness: 8
+            opacity: 1
+            color_mode: intervals
+            segment_count: null
+            intervals:
+              - from: -100
+                to: 80
+                color_from: '#2ecc71'
+                color_to: '#a3e635'
+              - from: 100
+                to: 150
+                color_from: '#a3e635'
+                color_to: '#facc15'
+              - from: 150
+                to: 250
+                color_from: '#facc15'
+                color_to: '#fb923c'
+              - from: 250
+                to: 1000
+                color_from: '#fb7c3c'
+                color_to: '#FF0000'
+            gradient:
+              from: '#28c76f'
+              to: '#ea5455'
+            stats_markers:
+              show_min: true
+              show_max: true
+              show_avg: false
+              color: rgba(255,255,255,0.9)
+              font_size: 4
+              radius_offset: -8
+              decimals: 0
+              outline: false
+              outline_color: rgba(0,0,0,0.65)
+              outline_width: 0.8
+          - id: layer_2
+            name: Price tomorrow
+            type: price
+            entity: sensor.elpris_total_inkl_avgifter
+            price_source: array
+            attribute: Tomorrow
+            value_path: value
+            radius: 45
+            thickness: 8
+            opacity: 1
+            color_mode: intervals
+            segment_count: null
+            intervals:
+              - from: -100
+                to: 80
+                color_from: '#2ecc71'
+                color_to: '#a3e635'
+              - from: 100
+                to: 150
+                color_from: '#a3e635'
+                color_to: '#facc15'
+              - from: 150
+                to: 250
+                color_from: '#facc15'
+                color_to: '#fb923c'
+              - from: 250
+                to: 400
+                color_from: '#fb7c3c'
+                color_to: '#FF0000'
+            gradient:
+              from: '#28c76f'
+              to: '#ea5455'
+            stats_markers:
+              show_min: true
+              show_max: true
+              show_avg: false
+              color: '#5a58fe'
+              font_size: 4
+              radius_offset: -8
+              decimals: 0
+              min_label: ''
+              max_label: ''
+              avg_label: ''
+            keep_across_midnight: false
+            fade_previous_day: false
+            fade_previous_day_opacity: 0.25
+        center_layers:
+          - id: priset_nu
+            type: entity
+            entity: sensor.template_elpris_kr
+            show_icon: false
+            label_template: <state> kr
+            decimals: ''
+            font_size: 28
+            font_weight: '600'
+            color: white
+            top_margin: -30
+        bottom_layers: []
+      - type: vertical-stack
+        cards:
+          - type: horizontal-stack
+            cards:
+              - type: entity
+                entity: sensor.template_nordpool_25perc
+                unit: kr
+                icon: mdi:cash-minus
+                name: 25:e
+              - type: entity
+                unit: kr
+                name: Median
+                icon: mdi:cash-marker
+                entity: sensor.template_nordpool_median
+              - type: entity
+                entity: sensor.template_nordpool_75perc
+                icon: mdi:cash-plus
+                state_color: false
+                name: 75:e
+                unit: kr
+      - type: vertical-stack
+        cards:
+          - type: custom:apexcharts-card
+            now:
+              show: true
+              label: nu
+              color: var(--primary-color)
+            graph_span: 24h
+            span:
+              start: day
+              offset: +0H
+            header:
+              title: Elpriset
+              show: true
+              show_states: true
+              colorize_states: true
+              floating: false
+            apex_config:
+              show:
+                offset_in_name: false
+              chart:
+                height: 250px
+              legend:
+                show: false
+              tooltip:
+                style:
+                  fontSize: 10px
+                fixed:
+                  enabled: true
+                  position: topRight
+              plotOptions:
+                bar:
+                  borderRadius: 0
+              yaxis:
+                min: 0
+                decimalsInFloat: 2
+                forceNiceScale: true
+              xaxis:
+                labels:
+                  datetimeFormatter:
+                    hour: HH
+            hours_12: false
+            stacked: false
+            experimental:
+              color_threshold: true
+            all_series_config:
+              show:
+                legend_value: false
+                datalabels: false
+                extremas: false
+                in_brush: false
+              float_precision: 1
+              type: area
+              invert: false
+              fill_raw: zero
+            series:
+              - entity: sensor.nordpool_kwh_se3_sek_3_095_0
+                type: column
+                extend_to: end
+                color: coral
+                color_threshold:
+                  - value: -1
+                    color: '#86D18E'
+                  - value: 0.8
+                    color: '#21AB2F'
+                  - value: 1
+                    color: '#6A79FD'
+                  - value: 1.5
+                    color: '#FFB529'
+                  - value: 2.2
+                    color: '#ff7538'
+                  - value: 4.2
+                    color: '#FA0F17'
+                float_precision: 2
+                stroke_width: 2
+                name: Idag
+                unit: kr
+                show:
+                  in_header: false
+                  legend_value: false
+                  extremas: true
+                data_generator: |
+                  return entity.attributes.raw_today.map((p) => {
+                          let fee = Number(hass.states['sensor.template_fees_ex_vat'].state);
+                          let price = (fee + p["value"])*1.25;        
+                          return [new Date(p["start"]).getTime(), price];
+                        });    
+              - entity: sensor.nordpool_kwh_se3_sek_3_095_0
+                type: line
+                curve: stepline
+                extend_to: end
+                name: Imorgon
+                unit: kr
+                float_precision: 2
+                opacity: 0.8
+                stroke_width: 2
+                show:
+                  in_header: false
+                  legend_value: false
+                  extremas: true
+                data_generator: |
+                  return entity.attributes.raw_tomorrow.map((p) => {
+                    let fee = Number(hass.states['sensor.template_fees_ex_vat'].state);
+                    let price = (fee + p["value"])*1.25;
+                    let d = new Date(p["start"]);
+                    d.setDate(d.getDate() - 1);
+                    return [d.getTime(), price];
+                  });
+              - entity: sensor.template_nordpool_min
+                type: column
+                color: green
+                float_precision: 2
+                stroke_width: 2
+                name: min
+                group_by:
+                  duration: 1d
+                show:
+                  in_chart: false
+                  legend_value: false
+              - entity: sensor.template_nordpool_max
+                type: column
+                color: red
+                float_precision: 2
+                stroke_width: 2
+                name: max
+                group_by:
+                  duration: 1d
+                show:
+                  in_chart: false
+                  legend_value: false
+              - entity: sensor.template_nordpool_avg
+                type: column
+                color: Grey
+                float_precision: 2
+                stroke_width: 2
+                name: medel
+                group_by:
+                  duration: 1d
+                show:
+                  in_chart: false
+                  legend_value: false
+          - type: custom:apexcharts-card
+            header:
+              show: false
+            graph_span: 48h
+            span:
+              start: day
+            apex_config:
+              tooltip:
+                style:
+                  fontSize: 10px
+                fixed:
+                  enabled: true
+                  position: topLeft
+              yaxis:
+                min: 0
+                decimalsInFloat: 2
+                forceNiceScale: true
+            series:
+              - entity: sensor.nordpool_kwh_se3_sek_3_095_0
+                type: line
+                curve: stepline
+                extend_to: end
+                name: Spotpriset
+                unit: kr
+                float_precision: 2
+                stroke_width: 2
+                color_threshold:
+                  - value: -1
+                    color: '#86D18E'
+                  - value: 0.1
+                    color: '#21AB2F'
+                  - value: 0.35
+                    color: '#6A79FD'
+                  - value: 0.75
+                    color: '#FFB529'
+                  - value: 1.5
+                    color: '#ff7538'
+                  - value: 3.5
+                    color: '#FA0F17'
+                show:
+                  in_header: false
+                  legend_value: false
+                  extremas: true
+                data_generator: |
+                  return entity.attributes.raw_today.map((p) => {
+                    let price = p["value"];        
+                    return [new Date(p["start"]).getTime(), price];
+                  }).concat(entity.attributes.raw_tomorrow.map((p, index) => {
+                    let price = p["value"];
+                    return [new Date(p["start"]).getTime(), price];
+                  }));
+            now:
+              show: true
+              label: nu
+              color: var(--primary-color)
+            experimental:
+              color_threshold: true
+      - type: vertical-stack
+        cards:
+          - type: custom:apexcharts-card
+            experimental:
+              color_threshold: true
+            header:
+              show: true
+              title: Gain/loss
+              show_states: true
+            series:
+              - entity: sensor.template_spot_gain_loss_daily
+                type: area
+                stroke_width: 0
+                group_by:
+                  func: avg
+                  duration: 15m
+                color_threshold:
+                  - value: -15
+                    color: '#006600'
+                  - value: -10
+                    color: '#009900'
+                  - value: -3
+                    color: '#00CC00'
+                  - value: 1
+                    color: '#ffcc80'
+                  - value: 10
+                    color: '#e53935'
+                  - value: 15
+                    color: '#CC0000'
+          - type: horizontal-stack
+            cards:
+              - type: custom:mushroom-template-card
+                primary: Förbrukat (24h)
+                secondary: >-
+                  {{
+                  '{:.1f}'.format((states("sensor.energy_used_24_hrs")|int/1000)|round(1)).replace('.',',')}}
+                  kWh
+                icon: mdi:chart-bell-curve
+                icon_color: '#44739e'
+                entity: sensor.energy_used_24_hrs
+                tap_action:
+                  action: more-info
+              - type: custom:mushroom-template-card
+                primary: Snittpris (24h)
+                secondary: >-
+                  {{
+                  '{:.2f}'.format(states("sensor.template_my_avg_spot_price")|float).replace('.',',')
+                  }} kr
+                icon: mdi:chart-bell-curve
+                icon_color: '#44739e'
+                entity: sensor.template_my_avg_spot_price
+                tap_action:
+                  action: more-info
+          - type: glance
+            show_icon: false
+            entities:
+              - entity: sensor.template_nordpool_avg
+                name: idag
+              - entity: sensor.elpriset_kr_avg
+                name: 1d
+              - entity: sensor.elpriset_kr_avg_3
+                name: 3d
+      - chart_type: line
+        period: hour
+        type: statistics-graph
+        entities:
+          - entity: sensor.template_elpris_kr
+            name: spotpris
+          - entity: sensor.elpriset_kr_avg
+            name: snitt 24h
+          - entity: sensor.elpriset_kr_avg_3
+            name: snitt 3d
+          - entity: sensor.template_my_avg_spot_price
+            name: mitt pris
+        stat_types:
+          - mean
+        days_to_show: 7
+        hide_legend: true
+      - type: custom:vertical-stack-in-card
+        cards:
+          - type: custom:collapsable-cards
+            title: Mina priser
+            cards:
+              - type: entities
+                entities:
+                  - entity: var.electric_fee
+                    name: Påslag
+                  - entity: var.electric_tax
+                    name: Skatt
+                  - entity: var.electric_transfer_cost
+                    name: Överföring
+                  - entity: sensor.template_fees_inc_vat
+                    name: Totalt
+                    icon: mdi:cash-multiple
+                  - type: divider
+                  - entity: var.electric_solar_markup
+                    name: Påslag sol
+                  - entity: var.electric_solar_net_markup
+                    name: Nätnytta
+                    icon: mdi:bank-transfer-in
+                  - entity: sensor.template_fees_solar
+                    icon: mdi:white-balance-sunny
+                    name: Totalt
+                show_header_toggle: false
+                card_mod:
+                  style: |
+                    ha-card {
+                      border-width: 0;
+                    }
+    path: prices
+  - type: sections
+    max_columns: 3
+    icon: mdi:lightning-bolt
+    path: huset
+    sections:
+      - type: grid
+        cards:
+          - type: heading
+            heading: Effekt
+            heading_style: title
+            badges:
+              - type: entity
+                show_state: true
+                show_icon: true
+                entity: sensor.template_house_net_power_kw
+                icon: mdi:home-lightning-bolt
+            icon: mdi:lightning-bolt-outline
+          - type: custom:power-flow-card-plus
+            entities:
+              grid:
+                entity: sensor.template_house_net_power_kw
+                secondary_info: {}
+                invert_state: true
+              solar:
+                entity: sensor.fronius_inverter_total_power
+                display_zero_state: true
+                secondary_info: {}
+                tap_action:
+                  action: navigate
+                  navigation_path: /lovelace/8
+              individual:
+                - entity: sensor.template_zoe_charging_power
+                  secondary_info: {}
+                  name: Delphine
+                  icon: mdi:car-electric
+                  display_zero: false
+                  tap_action:
+                    action: navigate
+                    navigation_path: /lovelace/tesla
+                - entity: sensor.template_rya_charging_power
+                  secondary_info: {}
+                  display_zero: false
+                  icon: mdi:car-electric
+                  tap_action:
+                    action: navigate
+                    navigation_path: /lovelace/tesla
+                  name: Eazy
+                - entity: sensor.template_spabadet_power_kw
+                  secondary_info: {}
+                  name: Spa
+                  icon: mdi:hot-tub
+                  display_zero: false
+                  tap_action:
+                    action: navigate
+                    navigation_path: /lovelace/spa
+                - entity: sensor.template_heatpump_ivt_power
+                  secondary_info: {}
+                  name: Värmepump
+                  icon: mdi:heat-pump-outline
+                - entity: sensor.clever_spz3_electric_consumption_w
+                  secondary_info: {}
+                  name: Diskmaskin
+                  icon: mdi:dishwasher
+            clickable_entities: true
+            display_zero_lines: true
+            use_new_flow_rate_model: true
+            w_decimals: 0
+            kw_decimals: 1
+            min_flow_rate: 0.75
+            max_flow_rate: 6
+            max_expected_power: 2000
+            min_expected_power: 0.01
+            watt_threshold: 1000
+            transparency_zero_lines: 0
+            sort_individual_devices: false
+      - type: grid
+        cards:
+          - type: heading
+            heading: Huvudström
+            heading_style: title
+            icon: mdi:home-lightning-bolt-outline
+            badges:
+              - type: entity
+                show_state: true
+                show_icon: true
+                entity: sensor.template_house_power_kw
+          - type: heading
+            icon: ''
+            heading: L1
+            heading_style: subtitle
+            grid_options:
+              columns: 4
+              rows: auto
+            card_mod:
+              style: |
+                * { 
+                  color: var(--warning-color) !important;
+                }
+          - type: heading
+            icon: ''
+            heading: L2
+            heading_style: subtitle
+            grid_options:
+              columns: 4
+              rows: auto
+            card_mod:
+              style: |
+                * { 
+                  color: var(--primary-color) !important;
+                }
+          - type: heading
+            icon: ''
+            heading: L3
+            heading_style: subtitle
+            grid_options:
+              columns: 4
+              rows: auto
+            card_mod:
+              style: |
+                * { 
+                  color: var(--error-color) !important;
+                }
+          - type: gauge
+            entity: sensor.hem_gen5_electric_consumed_1
+            max: 20
+            name: L1
+            min: -12
+            needle: true
+            severity:
+              green: -12
+              yellow: 0
+              red: 10
+            grid_options:
+              columns: 4
+              rows: 2
+          - type: gauge
+            entity: sensor.hem_gen5_electric_consumed_2
+            name: L2
+            needle: true
+            severity:
+              green: -12
+              yellow: 0
+              red: 10
+            min: -12
+            max: 20
+            grid_options:
+              columns: 4
+              rows: 2
+          - type: gauge
+            entity: sensor.hem_gen5_electric_consumed_3
+            name: L3
+            needle: true
+            severity:
+              green: -12
+              yellow: 0
+              red: 10
+            min: -12
+            max: 20
+            grid_options:
+              columns: 4
+              rows: 2
+          - type: heading
+            icon: mdi:heat-pump-outline
+            heading: Värmepump
+            heading_style: subtitle
+            badges:
+              - type: entity
+                entity: sensor.template_heatpump_ivt_power
+          - type: horizontal-stack
+            cards:
+              - type: gauge
+                entity: sensor.shelly_3em_c45bbe55c55e_current_0
+                name: ' '
+                max: 16
+                needle: false
+                severity:
+                  green: 1
+                  yellow: 5
+                  red: 10
+                min: 0
+              - type: gauge
+                entity: sensor.shelly_3em_c45bbe55c55e_current_1
+                name: ' '
+                needle: false
+                severity:
+                  green: 1
+                  yellow: 5
+                  red: 10
+                max: 16
+              - type: gauge
+                entity: sensor.shelly_3em_c45bbe55c55e_current_2
+                max: 16
+                name: ' '
+                needle: false
+                severity:
+                  green: 1
+                  yellow: 5
+                  red: 10
+          - type: heading
+            icon: mdi:fridge
+            heading: Köket
+            heading_style: subtitle
+          - type: gauge
+            grid_options:
+              columns: 4
+              rows: 2
+            entity: sensor.template_washingmachine_current
+            name: Tvätt
+            max: 10
+            severity:
+              green: 1
+              yellow: 5
+              red: 10
+          - type: heading
+            icon: ''
+            heading_style: title
+            grid_options:
+              columns: 4
+              rows: 2
+          - type: gauge
+            entity: sensor.template_dishwasher_current
+            name: Diskmaskin
+            grid_options:
+              columns: 4
+              rows: 2
+            max: 10
+            severity:
+              green: 1
+              yellow: 5
+              red: 10
+          - type: heading
+            icon: mdi:bike
+            heading: Förrådet
+            heading_style: subtitle
+          - type: gauge
+            grid_options:
+              columns: 4
+              rows: 2
+            entity: sensor.popp_outdoor_current
+            max: 10
+            severity:
+              green: 1
+              yellow: 5
+              red: 10
+            name: Värme
+          - type: heading
+            icon: mdi:hot-tub
+            heading: Spa
+            heading_style: subtitle
+          - type: heading
+            icon: ''
+            heading: Jet
+            heading_style: subtitle
+            grid_options:
+              columns: 4
+              rows: auto
+          - type: heading
+            icon: ''
+            heading: Värmare
+            heading_style: subtitle
+            grid_options:
+              columns: 4
+              rows: auto
+          - type: heading
+            icon: ''
+            heading: Pump
+            heading_style: subtitle
+            grid_options:
+              columns: 4
+              rows: auto
+            badges: []
+          - type: horizontal-stack
+            cards:
+              - type: gauge
+                entity: sensor.template_spabadet_l1_current_a
+                max: 10
+                name: ' '
+                severity:
+                  green: 1
+                  yellow: 5
+                  red: 10
+              - type: gauge
+                entity: sensor.template_spabadet_l2_current_a
+                max: 13
+                name: ' '
+                severity:
+                  green: 1
+                  yellow: 5
+                  red: 10
+              - type: gauge
+                entity: sensor.template_spabadet_l3_current_a
+                max: 10
+                name: ' '
+                severity:
+                  green: 1
+                  yellow: 5
+                  red: 10
+          - type: heading
+            icon: mdi:car-electric-outline
+            heading: Laddare
+            heading_style: subtitle
+            badges:
+              - type: entity
+                entity: sensor.template_chargenode_power_kw
+          - type: horizontal-stack
+            cards:
+              - type: gauge
+                entity: sensor.chargenode_current_l1
+                name: ' '
+                max: 16
+                severity:
+                  green: 1
+                  yellow: 5
+                  red: 10
+              - type: gauge
+                entity: sensor.chargenode_current_l2
+                name: ' '
+                max: 16
+                severity:
+                  green: 1
+                  yellow: 5
+                  red: 10
+              - type: gauge
+                entity: sensor.chargenode_current_l3
+                name: ' '
+                max: 16
+                severity:
+                  green: 1
+                  yellow: 5
+                  red: 10
+          - type: heading
+            icon: mdi:solar-power-variant-outline
+            heading: Solen
+            heading_style: subtitle
+            badges:
+              - type: entity
+                show_state: true
+                show_icon: true
+                entity: sensor.fronius_inverter_total_power
+                icon: mdi:solar-power
+            tap_action:
+              action: navigate
+              navigation_path: /lovelace/8
+          - type: horizontal-stack
+            cards:
+              - type: gauge
+                entity: sensor.fronius_inverter_current_l1
+                name: ' '
+                max: 12
+                severity:
+                  green: 6
+                  yellow: 3
+                  red: 0
+              - type: gauge
+                entity: sensor.fronius_inverter_current_l2
+                name: ' '
+                max: 12
+                severity:
+                  green: 6
+                  yellow: 3
+                  red: 0
+              - type: gauge
+                entity: sensor.fronius_inverter_current_l3
+                name: ' '
+                max: 12
+                severity:
+                  green: 6
+                  yellow: 3
+                  red: 0
+      - type: grid
+        cards:
+          - type: custom:apexcharts-card
+            series:
+              - entity: sensor.chargenode_sma_current_l1
+                name: L1
+              - entity: sensor.chargenode_sma_current_l2
+                name: L2
+                color: DeepSkyBlue
+              - entity: sensor.chargenode_sma_current_l3
+                name: L3
+                color: red
+            cache: true
+            graph_span: 12h
+            update_interval: 5m
+            apex_config:
+              stroke:
+                show: true
+                width: 2
+                curve: stepline
+          - type: heading
+            heading: Värmepumpen
+            heading_style: subtitle
+            badges:
+              - type: entity
+                entity: sensor.template_heatpump_ivt_power
+            icon: mdi:heat-pump-outline
+          - type: entities
+            entities:
+              - entity: switch.varmepumpen_a
+                icon: mdi:heat-pump-outline
+                secondary_info: last-changed
+                name: Värme & vatten
+              - entity: switch.varmepumpen_b
+                icon: mdi:heat-pump-outline
+                secondary_info: last-changed
+                name: Elpatronen
+            title: Stäng av
+      - type: grid
+        cards:
+          - type: heading
+            heading: Husets förbrukning
+            heading_style: subtitle
+          - type: statistics-graph
+            chart_type: bar
+            period: day
+            entities:
+              - sensor.template_house_energy_wo_evcharging
+            stat_types:
+              - change
+            days_to_show: 7
+            hide_legend: true
+          - type: custom:apexcharts-card
+            header:
+              show_states: false
+            series:
+              - entity: sensor.template_elpris_kr
+                name: Pris
+                type: line
+                stroke_width: 1
+                float_precision: 2
+                color: '#6f90f4'
+                curve: stepline
+              - entity: sensor.template_house_power_kw
+                name: hus
+                type: column
+                color: '#B0C4DE'
+                stroke_width: 5
+                show:
+                  legend_value: false
+                group_by:
+                  func: avg
+                  duration: 1h
+              - entity: sensor.template_fronius_solar_power
+                name: sol
+                type: column
+                color: '#3CB371'
+                stroke_width: 5
+                show:
+                  legend_value: false
+                group_by:
+                  func: avg
+                  duration: 1h
+            update_interval: 1h
+            graph_span: 1d
+            span:
+              end: hour
+            apex_config:
+              yaxis:
+                - seriesName: pris
+                  decimalsInFloat: 2
+                  min: 0
+                  opposite: true
+                - seriesName: hus
+                  decimalsInFloat: 1
+                - seriesName: hus
+                  show: false
+              legend:
+                show: false
+              tooltip:
+                x:
+                  show: false
+          - type: entities
+            entities:
+              - entity: sensor.template_heatpump_ivt_energy
+                name: Totalt
+              - entity: sensor.varmepump_ivt_man_kwh
+                name: Månad
+                icon: mdi:lightning-bolt
+              - type: attribute
+                entity: sensor.varmepump_ivt_man_kwh
+                attribute: last_period
+                name: Föreg. mån
+                icon: mdi:lightning-bolt
+                suffix: kWh
+              - entity: sensor.varmepump_ivt_ar_kwh
+                name: År
+                icon: mdi:lightning-bolt
+    badges:
+      - type: entity
+        show_name: false
+        show_state: true
+        show_icon: true
+        entity: sensor.template_home_temp
+        icon: mdi:sun-thermometer
+      - type: entity
+        show_name: false
+        show_state: true
+        show_icon: true
+        entity: sensor.felix_rum_temperature
+        icon: mdi:home-thermometer
+      - type: custom:mushroom-template-badge
+        icon: >-
+          {% if states("binary_sensor.template_nordpool_price_reallow")|bool%}
+
+          mdi:arrow-down-thick
+
+          {% elif states("binary_sensor.template_nordpool_price_low")|bool%}
+
+          mdi:arrow-bottom-right-thick
+
+          {% elif
+          states("binary_sensor.template_nordpool_price_not_high")|bool%}
+
+          mdi:arrow-top-right-thick
+
+          {%else%}
+
+          mdi:arrow-up-thick
+
+          {%endif%}
+        tap_action:
+          action: navigate
+          navigation_path: /lovelace/prices
+        hold_action:
+          action: more-info
+        entity: sensor.nordpool_kwh_se3_sek_3_095_0
+        color: >
+          {% if states("binary_sensor.template_nordpool_price_reallow")|bool%}
+            green
+          {% elif states("binary_sensor.template_nordpool_price_low")|bool%}
+            yellow
+          {% elif
+          states("binary_sensor.template_nordpool_price_not_high")|bool%}
+            orange
+          {%else%}
+            red
+          {%endif%}
+    cards: []
+  - type: sections
+    max_columns: 4
+    icon: mdi:lightbulb-group
+    path: lights
+    sections:
+      - type: grid
+        cards:
+          - show_name: false
+            show_icon: true
+            entity: script.turn_on_general_lights
+            icon: mdi:brightness-7
+            tap_action:
+              action: toggle
+            type: entity-button
+            grid_options:
+              columns: 6
+              rows: 2
+          - show_name: false
+            show_icon: true
+            entity: script.turn_off_general_lights
+            icon: mdi:weather-night
+            tap_action:
+              action: toggle
+            type: entity-button
+            grid_options:
+              columns: 6
+              rows: 2
+          - show_name: true
+            show_icon: true
+            entity: script.turn_on_morning_lights
+            hold_action:
+              action: more-info
+            name: God morgon
+            tap_action:
+              action: toggle
+            type: entity-button
+            icon: mdi:weather-sunset-up
+            grid_options:
+              columns: 4
+              rows: 2
+          - entity: script.turn_off_nere
+            hold_action:
+              action: more-info
+            icon: mdi:lightbulb-off
+            name: Undervån
+            tap_action:
+              action: toggle
+            type: entity-button
+            show_name: true
+            grid_options:
+              columns: 4
+              rows: 2
+          - entity: script.turn_off_uppe
+            hold_action:
+              action: more-info
+            icon: mdi:lightbulb-off
+            tap_action:
+              action: toggle
+            type: entity-button
+            show_name: true
+            name: Övervån
+            grid_options:
+              columns: 4
+              rows: 2
+      - type: grid
+        cards:
+          - type: heading
+            heading: Köket
+            heading_style: subtitle
+            badges:
+              - type: entity
+                entity: sensor.xiaomi_lys3_temperatur
+            icon: mdi:silverware-fork-knife
+          - type: entities
+            entities:
+              - entity: light.koksfonstret_3
+            footer:
+              type: graph
+              entity: sensor.xiaomi_lys3_temperatur
+              detail: 2
+      - type: grid
+        cards:
+          - type: heading
+            heading: Sovrummet
+            heading_style: subtitle
+            badges:
+              - type: entity
+                show_state: true
+                show_icon: true
+                entity: sensor.215_temperature
+                icon: mdi:thermometer
+            icon: mdi:bed
+          - entities:
+              - entity: light.sovrumsfonstret
+                name: Fönstret
+                icon: mdi:wall-sconce
+                secondary_info: none
+              - entity: light.sovrummet_taket
+                name: Taket
+                icon: mdi:ceiling-light
+              - entity: switch.nexa_1
+                icon: mdi:led-strip-variant
+              - entity: switch.nexa_5
+                icon: mdi:cellphone-charging
+            type: entities
+            state_color: true
+            footer:
+              type: graph
+              entity: sensor.215_temperature
+              detail: 2
+      - type: grid
+        cards:
+          - type: heading
+            heading: Vardagsrummet
+            heading_style: subtitle
+            badges:
+              - type: entity
+                entity: sensor.vardagsrummet_temperature
+            icon: mdi:television-classic
+          - entities:
+              - entity: light.fibaro_system_fgd212_dimmer_2_level_2
+              - entity: light.tv_banken_light
+                icon: mdi:lamp
+                name: TV-bänken
+              - entity: switch.nexa_6
+                icon: mdi:lamp
+                name: Skänken
+              - entity: switch.tz3000_3_ljusslingan_brytare
+                name: Ljusslingan
+            type: entities
+            state_color: true
+            footer:
+              type: graph
+              entity: sensor.vardagsrummet_temperature
+              detail: 2
+      - type: grid
+        cards:
+          - type: heading
+            heading: Felix rum
+            heading_style: subtitle
+            badges:
+              - type: entity
+                entity: sensor.xiaomi_lys2_temperatur
+            icon: mdi:human-male-child
+          - entities:
+              - entity: light.felix_fonster
+                icon: mdi:lamp
+                name: Fönstret
+              - entity: light.felix_rum_taket_light
+                icon: mdi:ceiling-light
+                name: Taklampa
+              - entity: switch.rusta13a
+                icon: mdi:wall-sconce
+              - entity: switch.felix_ljusslinga
+                icon: mdi:string-lights
+                name: Ljusslingan
+              - entity: switch.rusta13c
+                icon: mdi:lamp
+            type: entities
+            footer:
+              type: graph
+              entity: sensor.xiaomi_lys2_temperatur
+      - type: grid
+        cards:
+          - type: heading
+            heading: Spelrummet
+            heading_style: subtitle
+            badges: []
+            icon: mdi:controller
+          - type: entities
+            entities:
+              - entity: light.spelrummet_taket_light
+                name: Taket
+                icon: mdi:ceiling-light
+              - entity: light.spelrummet_fonstret
+                icon: mdi:lamp
+                name: Fönstret
+              - entity: switch.spelrummet_ljusslingan
+                name: Ljusslingan
+                icon: mdi:string-lights
+      - type: grid
+        cards:
+          - type: heading
+            heading: Övervåning
+            heading_style: subtitle
+            badges:
+              - type: entity
+                entity: sensor.xiaomi_lys1_temperatur
+            icon: mdi:projector-screen
+          - entities:
+              - entity: switch.tz3000_1_brudkistan_switch
+                name: Brudkistan
+                icon: mdi:lamp
+              - entity: switch.tz3000_2_byran_uppe_switch
+                name: Byrån
+                icon: mdi:lamp
+            type: entities
+            state_color: true
+            footer:
+              type: graph
+              entity: sensor.xiaomi_lys1_temperatur
+              detail: 2
+      - type: grid
+        cards:
+          - type: heading
+            heading: Kontoret
+            heading_style: subtitle
+            badges:
+              - type: entity
+                entity: sensor.kontoret_temperature
+            icon: mdi:office-building
+          - entities:
+              - entity: switch.tz2
+                icon: mdi:desk-lamp
+                name: Skrivbordet
+              - entity: light.office_window
+              - entity: light.kontoret_fonstret
+                icon: mdi:lamp
+            type: entities
+            state_color: true
+            footer:
+              type: graph
+              entity: sensor.kontoret_temperature
+              detail: 2
+      - type: grid
+        cards:
+          - type: heading
+            heading: Utomhus
+            heading_style: subtitle
+            badges:
+              - type: entity
+                show_state: true
+                show_icon: true
+                entity: sensor.template_home_temp
+                icon: mdi:thermometer
+            icon: mdi:home-thermometer
+          - entities:
+              - entity: switch.entre
+                icon: mdi:wall-sconce-outline
+              - entity: switch.an179_1
+                name: Vindskyddet
+                icon: mdi:wall-sconce-round
+              - entity: switch.telldusout1
+                name: Södra altanväggen
+                icon: mdi:string-lights
+              - entity: switch.nexa_out_1
+                icon: mdi:string-lights
+              - entity: light.utebaren_mqtt
+                name: Baren, ute
+            type: entities
+            footer:
+              type: graph
+              entity: sensor.template_home_temp
+              detail: 2
+      - type: grid
+        cards:
+          - type: heading
+            heading: Uteförrådet
+            heading_style: subtitle
+            icon: mdi:bike
+            badges:
+              - type: entity
+                entity: sensor.popp_outdoor_power
+              - type: entity
+                show_state: true
+                show_icon: true
+                entity: sensor.199_temperature
+                icon: mdi:thermometer
+                tap_action:
+                  action: more-info
+          - type: entities
+            entities:
+              - entity: switch.popp_outdoor
+                icon: mdi:radiator
+                secondary_info: last-changed
+                name: Förrådet
+              - entity: sensor.garage_energi_man
+                icon: mdi:garage-open
+                name: Förbrukning
+              - entity: sensor.garage_kr_man
+                name: Kostnad
+                icon: mdi:cash
+              - type: divider
+              - entity: sensor.garage_kr_man
+                type: attribute
+                attribute: last_period
+                suffix: kr
+                name: Förra mån
+                icon: mdi:cash
+            footer:
+              type: graph
+              entity: sensor.199_temperature
+              detail: 2
+      - type: grid
+        cards:
+          - type: heading
+            heading: Toalett
+            heading_style: subtitle
+            icon: mdi:toilet
+            badges:
+              - type: entity
+                entity: sensor.xiaomi_lys4_temperatur
+          - entities: []
+            show_header_toggle: false
+            type: entities
+            footer:
+              type: graph
+              entity: sensor.xiaomi_lys4_temperatur
+              detail: 2
+      - type: grid
+        cards:
+          - type: heading
+            heading_style: subtitle
+            badges:
+              - type: entity
+                entity: sensor.felix_rum_temperature
+            icon: mdi:washing-machine
+            heading: Tvättstugan
+          - type: entities
+            entities:
+              - entity: light.tvattstugan_banken_light
+                name: Tvättstugan
+              - entity: switch.telldus_1
+                name: Groventrén
+                icon: mdi:lamp
+            footer:
+              type: graph
+              entity: sensor.felix_rum_temperature
+              detail: 2
+      - type: grid
+        cards:
+          - type: heading
+            heading_style: subtitle
+            heading: 'Hallen '
+            icon: mdi:hanger
+          - type: entities
+            entities:
+              - entity: switch.tz1
+                name: Hallbyrån
+                icon: mdi:lamp
+  - type: sections
+    max_columns: 3
+    icon: mdi:hot-tub
+    path: spa
+    sections:
+      - type: grid
+        cards:
+          - type: heading
+            icon: mdi:hot-tub
+            heading: Spabadet
+            heading_style: title
+            badges:
+              - type: entity
+                show_state: true
+                show_icon: true
+                entity: sensor.template_spabadet_temperature
+                tap_action:
+                  action: more-info
+                icon: mdi:pool-thermometer
+              - type: entity
+                show_state: true
+                show_icon: true
+                entity: sensor.template_home_temp
+                icon: mdi:home-thermometer
+          - show_name: true
+            show_icon: true
+            type: button
+            entity: input_boolean.spabadet_manual
+            show_state: false
+            name: Bada
+            icon_height: 50px
+            icon: mdi:swim
+            hold_action:
+              action: more-info
+            grid_options:
+              columns: full
+          - type: gauge
+            entity: sensor.template_spabadet_l1_current_a
+            max: 10
+            name: Jets
+            grid_options:
+              columns: 4
+              rows: auto
+          - type: gauge
+            entity: sensor.template_spabadet_l2_current_a
+            max: 10
+            name: Värmare
+            grid_options:
+              columns: 4
+              rows: auto
+          - type: gauge
+            entity: sensor.template_spabadet_l3_current_a
+            max: 10
+            name: Pump
+            grid_options:
+              columns: 4
+              rows: auto
+          - type: entities
+            entities:
+              - entity: switch.spabadet_l1
+                name: Jets L1
+                icon: mdi:turbine
+                secondary_info: last-changed
+              - entity: switch.spabadet_l2
+                icon: mdi:pool-thermometer
+                name: Värmaren L2
+                secondary_info: last-changed
+              - entity: switch.spabadet_l3
+                name: Pumpen L3
+                secondary_info: last-changed
+                icon: mdi:pump
+      - type: grid
+        cards:
+          - type: heading
+            heading: Temperatur
+            heading_style: subtitle
+            icon: mdi:coolant-temperature
+            badges: []
+          - chart_type: line
+            period: day
+            days_to_show: 14
+            hide_legend: true
+            type: statistics-graph
+            entities:
+              - entity: sensor.template_spabadet_temperature
+                name: Spabadet
+            stat_types:
+              - mean
+              - min
+              - max
+          - type: statistics-graph
+            chart_type: line
+            period: 5minute
+            entities:
+              - sensor.template_spabadet_temperature
+              - sensor.template_home_temp
+            stat_types:
+              - mean
+            days_to_show: 1
+            hide_legend: true
+          - type: statistics-graph
+            chart_type: line
+            period: 5minute
+            entities:
+              - sensor.template_spabadet_temperature
+            stat_types:
+              - mean
+            days_to_show: 0.2
+            hide_legend: true
+      - type: grid
+        cards:
+          - show_name: true
+            show_icon: false
+            show_state: true
+            type: glance
+            entities:
+              - entity: sensor.template_spabadet_pump_active
+                name: På
+              - entity: sensor.spabadet_paslaget_min_24_hrs
+                name: 24h
+          - type: custom:mushroom-number-card
+            entity: input_number.spabadet_target_temp_weekdays
+            name: Vardag
+            display_mode: buttons
+            icon_color: green
+          - type: custom:mushroom-number-card
+            entity: input_number.spabadet_target_temp_weekends
+            name: Helgen
+            display_mode: buttons
+            icon_color: red
+          - type: tile
+            entity: input_number.spabadet_lower_temp_limit
+            name: Undre gräns
+            icon: mdi:alarm-light
+            color: red
+            vertical: false
+            features_position: bottom
+    cards: []
+  - type: sections
+    max_columns: 4
+    icon: mdi:silverware-variant
+    path: koket
+    sections:
+      - type: grid
+        cards:
+          - type: heading
+            heading: Diskmaskinen
+            heading_style: subtitle
+            icon: mdi:dishwasher
+            badges:
+              - type: entity
+                show_state: true
+                show_icon: true
+                entity: sensor.clever_spz3_electric_consumption_w
+                tap_action:
+                  action: more-info
+          - type: custom:mushroom-template-card
+            icon: mdi:dishwasher
+            entity: automation.diskmaskinen_starta_pa_klocka
+            secondary: |-
+              {% if states("sensor.peaqnext_dishwasher")=="unknown" -%}
+                --:--
+              {%- else-%}
+                {{states("sensor.peaqnext_dishwasher") | regex_replace('(>>)*(\d{2}:\d{2}).*', '\\2')}}
+              {%- endif %}
+               • {{states("sensor.peaqnext_dishwasher") | regex_replace('^(.*)(\d+\.\d+)(.*)','\\2') | replace('.',',')}} kr
+            primary: Disk
+            badge_icon: mdi:robot
+            icon_color: |-
+              {%if states('switch.clever_spz3') == 'on' %}
+              green
+              {%endif%}
+            badge_color: |-
+              {%if states('automation.diskmaskinen_starta_pa_klocka') == 'on' %}
+              green
+              {%endif%}
+            hold_action:
+              action: toggle
+            tap_action:
+              action: perform-action
+              perform_action: switch.toggle
+              target:
+                entity_id: switch.clever_spz3
+          - type: custom:mushroom-chips-card
+            chips:
+              - type: entity
+                entity: sensor.diskmaskinen_kwh_man
+                tap_action:
+                  action: more-info
+                hold_action:
+                  action: more-info
+              - type: template
+                icon: mdi:cash
+                content: '{{states("sensor.diskmaskinen_kostnad")|replace(''.'','','')}} kr'
+                tap_action:
+                  action: more-info
+                hold_action:
+                  action: more-info
+                entity: sensor.diskmaskinen_kostnad
+              - type: spacer
+              - type: template
+                icon: mdi:cash
+                content: >-
+                  {{state_attr("sensor.diskmaskinen_kostnad","last_period")|replace('.',',')}}
+                  kr
+                tap_action:
+                  action: more-info
+                hold_action:
+                  action: more-info
+                entity: sensor.diskmaskinen_kostnad
+          - chart_type: line
+            period: 5minute
+            type: statistics-graph
+            entities:
+              - sensor.clever_spz3_electric_consumption_w
+            stat_types:
+              - max
+            days_to_show: 1
+            hide_legend: true
+      - type: grid
+        cards:
+          - type: heading
+            heading: Tvättmaskinen
+            heading_style: subtitle
+            icon: mdi:washing-machine
+            badges:
+              - type: entity
+                show_state: true
+                show_icon: true
+                entity: sensor.clever_spz2_electric_consumption_w_2
+                tap_action:
+                  action: more-info
+          - type: custom:mushroom-template-card
+            icon: mdi:washing-machine
+            entity: automation.tvattmaskinen_starta_pa_klockslag
+            secondary: >-
+              {% if states("sensor.peaqnext_washing_machine")=="unknown" -%}
+
+              --:--
+
+              {%- else-%}
+
+              {{states("sensor.peaqnext_washing_machine") |     
+              regex_replace('(>>)*(\d{2}:\d{2}).*', '\\2')}}
+
+              {%- endif %}
+
+              •
+
+              {{states("sensor.peaqnext_washing_machine") |     
+              regex_replace('^(.*)(\d+\.\d+)(.*)','\\2') | replace('.',',')}} kr
+            badge_icon: mdi:robot
+            icon_color: |-
+              {%if states('switch.clever_spz2') == 'on' %}
+              green
+              {%endif%}
+            badge_color: >-
+              {%if states('automation.tvattmaskinen_starta_pa_klockslag') ==
+              'on' %}
+
+              green
+
+              {%endif%}
+            hold_action:
+              action: toggle
+            tap_action:
+              action: perform-action
+              perform_action: switch.toggle
+              target:
+                entity_id: switch.clever_spz2
+            primary: Tvätt
+          - type: custom:mushroom-chips-card
+            chips:
+              - type: entity
+                entity: sensor.tvattmaskinen_kwh_man
+              - type: template
+                icon: mdi:cash
+                content: '{{states(''sensor.tvattmaskinen_kostnad'')|replace(''.'','','')}} kr'
+              - type: spacer
+              - type: template
+                icon: mdi:cash
+                content: >-
+                  {{state_attr("sensor.tvattmaskinen_kostnad","last_period")|replace('.',',')}}
+                  kr
+          - chart_type: line
+            period: 5minute
+            type: statistics-graph
+            entities:
+              - sensor.clever_spz2_electric_consumption_w_2
+            stat_types:
+              - max
+            hide_legend: true
+            days_to_show: 1
+      - type: grid
+        cards:
+          - type: heading
+            heading: iGrill
+            heading_style: subtitle
+            icon: mdi:grill
+            badges:
+              - type: entity
+                show_state: true
+                show_icon: true
+                entity: sensor.igrill_probe_1
+                icon: mdi:thermometer
+                tap_action:
+                  action: more-info
+              - type: entity
+                show_state: true
+                show_icon: true
+                entity: sensor.igrill_battery
+                icon: mdi:battery-outline
+          - type: history-graph
+            entities:
+              - entity: sensor.igrill_probe_1
+            hours_to_show: 1
+            show_names: false
+          - type: custom:mushroom-number-card
+            entity: input_number.igrill_target_temp
+            display_mode: slider
+            icon: mdi:grill
+            name: Mål [°C]
+            layout: horizontal
+            fill_container: false
+        visibility:
+          - condition: not
+            conditions:
+              - condition: state
+                entity: sensor.igrill_probe_1
+                state: unknown
+      - type: grid
+        cards:
+          - type: heading
+            heading: Gräsklipparen
+            heading_style: subtitle
+            icon: mdi:robot-mower
+            visibility:
+              - condition: state
+                entity: binary_sensor.wall_e_online_2
+                state: 'on'
+            badges:
+              - type: entity
+                show_state: true
+                show_icon: true
+                entity: sensor.wall_e_battery_2
+                tap_action:
+                  action: more-info
+              - type: entity
+                show_state: true
+                show_icon: true
+                entity: sensor.wall_e_blades_current_on_time_2
+                icon: mdi:knife
+          - image: default
+            image_size: '2'
+            show_animation: true
+            show_status: true
+            show_toolbar: true
+            type: custom:landroid-card
+            entity: lawn_mower.wall_e
+            image_left: true
+            compact_view: false
+            show_name: false
+            settings:
+              - button.wall_e_restart_baseboard
+              - number.wall_e_raindelay
+              - number.wall_e_time_extension
+              - switch.wall_e_party_mode_2
+              - button.wall_e_reset_blade_time
+          - type: history-graph
+            entities:
+              - entity: lawn_mower.wall_e
+                name: ' '
+            hours_to_show: 8
+          - type: entities
+            entities:
+              - entity: sensor.wall_e_error_2
+                secondary_info: last-changed
+                name: Fel
+                icon: mdi:mower-on
+            grid_options:
+              columns: 6
+              rows: auto
+          - type: entities
+            entities:
+              - entity: binary_sensor.wall_e_rainsensor_triggered_2
+                secondary_info: last-changed
+                name: Regn
+            grid_options:
+              columns: 6
+              rows: auto
+        visibility:
+          - condition: state
+            entity: lawn_mower.wall_e
+            state_not: unavailable
+      - type: grid
+        cards:
+          - type: heading
+            heading: Skrivaren
+            heading_style: subtitle
+            badges:
+              - type: entity
+                show_state: true
+                show_icon: false
+                entity: sensor.samsung_c430w_toner_black
+                name: Otillgänglig
+                color: red
+                visibility:
+                  - condition: state
+                    entity: sensor.samsung_c430w_toner_black
+                    state: unavailable
+                state_content: name
+              - type: entity
+                show_state: true
+                show_icon: true
+                entity: sensor.samsung_c430w_toner_black
+                color: black
+                visibility:
+                  - condition: state
+                    entity: sensor.samsung_c430w_toner_black
+                    state_not: unavailable
+              - type: entity
+                show_state: true
+                show_icon: true
+                entity: sensor.samsung_c430w_toner_cyan
+                color: light-blue
+                visibility:
+                  - condition: state
+                    entity: sensor.samsung_c430w_toner_cyan
+                    state_not: unavailable
+              - type: entity
+                show_state: true
+                show_icon: true
+                entity: sensor.samsung_c430w_toner_magenta
+                color: pink
+                visibility:
+                  - condition: state
+                    entity: sensor.samsung_c430w_toner_magenta
+                    state_not: unavailable
+              - type: entity
+                show_state: true
+                show_icon: true
+                entity: sensor.samsung_c430w_toner_yellow
+                color: amber
+                visibility:
+                  - condition: state
+                    entity: sensor.samsung_c430w_toner_yellow
+                    state_not: unavailable
+            icon: mdi:printer
+          - type: horizontal-stack
+            cards:
+              - type: gauge
+                entity: sensor.samsung_c430w_toner_black
+                min: 0
+                max: 100
+                severity:
+                  green: 20
+                  yellow: 10
+                  red: 0
+                name: Svart
+              - type: gauge
+                entity: sensor.samsung_c430w_toner_cyan
+                min: 0
+                max: 100
+                name: Cyan
+                severity:
+                  green: 20
+                  yellow: 10
+                  red: 0
+              - type: gauge
+                entity: sensor.samsung_c430w_toner_magenta
+                min: 0
+                max: 100
+                name: Magenta
+                severity:
+                  green: 20
+                  yellow: 10
+                  red: 0
+              - type: gauge
+                entity: sensor.samsung_c430w_toner_yellow
+                min: 0
+                max: 100
+                name: Gul
+                severity:
+                  green: 20
+                  yellow: 10
+                  red: 0
+            visibility:
+              - condition: state
+                entity: sensor.samsung_c430w_toner_black
+                state_not: unavailable
+      - type: grid
+        cards:
+          - type: heading
+            heading: Kaffebryggaren
+            heading_style: subtitle
+            icon: mdi:coffee-maker
+            badges:
+              - type: entity
+                entity: sensor.metered_wall_plug_switch_power
+              - type: entity
+                entity: sensor.metered_wall_plug_switch_electric_consumption_kwh
+          - type: custom:mushroom-template-card
+            icon: mdi:coffee-maker
+            entity: switch.kaffebryggaren_switch
+            primary: ''
+            secondary: ''
+            icon_color: |-
+              {%if states('sensor.metered_wall_plug_switch_power')|int(0) > 1 %}
+              green
+              {%endif%}
+            badge_icon: mdi:power
+            badge_color: |-
+              {%if states('switch.kaffebryggaren_switch')=='on' %}
+              green
+              {%else%}
+              red
+              {%endif%}
+            grid_options:
+              columns: 3
+              rows: 1
+    cards: []
+  - theme: Backend-selected
+    title: Ute
+    icon: mdi:weather-partly-rainy
+    type: sections
+    badges:
+      - type: entity
+        show_name: false
+        show_state: true
+        show_icon: true
+        entity: sensor.framsidan_temperature
+        icon: mdi:flower
+      - type: entity
+        show_name: false
+        show_state: true
+        show_icon: true
+        entity: sensor.231_temperature
+        icon: mdi:greenhouse
+      - type: entity
+        show_name: false
+        show_state: true
+        show_icon: true
+        entity: sensor.lumi_lumi_sen_ill_agl01_illuminance
+        icon: mdi:sun-wireless-outline
+    cards: []
+    path: ute
+    sections:
+      - type: grid
+        cards:
+          - type: heading
+            heading: Vädret
+            heading_style: subtitle
+            icon: mdi:weather-partly-rainy
+          - name: Temperature
+            entity: sensor.template_home_temp
+            min: -20
+            max: 40
+            unit: ''
+            decimals: 1
+            value_position: top_right
+            name_position: auto
+            value_font_size: 0
+            glass: true
+            orientation: vertical
+            show_scale: false
+            scale_color_mode: per_interval
+            show_stats: true
+            stats_hours: 24
+            card_scale: 1
+            show_graph: true
+            graph_hours: 24
+            graph_height: 58
+            graph_show_time: false
+            graph_max_points: 160
+            graph_line_width: 0.7
+            extra_entity_1: null
+            extra_icon_1: ''
+            extra_label_1: ''
+            extra_entity_2: ''
+            extra_icon_2: ''
+            extra_label_2: ''
+            extra_entity_3: ''
+            extra_icon_3: ''
+            extra_label_3: ''
+            intervals:
+              - id: it0
+                to: 0
+                color: '#2b6cff'
+                outline: '#ffffff'
+                scale_color: '#2b6cff'
+                gradient:
+                  enabled: false
+                  from: '#2b6cff'
+                  to: '#2b6cff'
+              - id: it1
+                to: 10
+                color: '#39c0ff'
+                outline: '#ffffff'
+                scale_color: '#39c0ff'
+                gradient:
+                  enabled: false
+                  from: '#39c0ff'
+                  to: '#39c0ff'
+              - id: it2
+                to: 20
+                color: '#22c55e'
+                outline: '#ffffff'
+                scale_color: '#22c55e'
+                gradient:
+                  enabled: false
+                  from: '#22c55e'
+                  to: '#22c55e'
+              - id: it3
+                to: 30
+                color: '#f59e0b'
+                outline: '#ffffff'
+                scale_color: '#f59e0b'
+                gradient:
+                  enabled: false
+                  from: '#f59e0b'
+                  to: '#f59e0b'
+              - id: it4
+                to: 100
+                color: '#ef4444'
+                outline: '#ffffff'
+                scale_color: '#ef4444'
+                gradient:
+                  enabled: false
+                  from: '#ef4444'
+                  to: '#ef4444'
+            type: custom:andy-temperature-card
+          - entity: weather.smhi_home
+            type: weather-forecast
+          - type: tile
+            entity: sensor.meteorologisk_arstid
+            name: Årstid
+            vertical: false
+            features_position: bottom
+            grid_options:
+              columns: full
+          - chart_type: line
+            period: week
+            type: statistics-graph
+            days_to_show: 365
+            entities:
+              - entity: sensor.framsidan_temperature
+                name: ' '
+              - sensor.template_home_temp
+            stat_types:
+              - mean
+              - min
+              - max
+            hide_legend: true
+          - type: entity
+            entity: weather.smhi_home
+            state_color: false
+            attribute: cloud_coverage
+            unit: '%'
+            name: ' '
+            icon: mdi:cloud-outline
+          - type: entity
+            entity: weather.smhi_home
+            attribute: pressure
+            name: ' '
+            icon: mdi:gauge
+          - type: entity
+            entity: weather.smhi_home
+            attribute: wind_speed
+            icon: mdi:weather-windy
+            unit: m/s
+            name: ' '
+          - type: entity
+            entity: weather.smhi_home
+            name: ' '
+            attribute: wind_bearing
+            unit: °
+            icon: mdi:windsock
+      - type: grid
+        cards:
+          - type: heading
+            heading: Åska
+            heading_style: subtitle
+            icon: mdi:weather-lightning
+          - type: map
+            entities:
+              - entity: zone.home
+            theme_mode: auto
+            geo_location_sources:
+              - blitzortung
+            auto_fit: true
+            default_zoom: 11
+          - type: vertical-stack
+            cards: []
+            visibility:
+              - condition: numeric_state
+                entity: sensor.home_lightning_distance
+                below: 9999
+          - type: entity
+            entity: sensor.template_lightning_distance
+            name: Avstånd
+          - type: custom:mushroom-template-card
+            icon: mdi:weather-lightning
+            entity: sensor.home_lightning_counter
+            primary: >-
+
+              {{ closest(states.geo_location).last_updated | as_timestamp |
+              timestamp_custom("%H:%M") }}
+            secondary: Uppdaterad
+            tap_action:
+              action: more-info
+            features_position: bottom
+        visibility:
+          - condition: numeric_state
+            entity: sensor.template_lightning_distance
+            below: 9999
+    max_columns: 4
+  - icon: mdi:weather-sunny
+    title: Solcellerna
+    badges: []
+    cards:
+      - type: horizontal-stack
+        cards:
+          - entity: sensor.fronius_inverter_total_power
+            max: 8.2
+            min: 0
+            name: Effekt
+            type: gauge
+          - entity: sensor.template_fronius_solar_daily_energy
+            max: 70
+            name: Energi
+            type: gauge
+          - type: gauge
+            entity: sensor.template_elpris_solar_kr
+            min: 0
+            max: 2.5
+            severity:
+              green: 1.5
+              yellow: 1
+              red: 0
+            unit: kr
+            name: Elpriset
+      - chart_type: line
+        period: 5minute
+        type: statistics-graph
+        entities:
+          - sensor.template_fronius_solar_power
+        stat_types:
+          - mean
+        days_to_show: 0.5
+        hide_legend: true
+      - chart_type: bar
+        period: day
+        type: statistics-graph
+        entities:
+          - sensor.template_fronius_solar_daily_energy
+        stat_types:
+          - change
+        days_to_show: 7
+        hide_legend: true
+      - type: vertical-stack
+        cards:
+          - chart_type: bar
+            period: hour
+            type: statistics-graph
+            entities:
+              - sensor.template_house_net_power_kw
+            stat_types:
+              - mean
+            days_to_show: 1
+            hide_legend: true
+            logarithmic_scale: false
+          - type: custom:apexcharts-card
+            graph_span: 18h
+            update_interval: 5m
+            cache: true
+            series:
+              - entity: sensor.template_fronius_solar_power
+                name: Effekt
+                type: column
+                color: '#4682B4'
+                opacity: 0.5
+                show:
+                  datalabels: true
+                group_by:
+                  func: avg
+                  duration: 1h
+              - entity: sensor.nordpool_kwh_se3_sek_3_095_0
+                name: Pris
+                stroke_width: 2
+                color: deepskyblue
+                float_precision: 2
+                data_generator: |
+                  return entity.attributes.raw_today.map((p) => {
+                    return [new Date(p.start), p.value];
+                  });
+                curve: stepline
+                group_by:
+                  func: avg
+                  duration: 1h
+            span:
+              end: hour
+            apex_config:
+              yaxis:
+                - seriesName: Effekt
+                  decimalsInFloat: 1
+                - seriesName: Pris
+                  decimalsInFloat: 2
+                  min: 0
+                  opposite: true
+              dataLabels:
+                background:
+                  foreColor: rgb(80,80,80)
+                  opacity: 0
+                dropShadow:
+                  enabled: true
+      - type: entities
+        entities:
+          - entity: sensor.solenergi_kwh_man_2
+            name: Månad
+            icon: mdi:weather-sunny
+          - entity: sensor.solenergi_kwh_ar_2
+            name: År
+            icon: mdi:weather-sunny
+          - entity: sensor.template_fronius_solar_energy
+            name: Totalt
+            icon: mdi:weather-sunny
+          - entity: sensor.fronius_solenergi_forra_manaden
+            name: Förra mån
+            suffix: kWh
+            icon: mdi:gauge
+          - type: divider
+          - entity: sensor.solenergi_salt_manad
+            name: Sålt (mån)
+            icon: mdi:hand-coin-outline
+          - entity: sensor.solenergi_salt_manad
+            type: attribute
+            attribute: last_period
+            name: Förra mån
+            suffix: kWh
+  - theme: Backend-selected
+    icon: mdi:access-point-network
+    title: Status
+    badges: []
+    cards:
+      - type: vertical-stack
+        cards:
+          - type: custom:uptime-card
+            entity: binary_sensor.chargenode_pie
+            title_template: ChargeNode
+            icon: mdi:ev-station
+            status_adaptive_color: true
+          - type: custom:uptime-card
+            entity: binary_sensor.teslamate
+            title_template: teslamate
+            icon: mdi:car-electric
+            status_adaptive_color: true
+          - type: custom:uptime-card
+            entity: binary_sensor.byd_monitor_pi_online
+            title_template: bydpi
+            icon: mdi:car-electric
+            status_adaptive_color: true
+      - type: vertical-stack
+        cards:
+          - show_name: true
+            show_icon: true
+            show_state: false
+            type: glance
+            entities:
+              - entity: sensor.node_15_node_status
+                name: Cleverio 1
+              - entity: sensor.node_18_node_status
+                name: Tvättmaskinen
+              - entity: sensor.node_17_node_status
+                name: Diskmaskinen
+            state_color: true
+          - type: history-graph
+            entities:
+              - entity: switch.varmepumpen_a
+                name: VP A
+              - entity: switch.varmepumpen_b
+                name: VP B
+            hours_to_show: 6
+      - type: history-graph
+        entities:
+          - entity: binary_sensor.heatpump_ivt_heater
+            name: Värme
+          - entity: binary_sensor.heatpump_ivt_hotwater
+            name: Elpatron
+          - entity: switch.spabadet_l2
+            name: Spa
+          - entity: switch.spabadet_l3
+            name: Pump
+          - entity: input_boolean.spabadet_manual
+            name: Manuell
+          - entity: binary_sensor.template_nordpool_price_not_high
+            name: <75
+          - entity: binary_sensor.template_nordpool_price_low
+            name: <med
+          - entity: binary_sensor.template_nordpool_price_reallow
+            name: <25
+          - entity: sensor.template_elpris_kr
+          - entity: sensor.template_home_temp
+          - entity: sensor.framsidan_temperature
+            name:
+              type: device
+          - entity: sensor.231_temperature
+            name: Altan
+      - type: glance
+        entities:
+          - entity: sensor.framsidan_batteri
+            name: Framsidan
+          - entity: sensor.lumi_lumi_weather_battery
+            name: Tvättstugan
+          - entity: sensor.vardagsrummet_power
+            name: Vardagsrum
+          - entity: sensor.kontoret_power
+            name: Kontoret
+          - entity: sensor.tradfri_remote_control_spelrummet_battery
+            name: RC Spelrum
+          - entity: sensor.tvattstugan_remote_batteri
+            name: RC Tvättstuga
+          - entity: sensor.ikea_of_sweden_tradfri_on_off_switch_battery
+            name: RC On/off
+          - entity: sensor.xiaomi_lys1_batteri
+            name: LYS1
+          - entity: sensor.xiaomi_lys2_batteri
+            name: LYS2
+          - entity: sensor.xiaomi_lys3_batteri
+            name: LYS3
+          - entity: sensor.xiaomi_lys4_batteri
+            name: LYS4
+          - entity: sensor.spabadet_batteri
+            name: Spa
+      - chart_type: line
+        period: 5minute
+        type: statistics-graph
+        entities:
+          - sensor.xiaomi_lys1_temperatur
+          - sensor.xiaomi_lys3_temperatur
+          - sensor.xiaomi_lys4_temperatur
+          - sensor.felix_rum_temperature
+          - sensor.vardagsrummet_temperature
+          - sensor.kontoret_temperature
+          - sensor.xiaomi_lys2_temperatur
+        stat_types:
+          - mean
+        hide_legend: true
+        days_to_show: 2
+      - type: vertical-stack
+        title: SMA
+        cards:
+          - show_name: false
+            show_icon: false
+            show_state: true
+            type: glance
+            entities:
+              - entity: sensor.chargenode_sma_current_l1
+                name: L1 [A]
+              - entity: sensor.chargenode_sma_current_l2
+                name: L2 [A]
+              - entity: sensor.chargenode_sma_current_l3
+                name: L3 [A]
+              - entity: sensor.chargenode_sma_voltage_l1
+                name: L1 [V]
+              - entity: sensor.chargenode_sma_voltage_l2
+                name: L2 [V]
+              - entity: sensor.chargenode_sma_voltage_l3
+                name: L3 [V]
+              - entity: sensor.chargenode_sma_power_l1
+                name: L1 [W]
+              - entity: sensor.chargenode_sma_power_l2
+                name: L2 [W]
+              - entity: sensor.chargenode_sma_power_l3
+                name: L3 [W]
+            columns: 3
+          - type: history-graph
+            entities:
+              - entity: sensor.chargenode_sma_voltage_l1
+                name: ' '
+              - entity: sensor.chargenode_sma_voltage_l2
+                name: ' '
+              - entity: sensor.chargenode_sma_voltage_l3
+                name: ' '
+            hours_to_show: 12
+          - show_name: false
+            show_icon: false
+            show_state: true
+            type: glance
+            entities:
+              - entity: sensor.chargenode_sma_current_l1
+              - entity: sensor.chargenode_sma_current_l2
+              - entity: sensor.chargenode_sma_current_l3
+              - entity: sensor.hem_gen5_electric_consumed_1
+              - entity: sensor.hem_gen5_electric_consumed_2
+              - entity: sensor.hem_gen5_electric_consumed_3
+            columns: 3
+  - theme: Backend-selected
+    icon: mdi:hot-tub
+    title: Spabadet
+    cards:
+      - type: vertical-stack
+        title: Spabadet
+        cards:
+          - type: horizontal-stack
+            cards:
+              - type: gauge
+                min: 34
+                max: 40
+                needle: true
+                severity:
+                  green: 36
+                  yellow: 0
+                  red: 38.5
+                name: ' '
+                entity: sensor.template_spabadet_temperature
+              - show_name: true
+                show_icon: true
+                type: button
+                entity: input_boolean.spabadet_manual
+                show_state: false
+                name: Bada
+                icon_height: 50px
+                icon: mdi:swim
+                hold_action:
+                  action: more-info
+              - type: gauge
+                name: ' '
+                min: -15
+                max: 35
+                needle: true
+                severity:
+                  green: 15
+                  yellow: 0
+                  red: 25
+                entity: sensor.template_home_temp
+          - type: horizontal-stack
+            cards:
+              - type: gauge
+                entity: sensor.template_spabadet_l1_current_a
+                max: 10
+                name: Jets
+              - type: gauge
+                entity: sensor.template_spabadet_l2_current_a
+                max: 13
+                name: Värmare
+              - type: gauge
+                entity: sensor.template_spabadet_l3_current_a
+                max: 10
+                name: Pump
+          - type: entities
+            entities:
+              - entity: switch.spabadet_l1
+                name: Jets L1
+                icon: mdi:turbine
+                secondary_info: last-changed
+              - entity: switch.spabadet_l2
+                icon: mdi:pool-thermometer
+                name: Värmaren L2
+                secondary_info: last-changed
+              - entity: switch.spabadet_l3
+                name: Pumpen L3
+                secondary_info: last-changed
+                icon: mdi:pump
+          - type: horizontal-stack
+            cards:
+              - type: custom:mushroom-number-card
+                entity: input_number.spabadet_target_temp_weekdays
+                name: Veckodagar
+                display_mode: buttons
+              - type: custom:mushroom-number-card
+                entity: input_number.spabadet_target_temp_weekends
+                name: Helgen
+                display_mode: buttons
+      - type: vertical-stack
+        title: Temperatur
+        cards:
+          - chart_type: line
+            period: day
+            days_to_show: 14
+            hide_legend: true
+            type: statistics-graph
+            entities:
+              - entity: sensor.template_spabadet_temperature
+                name: Spabadet
+            stat_types:
+              - mean
+              - min
+              - max
+          - type: custom:collapsable-cards
+            title: Detaljer
+            cards:
+              - chart_type: line
+                period: 5minute
+                days_to_show: 1
+                hide_legend: true
+                type: statistics-graph
+                entities:
+                  - entity: sensor.template_spabadet_temperature
+                    name: Spabadet
+                stat_types:
+                  - mean
+              - type: statistics-graph
+                period: 5minute
+                entities:
+                  - sensor.template_spabadet_temperature
+                days_to_show: 0.2
+                hide_legend: true
+                stat_types:
+                  - mean
+              - chart_type: line
+                period: 5minute
+                days_to_show: 1
+                hide_legend: true
+                type: statistics-graph
+                entities:
+                  - entity: sensor.template_home_temp
+                    name: Ute
+                    color: Yellow
+                stat_types:
+                  - mean
+      - type: vertical-stack
+        title: Statistik
+        cards:
+          - chart_type: bar
+            period: month
+            type: statistics-graph
+            entities:
+              - sensor.template_spabadet_energy_kwh
+              - sensor.spabadet_kr
+            stat_types:
+              - change
+            days_to_show: 180
+            hide_legend: true
+          - type: custom:collapsable-cards
+            title: Detaljer
+            cards:
+              - chart_type: bar
+                period: week
+                type: statistics-graph
+                entities:
+                  - sensor.template_spabadet_energy_kwh
+                  - sensor.spabadet_kr
+                stat_types:
+                  - change
+                days_to_show: 14
+                hide_legend: true
+              - chart_type: line
+                period: 5minute
+                type: statistics-graph
+                entities:
+                  - sensor.template_spabadet_l1_current_a
+                  - sensor.template_spabadet_l2_current_a
+                  - sensor.template_spabadet_l3_current_a
+                stat_types:
+                  - mean
+                hide_legend: true
+                days_to_show: 1
+                logarithmic_scale: false
+              - type: entities
+                entities:
+                  - entity: sensor.spabadet_kr_man
+                    name: Kostnad (mån)
+                    icon: mdi:cash
+                  - entity: sensor.spabadet_kwh_man
+                    name: Energi (mån)
+                    icon: mdi:lightning-bolt
+                  - entity: sensor.spabadet_kwh_vecka
+                    name: Energi (vecka)
+                    icon: mdi:lightning-bolt-outline
+                  - type: divider
+                  - entity: sensor.spabadet_kr_man
+                    type: attribute
+                    attribute: last_period
+                    suffix: kr
+                    name: Kostnad (förra)
+                    icon: mdi:cash
+                  - entity: sensor.template_spabadet_energy_lastmonth_kwh
+                    name: Energi (förra)
+                    icon: mdi:lightning-bolt
+                  - entity: sensor.template_spabadet_energy_lastweek_kwh
+                    name: Energi (vecka)
+                    icon: mdi:lightning-bolt-outline
+      - show_name: true
+        show_icon: false
+        show_state: true
+        type: glance
+        entities:
+          - entity: sensor.template_spabadet_pump_active
+            name: På
+          - entity: sensor.spabadet_paslaget_min_24_hrs
+            name: 24h
+    badges:
+      - type: entity
+        show_name: false
+        show_state: true
+        show_icon: true
+        entity: sensor.spabadet_batteri
+        visibility:
+          - condition: numeric_state
+            entity: sensor.spabadet_batteri
+            below: 20
+    type: masonry
+    visible: []
+  - type: sections
+    max_columns: 4
+    icon: mdi:account-group
+    path: persons
+    sections:
+      - type: grid
+        cards:
+          - type: heading
+            heading: Rickard
+            heading_style: subtitle
+            badges:
+              - type: entity
+                show_state: true
+                show_icon: true
+                entity: person.rickard_nord
+                tap_action:
+                  action: more-info
+            icon: mdi:human-male
+          - type: tile
+            entity: sensor.rickards_gs24_battery_level
+            features_position: bottom
+            vertical: false
+            name: S24 Batteri
+          - type: tile
+            entity: sensor.sm_p610_batteriniva
+            features_position: bottom
+            vertical: false
+            name: S6 Lite
+          - type: tile
+            entity: sensor.galaxy_watch6_battery_level
+            features_position: bottom
+            vertical: false
+            name: Watch6
+          - type: tile
+            entity: sensor.le2123_battery_level
+            features_position: bottom
+            vertical: false
+            name: OP9 Batteri
+            visibility:
+              - condition: numeric_state
+                entity: sensor.le2123_battery_level
+                above: 100
+      - type: grid
+        cards:
+          - type: heading
+            heading: Frida
+            heading_style: subtitle
+            icon: mdi:human-female
+            badges:
+              - type: entity
+                show_state: true
+                show_icon: true
+                entity: person.frida
+                tap_action:
+                  action: more-info
+          - type: tile
+            entity: sensor.frida_sg20fe_battery_level
+            features_position: bottom
+            vertical: false
+            name: S20FE Batteri
+      - type: grid
+        cards:
+          - type: heading
+            heading: Felix
+            heading_style: subtitle
+            badges:
+              - type: entity
+                show_state: true
+                show_icon: true
+                entity: person.felix
+                tap_action:
+                  action: more-info
+          - type: tile
+            entity: sensor.sm_g960f_batteriniva_2
+            features_position: bottom
+            vertical: false
+            name: S9 Batteri
+  - title: Köket
+    icon: mdi:silverware-fork-knife
+    badges: []
+    cards:
+      - type: vertical-stack
+        title: iGrill
+        cards:
+          - type: horizontal-stack
+            cards:
+              - type: gauge
+                entity: sensor.igrill_probe_1
+                name: iGrill
+                max: 80
+                min: 5
+              - type: gauge
+                entity: sensor.igrill_battery
+                name: Batteri
+                severity:
+                  green: 50
+                  yellow: 20
+                  red: 0
+                needle: false
+          - type: history-graph
+            entities:
+              - entity: sensor.igrill_probe_1
+            hours_to_show: 1
+            show_names: false
+          - type: custom:mushroom-number-card
+            entity: input_number.igrill_target_temp
+            display_mode: buttons
+            icon: mdi:grill
+            name: Mål [°C]
+            secondary_info: none
+      - type: vertical-stack
+        title: Diskmaskinen
+        cards:
+          - type: entities
+            entities:
+              - entity: input_datetime.diskmaskinen_timme
+                icon: mdi:clock
+                secondary_info: none
+                name: Klockan
+              - entity: sensor.peaqnext_dishwasher
+                name: Nästa
+              - type: divider
+              - entity: switch.clever_spz3
+                name: På/av
+                icon: mdi:dishwasher
+                secondary_info: last-updated
+              - entity: automation.diskmaskinen_starta_pa_klocka
+                name: Automatisk
+          - type: entities
+            entities:
+              - entity: sensor.diskmaskinen_kwh_man
+                icon: mdi:dishwasher
+                name: Förbrukning (mån)
+              - entity: sensor.diskmaskinen_kostnad
+                name: Kostnad (mån)
+                icon: mdi:cash
+              - type: divider
+              - entity: sensor.diskmaskinen_kostnad
+                type: attribute
+                attribute: last_period
+                suffix: kr
+                name: Förra mån
+                icon: mdi:cash
+          - type: horizontal-stack
+            cards:
+              - type: gauge
+                entity: sensor.clever_spz3_electric_consumption_w
+                name: ' '
+                max: 2000
+              - type: custom:apexcharts-card
+                header:
+                  show: false
+                series:
+                  - entity: sensor.clever_spz3_electric_consumption_w
+                graph_span: 2h
+                apex_config:
+                  yaxis:
+                    - decimalsInFloat: 0
+                  stroke:
+                    show: true
+                    width: 1
+      - type: vertical-stack
+        title: Tvättmaskinen
+        cards:
+          - type: entities
+            entities:
+              - entity: input_datetime.tvattmaskinen_timme
+                name: Klockan
+              - entity: sensor.peaqnext_washing_machine
+                name: Nästa
+              - type: divider
+              - entity: switch.clever_spz2
+                name: På/av
+                icon: mdi:washing-machine
+                secondary_info: last-updated
+              - entity: automation.tvattmaskinen_starta_pa_klockslag
+                name: Auto
+          - type: entities
+            entities:
+              - entity: sensor.tvattmaskinen_kwh_man
+                icon: mdi:washing-machine
+                name: Förbrukning (mån)
+              - entity: sensor.tvattmaskinen_kostnad
+                name: Kostnad (mån)
+                icon: mdi:cash
+              - type: divider
+              - entity: sensor.tvattmaskinen_kostnad
+                type: attribute
+                attribute: last_period
+                suffix: kr
+                name: Förra mån
+                icon: mdi:cash
+          - type: horizontal-stack
+            cards:
+              - type: gauge
+                entity: sensor.clever_spz2_electric_consumption_w_2
+                name: ' '
+                max: 2000
+              - type: custom:apexcharts-card
+                header:
+                  show: false
+                series:
+                  - entity: sensor.clever_spz2_electric_consumption_w_2
+                graph_span: 90m
+                apex_config:
+                  yaxis:
+                    - decimalsInFloat: 0
+                  stroke:
+                    show: true
+                    width: 1
+      - type: horizontal-stack
+        title: Skrivaren
+        cards:
+          - type: gauge
+            entity: sensor.samsung_c430w_toner_black
+            min: 0
+            max: 100
+            severity:
+              green: 20
+              yellow: 10
+              red: 0
+            name: Svart
+          - type: gauge
+            entity: sensor.samsung_c430w_toner_cyan
+            min: 0
+            max: 100
+            name: Cyan
+            severity:
+              green: 20
+              yellow: 10
+              red: 0
+          - type: gauge
+            entity: sensor.samsung_c430w_toner_magenta
+            min: 0
+            max: 100
+            name: Magenta
+            severity:
+              green: 20
+              yellow: 10
+              red: 0
+          - type: gauge
+            entity: sensor.samsung_c430w_toner_yellow
+            min: 0
+            max: 100
+            name: Gul
+            severity:
+              green: 20
+              yellow: 10
+              red: 0
+      - type: horizontal-stack
+        title: Kaffebryggaren
+        cards:
+          - type: gauge
+            entity: sensor.metered_wall_plug_switch_power
+            max: 2300
+            name: ' '
+          - type: entity
+            entity: sensor.metered_wall_plug_switch_electric_consumption_kwh
+            name: Energi
+      - type: conditional
+        conditions:
+          - condition: state
+            entity: binary_sensor.wall_e_online_2
+            state: 'on'
+        card:
+          type: vertical-stack
+          title: Gräsklipparen
+          cards:
+            - image: default
+              image_size: '4'
+              show_animation: true
+              show_status: true
+              show_toolbar: true
+              type: custom:landroid-card
+              entity: lawn_mower.wall_e
+              settings:
+                - button.wall_e_restart_baseboard
+                - button.wall_e_start_cutting_edge
+                - number.wall_e_raindelay
+                - number.wall_e_time_extension
+                - number.wall_e_torque
+                - select.wall_e_current_zone
+                - switch.wall_e_party_mode_2
+              compact_view: false
+              image_left: false
+            - type: horizontal-stack
+              cards:
+                - type: entity
+                  entity: sensor.wall_e_battery_2
+                  name: ' Batteri'
+                  icon: mdi:battery-50
+                  unit: '%'
+                - type: entity
+                  entity: sensor.wall_e_blades_current_on_time_2
+                  name: Blad
+                  icon: mdi:robot-mower-outline
+                - type: tile
+                  entity: lawn_mower.wall_e
+                  features:
+                    - type: lawn-mower-commands
+                      commands:
+                        - start_pause
+                        - dock
+            - type: horizontal-stack
+              cards:
+                - type: history-graph
+                  entities:
+                    - entity: lawn_mower.wall_e
+                      name: ' '
+                  hours_to_show: 8
+            - type: horizontal-stack
+              cards:
+                - type: entities
+                  entities:
+                    - entity: sensor.wall_e_error_2
+                      secondary_info: last-changed
+                      name: Fel
+                      icon: mdi:mower-on
+                - type: entities
+                  entities:
+                    - entity: binary_sensor.wall_e_rainsensor_triggered_2
+                      secondary_info: last-changed
+                      name: Regn
+    type: masonry
+    visible: []
+  - type: sections
+    max_columns: 4
+    icon: mdi:chart-bar
+    path: car-stats
+    sections:
+      - type: grid
+        cards:
+          - type: heading
+            heading: Bilstatistik
+            heading_style: title
+            icon: mdi:car
+          - chart_type: bar
+            period: day
+            type: statistics-graph
+            entities:
+              - sensor.rya_kwh
+              - sensor.zoe_kwh
+            stat_types:
+              - change
+            days_to_show: 7
+            hide_legend: true
+          - chart_type: bar
+            period: month
+            type: statistics-graph
+            entities:
+              - sensor.rya_kwh
+              - sensor.zoe_kwh
+            stat_types:
+              - change
+            hide_legend: true
+            days_to_show: 70
+          - chart_type: bar
+            period: month
+            type: statistics-graph
+            entities:
+              - sensor.template_chargenode_energy_kwh
+            stat_types:
+              - change
+            hide_legend: true
+            days_to_show: 40
+          - type: heading
+            icon: mdi:road-variant
+            heading: Körsträcka
+            heading_style: subtitle
+          - chart_type: bar
+            period: month
+            type: statistics-graph
+            entities:
+              - sensor.template_car_2_odometer
+            stat_types:
+              - change
+            hide_legend: true
+            logarithmic_scale: false
+            days_to_show: 40
+          - type: entities
+            entities:
+              - entity: sensor.template_car_1_monthly_cost
+                icon: mdi:car-sports
+                name: Eazy
+              - entity: sensor.template_car_2_monthly_cost
+                icon: mdi:car-hatchback
+                name: Delphine
+              - type: divider
+              - entity: sensor.template_rya_charging_cost_last_period
+                icon: mdi:car-sports
+                name: Eazy (förra)
+              - entity: sensor.template_zoe_charging_cost_last_period
+                name: Delphine (förra)
+                icon: mdi:car-hatchback
+          - type: history-graph
+            entities:
+              - entity: sensor.template_rya_charging_power
+                name: EV6
+              - entity: sensor.template_zoe_charging_power
+                name: Delphine
+            hours_to_show: 6
+      - type: grid
+        cards:
+          - type: heading
+            heading: Spabadet
+            heading_style: title
+            icon: mdi:hot-tub
+          - chart_type: bar
+            period: month
+            type: statistics-graph
+            entities:
+              - entity: sensor.spabadet_energi_kwh
+                name: kWh
+              - entity: sensor.spabadet_kr
+                name: kr
+            stat_types:
+              - change
+            days_to_show: 180
+            hide_legend: true
+          - chart_type: bar
+            period: week
+            type: statistics-graph
+            entities:
+              - entity: sensor.spabadet_energi_kwh
+                name: kWh
+              - entity: sensor.spabadet_kr
+                name: kr
+            stat_types:
+              - change
+            days_to_show: 14
+            hide_legend: true
+          - chart_type: line
+            period: 5minute
+            type: statistics-graph
+            entities:
+              - sensor.template_spabadet_l1_current_a
+              - sensor.template_spabadet_l2_current_a
+              - sensor.template_spabadet_l3_current_a
+            stat_types:
+              - mean
+            hide_legend: true
+            days_to_show: 1
+            logarithmic_scale: false
+          - type: entities
+            entities:
+              - entity: sensor.spabadet_kr_man
+                name: Kostnad (mån)
+                icon: mdi:cash
+              - entity: sensor.spabadet_kwh_man
+                name: Energi (mån)
+                icon: mdi:lightning-bolt
+              - entity: sensor.spabadet_kwh_vecka
+                name: Energi (vecka)
+                icon: mdi:lightning-bolt-outline
+              - type: divider
+              - entity: sensor.spabadet_kr_man
+                type: attribute
+                attribute: last_period
+                suffix: kr
+                name: Kostnad (förra)
+                icon: mdi:cash
+              - entity: sensor.template_spabadet_energy_lastmonth_kwh
+                name: Energi (förra)
+                icon: mdi:lightning-bolt
+              - entity: sensor.template_spabadet_energy_lastweek_kwh
+                name: Energi (vecka)
+                icon: mdi:lightning-bolt-outline
+    cards: []
