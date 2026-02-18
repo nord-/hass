@@ -2,7 +2,8 @@
   platform: group
   services:
     - service: mobile_app_rickards_gs24
-    - service: mobile_app_sm_p610
+    # - service: mobile_app_sm_p610
+    - service: mobile_app_sm_x135f
 
 - name: Fridas_devices
   platform: group
