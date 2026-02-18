@@ -1350,234 +1350,239 @@ views:
                     icon: mdi:clock-outline
     cards: []
   - icon: mdi:cash-multiple
-    type: sidebar
-    title: Elpriset
-    cards:
-      - type: custom:mushroom-chips-card
-        chips:
-          - type: entity
-            entity: sensor.template_home_temp
-            tap_action:
-              action: more-info
-            icon: mdi:flower
-          - type: entity
-            entity: sensor.felix_rum_temperature
-            tap_action:
-              action: more-info
-            icon: mdi:home
-          - type: spacer
-          - type: entity
-            entity: sensor.template_next_low_price
-            tap_action:
-              action: more-info
-            hold_action:
-              action: none
-            double_tap_action:
-              action: none
-            icon: mdi:arrow-down
-            name: Lågt pris
-          - type: template
-            icon_color: >-
-              {% if
-              states("binary_sensor.template_nordpool_price_reallow")|bool%}
-
-              green
-
-              {% elif states("binary_sensor.template_nordpool_price_low")|bool%}
-
-              yellow
-
-              {% elif
-              states("binary_sensor.template_nordpool_price_not_high")|bool%}
-
-              orange
-
-              {%else%}
-
-              red
-
-              {%endif%}
-            icon: >-
-              {% if
-              states("binary_sensor.template_nordpool_price_reallow")|bool%}
-
-              mdi:arrow-down-thick
-
-              {% elif states("binary_sensor.template_nordpool_price_low")|bool%}
-
-              mdi:arrow-right-thick
-
-              {% elif
-              states("binary_sensor.template_nordpool_price_not_high")|bool%}
-
-              mdi:arrow-top-right-thick
-
-              {%else%}
-
-              mdi:arrow-up-thick
-
-              {%endif%}
-            tap_action:
-              action: navigate
-              navigation_path: /lovelace/prices
-            hold_action:
-              action: more-info
-            entity: sensor.nordpool_kwh_se3_sek_3_095_0
-      - type: custom:andy-stats-clock
-        clock_mode: 24h
-        show_hour_labels: true
-        start_angle: -7.5
-        end_angle: 352.5
-        radius: 35
-        layer_gap: 2
-        hands_center_pivot: true
-        scale: 1
-        outer_ticks:
-          enabled: false
-        sweeper:
-          enabled: true
-          use_system_time: true
-          entity: ''
-          color: '#ffffff'
-          width: 1.5
-          opacity: 0.8
-          show_dash: false
-          length_scale: 0.95
-        hour_sweeper:
-          enabled: true
-          use_system_time: true
-          entity: ''
-          color: '#ffffff'
-          width: 1.5
-          opacity: 0.8
-          show_dash: false
-          length_scale: 0.95
-        minute_sweeper:
-          enabled: false
-          color: '#FFFFFF'
-          width: 1.2
-          opacity: 0.8
-          show_dash: false
-          length_scale: 0.9
-        second_sweeper:
-          enabled: false
-          color: '#f50049'
-          width: 1
-          opacity: 1
-          show_dash: false
-          length_scale: 1
-        hub:
-          color: rgba(255,255,255,0.7)
-          radius: 2.3
-          opacity: 1
-        style:
-          background: var(--ha-card-background, rgba(0,0,0,0.4))
-          text_color: var(--primary-text-color)
-          font_family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif
-        layers:
-          - id: price_today
-            name: Price today
-            type: price
-            entity: sensor.elpris_total_inkl_avgifter
-            price_source: array
-            attribute: Today
-            value_path: value
-            radius: 45
-            thickness: 8
-            opacity: 1
-            color_mode: intervals
-            segment_count: null
-            intervals:
-              - from: -100
-                to: 80
-                color_from: '#2ecc71'
-                color_to: '#a3e635'
-              - from: 100
-                to: 150
-                color_from: '#a3e635'
-                color_to: '#facc15'
-              - from: 150
-                to: 250
-                color_from: '#facc15'
-                color_to: '#fb923c'
-              - from: 250
-                to: 1000
-                color_from: '#fb7c3c'
-                color_to: '#FF0000'
-            gradient:
-              from: '#28c76f'
-              to: '#ea5455'
-            stats_markers:
-              show_min: true
-              show_max: true
-              show_avg: false
-              color: rgba(255,255,255,0.9)
-              font_size: 4
-              radius_offset: -8
-              decimals: 0
-              outline: false
-              outline_color: rgba(0,0,0,0.65)
-              outline_width: 0.8
-          - id: layer_2
-            name: Price tomorrow
-            type: price
-            entity: sensor.elpris_total_inkl_avgifter
-            price_source: array
-            attribute: Tomorrow
-            value_path: value
-            radius: 45
-            thickness: 8
-            opacity: 1
-            color_mode: intervals
-            segment_count: null
-            intervals:
-              - from: -100
-                to: 80
-                color_from: '#2ecc71'
-                color_to: '#a3e635'
-              - from: 100
-                to: 150
-                color_from: '#a3e635'
-                color_to: '#facc15'
-              - from: 150
-                to: 250
-                color_from: '#facc15'
-                color_to: '#fb923c'
-              - from: 250
-                to: 400
-                color_from: '#fb7c3c'
-                color_to: '#FF0000'
-            gradient:
-              from: '#28c76f'
-              to: '#ea5455'
-            stats_markers:
-              show_min: true
-              show_max: true
-              show_avg: false
-              color: '#5a58fe'
-              font_size: 4
-              radius_offset: -8
-              decimals: 0
-              min_label: ''
-              max_label: ''
-              avg_label: ''
-            keep_across_midnight: false
-            fade_previous_day: false
-            fade_previous_day_opacity: 0.25
-        center_layers:
-          - id: priset_nu
-            type: entity
-            entity: sensor.template_elpris_kr
-            show_icon: false
-            label_template: <state> kr
-            decimals: ''
-            font_size: 28
-            font_weight: '600'
-            color: white
-            top_margin: -30
-        bottom_layers: []
-      - type: vertical-stack
+    type: sections
+    max_columns: 3
+    path: prices
+    sections:
+      - type: grid
         cards:
+          - type: heading
+            heading: Elpriset
+            heading_style: title
+            icon: mdi:cash-multiple
+          - type: custom:mushroom-chips-card
+            chips:
+              - type: entity
+                entity: sensor.template_home_temp
+                tap_action:
+                  action: more-info
+                icon: mdi:flower
+              - type: entity
+                entity: sensor.felix_rum_temperature
+                tap_action:
+                  action: more-info
+                icon: mdi:home
+              - type: spacer
+              - type: entity
+                entity: sensor.template_next_low_price
+                tap_action:
+                  action: more-info
+                hold_action:
+                  action: none
+                double_tap_action:
+                  action: none
+                icon: mdi:arrow-down
+                name: Lågt pris
+              - type: template
+                icon_color: >-
+                  {% if
+                  states("binary_sensor.template_nordpool_price_reallow")|bool%}
+    
+                  green
+    
+                  {% elif states("binary_sensor.template_nordpool_price_low")|bool%}
+    
+                  yellow
+    
+                  {% elif
+                  states("binary_sensor.template_nordpool_price_not_high")|bool%}
+    
+                  orange
+    
+                  {%else%}
+    
+                  red
+    
+                  {%endif%}
+                icon: >-
+                  {% if
+                  states("binary_sensor.template_nordpool_price_reallow")|bool%}
+    
+                  mdi:arrow-down-thick
+    
+                  {% elif states("binary_sensor.template_nordpool_price_low")|bool%}
+    
+                  mdi:arrow-right-thick
+    
+                  {% elif
+                  states("binary_sensor.template_nordpool_price_not_high")|bool%}
+    
+                  mdi:arrow-top-right-thick
+    
+                  {%else%}
+    
+                  mdi:arrow-up-thick
+    
+                  {%endif%}
+                tap_action:
+                  action: navigate
+                  navigation_path: /lovelace/prices
+                hold_action:
+                  action: more-info
+                entity: sensor.nordpool_kwh_se3_sek_3_095_0
+          - type: custom:andy-stats-clock
+            clock_mode: 24h
+            show_hour_labels: true
+            start_angle: -7.5
+            end_angle: 352.5
+            radius: 35
+            layer_gap: 2
+            hands_center_pivot: true
+            scale: 1
+            outer_ticks:
+              enabled: false
+            sweeper:
+              enabled: true
+              use_system_time: true
+              entity: ''
+              color: '#ffffff'
+              width: 1.5
+              opacity: 0.8
+              show_dash: false
+              length_scale: 0.95
+            hour_sweeper:
+              enabled: true
+              use_system_time: true
+              entity: ''
+              color: '#ffffff'
+              width: 1.5
+              opacity: 0.8
+              show_dash: false
+              length_scale: 0.95
+            minute_sweeper:
+              enabled: false
+              color: '#FFFFFF'
+              width: 1.2
+              opacity: 0.8
+              show_dash: false
+              length_scale: 0.9
+            second_sweeper:
+              enabled: false
+              color: '#f50049'
+              width: 1
+              opacity: 1
+              show_dash: false
+              length_scale: 1
+            hub:
+              color: rgba(255,255,255,0.7)
+              radius: 2.3
+              opacity: 1
+            style:
+              background: var(--ha-card-background, rgba(0,0,0,0.4))
+              text_color: var(--primary-text-color)
+              font_family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif
+            layers:
+              - id: price_today
+                name: Price today
+                type: price
+                entity: sensor.elpris_total_inkl_avgifter
+                price_source: array
+                attribute: Today
+                value_path: value
+                radius: 45
+                thickness: 8
+                opacity: 1
+                color_mode: intervals
+                segment_count: null
+                intervals:
+                  - from: -100
+                    to: 80
+                    color_from: '#2ecc71'
+                    color_to: '#a3e635'
+                  - from: 100
+                    to: 150
+                    color_from: '#a3e635'
+                    color_to: '#facc15'
+                  - from: 150
+                    to: 250
+                    color_from: '#facc15'
+                    color_to: '#fb923c'
+                  - from: 250
+                    to: 1000
+                    color_from: '#fb7c3c'
+                    color_to: '#FF0000'
+                gradient:
+                  from: '#28c76f'
+                  to: '#ea5455'
+                stats_markers:
+                  show_min: true
+                  show_max: true
+                  show_avg: false
+                  color: rgba(255,255,255,0.9)
+                  font_size: 4
+                  radius_offset: -8
+                  decimals: 0
+                  outline: false
+                  outline_color: rgba(0,0,0,0.65)
+                  outline_width: 0.8
+              - id: layer_2
+                name: Price tomorrow
+                type: price
+                entity: sensor.elpris_total_inkl_avgifter
+                price_source: array
+                attribute: Tomorrow
+                value_path: value
+                radius: 45
+                thickness: 8
+                opacity: 1
+                color_mode: intervals
+                segment_count: null
+                intervals:
+                  - from: -100
+                    to: 80
+                    color_from: '#2ecc71'
+                    color_to: '#a3e635'
+                  - from: 100
+                    to: 150
+                    color_from: '#a3e635'
+                    color_to: '#facc15'
+                  - from: 150
+                    to: 250
+                    color_from: '#facc15'
+                    color_to: '#fb923c'
+                  - from: 250
+                    to: 400
+                    color_from: '#fb7c3c'
+                    color_to: '#FF0000'
+                gradient:
+                  from: '#28c76f'
+                  to: '#ea5455'
+                stats_markers:
+                  show_min: true
+                  show_max: true
+                  show_avg: false
+                  color: '#5a58fe'
+                  font_size: 4
+                  radius_offset: -8
+                  decimals: 0
+                  min_label: ''
+                  max_label: ''
+                  avg_label: ''
+                keep_across_midnight: false
+                fade_previous_day: false
+                fade_previous_day_opacity: 0.25
+            center_layers:
+              - id: priset_nu
+                type: entity
+                entity: sensor.template_elpris_kr
+                show_icon: false
+                label_template: <state> kr
+                decimals: ''
+                font_size: 28
+                font_weight: '600'
+                color: white
+                top_margin: -30
+            bottom_layers: []
           - type: horizontal-stack
             cards:
               - type: entity
@@ -1596,8 +1601,11 @@ views:
                 state_color: false
                 name: 75:e
                 unit: kr
-      - type: vertical-stack
+      - type: grid
         cards:
+          - type: heading
+            heading: Diagram
+            heading_style: subtitle
           - type: custom:apexcharts-card
             now:
               show: true
@@ -1794,8 +1802,11 @@ views:
               color: var(--primary-color)
             experimental:
               color_threshold: true
-      - type: vertical-stack
+      - type: grid
         cards:
+          - type: heading
+            heading: Statistik
+            heading_style: subtitle
           - type: custom:apexcharts-card
             experimental:
               color_threshold: true
@@ -1856,54 +1867,53 @@ views:
                 name: 1d
               - entity: sensor.elpriset_kr_avg_3
                 name: 3d
-      - chart_type: line
-        period: hour
-        type: statistics-graph
-        entities:
-          - entity: sensor.template_elpris_kr
-            name: spotpris
-          - entity: sensor.elpriset_kr_avg
-            name: snitt 24h
-          - entity: sensor.elpriset_kr_avg_3
-            name: snitt 3d
-          - entity: sensor.template_my_avg_spot_price
-            name: mitt pris
-        stat_types:
-          - mean
-        days_to_show: 7
-        hide_legend: true
-      - type: custom:vertical-stack-in-card
-        cards:
-          - type: custom:collapsable-cards
-            title: Mina priser
+          - chart_type: line
+            period: hour
+            type: statistics-graph
+            entities:
+              - entity: sensor.template_elpris_kr
+                name: spotpris
+              - entity: sensor.elpriset_kr_avg
+                name: snitt 24h
+              - entity: sensor.elpriset_kr_avg_3
+                name: snitt 3d
+              - entity: sensor.template_my_avg_spot_price
+                name: mitt pris
+            stat_types:
+              - mean
+            days_to_show: 7
+            hide_legend: true
+          - type: custom:vertical-stack-in-card
             cards:
-              - type: entities
-                entities:
-                  - entity: var.electric_fee
-                    name: Påslag
-                  - entity: var.electric_tax
-                    name: Skatt
-                  - entity: var.electric_transfer_cost
-                    name: Överföring
-                  - entity: sensor.template_fees_inc_vat
-                    name: Totalt
-                    icon: mdi:cash-multiple
-                  - type: divider
-                  - entity: var.electric_solar_markup
-                    name: Påslag sol
-                  - entity: var.electric_solar_net_markup
-                    name: Nätnytta
-                    icon: mdi:bank-transfer-in
-                  - entity: sensor.template_fees_solar
-                    icon: mdi:white-balance-sunny
-                    name: Totalt
-                show_header_toggle: false
-                card_mod:
-                  style: |
-                    ha-card {
-                      border-width: 0;
-                    }
-    path: prices
+              - type: custom:collapsable-cards
+                title: Mina priser
+                cards:
+                  - type: entities
+                    entities:
+                      - entity: var.electric_fee
+                        name: Påslag
+                      - entity: var.electric_tax
+                        name: Skatt
+                      - entity: var.electric_transfer_cost
+                        name: Överföring
+                      - entity: sensor.template_fees_inc_vat
+                        name: Totalt
+                        icon: mdi:cash-multiple
+                      - type: divider
+                      - entity: var.electric_solar_markup
+                        name: Påslag sol
+                      - entity: var.electric_solar_net_markup
+                        name: Nätnytta
+                        icon: mdi:bank-transfer-in
+                      - entity: sensor.template_fees_solar
+                        icon: mdi:white-balance-sunny
+                        name: Totalt
+                    show_header_toggle: false
+                    card_mod:
+                      style: |
+                        ha-card {
+                          border-width: 0;
+                        }
   - type: sections
     max_columns: 3
     icon: mdi:lightning-bolt
