@@ -163,7 +163,7 @@
       entity_id: automation.zoe_charge
       to:
     - platform: state
-      entity_id: sensor.car_1_next_charge
+      entity_id: sensor.car_1_charge_period
       to:
   sensor:
   - unique_id: car_2_next_charge
@@ -182,7 +182,7 @@
         {% if tomorrow|length > 1 %}
           {% set prices = prices + tomorrow %}
         {% endif %}
-        {% set other_state = states('sensor.car_1_next_charge') %}
+        {% set other_state = states('sensor.car_1_charge_period') %}
         {% set other_dur = states('sensor.template_rya_req_hours')|float(0) if is_state('automation.ladda_bilen_nar_det_ar_billigt','on') else 0 %}
         {% set other_start = other_state|as_datetime if other_state not in ['unavailable','unknown'] and other_dur > 0 else none %}
         {% set other_end = other_start + timedelta(hours=other_dur) if other_start else none %}
@@ -217,7 +217,7 @@
         {%- endif %}
       {%- endif %}
   - unique_id: car_2_next_charge_time
-    state: "{{ states('sensor.car_2_next_charge')|as_timestamp(default=none)|timestamp_custom('%H:%M', default='—') }}"
+    state: "{{ states('sensor.car_2_charge_period')|as_timestamp(default=none)|timestamp_custom('%H:%M', default='—') }}"
 
 ## Car 1 laddperiod
 - trigger:
@@ -233,7 +233,7 @@
       entity_id: automation.ladda_bilen_nar_det_ar_billigt
       to:
     - platform: state
-      entity_id: sensor.car_2_next_charge
+      entity_id: sensor.car_2_charge_period
       to:
   sensor:
   - unique_id: car_1_next_charge
@@ -252,7 +252,7 @@
         {% if tomorrow|length > 1 %}
           {% set prices = prices + tomorrow %}
         {% endif %}
-        {% set other_state = states('sensor.car_2_next_charge') %}
+        {% set other_state = states('sensor.car_2_charge_period') %}
         {% set other_dur = states('sensor.template_zoe_req_hours')|float(0) if is_state('automation.zoe_charge','on') else 0 %}
         {% set other_start = other_state|as_datetime if other_state not in ['unavailable','unknown'] and other_dur > 0 else none %}
         {% set other_end = other_start + timedelta(hours=other_dur) if other_start else none %}
@@ -287,7 +287,7 @@
         {%- endif %}
       {%- endif %}
   - unique_id: car_1_next_charge_time
-    state: "{{ states('sensor.car_1_next_charge')|as_timestamp(default=none)|timestamp_custom('%H:%M', default='—') }}"
+    state: "{{ states('sensor.car_1_charge_period')|as_timestamp(default=none)|timestamp_custom('%H:%M', default='—') }}"
 
 ## Nästa billiga timme
 - trigger:

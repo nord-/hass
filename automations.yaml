@@ -263,7 +263,7 @@
     from: 'off'
     to: 'on'
     trigger: state
-  - at: sensor.car_1_next_charge
+  - at: sensor.car_1_charge_period
     trigger: time
   conditions:
   - condition: state
@@ -274,7 +274,7 @@
     entity_id: binary_sensor.tesla_charge_port_door_open
   - alias: Passed Start time
     condition: template
-    value_template: '{{ as_timestamp(now()) >= as_timestamp(as_timestamp(states("sensor.car_1_next_charge"))|timestamp_local)
+    value_template: '{{ as_timestamp(now()) >= as_timestamp(as_timestamp(states("sensor.car_1_charge_period"))|timestamp_local)
       }}'
   - alias: Not charging
     condition: not
@@ -1400,7 +1400,7 @@
   alias: Dolphin, Charge
   description: ''
   triggers:
-  - at: sensor.car_2_next_charge
+  - at: sensor.car_2_charge_period
     alias: When at Start time
     trigger: time
   conditions:
@@ -1409,7 +1409,7 @@
     entity_id: sensor.byd_dolphin_soc
     below: input_number.zoe_soc_upper_limit
   - condition: template
-    value_template: '{{ now() >= as_datetime(states("sensor.car_2_next_charge"))
+    value_template: '{{ now() >= as_datetime(states("sensor.car_2_charge_period"))
       }}'
     alias: Passed Start time
   - condition: not
@@ -2332,7 +2332,7 @@
       conditions:
       - alias: NOT Passed Start time
         condition: template
-        value_template: '{{ as_timestamp(now()) < as_timestamp(as_timestamp(states("sensor.car_1_next_charge"))|timestamp_local)
+        value_template: '{{ as_timestamp(now()) < as_timestamp(as_timestamp(states("sensor.car_1_charge_period"))|timestamp_local)
           }}'
       - alias: SoC > Charging limit
         condition: numeric_state
