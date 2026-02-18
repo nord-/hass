@@ -980,7 +980,10 @@ views:
             icon: mdi:car
             badges:
               - type: entity
-                entity: sensor.tesla_inside_temp
+                show_state: true
+                show_icon: true
+                entity: sensor.car_1_charge_period
+                icon: mdi:battery-clock
               - type: entity
                 show_state: true
                 show_icon: true
