@@ -224,8 +224,6 @@
           unavailable
         {%- endif %}
       {%- endif %}
-  - unique_id: car_2_next_charge_time
-    state: "{{ states('sensor.car_2_charge_period')|as_timestamp(default=none)|timestamp_custom('%H:%M', default='—') }}"
 
 ## Car 1 laddperiod
 - trigger:
@@ -294,8 +292,6 @@
           unavailable
         {%- endif %}
       {%- endif %}
-  - unique_id: car_1_next_charge_time
-    state: "{{ states('sensor.car_1_charge_period')|as_timestamp(default=none)|timestamp_custom('%H:%M', default='—') }}"
 
 ## Nästa billiga timme
 - trigger:
