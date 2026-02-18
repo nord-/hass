@@ -29,7 +29,7 @@ cn_add_rya_to_queue:
     authorization: !secret cn_rest_authorization
     accept: 'text/plain, application/json, text/json'
   content_type:  'application/json; charset=utf-8'
-  payload: '{"ConnectorId":"a5ebcce2-1815-4bda-4c8c-08da08e8bc81", "DepartureTime":"{{ as_timestamp(today_at(states("input_datetime.zoe_before"))) | timestamp_local() if today_at(states("input_datetime.zoe_before"))>(now()+timedelta(seconds=(as_timestamp(today_at(states("sensor.template_rya_charging_required_time")))-as_timestamp(today_at())) | int)) else as_timestamp(today_at(states("input_datetime.zoe_before")) + timedelta(days=1)) | timestamp_local() }}", "SelectedPaymentMethod": 1, "UserCarId": 697 }'
+  payload: '{"ConnectorId":"a5ebcce2-1815-4bda-4c8c-08da08e8bc81", "DepartureTime":"{{ as_timestamp(today_at(states("input_datetime.rya_before"))) | timestamp_local() if today_at(states("input_datetime.rya_before"))>(now()+timedelta(seconds=(as_timestamp(today_at(states("sensor.template_rya_charging_required_time")))-as_timestamp(today_at())) | int)) else as_timestamp(today_at(states("input_datetime.rya_before")) + timedelta(days=1)) | timestamp_local() }}", "SelectedPaymentMethod": 1, "UserCarId": 697 }'
   
 cn_add_yxx_to_queue:
   url: "https://dev-app-cn.azurewebsites.net/v2/startcharge"
@@ -55,7 +55,7 @@ cn_add_car1_energy:
     authorization: !secret cn_rest_authorization
     accept: 'text/plain, application/json, text/json'
   content_type:  'application/json; charset=utf-8'
-  payload: '{"ConnectorId":"a5ebcce2-1815-4bda-4c8c-08da08e8bc81", "DepartureTime":"{{today_at(states("input_datetime.zoe_before"))|as_timestamp|timestamp_local if today_at(states("input_datetime.zoe_before"))>now() else (today_at(states("input_datetime.zoe_before"))+timedelta(days=1))|as_timestamp|timestamp_local}}", "SelectedPaymentMethod": 1, "RequestedEnergy": {{(states("input_number.car_1_energy_kwh")|int(0))*1000}}, "UserCarId": 697 }'
+  payload: '{"ConnectorId":"a5ebcce2-1815-4bda-4c8c-08da08e8bc81", "DepartureTime":"{{today_at(states("input_datetime.rya_before"))|as_timestamp|timestamp_local if today_at(states("input_datetime.rya_before"))>now() else (today_at(states("input_datetime.rya_before"))+timedelta(days=1))|as_timestamp|timestamp_local}}", "SelectedPaymentMethod": 1, "RequestedEnergy": {{(states("input_number.car_1_energy_kwh")|int(0))*1000}}, "UserCarId": 697 }'
 
 
 
