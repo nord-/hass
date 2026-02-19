@@ -268,10 +268,9 @@
               {% if acc.end is not none and acc.end <= before %}
                 {% set avg_price = acc.price_sum / acc.entries %}
                 {% set total_cost = (avg_price * duration * power)|round(0) %}
-                {% set t1 = p.start.strftime('%H:%M') %}
-                {% set t2 = acc.end.strftime('%H:%M') %}
-                {% set next_day = '⁺¹' if acc.end.date() > p.start.date() else '' %}
-                {% set candidates.value = candidates.value + [('| %s–%s%s | %s kr |' % (t1, t2, next_day, total_cost|int), total_cost)] %}
+                {% set t1 = p.start.strftime('%H:%M') ~ ('⁺¹' if p.start.date() > now().date() else '') %}
+                {% set t2 = acc.end.strftime('%H:%M') ~ ('⁺¹' if acc.end.date() > now().date() else '') %}
+                {% set candidates.value = candidates.value + [('| %s–%s | %s kr |' % (t1, t2, total_cost|int), total_cost)] %}
               {% endif %}
             {% endif %}
           {% endfor %}
@@ -390,10 +389,9 @@
               {% if acc.end is not none and acc.end <= before %}
                 {% set avg_price = acc.price_sum / acc.entries %}
                 {% set total_cost = (avg_price * duration * power)|round(0) %}
-                {% set t1 = p.start.strftime('%H:%M') %}
-                {% set t2 = acc.end.strftime('%H:%M') %}
-                {% set next_day = '⁺¹' if acc.end.date() > p.start.date() else '' %}
-                {% set candidates.value = candidates.value + [('| %s–%s%s | %s kr |' % (t1, t2, next_day, total_cost|int), total_cost)] %}
+                {% set t1 = p.start.strftime('%H:%M') ~ ('⁺¹' if p.start.date() > now().date() else '') %}
+                {% set t2 = acc.end.strftime('%H:%M') ~ ('⁺¹' if acc.end.date() > now().date() else '') %}
+                {% set candidates.value = candidates.value + [('| %s–%s | %s kr |' % (t1, t2, total_cost|int), total_cost)] %}
               {% endif %}
             {% endif %}
           {% endfor %}
