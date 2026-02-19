@@ -190,6 +190,7 @@
         {% if tomorrow|length > 1 %}
           {% set prices = prices + tomorrow %}
         {% endif %}
+        {% set entry_hours = ((prices[1].start - prices[0].start).total_seconds() / 3600) if prices|length > 1 else 1.0 %}
         {% set other_state = states('sensor.car_1_charge_period') %}
         {% set other_dur = states('sensor.template_rya_req_hours')|float(0) if is_state('automation.ladda_bilen_nar_det_ar_billigt','on') else 0 %}
         {% set other_start = other_state|as_datetime if other_state not in ['unavailable','unknown'] and other_dur > 0 else none %}
@@ -205,10 +206,10 @@
                 {% set q = prices[j] %}
                 {% set overlaps = other_start is not none and q.start >= other_start and q.start < other_end %}
                 {% set f = 0.5 if overlaps else 1.0 %}
-                {% set acc.eff = acc.eff + f %}
-                {% set acc.cost = acc.cost + q.value * f %}
+                {% set acc.eff = acc.eff + entry_hours * f %}
+                {% set acc.cost = acc.cost + q.value * entry_hours * f %}
                 {% if acc.eff >= duration %}
-                  {% set acc.end = q.start + timedelta(hours=1) %}
+                  {% set acc.end = q.start + timedelta(hours=entry_hours) %}
                 {% endif %}
               {% endif %}
             {% endfor %}
@@ -224,6 +225,59 @@
           unavailable
         {%- endif %}
       {%- endif %}
+    attributes:
+      periods_list: >-
+        {% set duration = states('sensor.template_zoe_req_hours')|float(0) if is_state('automation.zoe_charge','on') else 0 %}
+        {% if duration <= 0 %}
+          []
+        {% else %}
+          {% set before = today_at(states('input_datetime.zoe_before'))+timedelta(minutes=5)
+              if now() < today_at(states('input_datetime.zoe_before'))
+              else today_at(states('input_datetime.zoe_before'))+timedelta(days=1,minutes=5) %}
+          {% set prices = state_attr('sensor.nordpool_kwh_se3_sek_3_095_0','raw_today')|list %}
+          {% set tomorrow = state_attr('sensor.nordpool_kwh_se3_sek_3_095_0','raw_tomorrow')|list %}
+          {% if tomorrow|length > 1 %}
+            {% set prices = prices + tomorrow %}
+          {% endif %}
+          {% set entry_hours = ((prices[1].start - prices[0].start).total_seconds() / 3600) if prices|length > 1 else 1.0 %}
+          {% set fees = states('sensor.template_fees_ex_vat')|float(0) %}
+          {% set power = states('sensor.template_car_2_season_power')|float(1) %}
+          {% set other_state = states('sensor.car_1_charge_period') %}
+          {% set other_dur = states('sensor.template_rya_req_hours')|float(0) if is_state('automation.ladda_bilen_nar_det_ar_billigt','on') else 0 %}
+          {% set other_start = other_state|as_datetime if other_state not in ['unavailable','unknown'] and other_dur > 0 else none %}
+          {% set other_end = other_start + timedelta(hours=other_dur) if other_start else none %}
+          {% set candidates = namespace(value=[]) %}
+          {% set cutoff = now() - timedelta(minutes=55) %}
+          {% for i in range(prices|length) %}
+            {% set p = prices[i] %}
+            {% if p.start >= cutoff and p.start < before %}
+              {% set acc = namespace(eff=0.0, price_sum=0.0, entries=0, end=none) %}
+              {% for j in range(i, prices|length) %}
+                {% if acc.end is none %}
+                  {% set q = prices[j] %}
+                  {% set overlaps = other_start is not none and q.start >= other_start and q.start < other_end %}
+                  {% set f = 0.5 if overlaps else 1.0 %}
+                  {% set acc.eff = acc.eff + entry_hours * f %}
+                  {% set acc.price_sum = acc.price_sum + (q.value + fees) * 1.25 %}
+                  {% set acc.entries = acc.entries + 1 %}
+                  {% if acc.eff >= duration %}
+                    {% set acc.end = q.start + timedelta(hours=entry_hours) %}
+                  {% endif %}
+                {% endif %}
+              {% endfor %}
+              {% if acc.end is not none and acc.end <= before %}
+                {% set avg_price = acc.price_sum / acc.entries %}
+                {% set total_cost = (avg_price * duration * power)|round(0) %}
+                {% set t1 = p.start.strftime('%H:%M') %}
+                {% set t2 = acc.end.strftime('%H:%M') %}
+                {% set next_day = '⁺¹' if acc.end.date() > p.start.date() else '' %}
+                {% set candidates.value = candidates.value + [('| %s–%s%s | %s kr |' % (t1, t2, next_day, total_cost|int), total_cost)] %}
+              {% endif %}
+            {% endif %}
+          {% endfor %}
+          {% set sorted = candidates.value|sort(attribute='1')|map(attribute='0')|list %}
+          {{ '| Period | Kostnad |\n|---|---|\n' ~ sorted|join('\n') if sorted else '—' }}
+        {% endif %}
 
 ## Car 1 laddperiod
 - trigger:
@@ -258,6 +312,7 @@
         {% if tomorrow|length > 1 %}
           {% set prices = prices + tomorrow %}
         {% endif %}
+        {% set entry_hours = ((prices[1].start - prices[0].start).total_seconds() / 3600) if prices|length > 1 else 1.0 %}
         {% set other_state = states('sensor.car_2_charge_period') %}
         {% set other_dur = states('sensor.template_zoe_req_hours')|float(0) if is_state('automation.zoe_charge','on') else 0 %}
         {% set other_start = other_state|as_datetime if other_state not in ['unavailable','unknown'] and other_dur > 0 else none %}
@@ -273,10 +328,10 @@
                 {% set q = prices[j] %}
                 {% set overlaps = other_start is not none and q.start >= other_start and q.start < other_end %}
                 {% set f = 0.5 if overlaps else 1.0 %}
-                {% set acc.eff = acc.eff + f %}
-                {% set acc.cost = acc.cost + q.value * f %}
+                {% set acc.eff = acc.eff + entry_hours * f %}
+                {% set acc.cost = acc.cost + q.value * entry_hours * f %}
                 {% if acc.eff >= duration %}
-                  {% set acc.end = q.start + timedelta(hours=1) %}
+                  {% set acc.end = q.start + timedelta(hours=entry_hours) %}
                 {% endif %}
               {% endif %}
             {% endfor %}
@@ -292,6 +347,59 @@
           unavailable
         {%- endif %}
       {%- endif %}
+    attributes:
+      periods_list: >-
+        {% set duration = states('sensor.template_rya_req_hours')|float(0) if is_state('automation.ladda_bilen_nar_det_ar_billigt','on') else 0 %}
+        {% if duration <= 0 %}
+          []
+        {% else %}
+          {% set before = today_at(states('input_datetime.rya_before'))+timedelta(minutes=5)
+              if now() < today_at(states('input_datetime.rya_before'))
+              else today_at(states('input_datetime.rya_before'))+timedelta(days=1,minutes=5) %}
+          {% set prices = state_attr('sensor.nordpool_kwh_se3_sek_3_095_0','raw_today')|list %}
+          {% set tomorrow = state_attr('sensor.nordpool_kwh_se3_sek_3_095_0','raw_tomorrow')|list %}
+          {% if tomorrow|length > 1 %}
+            {% set prices = prices + tomorrow %}
+          {% endif %}
+          {% set entry_hours = ((prices[1].start - prices[0].start).total_seconds() / 3600) if prices|length > 1 else 1.0 %}
+          {% set fees = states('sensor.template_fees_ex_vat')|float(0) %}
+          {% set power = states('sensor.template_car_1_season_power')|float(1) %}
+          {% set other_state = states('sensor.car_2_charge_period') %}
+          {% set other_dur = states('sensor.template_zoe_req_hours')|float(0) if is_state('automation.zoe_charge','on') else 0 %}
+          {% set other_start = other_state|as_datetime if other_state not in ['unavailable','unknown'] and other_dur > 0 else none %}
+          {% set other_end = other_start + timedelta(hours=other_dur) if other_start else none %}
+          {% set candidates = namespace(value=[]) %}
+          {% set cutoff = now() - timedelta(minutes=55) %}
+          {% for i in range(prices|length) %}
+            {% set p = prices[i] %}
+            {% if p.start >= cutoff and p.start < before %}
+              {% set acc = namespace(eff=0.0, price_sum=0.0, entries=0, end=none) %}
+              {% for j in range(i, prices|length) %}
+                {% if acc.end is none %}
+                  {% set q = prices[j] %}
+                  {% set overlaps = other_start is not none and q.start >= other_start and q.start < other_end %}
+                  {% set f = 0.5 if overlaps else 1.0 %}
+                  {% set acc.eff = acc.eff + entry_hours * f %}
+                  {% set acc.price_sum = acc.price_sum + (q.value + fees) * 1.25 %}
+                  {% set acc.entries = acc.entries + 1 %}
+                  {% if acc.eff >= duration %}
+                    {% set acc.end = q.start + timedelta(hours=entry_hours) %}
+                  {% endif %}
+                {% endif %}
+              {% endfor %}
+              {% if acc.end is not none and acc.end <= before %}
+                {% set avg_price = acc.price_sum / acc.entries %}
+                {% set total_cost = (avg_price * duration * power)|round(0) %}
+                {% set t1 = p.start.strftime('%H:%M') %}
+                {% set t2 = acc.end.strftime('%H:%M') %}
+                {% set next_day = '⁺¹' if acc.end.date() > p.start.date() else '' %}
+                {% set candidates.value = candidates.value + [('| %s–%s%s | %s kr |' % (t1, t2, next_day, total_cost|int), total_cost)] %}
+              {% endif %}
+            {% endif %}
+          {% endfor %}
+          {% set sorted = candidates.value|sort(attribute='1')|map(attribute='0')|list %}
+          {{ '| Period | Kostnad |\n|---|---|\n' ~ sorted|join('\n') if sorted else '—' }}
+        {% endif %}
 
 ## Nästa billiga timme
 - trigger:
