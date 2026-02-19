@@ -2698,6 +2698,11 @@
     to:
     - connected
   conditions:
+  - condition: template
+    value_template: "{% set from = trigger.from_state %}\n{% if from is none %}\n
+      \ false\n{% else %}\n  {{ from.state != 'connected'\n      and (as_timestamp(trigger.to_state.last_changed)
+      - as_timestamp(from.last_changed)) >= 300 }}\n{% endif %}"
+    alias: NOT Connected for >5 mins
   - condition: state
     entity_id: automation.zoe_charge
     state:
