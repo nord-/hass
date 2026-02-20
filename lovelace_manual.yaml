@@ -1352,6 +1352,24 @@ views:
                   - entity: input_datetime.zoe_hour
                     name: Klockan
                     icon: mdi:clock-outline
+      - type: grid
+        cards:
+          - type: heading
+            heading: Perioder
+            heading_style: title
+            icon: mdi:car-clock
+          - type: markdown
+            content: '{{ state_attr(''sensor.car_1_charge_period'', ''periods_list'') }}'
+            title: Eazy
+            grid_options:
+              columns: 6
+              rows: auto
+          - type: markdown
+            content: '{{ state_attr(''sensor.car_2_charge_period'', ''periods_list'') }}'
+            grid_options:
+              columns: 6
+              rows: auto
+            title: Delphine
     cards: []
   - icon: mdi:cash-multiple
     type: sections
@@ -2003,7 +2021,7 @@ views:
             grid_options:
               columns: 6
               rows: auto
-            max: 14
+            max: 13.8
             severity:
               green: 0
               yellow: 4
@@ -2893,6 +2911,34 @@ views:
                 name: Pumpen L3
                 secondary_info: last-changed
                 icon: mdi:pump
+          - type: custom:mushroom-template-card
+            primary: '{{states("sensor.spabadet_temperatur")|replace(''.'','','')}}°C'
+            secondary: >-
+              {{
+              (states.sensor.spabadet_temperatur.last_updated|as_local).strftime('%H:%M')
+              }}
+            features_position: bottom
+            entity: sensor.spabadet_temperatur
+            color: |-
+              {%if (states("sensor.spabadet_temperatur")|int(0))<34%}
+              blue
+              {%elif (states("sensor.spabadet_temperatur")|int(0))<36%}
+              yellow
+              {%elif (states("sensor.spabadet_temperatur")|int(0))<39%}
+              orange
+              {%else%}
+              red
+              {%endif%}
+            icon: |-
+              {%if (states("sensor.spabadet_temperatur")|int(0))<34%}
+              mdi:snowflake-thermometer
+              {%elif (states("sensor.spabadet_temperatur")|int(0))<36%}
+              mdi:thermometer-low
+              {%elif (states("sensor.spabadet_temperatur")|int(0))<39%}
+              mdi:thermometer
+              {%else%}
+              mdi:thermometer-high
+              {%endif%}
       - type: grid
         cards:
           - type: heading
@@ -3770,261 +3816,6 @@ views:
           - mean
         hide_legend: true
         days_to_show: 2
-      - type: vertical-stack
-        title: SMA
-        cards:
-          - show_name: false
-            show_icon: false
-            show_state: true
-            type: glance
-            entities:
-              - entity: sensor.chargenode_sma_current_l1
-                name: L1 [A]
-              - entity: sensor.chargenode_sma_current_l2
-                name: L2 [A]
-              - entity: sensor.chargenode_sma_current_l3
-                name: L3 [A]
-              - entity: sensor.chargenode_sma_voltage_l1
-                name: L1 [V]
-              - entity: sensor.chargenode_sma_voltage_l2
-                name: L2 [V]
-              - entity: sensor.chargenode_sma_voltage_l3
-                name: L3 [V]
-              - entity: sensor.chargenode_sma_power_l1
-                name: L1 [W]
-              - entity: sensor.chargenode_sma_power_l2
-                name: L2 [W]
-              - entity: sensor.chargenode_sma_power_l3
-                name: L3 [W]
-            columns: 3
-          - type: history-graph
-            entities:
-              - entity: sensor.chargenode_sma_voltage_l1
-                name: ' '
-              - entity: sensor.chargenode_sma_voltage_l2
-                name: ' '
-              - entity: sensor.chargenode_sma_voltage_l3
-                name: ' '
-            hours_to_show: 12
-          - show_name: false
-            show_icon: false
-            show_state: true
-            type: glance
-            entities:
-              - entity: sensor.chargenode_sma_current_l1
-              - entity: sensor.chargenode_sma_current_l2
-              - entity: sensor.chargenode_sma_current_l3
-              - entity: sensor.hem_gen5_electric_consumed_1
-              - entity: sensor.hem_gen5_electric_consumed_2
-              - entity: sensor.hem_gen5_electric_consumed_3
-            columns: 3
-  - theme: Backend-selected
-    icon: mdi:hot-tub
-    title: Spabadet
-    cards:
-      - type: vertical-stack
-        title: Spabadet
-        cards:
-          - type: horizontal-stack
-            cards:
-              - type: gauge
-                min: 34
-                max: 40
-                needle: true
-                severity:
-                  green: 36
-                  yellow: 0
-                  red: 38.5
-                name: ' '
-                entity: sensor.template_spabadet_temperature
-              - show_name: true
-                show_icon: true
-                type: button
-                entity: input_boolean.spabadet_manual
-                show_state: false
-                name: Bada
-                icon_height: 50px
-                icon: mdi:swim
-                hold_action:
-                  action: more-info
-              - type: gauge
-                name: ' '
-                min: -15
-                max: 35
-                needle: true
-                severity:
-                  green: 15
-                  yellow: 0
-                  red: 25
-                entity: sensor.template_home_temp
-          - type: horizontal-stack
-            cards:
-              - type: gauge
-                entity: sensor.template_spabadet_l1_current_a
-                max: 10
-                name: Jets
-              - type: gauge
-                entity: sensor.template_spabadet_l2_current_a
-                max: 13
-                name: Värmare
-              - type: gauge
-                entity: sensor.template_spabadet_l3_current_a
-                max: 10
-                name: Pump
-          - type: entities
-            entities:
-              - entity: switch.spabadet_l1
-                name: Jets L1
-                icon: mdi:turbine
-                secondary_info: last-changed
-              - entity: switch.spabadet_l2
-                icon: mdi:pool-thermometer
-                name: Värmaren L2
-                secondary_info: last-changed
-              - entity: switch.spabadet_l3
-                name: Pumpen L3
-                secondary_info: last-changed
-                icon: mdi:pump
-          - type: horizontal-stack
-            cards:
-              - type: custom:mushroom-number-card
-                entity: input_number.spabadet_target_temp_weekdays
-                name: Veckodagar
-                display_mode: buttons
-              - type: custom:mushroom-number-card
-                entity: input_number.spabadet_target_temp_weekends
-                name: Helgen
-                display_mode: buttons
-      - type: vertical-stack
-        title: Temperatur
-        cards:
-          - chart_type: line
-            period: day
-            days_to_show: 14
-            hide_legend: true
-            type: statistics-graph
-            entities:
-              - entity: sensor.template_spabadet_temperature
-                name: Spabadet
-            stat_types:
-              - mean
-              - min
-              - max
-          - type: custom:collapsable-cards
-            title: Detaljer
-            cards:
-              - chart_type: line
-                period: 5minute
-                days_to_show: 1
-                hide_legend: true
-                type: statistics-graph
-                entities:
-                  - entity: sensor.template_spabadet_temperature
-                    name: Spabadet
-                stat_types:
-                  - mean
-              - type: statistics-graph
-                period: 5minute
-                entities:
-                  - sensor.template_spabadet_temperature
-                days_to_show: 0.2
-                hide_legend: true
-                stat_types:
-                  - mean
-              - chart_type: line
-                period: 5minute
-                days_to_show: 1
-                hide_legend: true
-                type: statistics-graph
-                entities:
-                  - entity: sensor.template_home_temp
-                    name: Ute
-                    color: Yellow
-                stat_types:
-                  - mean
-      - type: vertical-stack
-        title: Statistik
-        cards:
-          - chart_type: bar
-            period: month
-            type: statistics-graph
-            entities:
-              - sensor.template_spabadet_energy_kwh
-              - sensor.spabadet_kr
-            stat_types:
-              - change
-            days_to_show: 180
-            hide_legend: true
-          - type: custom:collapsable-cards
-            title: Detaljer
-            cards:
-              - chart_type: bar
-                period: week
-                type: statistics-graph
-                entities:
-                  - sensor.template_spabadet_energy_kwh
-                  - sensor.spabadet_kr
-                stat_types:
-                  - change
-                days_to_show: 14
-                hide_legend: true
-              - chart_type: line
-                period: 5minute
-                type: statistics-graph
-                entities:
-                  - sensor.template_spabadet_l1_current_a
-                  - sensor.template_spabadet_l2_current_a
-                  - sensor.template_spabadet_l3_current_a
-                stat_types:
-                  - mean
-                hide_legend: true
-                days_to_show: 1
-                logarithmic_scale: false
-              - type: entities
-                entities:
-                  - entity: sensor.spabadet_kr_man
-                    name: Kostnad (mån)
-                    icon: mdi:cash
-                  - entity: sensor.spabadet_kwh_man
-                    name: Energi (mån)
-                    icon: mdi:lightning-bolt
-                  - entity: sensor.spabadet_kwh_vecka
-                    name: Energi (vecka)
-                    icon: mdi:lightning-bolt-outline
-                  - type: divider
-                  - entity: sensor.spabadet_kr_man
-                    type: attribute
-                    attribute: last_period
-                    suffix: kr
-                    name: Kostnad (förra)
-                    icon: mdi:cash
-                  - entity: sensor.template_spabadet_energy_lastmonth_kwh
-                    name: Energi (förra)
-                    icon: mdi:lightning-bolt
-                  - entity: sensor.template_spabadet_energy_lastweek_kwh
-                    name: Energi (vecka)
-                    icon: mdi:lightning-bolt-outline
-      - show_name: true
-        show_icon: false
-        show_state: true
-        type: glance
-        entities:
-          - entity: sensor.template_spabadet_pump_active
-            name: På
-          - entity: sensor.spabadet_paslaget_min_24_hrs
-            name: 24h
-    badges:
-      - type: entity
-        show_name: false
-        show_state: true
-        show_icon: true
-        entity: sensor.spabadet_batteri
-        visibility:
-          - condition: numeric_state
-            entity: sensor.spabadet_batteri
-            below: 20
-    type: masonry
-    visible: []
   - type: sections
     max_columns: 4
     icon: mdi:account-group
@@ -4102,254 +3893,6 @@ views:
             features_position: bottom
             vertical: false
             name: S9 Batteri
-  - title: Köket
-    icon: mdi:silverware-fork-knife
-    badges: []
-    cards:
-      - type: vertical-stack
-        title: iGrill
-        cards:
-          - type: horizontal-stack
-            cards:
-              - type: gauge
-                entity: sensor.igrill_probe_1
-                name: iGrill
-                max: 80
-                min: 5
-              - type: gauge
-                entity: sensor.igrill_battery
-                name: Batteri
-                severity:
-                  green: 50
-                  yellow: 20
-                  red: 0
-                needle: false
-          - type: history-graph
-            entities:
-              - entity: sensor.igrill_probe_1
-            hours_to_show: 1
-            show_names: false
-          - type: custom:mushroom-number-card
-            entity: input_number.igrill_target_temp
-            display_mode: buttons
-            icon: mdi:grill
-            name: Mål [°C]
-            secondary_info: none
-      - type: vertical-stack
-        title: Diskmaskinen
-        cards:
-          - type: entities
-            entities:
-              - entity: input_datetime.diskmaskinen_timme
-                icon: mdi:clock
-                secondary_info: none
-                name: Klockan
-              - entity: sensor.peaqnext_dishwasher
-                name: Nästa
-              - type: divider
-              - entity: switch.clever_spz3
-                name: På/av
-                icon: mdi:dishwasher
-                secondary_info: last-updated
-              - entity: automation.diskmaskinen_starta_pa_klocka
-                name: Automatisk
-          - type: entities
-            entities:
-              - entity: sensor.diskmaskinen_kwh_man
-                icon: mdi:dishwasher
-                name: Förbrukning (mån)
-              - entity: sensor.diskmaskinen_kostnad
-                name: Kostnad (mån)
-                icon: mdi:cash
-              - type: divider
-              - entity: sensor.diskmaskinen_kostnad
-                type: attribute
-                attribute: last_period
-                suffix: kr
-                name: Förra mån
-                icon: mdi:cash
-          - type: horizontal-stack
-            cards:
-              - type: gauge
-                entity: sensor.clever_spz3_electric_consumption_w
-                name: ' '
-                max: 2000
-              - type: custom:apexcharts-card
-                header:
-                  show: false
-                series:
-                  - entity: sensor.clever_spz3_electric_consumption_w
-                graph_span: 2h
-                apex_config:
-                  yaxis:
-                    - decimalsInFloat: 0
-                  stroke:
-                    show: true
-                    width: 1
-      - type: vertical-stack
-        title: Tvättmaskinen
-        cards:
-          - type: entities
-            entities:
-              - entity: input_datetime.tvattmaskinen_timme
-                name: Klockan
-              - entity: sensor.peaqnext_washing_machine
-                name: Nästa
-              - type: divider
-              - entity: switch.clever_spz2
-                name: På/av
-                icon: mdi:washing-machine
-                secondary_info: last-updated
-              - entity: automation.tvattmaskinen_starta_pa_klockslag
-                name: Auto
-          - type: entities
-            entities:
-              - entity: sensor.tvattmaskinen_kwh_man
-                icon: mdi:washing-machine
-                name: Förbrukning (mån)
-              - entity: sensor.tvattmaskinen_kostnad
-                name: Kostnad (mån)
-                icon: mdi:cash
-              - type: divider
-              - entity: sensor.tvattmaskinen_kostnad
-                type: attribute
-                attribute: last_period
-                suffix: kr
-                name: Förra mån
-                icon: mdi:cash
-          - type: horizontal-stack
-            cards:
-              - type: gauge
-                entity: sensor.clever_spz2_electric_consumption_w_2
-                name: ' '
-                max: 2000
-              - type: custom:apexcharts-card
-                header:
-                  show: false
-                series:
-                  - entity: sensor.clever_spz2_electric_consumption_w_2
-                graph_span: 90m
-                apex_config:
-                  yaxis:
-                    - decimalsInFloat: 0
-                  stroke:
-                    show: true
-                    width: 1
-      - type: horizontal-stack
-        title: Skrivaren
-        cards:
-          - type: gauge
-            entity: sensor.samsung_c430w_toner_black
-            min: 0
-            max: 100
-            severity:
-              green: 20
-              yellow: 10
-              red: 0
-            name: Svart
-          - type: gauge
-            entity: sensor.samsung_c430w_toner_cyan
-            min: 0
-            max: 100
-            name: Cyan
-            severity:
-              green: 20
-              yellow: 10
-              red: 0
-          - type: gauge
-            entity: sensor.samsung_c430w_toner_magenta
-            min: 0
-            max: 100
-            name: Magenta
-            severity:
-              green: 20
-              yellow: 10
-              red: 0
-          - type: gauge
-            entity: sensor.samsung_c430w_toner_yellow
-            min: 0
-            max: 100
-            name: Gul
-            severity:
-              green: 20
-              yellow: 10
-              red: 0
-      - type: horizontal-stack
-        title: Kaffebryggaren
-        cards:
-          - type: gauge
-            entity: sensor.metered_wall_plug_switch_power
-            max: 2300
-            name: ' '
-          - type: entity
-            entity: sensor.metered_wall_plug_switch_electric_consumption_kwh
-            name: Energi
-      - type: conditional
-        conditions:
-          - condition: state
-            entity: binary_sensor.wall_e_online_2
-            state: 'on'
-        card:
-          type: vertical-stack
-          title: Gräsklipparen
-          cards:
-            - image: default
-              image_size: '4'
-              show_animation: true
-              show_status: true
-              show_toolbar: true
-              type: custom:landroid-card
-              entity: lawn_mower.wall_e
-              settings:
-                - button.wall_e_restart_baseboard
-                - button.wall_e_start_cutting_edge
-                - number.wall_e_raindelay
-                - number.wall_e_time_extension
-                - number.wall_e_torque
-                - select.wall_e_current_zone
-                - switch.wall_e_party_mode_2
-              compact_view: false
-              image_left: false
-            - type: horizontal-stack
-              cards:
-                - type: entity
-                  entity: sensor.wall_e_battery_2
-                  name: ' Batteri'
-                  icon: mdi:battery-50
-                  unit: '%'
-                - type: entity
-                  entity: sensor.wall_e_blades_current_on_time_2
-                  name: Blad
-                  icon: mdi:robot-mower-outline
-                - type: tile
-                  entity: lawn_mower.wall_e
-                  features:
-                    - type: lawn-mower-commands
-                      commands:
-                        - start_pause
-                        - dock
-            - type: horizontal-stack
-              cards:
-                - type: history-graph
-                  entities:
-                    - entity: lawn_mower.wall_e
-                      name: ' '
-                  hours_to_show: 8
-            - type: horizontal-stack
-              cards:
-                - type: entities
-                  entities:
-                    - entity: sensor.wall_e_error_2
-                      secondary_info: last-changed
-                      name: Fel
-                      icon: mdi:mower-on
-                - type: entities
-                  entities:
-                    - entity: binary_sensor.wall_e_rainsensor_triggered_2
-                      secondary_info: last-changed
-                      name: Regn
-    type: masonry
-    visible: []
   - type: sections
     max_columns: 4
     icon: mdi:chart-bar
@@ -4492,4 +4035,63 @@ views:
               - entity: sensor.template_spabadet_energy_lastweek_kwh
                 name: Energi (vecka)
                 icon: mdi:lightning-bolt-outline
+      - type: grid
+        cards:
+          - type: heading
+            heading: SMA
+            heading_style: title
+            icon: mdi:transmission-tower
+          - show_name: false
+            show_icon: false
+            show_state: true
+            type: glance
+            entities:
+              - entity: sensor.chargenode_sma_current_l1
+                name: L1 [A]
+              - entity: sensor.chargenode_sma_current_l2
+                name: L2 [A]
+              - entity: sensor.chargenode_sma_current_l3
+                name: L3 [A]
+              - entity: sensor.chargenode_sma_voltage_l1
+                name: L1 [V]
+              - entity: sensor.chargenode_sma_voltage_l2
+                name: L2 [V]
+              - entity: sensor.chargenode_sma_voltage_l3
+                name: L3 [V]
+              - entity: sensor.chargenode_sma_power_l1
+                name: L1 [W]
+              - entity: sensor.chargenode_sma_power_l2
+                name: L2 [W]
+              - entity: sensor.chargenode_sma_power_l3
+                name: L3 [W]
+            columns: 3
+          - type: history-graph
+            entities:
+              - entity: sensor.chargenode_sma_current_l1
+                name: L1
+              - entity: sensor.chargenode_sma_current_l2
+                name: L2
+              - entity: sensor.chargenode_sma_current_l3
+                name: L3
+          - type: history-graph
+            entities:
+              - entity: sensor.chargenode_sma_voltage_l1
+                name: ' '
+              - entity: sensor.chargenode_sma_voltage_l2
+                name: ' '
+              - entity: sensor.chargenode_sma_voltage_l3
+                name: ' '
+            hours_to_show: 12
+          - show_name: false
+            show_icon: false
+            show_state: true
+            type: glance
+            entities:
+              - entity: sensor.chargenode_sma_current_l1
+              - entity: sensor.chargenode_sma_current_l2
+              - entity: sensor.chargenode_sma_current_l3
+              - entity: sensor.hem_gen5_electric_consumed_1
+              - entity: sensor.hem_gen5_electric_consumed_2
+              - entity: sensor.hem_gen5_electric_consumed_3
+            columns: 3
     cards: []
