@@ -990,13 +990,23 @@
   alias: Spabadet, pump and heater
   description: ''
   triggers:
-  - hours: /1
-    alias: Every hour
+  - minutes: /15
+    alias: Every 15 minutes
     trigger: time_pattern
   - alias: When hot tub temp >31°
     entity_id:
     - sensor.template_spabadet_temperature
     above: input_number.spabadet_lower_temp_limit
+    trigger: numeric_state
+  - alias: When hot tub temp exceeds weekday target
+    entity_id:
+    - sensor.template_spabadet_temperature
+    above: input_number.spabadet_target_temp_weekdays
+    trigger: numeric_state
+  - alias: When hot tub temp exceeds weekend target
+    entity_id:
+    - sensor.template_spabadet_temperature
+    above: input_number.spabadet_target_temp_weekends
     trigger: numeric_state
   - entity_id:
     - binary_sensor.template_nordpool_price_low
