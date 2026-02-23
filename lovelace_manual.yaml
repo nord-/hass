@@ -347,66 +347,23 @@ views:
               perform_action: lock.lock
               target:
                 entity_id: lock.eazy_las
-          - type: custom:mushroom-template-card
-            primary: Ladda
-            secondary: >-
-              {{states("sensor.template_rya_req_hours")|float(0)|replace(".",",")}}
-              timmar
-            icon: mdi:power-plug-battery
-            entity: automation.ladda_bilen_nar_det_ar_billigt
-            hold_action:
-              action: navigate
-              navigation_path: /lovelace/tesla
-            badge_color: >-
-              {% if states("binary_sensor.tesla_plugged_in") in [ "off",
-              "unavailable" ]%}
-
-              orange
-
-              {% else %}
-
-              green
-
-              {% endif %}
-            badge_icon: >-
-              {% if states("binary_sensor.tesla_charge_port_door_open") in [
-              "off", "unavailable" ]%}
-
-              mdi:power-plug-off
-
-              {% elif
-              state_attr("automation.ev6_reload_when_charging","current")|bool(false)
-              %}
-
-              mdi:battery-charging
-
-              {% elif states("binary_sensor.tesla_charge_port_door_open") ==
-              "on" %}
-
-              mdi:power-plug
-
-              {% endif %}
-            color: >-
-              {% if states("automation.ladda_bilen_nar_det_ar_billigt") == "off"
-              -%}
-
-              red
-
-              {%- else -%}
-
-              green
-
-              {%- endif -%}
-            features_position: bottom
-            grid_options:
-              columns: 4
-              rows: 2
-            vertical: true
-            icon_tap_action:
+          - type: custom:mushroom-entity-card
+            entity: cover.eazy_lucka_till_laddkontakt
+            name: Lucka
+            icon: mdi:ev-plug-type2
+            tap_action:
               action: perform-action
               perform_action: cover.open_cover
               target:
                 entity_id: cover.eazy_lucka_till_laddkontakt
+            hold_action:
+              action: more-info
+            double_tap_action:
+              action: none
+            grid_options:
+              columns: 4
+              rows: 2
+            layout: vertical
           - type: heading
             icon: mdi:car-hatchback
             heading: Delphine
@@ -422,10 +379,6 @@ views:
             tap_action:
               action: navigate
               navigation_path: /lovelace/tesla
-          - type: tile
-            entity: sensor.template_car_2_range
-            name: Range
-            icon: mdi:road-variant
           - type: custom:mushroom-template-card
             primary: Charge Time
             secondary: >
@@ -441,16 +394,21 @@ views:
               mdi:battery-charging
 
               {% endif %}
-            icon_color: |-
+            entity: automation.zoe_charge
+            hold_action:
+              action: navigate
+              navigation_path: /lovelace/tesla
+            color: |-
               {% if states("automation.zoe_charge") == "off" -%}
               red
               {%- else -%}
               green
               {%- endif -%}
-            entity: automation.zoe_charge
-            hold_action:
-              action: navigate
-              navigation_path: /lovelace/tesla
+            features_position: bottom
+            grid_options:
+              columns: 6
+              rows: 2
+            vertical: true
           - type: custom:mushroom-number-card
             entity: input_number.zoe_soc_upper_limit
             name: Limit
@@ -982,6 +940,10 @@ views:
               - type: entity
                 show_state: true
                 show_icon: true
+                entity: sensor.tesla_inside_temp
+              - type: entity
+                show_state: true
+                show_icon: true
                 entity: sensor.car_1_charge_period
                 icon: mdi:battery-clock
               - type: entity
@@ -1002,12 +964,6 @@ views:
             grid_options:
               rows: 1
               columns: 4
-          - type: custom:mushroom-entity-card
-            entity: sensor.tesla_ideal_battery_range
-            name: Räckvidd
-            icon: mdi:gauge
-            grid_options:
-              columns: 4
           - type: gauge
             entity: sensor.template_rya_charging_power
             name: ' '
@@ -1020,26 +976,15 @@ views:
             grid_options:
               columns: 4
               rows: 1
-          - type: tile
-            entity: sensor.tesla_charge_limit_soc
-            name: Ladda till
-            vertical: false
-            features_position: bottom
-          - type: custom:mushroom-template-card
-            primary: >-
-              {{
-              '{:,.0f}'.format((states("sensor.template_car_2_odometer")|int/10)|round(0))|replace(',','
-              ')|replace('.',',') }}
-            secondary: Körsträcka
-            icon: mdi:counter
-            entity: sensor.template_car_2_odometer
+          - type: custom:mushroom-number-card
+            entity: number.eazy_grans_for_laddning
+            primary_info: none
+            layout: vertical
             grid_options:
-              columns: 6
-              rows: 1
-            tap_action:
-              action: more-info
-            color: blue
-            features_position: bottom
+              columns: 4
+              rows: 2
+            display_mode: buttons
+            secondary_info: none
           - type: custom:mushroom-template-card
             icon: mdi:ev-station
             entity: binary_sensor.tesla_plugged_in
@@ -1079,6 +1024,56 @@ views:
               {{"green" if states("sensor.tesla_state")=="charging" else
               "grey"}}
             features_position: bottom
+          - type: custom:mushroom-template-card
+            primary: '{{states("number.eazy_grans_for_laddning")}}%'
+            features_position: bottom
+            entity: number.eazy_grans_for_laddning
+            icon: |-
+              {%if (states("number.eazy_grans_for_laddning")|int(0)<61)%}
+              mdi:battery-50
+              {%elif (states("number.eazy_grans_for_laddning")|int(0)<81)%}
+              mdi:battery-70
+              {%else%}
+              mdi:battery
+              {%endif%}
+            color: |-
+              {%if (states("number.eazy_grans_for_laddning")|int(0)<61)%}
+              yellow
+              {%elif (states("number.eazy_grans_for_laddning")|int(0)<81)%}
+              green
+              {%else%}
+              red
+              {%endif%}
+            grid_options:
+              columns: 4
+              rows: 1
+          - type: custom:mushroom-empty-card
+          - type: custom:mushroom-climate-card
+            entity: climate.eazy_klimat
+            grid_options:
+              columns: 6
+              rows: 2
+            show_temperature_control: true
+          - type: custom:mushroom-template-card
+            icon: mdi:update
+            secondary: >-
+              {{states.sensor.tesla_battery_level.last_updated | as_timestamp |
+              timestamp_custom("%H:%M")}}
+            tap_action:
+              action: more-info
+            hold_action:
+              action: none
+            double_tap_action:
+              action: none
+            badge_icon: ''
+            badge_color: ''
+            grid_options:
+              columns: 6
+              rows: 1
+            primary: Uppdaterad
+            entity: sensor.tesla_since
+            color: blue
+            features_position: bottom
           - type: entities
             entities:
               - entity: input_datetime.rya_before
@@ -1116,68 +1111,11 @@ views:
                       }
             show_header_toggle: false
             grid_options:
-              columns: 8
+              columns: 12
               rows: 1
             card_mod:
               style: |
                 div.card-content { padding: 8px 4px; }
-          - type: custom:mushroom-template-card
-            icon: mdi:update
-            secondary: >-
-              {{states.sensor.tesla_battery_level.last_updated | as_timestamp |
-              timestamp_custom("%H:%M")}}
-            tap_action:
-              action: more-info
-            hold_action:
-              action: none
-            icon_color: blue
-            double_tap_action:
-              action: none
-            badge_icon: ''
-            badge_color: ''
-            grid_options:
-              columns: 6
-              rows: 1
-            primary: Uppdaterad
-            entity: sensor.tesla_since
-          - type: custom:collapsable-cards
-            title: Schemalagt
-            cards:
-              - type: entities
-                entities:
-                  - entity: input_number.car_1_energy_kwh
-                    name: kWh
-                  - entity: input_datetime.car_1_time
-                    name: kl.
-                    icon: mdi:clock-outline
-                  - type: divider
-                  - entity: automation.ladda_azarel_pa_klocka
-                    name: Starta på kl.
-                    icon: mdi:car-clock
-          - type: custom:mushroom-entity-card
-            entity: sensor.tesla_inside_temp
-            name: Inne
-            grid_options:
-              columns: 4
-              rows: 1
-          - type: custom:mushroom-entity-card
-            entity: sensor.tesla_outside_temp
-            name: Ute
-            grid_options:
-              columns: 4
-              rows: 1
-          - type: custom:mushroom-template-card
-            icon: mdi:air-conditioner
-            features_position: bottom
-            entity: binary_sensor.tesla_is_climate_on
-            primary: '{{ states(''binary_sensor.tesla_is_climate_on'') }}'
-            color: >
-              {{ 'orange' if is_state('binary_sensor.tesla_is_climate_on', 'on')
-              else 'grey' }}
-            secondary: HVAC
-            grid_options:
-              columns: 4
-              rows: 1
       - type: grid
         cards:
           - type: heading
@@ -1210,14 +1148,6 @@ views:
             grid_options:
               columns: 4
               rows: 1
-          - type: custom:mushroom-entity-card
-            entity: sensor.template_car_2_range
-            icon: mdi:road-variant
-            tap_action:
-              action: more-info
-            name: Räckvidd
-            grid_options:
-              columns: 4
           - type: gauge
             entity: sensor.template_zoe_charging_power
             name: ' '
@@ -1237,6 +1167,9 @@ views:
             grid_options:
               columns: 4
               rows: 2
+            icon: mdi:battery-medium
+            primary_info: none
+            secondary_info: none
           - type: custom:mushroom-template-card
             icon: mdi:ev-station
             entity: automation.zoe_charge
@@ -1336,22 +1269,11 @@ views:
                       }
             show_header_toggle: false
             grid_options:
-              columns: 8
+              columns: 12
               rows: 1
             card_mod:
               style: |
                 div.card-content { padding: 8px 4px; }
-          - type: custom:collapsable-cards
-            title: Schemalagt
-            cards:
-              - type: entities
-                entities:
-                  - entity: automation.ladda_zoe_pa_tid
-                    icon: mdi:car-clock
-                    name: Ladda
-                  - entity: input_datetime.zoe_hour
-                    name: Klockan
-                    icon: mdi:clock-outline
       - type: grid
         cards:
           - type: heading
@@ -1370,6 +1292,45 @@ views:
               columns: 6
               rows: auto
             title: Delphine
+      - type: grid
+        cards:
+          - type: heading
+            heading_style: title
+            heading: Schemalagd laddning
+            icon: mdi:car-clock
+            badges:
+              - type: entity
+                show_state: true
+                show_icon: true
+                entity: input_datetime.car_1_time
+          - type: entities
+            entities:
+              - entity: input_number.car_1_energy_kwh
+                name: kWh
+              - entity: input_datetime.car_1_time
+                name: kl.
+                icon: mdi:clock-outline
+              - type: divider
+              - entity: automation.ladda_azarel_pa_klocka
+                name: Starta på kl.
+                icon: mdi:car-clock
+          - type: heading
+            icon: mdi:car-hatchback
+            heading_style: subtitle
+            heading: 'Delphine '
+            badges:
+              - type: entity
+                show_state: true
+                show_icon: true
+                entity: input_datetime.zoe_hour
+          - type: entities
+            entities:
+              - entity: automation.ladda_zoe_pa_tid
+                icon: mdi:car-clock
+                name: Ladda
+              - entity: input_datetime.zoe_hour
+                name: Klockan
+                icon: mdi:clock-outline
     cards: []
   - icon: mdi:cash-multiple
     type: sections
@@ -2939,6 +2900,9 @@ views:
               {%else%}
               mdi:thermometer-high
               {%endif%}
+            grid_options:
+              columns: 4
+              rows: 1
       - type: grid
         cards:
           - type: heading
@@ -3180,6 +3144,8 @@ views:
                 show_icon: true
                 entity: sensor.igrill_battery
                 icon: mdi:battery-outline
+                tap_action:
+                  action: more-info
           - type: history-graph
             entities:
               - entity: sensor.igrill_probe_1
@@ -3840,24 +3806,20 @@ views:
             vertical: false
             name: S24 Batteri
           - type: tile
-            entity: sensor.sm_p610_batteriniva
-            features_position: bottom
+            entity: sensor.sm_x135f_battery_level
+            name: A11
             vertical: false
-            name: S6 Lite
+            features_position: bottom
           - type: tile
             entity: sensor.galaxy_watch6_battery_level
             features_position: bottom
             vertical: false
             name: Watch6
-          - type: tile
-            entity: sensor.le2123_battery_level
-            features_position: bottom
-            vertical: false
-            name: OP9 Batteri
-            visibility:
-              - condition: numeric_state
-                entity: sensor.le2123_battery_level
-                above: 100
+          - type: map
+            entities:
+              - entity: person.rickard_nord
+            theme_mode: auto
+            default_zoom: 12
       - type: grid
         cards:
           - type: heading
@@ -3876,6 +3838,11 @@ views:
             features_position: bottom
             vertical: false
             name: S20FE Batteri
+          - type: map
+            entities:
+              - entity: person.frida
+            theme_mode: auto
+            default_zoom: 12
       - type: grid
         cards:
           - type: heading
@@ -3889,10 +3856,15 @@ views:
                 tap_action:
                   action: more-info
           - type: tile
-            entity: sensor.sm_g960f_batteriniva_2
+            entity: sensor.le2123_battery_level
             features_position: bottom
             vertical: false
-            name: S9 Batteri
+            name: OP9 Batteri
+          - type: map
+            entities:
+              - entity: person.felix
+            theme_mode: auto
+            default_zoom: 12
   - type: sections
     max_columns: 4
     icon: mdi:chart-bar
