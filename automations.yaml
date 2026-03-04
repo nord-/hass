@@ -2191,13 +2191,8 @@
   description: ''
   triggers:
   - trigger: time
-    at: 03:00:00
-    alias: Trigger at 03:00
-  conditions:
-  - condition: template
-    value_template: '{{ now().date() >= (states(''input_datetime.let_s_encrypt_renewal_date'')|as_datetime).date()
-      }}'
-    alias: If Today >= input_datetime.let_s_encrypt_renewal_date
+    at: input_datetime.let_s_encrypt_renewal_date
+    alias: Trigger on renewal date
   actions:
   - alias: Renew Let's Encrypt certificate
     action: hassio.addon_start
@@ -2215,7 +2210,7 @@
   - target:
       entity_id: input_datetime.let_s_encrypt_renewal_date
     data:
-      date: '{{ (now() + timedelta(days=62)).date() }}'
+      datetime: '{{ (now() + timedelta(days=62)).replace(hour=3, minute=0, second=0).strftime(''%Y-%m-%d %H:%M:%S'') }}'
     action: input_datetime.set_datetime
     alias: Set next renewal date
   mode: single
