@@ -23,3 +23,4 @@ blueprints
 
 .claude/settings.local.json
 .ha_run.lock
+.HA_VERSION

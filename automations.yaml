@@ -601,7 +601,7 @@
   triggers:
   - entity_id:
     - sensor.clever_spz3_electric_consumption_w
-    above: 2
+    above: 3
     trigger: numeric_state
   conditions: []
   actions:
@@ -2363,6 +2363,7 @@
         channel: Alarm
         priority: high
         clickAction: /lovelace/9
+        tag: bydpi_offline
     action: notify.rickards_devices
   mode: single
 - id: '1770658598483'
@@ -2395,4 +2396,22 @@
       entity_id:
       - automation.zoe_charge
     action: automation.turn_on
+  mode: single
+- id: '1771954666706'
+  alias: 'ALARM: bydpi online '
+  description: ''
+  triggers:
+  - entity_id:
+    - binary_sensor.byd_monitor_pi_online
+    to:
+    - 'on'
+    trigger: state
+  conditions: []
+  actions:
+  - alias: Clear notification
+    data:
+      data:
+        tag: bydpi_offline
+      message: clear_notification
+    action: notify.rickards_devices
   mode: single
