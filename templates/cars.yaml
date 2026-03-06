@@ -196,7 +196,7 @@
         {% set other_start = other_state|as_datetime if other_state not in ['unavailable','unknown'] and other_dur > 0 else none %}
         {% set other_end = other_start + timedelta(hours=other_dur) if other_start else none %}
         {% set best = namespace(start=none, cost=999999) %}
-        {% set cutoff = now() - timedelta(minutes=55) %}
+        {% set cutoff = now() - timedelta(hours=entry_hours) + timedelta(minutes=5) %}
         {% for i in range(prices|length) %}
           {% set p = prices[i] %}
           {% if p.start >= cutoff and p.start < before %}
@@ -247,7 +247,7 @@
           {% set other_start = other_state|as_datetime if other_state not in ['unavailable','unknown'] and other_dur > 0 else none %}
           {% set other_end = other_start + timedelta(hours=other_dur) if other_start else none %}
           {% set candidates = namespace(value=[]) %}
-          {% set cutoff = now() - timedelta(minutes=55) %}
+          {% set cutoff = now() - timedelta(hours=entry_hours) + timedelta(minutes=5) %}
           {% for i in range(prices|length) %}
             {% set p = prices[i] %}
             {% if p.start >= cutoff and p.start < before %}
@@ -317,7 +317,7 @@
         {% set other_start = other_state|as_datetime if other_state not in ['unavailable','unknown'] and other_dur > 0 else none %}
         {% set other_end = other_start + timedelta(hours=other_dur) if other_start else none %}
         {% set best = namespace(start=none, cost=999999) %}
-        {% set cutoff = now() - timedelta(minutes=55) %}
+        {% set cutoff = now() - timedelta(hours=entry_hours) + timedelta(minutes=5) %}
         {% for i in range(prices|length) %}
           {% set p = prices[i] %}
           {% if p.start >= cutoff and p.start < before %}
@@ -368,7 +368,7 @@
           {% set other_start = other_state|as_datetime if other_state not in ['unavailable','unknown'] and other_dur > 0 else none %}
           {% set other_end = other_start + timedelta(hours=other_dur) if other_start else none %}
           {% set candidates = namespace(value=[]) %}
-          {% set cutoff = now() - timedelta(minutes=55) %}
+          {% set cutoff = now() - timedelta(hours=entry_hours) + timedelta(minutes=5) %}
           {% for i in range(prices|length) %}
             {% set p = prices[i] %}
             {% if p.start >= cutoff and p.start < before %}
