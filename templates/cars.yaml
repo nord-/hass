@@ -213,7 +213,7 @@
                 {% endif %}
               {% endif %}
             {% endfor %}
-            {% if acc.end is not none and acc.end <= before and acc.cost|round(0) < best.cost|round(0) %}
+            {% if acc.end is not none and acc.end <= before and acc.cost|round(2) < best.cost|round(2) %}
               {% set best.start = p.start %}
               {% set best.cost = acc.cost %}
             {% endif %}
@@ -334,7 +334,7 @@
                 {% endif %}
               {% endif %}
             {% endfor %}
-            {% if acc.end is not none and acc.end <= before and acc.cost|round(0) < best.cost|round(0) %}
+            {% if acc.end is not none and acc.end <= before and acc.cost|round(2) < best.cost|round(2) %}
               {% set best.start = p.start %}
               {% set best.cost = acc.cost %}
             {% endif %}
