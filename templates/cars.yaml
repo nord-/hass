@@ -195,27 +195,33 @@
         {% set other_dur = states('sensor.template_rya_req_hours')|float(0) if is_state('automation.ladda_bilen_nar_det_ar_billigt','on') else 0 %}
         {% set other_start = other_state|as_datetime if other_state not in ['unavailable','unknown'] and other_dur > 0 else none %}
         {% set other_end = other_start + timedelta(hours=other_dur) if other_start else none %}
+        {% set fees = states('sensor.template_fees_ex_vat')|float(0) %}
+        {% set power = states('sensor.template_car_2_season_power')|float(1) %}
         {% set best = namespace(start=none, cost=999999) %}
         {% set cutoff = now() - timedelta(hours=entry_hours) + timedelta(minutes=5) %}
         {% for i in range(prices|length) %}
           {% set p = prices[i] %}
           {% if p.start >= cutoff and p.start < before %}
-            {% set acc = namespace(eff=0.0, cost=0.0, end=none) %}
+            {% set acc = namespace(eff=0.0, price_sum=0.0, entries=0, end=none) %}
             {% for j in range(i, prices|length) %}
               {% if acc.end is none %}
                 {% set q = prices[j] %}
                 {% set overlaps = other_start is not none and q.start >= other_start and q.start < other_end %}
                 {% set f = 0.5 if overlaps else 1.0 %}
                 {% set acc.eff = acc.eff + entry_hours * f %}
-                {% set acc.cost = acc.cost + q.value * entry_hours * f %}
+                {% set acc.price_sum = acc.price_sum + (q.value + fees) * 1.25 %}
+                {% set acc.entries = acc.entries + 1 %}
                 {% if acc.eff >= duration %}
                   {% set acc.end = q.start + timedelta(hours=entry_hours) %}
                 {% endif %}
               {% endif %}
             {% endfor %}
-            {% if acc.end is not none and acc.end <= before and acc.cost|round(2) < best.cost|round(2) %}
-              {% set best.start = p.start %}
-              {% set best.cost = acc.cost %}
+            {% if acc.end is not none and acc.end <= before %}
+              {% set total_cost = (acc.price_sum / acc.entries * duration * power)|round(0) %}
+              {% if total_cost < best.cost %}
+                {% set best.start = p.start %}
+                {% set best.cost = total_cost %}
+              {% endif %}
             {% endif %}
           {% endif %}
         {% endfor %}
@@ -316,27 +322,33 @@
         {% set other_dur = states('sensor.template_zoe_req_hours')|float(0) if is_state('automation.zoe_charge','on') else 0 %}
         {% set other_start = other_state|as_datetime if other_state not in ['unavailable','unknown'] and other_dur > 0 else none %}
         {% set other_end = other_start + timedelta(hours=other_dur) if other_start else none %}
+        {% set fees = states('sensor.template_fees_ex_vat')|float(0) %}
+        {% set power = states('sensor.template_car_1_season_power')|float(1) %}
         {% set best = namespace(start=none, cost=999999) %}
         {% set cutoff = now() - timedelta(hours=entry_hours) + timedelta(minutes=5) %}
         {% for i in range(prices|length) %}
           {% set p = prices[i] %}
           {% if p.start >= cutoff and p.start < before %}
-            {% set acc = namespace(eff=0.0, cost=0.0, end=none) %}
+            {% set acc = namespace(eff=0.0, price_sum=0.0, entries=0, end=none) %}
             {% for j in range(i, prices|length) %}
               {% if acc.end is none %}
                 {% set q = prices[j] %}
                 {% set overlaps = other_start is not none and q.start >= other_start and q.start < other_end %}
                 {% set f = 0.5 if overlaps else 1.0 %}
                 {% set acc.eff = acc.eff + entry_hours * f %}
-                {% set acc.cost = acc.cost + q.value * entry_hours * f %}
+                {% set acc.price_sum = acc.price_sum + (q.value + fees) * 1.25 %}
+                {% set acc.entries = acc.entries + 1 %}
                 {% if acc.eff >= duration %}
                   {% set acc.end = q.start + timedelta(hours=entry_hours) %}
                 {% endif %}
               {% endif %}
             {% endfor %}
-            {% if acc.end is not none and acc.end <= before and acc.cost|round(2) < best.cost|round(2) %}
-              {% set best.start = p.start %}
-              {% set best.cost = acc.cost %}
+            {% if acc.end is not none and acc.end <= before %}
+              {% set total_cost = (acc.price_sum / acc.entries * duration * power)|round(0) %}
+              {% if total_cost < best.cost %}
+                {% set best.start = p.start %}
+                {% set best.cost = total_cost %}
+              {% endif %}
             {% endif %}
           {% endif %}
         {% endfor %}
