@@ -117,7 +117,7 @@ views:
               navigation_path: /lovelace/koket
           - type: custom:mushroom-template-card
             icon: mdi:dishwasher
-            entity: automation.diskmaskinen_starta_pa_klocka
+            entity: input_boolean.diskmaskinen_smart_start
             secondary: |-
               {% if states("sensor.peaqnext_dishwasher")=="unknown" -%}
                 --:--
@@ -132,7 +132,7 @@ views:
               green
               {%endif%}
             badge_color: |-
-              {%if states('automation.diskmaskinen_starta_pa_klocka') == 'on' %}
+              {%if is_state('input_boolean.diskmaskinen_smart_start', 'on') %}
               green
               {%endif%}
             hold_action:
@@ -144,7 +144,7 @@ views:
                 entity_id: switch.clever_spz3
           - type: custom:mushroom-template-card
             icon: mdi:washing-machine
-            entity: automation.tvattmaskinen_starta_pa_klockslag
+            entity: input_boolean.tvattmaskinen_smart_start
             secondary: >-
               {% if states("sensor.peaqnext_washing_machine")=="unknown" -%}
 
@@ -152,26 +152,23 @@ views:
 
               {%- else-%}
 
-              {{states("sensor.peaqnext_washing_machine") |     
+              {{states("sensor.peaqnext_washing_machine") |
               regex_replace('(>>)*(\d{2}:\d{2}).*', '\\2')}}
 
               {%- endif %}
 
               •
 
-              {{states("sensor.peaqnext_washing_machine") |     
+              {{states("sensor.peaqnext_washing_machine") |
               regex_replace('^(.*)(\d+\.\d+)(.*)','\\2') | replace('.',',')}} kr
             badge_icon: mdi:robot
             icon_color: |-
               {%if states('switch.clever_spz2') == 'on' %}
               green
               {%endif%}
-            badge_color: >-
-              {%if states('automation.tvattmaskinen_starta_pa_klockslag') ==
-              'on' %}
-
+            badge_color: |-
+              {%if is_state('input_boolean.tvattmaskinen_smart_start', 'on') %}
               green
-
               {%endif%}
             hold_action:
               action: toggle
@@ -647,12 +644,12 @@ views:
                             orange
                           {%endif%}
                       - type: template
-                        entity: automation.diskmaskinen_starta_pa_klocka
+                        entity: input_boolean.diskmaskinen_smart_start
                         icon: mdi:dishwasher
                         icon_color: >-
                           {%if
-                          states('automation.diskmaskinen_starta_pa_klocka') ==
-                          'on' %}
+                          is_state('input_boolean.diskmaskinen_smart_start',
+                          'on') %}
                             green
                           {%endif%}
                         tap_action:
@@ -2990,7 +2987,7 @@ views:
                   action: more-info
           - type: custom:mushroom-template-card
             icon: mdi:dishwasher
-            entity: automation.diskmaskinen_starta_pa_klocka
+            entity: input_boolean.diskmaskinen_smart_start
             secondary: |-
               {% if states("sensor.peaqnext_dishwasher")=="unknown" -%}
                 --:--
@@ -3005,7 +3002,7 @@ views:
               green
               {%endif%}
             badge_color: |-
-              {%if states('automation.diskmaskinen_starta_pa_klocka') == 'on' %}
+              {%if is_state('input_boolean.diskmaskinen_smart_start', 'on') %}
               green
               {%endif%}
             hold_action:
@@ -3066,7 +3063,7 @@ views:
                   action: more-info
           - type: custom:mushroom-template-card
             icon: mdi:washing-machine
-            entity: automation.tvattmaskinen_starta_pa_klockslag
+            entity: input_boolean.tvattmaskinen_smart_start
             secondary: >-
               {% if states("sensor.peaqnext_washing_machine")=="unknown" -%}
 
@@ -3074,26 +3071,23 @@ views:
 
               {%- else-%}
 
-              {{states("sensor.peaqnext_washing_machine") |     
+              {{states("sensor.peaqnext_washing_machine") |
               regex_replace('(>>)*(\d{2}:\d{2}).*', '\\2')}}
 
               {%- endif %}
 
               •
 
-              {{states("sensor.peaqnext_washing_machine") |     
+              {{states("sensor.peaqnext_washing_machine") |
               regex_replace('^(.*)(\d+\.\d+)(.*)','\\2') | replace('.',',')}} kr
             badge_icon: mdi:robot
             icon_color: |-
               {%if states('switch.clever_spz2') == 'on' %}
               green
               {%endif%}
-            badge_color: >-
-              {%if states('automation.tvattmaskinen_starta_pa_klockslag') ==
-              'on' %}
-
+            badge_color: |-
+              {%if is_state('input_boolean.tvattmaskinen_smart_start', 'on') %}
               green
-
               {%endif%}
             hold_action:
               action: toggle
