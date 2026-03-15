@@ -21,6 +21,9 @@ google_service_account.json
 custom_components
 blueprints
 
+.cache/
+__pycache__/
+
 .claude/settings.local.json
 .ha_run.lock
 .HA_VERSION

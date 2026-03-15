@@ -596,7 +596,7 @@
     action: switch.turn_on
   mode: single
 - id: '1662572482443'
-  alias: Diskmaskinen, starta på klocka
+  alias: Diskmaskinen, smart styrning
   description: ''
   triggers:
   - entity_id:
@@ -606,15 +606,17 @@
   conditions: []
   actions:
   - variables:
-      smart_start: "{{ is_state('input_boolean.diskmaskinen_smart_start', 'on') }}"
+      smart_start: '{{ is_state(''input_boolean.diskmaskinen_smart_start'', ''on'')
+        }}'
       start_time: '{{state_attr(''sensor.peaqnext_dishwasher'',''raw_start'')|as_datetime|as_local}}'
-      start_now: "{{ not smart_start or (state_attr('sensor.peaqnext_dishwasher','raw_start')|as_datetime|as_local < (now()+timedelta(minutes=15))) }}"
+      start_now: '{{ not smart_start or (state_attr(''sensor.peaqnext_dishwasher'',''raw_start'')|as_datetime|as_local
+        < (now()+timedelta(minutes=15))) }}'
       dish_cost: '{{ states(''sensor.diskmaskinen_kr'')|float }}'
       action_runnow: '{{ ''RUNNOW_'' ~ context.id }}'
   - alias: Smart scheduling
     if:
     - condition: template
-      value_template: "{{ smart_start and not start_now }}"
+      value_template: '{{ smart_start and not start_now }}'
     then:
     - data:
         title: Diskmaskinen
@@ -626,7 +628,8 @@
           - action: '{{ action_runnow }}'
             title: Starta direkt
           clickAction: /lovelace/koket
-        message: "Diskmaskinen startar {{ state_attr('sensor.peaqnext_dishwasher','raw_start')|as_timestamp|timestamp_custom('%H:%M') }}."
+        message: Diskmaskinen startar {{ state_attr('sensor.peaqnext_dishwasher','raw_start')|as_timestamp|timestamp_custom('%H:%M')
+          }}.
       alias: Notify scheduled start time
       action: notify.rickards_devices
     - delay:
@@ -680,12 +683,13 @@
         tag: dishwasher
         channel: Food
         clickAction: /lovelace/koket
-      message: "Diskmaskinen färdig\u2026\\n {{now().strftime('%H:%M')}} \u2022 {{(states('sensor.diskmaskinen_kr')|float - dish_cost|float)|round(2)}} kr"
+      message: Diskmaskinen färdig…\n {{now().strftime('%H:%M')}} • {{(states('sensor.diskmaskinen_kr')|float
+        - dish_cost|float)|round(2)}} kr
     action: notify.rickards_devices
     alias: Notify Finished
   mode: single
 - id: '1663015641931'
-  alias: Tvättmaskinen, starta på klockslag
+  alias: Tvättmaskinen, smart styrning
   description: ''
   triggers:
   - trigger: numeric_state
@@ -696,14 +700,16 @@
   conditions: []
   actions:
   - variables:
-      smart_start: "{{ is_state('input_boolean.tvattmaskinen_smart_start', 'on') }}"
+      smart_start: '{{ is_state(''input_boolean.tvattmaskinen_smart_start'', ''on'')
+        }}'
       start_time: '{{state_attr(''sensor.peaqnext_washing_machine'',''raw_start'')|as_datetime|as_local}}'
-      start_now: "{{ not smart_start or (state_attr('sensor.peaqnext_washing_machine','raw_start')|as_datetime|as_local < (now()+timedelta(minutes=15))) }}"
+      start_now: '{{ not smart_start or (state_attr(''sensor.peaqnext_washing_machine'',''raw_start'')|as_datetime|as_local
+        < (now()+timedelta(minutes=15))) }}'
       wash_cost: '{{ states(''sensor.tvattmaskinen_kostnad'')|float }}'
   - alias: Smart scheduling
     if:
     - condition: template
-      value_template: "{{ smart_start and not start_now }}"
+      value_template: '{{ smart_start and not start_now }}'
     then:
     - data:
         title: Tvättmaskinen
@@ -712,7 +718,8 @@
           channel: Food
           sticky: true
           clickAction: /lovelace/koket
-        message: "Tvättmaskinen startar {{ state_attr('sensor.peaqnext_washing_machine','raw_start')|as_timestamp|timestamp_custom('%H:%M') }}."
+        message: Tvättmaskinen startar {{ state_attr('sensor.peaqnext_washing_machine','raw_start')|as_timestamp|timestamp_custom('%H:%M')
+          }}.
       alias: Notify scheduled start time
       action: notify.rickards_devices
     - action: switch.turn_off
@@ -755,7 +762,8 @@
         tag: washing
         channel: Food
         clickAction: /lovelace/koket
-      message: "Tvättmaskinen färdig\u2026\\n {{now().strftime('%H:%M')}} \u2022 {{(states('sensor.tvattmaskinen_kostnad')|float - wash_cost|float)|round(2)}} kr"
+      message: Tvättmaskinen färdig…\n {{now().strftime('%H:%M')}} • {{(states('sensor.tvattmaskinen_kostnad')|float
+        - wash_cost|float)|round(2)}} kr
     alias: Notify Finished
   mode: single
 - id: '1663105406145'
@@ -2174,7 +2182,8 @@
   - target:
       entity_id: input_datetime.let_s_encrypt_renewal_date
     data:
-      datetime: '{{ (now() + timedelta(days=62)).replace(hour=3, minute=0, second=0).strftime(''%Y-%m-%d %H:%M:%S'') }}'
+      datetime: '{{ (now() + timedelta(days=62)).replace(hour=3, minute=0, second=0).strftime(''%Y-%m-%d
+        %H:%M:%S'') }}'
     action: input_datetime.set_datetime
     alias: Set next renewal date
   mode: single
