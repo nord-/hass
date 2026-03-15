@@ -606,74 +606,53 @@
   conditions: []
   actions:
   - variables:
+      smart_start: "{{ is_state('input_boolean.diskmaskinen_smart_start', 'on') }}"
       start_time: '{{state_attr(''sensor.peaqnext_dishwasher'',''raw_start'')|as_datetime|as_local}}'
-      start_now: '{{state_attr(''sensor.peaqnext_dishwasher'',''raw_start'')|as_datetime|as_local
-        < (now()+timedelta(minutes=15)) }}'
+      start_now: "{{ not smart_start or (state_attr('sensor.peaqnext_dishwasher','raw_start')|as_datetime|as_local < (now()+timedelta(minutes=15))) }}"
       dish_cost: '{{ states(''sensor.diskmaskinen_kr'')|float }}'
       action_runnow: '{{ ''RUNNOW_'' ~ context.id }}'
-      current_current:
-        '[object Object]':
-  - data:
-      title: Diskmaskinen
-      data:
-        tag: dishwasher
-        channel: Food
-        sticky: true
-        actions:
-        - action: '{{ action_runnow }}'
-          title: Starta direkt
-        clickAction: /lovelace/koket
-      message: Diskmaskinen startar {{'nu' if start_now else state_attr('sensor.peaqnext_dishwasher','raw_start')|as_timestamp|timestamp_custom('%H:%M')}}.
-    alias: Notify start time
-    action: notify.rickards_devices
-  - delay:
-      hours: 0
-      minutes: 0
-      seconds: 5
-      milliseconds: 0
-  - alias: Turn off dishwasher if NOT start now
+  - alias: Smart scheduling
     if:
-    - condition: not
-      conditions:
-      - condition: template
-        value_template: '{{start_now}}'
-        alias: start now
+    - condition: template
+      value_template: "{{ smart_start and not start_now }}"
     then:
+    - data:
+        title: Diskmaskinen
+        data:
+          tag: dishwasher
+          channel: Food
+          sticky: true
+          actions:
+          - action: '{{ action_runnow }}'
+            title: Starta direkt
+          clickAction: /lovelace/koket
+        message: "Diskmaskinen startar {{ state_attr('sensor.peaqnext_dishwasher','raw_start')|as_timestamp|timestamp_custom('%H:%M') }}."
+      alias: Notify scheduled start time
+      action: notify.rickards_devices
+    - delay:
+        seconds: 5
     - action: switch.turn_off
       target:
         entity_id: switch.clever_spz3
       data: {}
-  - alias: Write to Logbook
-    metadata: {}
-    data:
-      name: 30Pqy9tk9Euf9YnbSg8WVh
-      message: 'electric_consumption_w: {{ states(''sensor.clever_spz3_electric_consumption_w'')|float(0)
-        }}
-
-        start_time: {{start_time}} ({{start_time|as_timestamp}})
-
-        now: {{now()}} ({{now()|as_timestamp}})
-
-        condition: {{ start_time|as_datetime <= now() }}'
-    action: logbook.log
-  - wait_for_trigger:
-    - event_type: mobile_app_notification_action
-      event_data:
-        action: '{{ action_runnow }}'
-      id: runnow_id
-      trigger: event
-      alias: Start now
-    - alias: 'Wait until time '
-      value_template: '{{ start_time|as_datetime <= now() }}'
-      trigger: template
-    - alias: Start now time
-      value_template: '{{ start_now }}'
-      trigger: template
-    - trigger: state
-      entity_id:
-      - switch.clever_spz3
-      to:
-      - 'on'
+    - wait_for_trigger:
+      - event_type: mobile_app_notification_action
+        event_data:
+          action: '{{ action_runnow }}'
+        trigger: event
+        alias: Start now
+      - alias: Wait until time
+        value_template: '{{ start_time|as_datetime <= now() }}'
+        trigger: template
+      - trigger: state
+        entity_id:
+        - switch.clever_spz3
+        to:
+        - 'on'
+    - action: switch.turn_on
+      target:
+        entity_id: switch.clever_spz3
+      data: {}
   - alias: Notify Starting Now
     data:
       title: Diskmaskinen
@@ -684,11 +663,6 @@
         clickAction: /lovelace/koket
       message: Diskmaskinen startar
     action: notify.rickards_devices
-  - data: {}
-    target:
-      entity_id: switch.clever_spz3
-    enabled: true
-    action: switch.turn_on
   - alias: Wait for Dishwasher to stop draw current
     wait_for_trigger:
     - entity_id:
@@ -706,8 +680,7 @@
         tag: dishwasher
         channel: Food
         clickAction: /lovelace/koket
-      message: Diskmaskinen färdig…\n {{now().strftime('%H:%M')}} • {{(states('sensor.diskmaskinen_kr')|float
-        - dish_cost|float)|round(2)}} kr
+      message: "Diskmaskinen färdig\u2026\\n {{now().strftime('%H:%M')}} \u2022 {{(states('sensor.diskmaskinen_kr')|float - dish_cost|float)|round(2)}} kr"
     action: notify.rickards_devices
     alias: Notify Finished
   mode: single
@@ -723,40 +696,28 @@
   conditions: []
   actions:
   - variables:
+      smart_start: "{{ is_state('input_boolean.tvattmaskinen_smart_start', 'on') }}"
       start_time: '{{state_attr(''sensor.peaqnext_washing_machine'',''raw_start'')|as_datetime|as_local}}'
-      start_now: '{{state_attr(''sensor.peaqnext_washing_machine'',''raw_start'')|as_datetime|as_local
-        < (now()+timedelta(minutes=15)) }}'
+      start_now: "{{ not smart_start or (state_attr('sensor.peaqnext_washing_machine','raw_start')|as_datetime|as_local < (now()+timedelta(minutes=15))) }}"
       wash_cost: '{{ states(''sensor.tvattmaskinen_kostnad'')|float }}'
-    enabled: true
-  - data:
-      title: Tvättmaskinen
-      data:
-        tag: washing
-        channel: Food
-        sticky: true
-        clickAction: /lovelace/koket
-      message: Tvättmaskinen startar {{'nu' if start_now else state_attr('sensor.peaqnext_washing_machine','raw_start')|as_timestamp|timestamp_custom('%H:%M')}}.
-    alias: Notify start time
-    action: notify.rickards_devices
-    enabled: true
-  - action: logbook.log
-    data:
-      name: 28Pqy9tk9Euf9YnbSg8WVk
-      message: 'start_time: {{start_time}} ({{start_time|as_timestamp}})
-
-        now: {{now()}} ({{now()|as_timestamp}})
-
-        condition: {{ start_time|as_datetime <= now() }}'
-    alias: Write start_time to Logbook
-  - alias: If Start Later stop and wait
+  - alias: Smart scheduling
     if:
-    - alias: If start in the future
-      condition: template
-      value_template: '{{ not(start_now) }}'
+    - condition: template
+      value_template: "{{ smart_start and not start_now }}"
     then:
-    - target:
+    - data:
+        title: Tvättmaskinen
+        data:
+          tag: washing
+          channel: Food
+          sticky: true
+          clickAction: /lovelace/koket
+        message: "Tvättmaskinen startar {{ state_attr('sensor.peaqnext_washing_machine','raw_start')|as_timestamp|timestamp_custom('%H:%M') }}."
+      alias: Notify scheduled start time
+      action: notify.rickards_devices
+    - action: switch.turn_off
+      target:
         entity_id: switch.clever_spz2
-      action: switch.turn_off
       alias: Turn off washing machine
       data: {}
     - wait_for_trigger:
@@ -768,11 +729,21 @@
         - sensor.clever_spz2_electric_consumption_w_2
         trigger: numeric_state
         above: 10
-    - target:
+    - action: switch.turn_on
+      target:
         entity_id: switch.clever_spz2
-      action: switch.turn_on
       alias: Turn on washing machine
       data: {}
+  - alias: Notify Starting Now
+    action: notify.rickards_devices
+    data:
+      title: Tvättmaskinen
+      data:
+        tag: washing
+        channel: Food
+        sticky: true
+        clickAction: /lovelace/koket
+      message: Tvättmaskinen startar
   - wait_for_trigger:
     - entity_id: sensor.clever_spz2_electric_consumption_w_2
       below: 5
@@ -784,15 +755,8 @@
         tag: washing
         channel: Food
         clickAction: /lovelace/koket
-      message: Tvättmaskinen färdig…\n {{now().strftime('%H:%M')}} • {{(states('sensor.tvattmaskinen_kostnad')|float
-        - wash_cost|float)|round(2)}} kr
+      message: "Tvättmaskinen färdig\u2026\\n {{now().strftime('%H:%M')}} \u2022 {{(states('sensor.tvattmaskinen_kostnad')|float - wash_cost|float)|round(2)}} kr"
     alias: Notify Finished
-  - data:
-      stop_actions: false
-    target:
-      entity_id: automation.tvattmaskinen_starta_pa_klockslag
-    action: automation.turn_off
-    enabled: false
   mode: single
 - id: '1663105406145'
   alias: Spelrummet, LED

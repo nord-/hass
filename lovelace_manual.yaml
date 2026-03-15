@@ -117,7 +117,7 @@ views:
               navigation_path: /lovelace/koket
           - type: custom:mushroom-template-card
             icon: mdi:dishwasher
-            entity: automation.diskmaskinen_starta_pa_klocka
+            entity: input_boolean.diskmaskinen_smart_start
             secondary: |-
               {% if states("sensor.peaqnext_dishwasher")=="unknown" -%}
                 --:--
@@ -132,7 +132,7 @@ views:
               green
               {%endif%}
             badge_color: |-
-              {%if states('automation.diskmaskinen_starta_pa_klocka') == 'on' %}
+              {%if is_state('input_boolean.diskmaskinen_smart_start', 'on') %}
               green
               {%endif%}
             hold_action:
@@ -144,7 +144,7 @@ views:
                 entity_id: switch.clever_spz3
           - type: custom:mushroom-template-card
             icon: mdi:washing-machine
-            entity: automation.tvattmaskinen_starta_pa_klockslag
+            entity: input_boolean.tvattmaskinen_smart_start
             secondary: >-
               {% if states("sensor.peaqnext_washing_machine")=="unknown" -%}
 
@@ -152,26 +152,23 @@ views:
 
               {%- else-%}
 
-              {{states("sensor.peaqnext_washing_machine") |     
+              {{states("sensor.peaqnext_washing_machine") |
               regex_replace('(>>)*(\d{2}:\d{2}).*', '\\2')}}
 
               {%- endif %}
 
               •
 
-              {{states("sensor.peaqnext_washing_machine") |     
+              {{states("sensor.peaqnext_washing_machine") |
               regex_replace('^(.*)(\d+\.\d+)(.*)','\\2') | replace('.',',')}} kr
             badge_icon: mdi:robot
             icon_color: |-
               {%if states('switch.clever_spz2') == 'on' %}
               green
               {%endif%}
-            badge_color: >-
-              {%if states('automation.tvattmaskinen_starta_pa_klockslag') ==
-              'on' %}
-
+            badge_color: |-
+              {%if is_state('input_boolean.tvattmaskinen_smart_start', 'on') %}
               green
-
               {%endif%}
             hold_action:
               action: toggle
@@ -415,55 +412,6 @@ views:
       - type: grid
         cards:
           - type: heading
-            heading: Vädret
-            heading_style: title
-            badges:
-              - type: entity
-                show_state: true
-                show_icon: true
-                entity: sensor.template_home_temp
-                icon: mdi:sun-thermometer-outline
-              - type: entity
-                show_state: true
-                show_icon: true
-                entity: sensor.felix_rum_temperature
-                icon: mdi:home-thermometer-outline
-          - type: custom:clock-weather-card
-            entity: weather.smhi_home
-            apparent_sensor: sensor.feel
-            temperature_sensor: sensor.smhi_temperatur
-            animated_icon: true
-            time_format: 24
-            forecast_rows: 5
-            weather_icon_type: fill
-            hourly_forecast: false
-            show_decimal: true
-          - type: custom:pollenprognos-card
-            city: Göteborg
-            allergens:
-              - Björk
-              - Gräs
-              - Hassel
-            visibility:
-              - condition: and
-                conditions:
-                  - condition: state
-                    entity: sensor.pollen_goteborg_bjork
-                    state_not: '0'
-                  - condition: state
-                    entity: sensor.pollen_goteborg_gras
-                    state_not: '0'
-                  - condition: state
-                    entity: sensor.pollen_goteborg_hassel
-                    state_not: '0'
-            card_mod:
-              style: |
-                ha-card {padding-top: 0px;padding-bottom: 0px;}
-                .sensor {margin-top: 0px;margin-bottom: 0px;}
-                .header {display: none;}
-      - type: grid
-        cards:
-          - type: heading
             heading: Rummen
           - square: false
             columns: 2
@@ -647,12 +595,12 @@ views:
                             orange
                           {%endif%}
                       - type: template
-                        entity: automation.diskmaskinen_starta_pa_klocka
+                        entity: input_boolean.diskmaskinen_smart_start
                         icon: mdi:dishwasher
                         icon_color: >-
                           {%if
-                          states('automation.diskmaskinen_starta_pa_klocka') ==
-                          'on' %}
+                          is_state('input_boolean.diskmaskinen_smart_start',
+                          'on') %}
                             green
                           {%endif%}
                         tap_action:
@@ -1025,21 +973,20 @@ views:
               "grey"}}
             features_position: bottom
           - type: custom:mushroom-template-card
-            primary: '{{states("number.eazy_grans_for_laddning")}}%'
+            primary: '{{states("sensor.tesla_charge_limit_soc")}}%'
             features_position: bottom
-            entity: number.eazy_grans_for_laddning
             icon: |-
-              {%if (states("number.eazy_grans_for_laddning")|int(0)<61)%}
+              {%if (states("sensor.tesla_charge_limit_soc")|int(0)<61)%}
               mdi:battery-50
-              {%elif (states("number.eazy_grans_for_laddning")|int(0)<81)%}
+              {%elif (states("sensor.tesla_charge_limit_soc")|int(0)<81)%}
               mdi:battery-70
               {%else%}
               mdi:battery
               {%endif%}
             color: |-
-              {%if (states("number.eazy_grans_for_laddning")|int(0)<61)%}
+              {%if (states("sensor.tesla_charge_limit_soc")|int(0)<61)%}
               yellow
-              {%elif (states("number.eazy_grans_for_laddning")|int(0)<81)%}
+              {%elif (states("sensor.tesla_charge_limit_soc")|int(0)<81)%}
               green
               {%else%}
               red
@@ -1047,6 +994,7 @@ views:
             grid_options:
               columns: 4
               rows: 1
+            entity: sensor.tesla_charge_limit_soc
           - type: custom:mushroom-empty-card
           - type: custom:mushroom-climate-card
             entity: climate.eazy_klimat
@@ -1305,15 +1253,15 @@ views:
                 entity: input_datetime.car_1_time
           - type: entities
             entities:
-              - entity: input_number.car_1_energy_kwh
-                name: kWh
-              - entity: input_datetime.car_1_time
-                name: kl.
-                icon: mdi:clock-outline
-              - type: divider
               - entity: automation.ladda_azarel_pa_klocka
                 name: Starta på kl.
                 icon: mdi:car-clock
+              - type: divider
+              - entity: input_datetime.car_1_time
+                name: kl.
+                icon: mdi:clock-outline
+              - entity: input_number.car_1_energy_kwh
+                name: kWh
           - type: heading
             icon: mdi:car-hatchback
             heading_style: subtitle
@@ -1327,7 +1275,7 @@ views:
             entities:
               - entity: automation.ladda_zoe_pa_tid
                 icon: mdi:car-clock
-                name: Ladda
+                name: Starta på kl.
               - entity: input_datetime.zoe_hour
                 name: Klockan
                 icon: mdi:clock-outline
@@ -2990,7 +2938,7 @@ views:
                   action: more-info
           - type: custom:mushroom-template-card
             icon: mdi:dishwasher
-            entity: automation.diskmaskinen_starta_pa_klocka
+            entity: input_boolean.diskmaskinen_smart_start
             secondary: |-
               {% if states("sensor.peaqnext_dishwasher")=="unknown" -%}
                 --:--
@@ -3005,7 +2953,7 @@ views:
               green
               {%endif%}
             badge_color: |-
-              {%if states('automation.diskmaskinen_starta_pa_klocka') == 'on' %}
+              {%if is_state('input_boolean.diskmaskinen_smart_start', 'on') %}
               green
               {%endif%}
             hold_action:
@@ -3066,7 +3014,7 @@ views:
                   action: more-info
           - type: custom:mushroom-template-card
             icon: mdi:washing-machine
-            entity: automation.tvattmaskinen_starta_pa_klockslag
+            entity: input_boolean.tvattmaskinen_smart_start
             secondary: >-
               {% if states("sensor.peaqnext_washing_machine")=="unknown" -%}
 
@@ -3074,26 +3022,23 @@ views:
 
               {%- else-%}
 
-              {{states("sensor.peaqnext_washing_machine") |     
+              {{states("sensor.peaqnext_washing_machine") |
               regex_replace('(>>)*(\d{2}:\d{2}).*', '\\2')}}
 
               {%- endif %}
 
               •
 
-              {{states("sensor.peaqnext_washing_machine") |     
+              {{states("sensor.peaqnext_washing_machine") |
               regex_replace('^(.*)(\d+\.\d+)(.*)','\\2') | replace('.',',')}} kr
             badge_icon: mdi:robot
             icon_color: |-
               {%if states('switch.clever_spz2') == 'on' %}
               green
               {%endif%}
-            badge_color: >-
-              {%if states('automation.tvattmaskinen_starta_pa_klockslag') ==
-              'on' %}
-
+            badge_color: |-
+              {%if is_state('input_boolean.tvattmaskinen_smart_start', 'on') %}
               green
-
               {%endif%}
             hold_action:
               action: toggle
@@ -3385,8 +3330,28 @@ views:
         cards:
           - type: heading
             heading: Vädret
-            heading_style: subtitle
-            icon: mdi:weather-partly-rainy
+            heading_style: title
+            badges:
+              - type: entity
+                show_state: true
+                show_icon: true
+                entity: sensor.template_home_temp
+                icon: mdi:sun-thermometer-outline
+              - type: entity
+                show_state: true
+                show_icon: true
+                entity: sensor.felix_rum_temperature
+                icon: mdi:home-thermometer-outline
+          - type: custom:clock-weather-card
+            entity: weather.smhi_home
+            apparent_sensor: sensor.feel
+            temperature_sensor: sensor.smhi_temperatur
+            animated_icon: true
+            time_format: 24
+            forecast_rows: 5
+            weather_icon_type: fill
+            hourly_forecast: false
+            show_decimal: true
           - name: Temperature
             entity: sensor.template_home_temp
             min: -20
@@ -3465,8 +3430,6 @@ views:
                   from: '#ef4444'
                   to: '#ef4444'
             type: custom:andy-temperature-card
-          - entity: weather.smhi_home
-            type: weather-forecast
           - type: tile
             entity: sensor.meteorologisk_arstid
             name: Årstid
@@ -3487,6 +3450,12 @@ views:
               - min
               - max
             hide_legend: true
+          - type: custom:pollenprognos-card
+            city: Göteborg
+            allergens:
+              - Hassel
+              - Björk
+              - Gräs
           - type: entity
             entity: weather.smhi_home
             state_color: false
