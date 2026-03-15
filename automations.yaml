@@ -2383,3 +2383,68 @@
       message: clear_notification
     action: notify.rickards_devices
   mode: single
+- id: '1742034000000'
+  alias: Pollenvarning, morgon
+  description: ''
+  triggers:
+  - trigger: time
+    at: '07:00:00'
+    id: workday
+  - trigger: time
+    at: '09:00:00'
+    id: weekend
+  conditions:
+  - condition: or
+    conditions:
+    - condition: and
+      conditions:
+      - condition: trigger
+        id: workday
+      - condition: state
+        entity_id: binary_sensor.workday_sensor
+        state: 'on'
+    - condition: and
+      conditions:
+      - condition: trigger
+        id: weekend
+      - condition: state
+        entity_id: binary_sensor.workday_sensor
+        state: 'off'
+  - condition: or
+    conditions:
+    - condition: numeric_state
+      entity_id: sensor.pollen_goteborg_hassel
+      above: 2
+    - condition: numeric_state
+      entity_id: sensor.pollen_goteborg_bjork
+      above: 0
+    - condition: numeric_state
+      entity_id: sensor.pollen_goteborg_gras
+      above: 0
+  actions:
+  - variables:
+      hassel: "{{ states('sensor.pollen_goteborg_hassel') | int(0) }}"
+      bjork: "{{ states('sensor.pollen_goteborg_bjork') | int(0) }}"
+      gras: "{{ states('sensor.pollen_goteborg_gras') | int(0) }}"
+      levels:
+        '1': Låga
+        '2': Låga-måttliga
+        '3': Måttliga
+        '4': Måttliga-höga
+        '5': Höga
+        '6': Höga-mycket höga
+        '7': Mycket höga
+      parts: >-
+        {% set ns = namespace(items=[]) %}
+        {% if bjork > 0 %}{% set ns.items = ns.items + ['Björk: ' ~ levels[bjork|string]] %}{% endif %}
+        {% if gras > 0 %}{% set ns.items = ns.items + ['Gräs: ' ~ levels[gras|string]] %}{% endif %}
+        {% if hassel > 2 %}{% set ns.items = ns.items + ['Hassel: ' ~ levels[hassel|string]] %}{% endif %}
+        {{ ns.items | join('\n') }}
+  - action: notify.rickards_devices
+    data:
+      title: "\U0001F33C Pollenvarning"
+      message: "{{ parts }}"
+      data:
+        tag: pollen
+        channel: Alarm
+  mode: single
