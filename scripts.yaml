@@ -227,9 +227,8 @@ charge_the_tesla:
     data:
       title: Eazy börjar ladda
       data:
-        persistent: true
         sticky: true
-        tag: car_1_charging
+        tag: car_1_start_charging
         channel: ev
         clickAction: /lovelace/tesla
       message: 'SoC:    {{states("sensor.tesla_battery_level") }}%\n Priset: {{states("sensor.template_nordpool_current_price_vat")}}
@@ -285,6 +284,8 @@ ladda_tesla_stoppa:
         kr\n {{now().strftime(''%m-%d %H:%M'')}}'
       title: Eazy har laddat färdigt
       data:
+        sticky: true
+        tag: car_1_charging
         clickAction: /lovelace/tesla
         channel: ev
     action: notify.rickards_devices

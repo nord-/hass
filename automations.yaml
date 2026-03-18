@@ -395,33 +395,35 @@
     alias: Clear notification if no_error AND NOT returning
   mode: single
 - id: '1656709628350'
-  alias: Delphine, Charge on time
+  alias: Dolphin, manuell laddning på tid
   description: ''
   trigger:
   - platform: time
     at: input_datetime.zoe_hour
   condition: []
   action:
-  - service: retry.actions
+  - action: retry.actions
     data:
       sequence:
-      - service: rest_command.cn_add_yxx_to_queue
+      - action: rest_command.cn_add_yxx_to_queue
         metadata: {}
         data: {}
     alias: Try Add Zoe to queue
-  - service: notify.rickards_devices
+  - action: notify.rickards_devices
     data:
-      title: Delphine börjar ladda
+      title: Dolphin börjar ladda (manuell tid)
       data:
+        sticky: true
+        tag: dolphin_start_charging
         clickAction: /lovelace/tesla
         channel: ev
       message: 'SoC:    {{states("sensor.template_zoe_battery")}}%\n Priset: {{states("sensor.template_nordpool_current_price_vat")
         }} kr\n {{now().strftime(''%d %H:%M'')}}'
     alias: Send message
-  - service: script.ladda_bilen_uppstart
+  - action: script.ladda_bilen_uppstart
     data: {}
     enabled: false
-  - service: automation.turn_off
+  - action: automation.turn_off
     target:
       entity_id: automation.ladda_zoe_pa_tid
     data:
@@ -1298,6 +1300,8 @@
   - data:
       title: Dolphin börjar ladda
       data:
+        sticky: true
+        tag: dolphin_start_charging
         clickAction: /lovelace/tesla
         channel: ev
       message: 'SoC:    {{states("sensor.byd_dolphin_soc")}}%\n Priset: {{states("sensor.template_nordpool_current_price_vat")
@@ -1346,6 +1350,8 @@
         message: 'SoC:    {{states("sensor.byd_dolphin_soc")}}%\n Priset: {{states("sensor.template_nordpool_current_price_vat")}}
           kr\n {{now().strftime(''%m-%d %H:%M'')}}'
         data:
+          sticky: true
+          tag: dolphin_charging
           clickAction: /lovelace/tesla
           channel: ev
       action: notify.rickards_devices
@@ -1657,7 +1663,6 @@
           data:
             clickAction: /lovelace/tesla
             sticky: true
-            persistent: true
             tag: dolphin_charging
             channel: ev
         alias: Send persistent notification
@@ -1952,7 +1957,7 @@
       title: Eazy börjar ladda (låg SoC)
       data:
         sticky: true
-        tag: car_1_charging
+        tag: car_1_start_charging
         channel: ev
         clickAction: /lovelace/tesla
       message: 'SoC:    {{states("sensor.tesla_battery_level") }}%\n Priset: {{states("sensor.template_nordpool_current_price_vat")}}
