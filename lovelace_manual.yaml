@@ -1064,6 +1064,10 @@ views:
             card_mod:
               style: |
                 div.card-content { padding: 8px 4px; }
+          - type: entities
+            entities:
+              - entity: input_boolean.car_1_charge
+              - entity: input_boolean.car_2_charge
       - type: grid
         cards:
           - type: heading
@@ -1240,6 +1244,22 @@ views:
               columns: 6
               rows: auto
             title: Delphine
+          - type: markdown
+            content: >-
+              {{ state_attr('sensor.tesla_y_charge_period', 'periods_list_md')
+              }}
+            title: Eazy (new)
+            grid_options:
+              columns: 6
+              rows: auto
+          - type: markdown
+            content: >-
+              {{ state_attr('sensor.byd_eazy_charge_period', 'periods_list_md')
+              }}
+            grid_options:
+              columns: 6
+              rows: auto
+            title: Delphine (new)
       - type: grid
         cards:
           - type: heading
