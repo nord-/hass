@@ -1065,45 +1065,83 @@
   mode: single
 - id: '1739100000000'
   alias: Spabadet, statusnotis helg
-  description: Notifiering om spabadets status på fredag morgon och lördag lunch
+  description: Notifiering om spabadets status inför och under lediga dagar
   triggers:
   - trigger: time
     at: 07:30:00
-    id: friday_morning
+    id: morning
   - trigger: time
     at: '12:00:00'
-    id: saturday_noon
+    id: noon
+  - trigger: time
+    at: '16:00:00'
+    id: afternoon
   conditions:
   - condition: template
-    value_template: "{{ (trigger.id == 'friday_morning' and now().weekday() == 4)
-      or\n   (trigger.id == 'saturday_noon' and now().weekday() == 5) }}"
+    value_template: >
+      {% set is_workday = is_state('binary_sensor.workday_sensor', 'on') %}
+      {% set is_workday_tomorrow = is_state('binary_sensor.workday_tomorrow',
+      'on') %}
+      {% set was_workday_yesterday = is_state('binary_sensor.workday_yesterday',
+      'on') %}
+      {% set pre_free = is_workday and not is_workday_tomorrow %}
+      {% set first_free = not is_workday and was_workday_yesterday %}
+      {{ (trigger.id == 'morning' and pre_free) or
+         (trigger.id == 'noon' and (pre_free or first_free)) or
+         (trigger.id == 'afternoon' and first_free) }}
   actions:
-  - action: notify.rickards_devices
-    data:
-      title: Spabadet
+  - choose:
+    - conditions:
+      - condition: trigger
+        id: afternoon
+      sequence:
+      - action: notify.rickards_devices
+        data:
+          title: Spabadet
+          data:
+            tag: spa_ready
+            channel: Spa
+            clickAction: /lovelace/spa
+          message: >
+            {% set current_temp = states('sensor.template_spabadet_temperature')
+            | float(0) %}
+            {% set target = states('input_number.spabadet_target_temp_weekends')
+            | float(0) %}
+            {% set outside_temp = states('sensor.template_home_temp') | float(0) %}
+            🛁 {{ current_temp }}°C (mål {{ target|int }}°C)
+            {% if current_temp >= target %}
+            ✅ Redo för bad!
+            {% else %}
+            ⏳ {{ (target - current_temp) | round(1) }}°C kvar
+            {% endif %}
+            🌿 Ute: {{ outside_temp }}°C
+    default:
+    - action: notify.rickards_devices
       data:
-        tag: spa_status
-        channel: Spa
-        clickAction: /lovelace/spa
-      message: "{% set target = states('input_number.spabadet_target_temp_weekends')
-        | float(0) %} {% set current_temp = states('sensor.template_spabadet_temperature')
-        | float(0) %} {% set outside_temp = states('sensor.template_home_temp') |
-        float(0) %} {% set current_hour = now().hour %} {% if current_temp >= target
-        %} \U0001F321️ {{ current_temp }}°C (mål {{ target|int }}°C)\\n\U0001F33F
-        Ute: {{ outside_temp }}°C\\n✅ Redan vid måltemperatur! {% else %} {% set hours_left
-        = 16 - current_hour %} {% set hours_needed = ((target + 1 - current_temp +
-        hours_left * 0.2) / 2.0) | round(0, 'ceil') | int %} {% set hours_needed =
-        [hours_needed, 0] | max %} {% set prices = state_attr('sensor.nordpool_kwh_se3_sek_3_095_0',
-        'today') %} {% if prices is not none and hours_needed > 0 and hours_left >
-        0 %} {% set remaining = prices[current_hour:16] | sort %} {% set ix = [hours_needed
-        - 1, remaining | length - 1] | min %} {% set threshold = remaining[ix] %}
-        {% set ns = namespace(last_hour = current_hour) %} {% for i in range(current_hour,
-        16) %} {% if prices[i] <= threshold %} {% set ns.last_hour = i %} {% endif
-        %} {% endfor %} \U0001F321️ {{ current_temp }}°C → {{ target|int }}°C\\n\U0001F33F
-        Ute: {{ outside_temp }}°C\\n⏰ Klart ca kl {{ '%02d:00' | format([ns.last_hour
-        + 1, 16] | min) }} ({{ hours_needed }} tim) {% else %} \U0001F321️ {{ current_temp
-        }}°C → {{ target|int }}°C\\n\U0001F33F Ute: {{ outside_temp }}°C {% endif
-        %} {% endif %}"
+        title: Spabadet
+        data:
+          tag: spa_status
+          channel: Spa
+          clickAction: /lovelace/spa
+        message: "{% set target = states('input_number.spabadet_target_temp_weekends')
+          | float(0) %} {% set current_temp = states('sensor.template_spabadet_temperature')
+          | float(0) %} {% set outside_temp = states('sensor.template_home_temp')
+          | float(0) %} {% set current_hour = now().hour %} {% if current_temp >=
+          target %} \U0001F321️ {{ current_temp }}°C (mål {{ target|int }}°C)\\n\U0001F33F
+          Ute: {{ outside_temp }}°C\\n✅ Redan vid måltemperatur! {% else %} {% set
+          hours_left = 16 - current_hour %} {% set hours_needed = ((target + 1 -
+          current_temp + hours_left * 0.2) / 2.0) | round(0, 'ceil') | int %} {%
+          set hours_needed = [hours_needed, 0] | max %} {% set prices = state_attr('sensor.nordpool_kwh_se3_sek_3_095_0',
+          'today') %} {% if prices is not none and hours_needed > 0 and hours_left
+          > 0 %} {% set remaining = prices[current_hour:16] | sort %} {% set ix =
+          [hours_needed - 1, remaining | length - 1] | min %} {% set threshold =
+          remaining[ix] %} {% set ns = namespace(last_hour = current_hour) %} {% for
+          i in range(current_hour, 16) %} {% if prices[i] <= threshold %} {% set ns.last_hour
+          = i %} {% endif %} {% endfor %} \U0001F321️ {{ current_temp }}°C → {{ target|int
+          }}°C\\n\U0001F33F Ute: {{ outside_temp }}°C\\n⏰ Klart ca kl {{ '%02d:00'
+          | format([ns.last_hour + 1, 16] | min) }} ({{ hours_needed }} tim) {% else
+          %} \U0001F321️ {{ current_temp }}°C → {{ target|int }}°C\\n\U0001F33F Ute:
+          {{ outside_temp }}°C {% endif %} {% endif %}"
   mode: single
 - id: '1684931331914'
   alias: 'Wall-E: Query Status'
