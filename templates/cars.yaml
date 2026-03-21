@@ -56,7 +56,12 @@
   - unique_id: zoe_charging_cost
     device_class: monetary
     unit_of_measurement: "kr"
-    state: "{{ states('sensor.template_zoe_charging_power')|float(0) * states('sensor.template_elpris_kr')|float(0) }}"
+    state: >-
+      {% set charge = states('sensor.template_zoe_charging_power')|float(0) %}
+      {% set grid = states('sensor.template_grid_power_kw')|float(0) %}
+      {% set grid_part = [charge, [grid, 0]|max]|min %}
+      {% set solar_part = charge - grid_part %}
+      {{ (grid_part * states('sensor.template_elpris_kr')|float(0) + solar_part * states('sensor.template_elpris_solar_kr')|float(0))|round(2) }}
   - unique_id: zoe_power_kw
     unit_of_measurement: "kW"
     device_class: power
@@ -144,7 +149,12 @@
   - unique_id: rya_charging_cost
     device_class: monetary
     unit_of_measurement: "kr"
-    state: "{{ states('sensor.template_rya_charging_power')|float(0) * states('sensor.template_elpris_kr')|float(0) }}"
+    state: >-
+      {% set charge = states('sensor.template_rya_charging_power')|float(0) %}
+      {% set grid = states('sensor.template_grid_power_kw')|float(0) %}
+      {% set grid_part = [charge, [grid, 0]|max]|min %}
+      {% set solar_part = charge - grid_part %}
+      {{ (grid_part * states('sensor.template_elpris_kr')|float(0) + solar_part * states('sensor.template_elpris_solar_kr')|float(0))|round(2) }}
 
   - unique_id: rya_charging_cost_last_period
     device_class: monetary
