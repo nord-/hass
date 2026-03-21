@@ -35,15 +35,15 @@
   duration:
     days: 3
   entities:
-    - sensor.elpris_kr
-    #- sensor.nordpool_current_price_vat
+    - sensor.template_elpris_kr
+    #- sensor.template_nordpool_current_price_vat
 
 - platform: average
   name: 'Elpriset [kr] (avg)'
   duration:
     days: 1
   entities:
-    - sensor.elpris_kr
+    - sensor.template_elpris_kr
 
 - platform: average
   unique_id: avg_nordpool_24hrs
@@ -51,7 +51,7 @@
   duration:
     days: 1
   entities:
-    - sensor.nordpool_current_price_vat
+    - sensor.template_nordpool_current_price_vat
 
 - platform: average
   unique_id: avg_spabadet_week
