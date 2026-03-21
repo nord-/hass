@@ -2840,37 +2840,6 @@ views:
                 name: Pumpen L3
                 secondary_info: last-changed
                 icon: mdi:pump
-          - type: custom:mushroom-template-card
-            primary: '{{states("sensor.spabadet_temperatur")|replace(''.'','','')}}°C'
-            secondary: >-
-              {{
-              (states.sensor.spabadet_temperatur.last_updated|as_local).strftime('%H:%M')
-              }}
-            features_position: bottom
-            entity: sensor.spabadet_temperatur
-            color: |-
-              {%if (states("sensor.spabadet_temperatur")|int(0))<34%}
-              blue
-              {%elif (states("sensor.spabadet_temperatur")|int(0))<36%}
-              yellow
-              {%elif (states("sensor.spabadet_temperatur")|int(0))<39%}
-              orange
-              {%else%}
-              red
-              {%endif%}
-            icon: |-
-              {%if (states("sensor.spabadet_temperatur")|int(0))<34%}
-              mdi:snowflake-thermometer
-              {%elif (states("sensor.spabadet_temperatur")|int(0))<36%}
-              mdi:thermometer-low
-              {%elif (states("sensor.spabadet_temperatur")|int(0))<39%}
-              mdi:thermometer
-              {%else%}
-              mdi:thermometer-high
-              {%endif%}
-            grid_options:
-              columns: 4
-              rows: 1
       - type: grid
         cards:
           - type: heading
@@ -2930,6 +2899,37 @@ views:
             name: Helgen
             display_mode: buttons
             icon_color: red
+          - type: custom:mushroom-template-card
+            primary: '{{states("sensor.spabadet_temperatur")|replace(''.'','','')}}°C'
+            secondary: >-
+              {{
+              (states.sensor.spabadet_temperatur.last_updated|as_local).strftime('%H:%M')
+              }}
+            features_position: bottom
+            entity: sensor.spabadet_temperatur
+            color: |-
+              {%if (states("sensor.spabadet_temperatur")|int(0))<34%}
+              blue
+              {%elif (states("sensor.spabadet_temperatur")|int(0))<36%}
+              yellow
+              {%elif (states("sensor.spabadet_temperatur")|int(0))<39%}
+              orange
+              {%else%}
+              red
+              {%endif%}
+            icon: |-
+              {%if (states("sensor.spabadet_temperatur")|int(0))<34%}
+              mdi:snowflake-thermometer
+              {%elif (states("sensor.spabadet_temperatur")|int(0))<36%}
+              mdi:thermometer-low
+              {%elif (states("sensor.spabadet_temperatur")|int(0))<39%}
+              mdi:thermometer
+              {%else%}
+              mdi:thermometer-high
+              {%endif%}
+            grid_options:
+              columns: 6
+              rows: 1
           - type: tile
             entity: input_number.spabadet_lower_temp_limit
             name: Undre gräns
