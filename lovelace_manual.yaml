@@ -371,7 +371,7 @@ views:
               - type: entity
                 show_state: true
                 show_icon: true
-                entity: sensor.car_2_charge_period
+                entity: sensor.byd_eazy_charge_period
                 icon: mdi:battery-clock
             tap_action:
               action: navigate
@@ -391,12 +391,12 @@ views:
               mdi:battery-charging
 
               {% endif %}
-            entity: automation.zoe_charge
+            entity: input_boolean.car_2_charge
             hold_action:
               action: navigate
               navigation_path: /lovelace/tesla
             color: |-
-              {% if states("automation.zoe_charge") == "off" -%}
+              {% if states("input_boolean.car_2_charge") == "off" -%}
               red
               {%- else -%}
               green
@@ -892,7 +892,7 @@ views:
               - type: entity
                 show_state: true
                 show_icon: true
-                entity: sensor.car_1_charge_period
+                entity: sensor.tesla_y_charge_period
                 icon: mdi:battery-clock
               - type: entity
                 show_state: true
@@ -939,12 +939,12 @@ views:
             badge_icon: mdi:robot
             badge_color: >-
               {{"grey" if
-              states("automation.ladda_bilen_nar_det_ar_billigt")=="off" else
+              states("input_boolean.car_1_charge")=="off" else
               "green"}}
             primary: >-
-              {{ (states('sensor.car_1_charge_period')|as_datetime|
+              {{ (states('sensor.tesla_y_charge_period')|as_datetime|
               as_local).strftime('%H:%M') if
-              states('sensor.car_1_charge_period') not in ['unknown',
+              states('sensor.tesla_y_charge_period') not in ['unknown',
               'unavailable'] else '-' }}
             secondary: >-
               {%if states("sensor.template_rya_req_hours")|float(0) > 0%}
@@ -959,9 +959,9 @@ views:
               {%endif%}
             tap_action:
               action: perform-action
-              perform_action: automation.toggle
+              perform_action: input_boolean.toggle
               target:
-                entity_id: automation.ladda_bilen_nar_det_ar_billigt
+                entity_id: input_boolean.car_1_charge
             hold_action:
               action: call-service
               service: script.charge_the_tesla
@@ -1078,7 +1078,7 @@ views:
               - type: entity
                 show_state: true
                 show_icon: true
-                entity: sensor.car_2_charge_period
+                entity: sensor.byd_eazy_charge_period
                 icon: mdi:battery-clock
                 tap_action:
                   action: more-info
@@ -1124,7 +1124,7 @@ views:
             secondary_info: none
           - type: custom:mushroom-template-card
             icon: mdi:ev-station
-            entity: automation.zoe_charge
+            entity: input_boolean.car_2_charge
             secondary: >-
               {%if states("sensor.template_zoe_req_hours")|float(0) > 0%}
 
@@ -1138,28 +1138,26 @@ views:
               {%endif%}
             tap_action:
               action: perform-action
-              perform_action: automation.toggle
+              perform_action: input_boolean.toggle
               target:
-                entity_id: automation.zoe_charge
+                entity_id: input_boolean.car_2_charge
             primary: >-
-              {{ (states('sensor.car_2_charge_period')|as_datetime|
+              {{ (states('sensor.byd_eazy_charge_period')|as_datetime|
               as_local).strftime('%H:%M') if
-              states('sensor.car_2_charge_period') not in ['unknown',
+              states('sensor.byd_eazy_charge_period') not in ['unknown',
               'unavailable'] else '-' }}
             grid_options:
               columns: 4
               rows: 1
             hold_action:
               action: perform-action
-              perform_action: automation.trigger
+              perform_action: input_boolean.turn_on
               target:
-                entity_id: automation.zoe_charge
-              data:
-                skip_condition: true
-            badge_color: '{{"grey" if states("automation.zoe_charge")=="off" else "green"}}'
+                entity_id: input_boolean.car_2_charge
+            badge_color: '{{"grey" if states("input_boolean.car_2_charge")=="off" else "green"}}'
             badge_icon: mdi:robot
             color: >-
-              {{ "green" if state_attr('automation.zoe_charge', 'current') > 0
+              {{ "green" if is_state('input_boolean.car_2_charge', 'on')
               else "grey" }}
             features_position: bottom
           - type: custom:mushroom-template-card
@@ -1233,13 +1231,13 @@ views:
             heading_style: title
             icon: mdi:car-clock
           - type: markdown
-            content: '{{ state_attr(''sensor.car_1_charge_period'', ''periods_list'') }}'
+            content: '{{ state_attr(''sensor.tesla_y_charge_period'', ''periods_list'') }}'
             title: Eazy
             grid_options:
               columns: 6
               rows: auto
           - type: markdown
-            content: '{{ state_attr(''sensor.car_2_charge_period'', ''periods_list'') }}'
+            content: '{{ state_attr(''sensor.byd_eazy_charge_period'', ''periods_list'') }}'
             grid_options:
               columns: 6
               rows: auto
