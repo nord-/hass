@@ -938,8 +938,7 @@ views:
             entity: binary_sensor.tesla_plugged_in
             badge_icon: mdi:robot
             badge_color: >-
-              {{"grey" if
-              states("input_boolean.car_1_charge")=="off" else
+              {{"grey" if states("input_boolean.car_1_charge")=="off" else
               "green"}}
             primary: >-
               {{ (states('sensor.tesla_y_charge_period')|as_datetime|
@@ -1064,10 +1063,6 @@ views:
             card_mod:
               style: |
                 div.card-content { padding: 8px 4px; }
-          - type: entities
-            entities:
-              - entity: input_boolean.car_1_charge
-              - entity: input_boolean.car_2_charge
       - type: grid
         cards:
           - type: heading
@@ -1154,11 +1149,13 @@ views:
               perform_action: input_boolean.turn_on
               target:
                 entity_id: input_boolean.car_2_charge
-            badge_color: '{{"grey" if states("input_boolean.car_2_charge")=="off" else "green"}}'
+            badge_color: >-
+              {{"grey" if states("input_boolean.car_2_charge")=="off" else
+              "green"}}
             badge_icon: mdi:robot
             color: >-
-              {{ "green" if is_state('input_boolean.car_2_charge', 'on')
-              else "grey" }}
+              {{ "green" if is_state('input_boolean.car_2_charge', 'on') else
+              "grey" }}
             features_position: bottom
           - type: custom:mushroom-template-card
             icon: |-
@@ -1231,22 +1228,10 @@ views:
             heading_style: title
             icon: mdi:car-clock
           - type: markdown
-            content: '{{ state_attr(''sensor.tesla_y_charge_period'', ''periods_list'') }}'
-            title: Eazy
-            grid_options:
-              columns: 6
-              rows: auto
-          - type: markdown
-            content: '{{ state_attr(''sensor.byd_eazy_charge_period'', ''periods_list'') }}'
-            grid_options:
-              columns: 6
-              rows: auto
-            title: Delphine
-          - type: markdown
             content: >-
               {{ state_attr('sensor.tesla_y_charge_period', 'periods_list_md')
               }}
-            title: Eazy (new)
+            title: Eazy
             grid_options:
               columns: 6
               rows: auto
@@ -1257,7 +1242,7 @@ views:
             grid_options:
               columns: 6
               rows: auto
-            title: Delphine (new)
+            title: Delphine
       - type: grid
         cards:
           - type: heading
