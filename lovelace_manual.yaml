@@ -240,6 +240,311 @@ views:
                 state_not: unavailable
       - type: grid
         cards:
+          - type: heading
+            icon: mdi:car
+            heading: Eazy
+            heading_style: title
+            badges:
+              - type: entity
+                show_state: true
+                show_icon: true
+                entity: sensor.tesla_battery_level
+                color: green
+            tap_action:
+              action: navigate
+              navigation_path: /lovelace/tesla
+            grid_options:
+              columns: 6
+              rows: 1
+          - type: heading
+            icon: mdi:car-hatchback
+            heading: Delphine
+            heading_style: title
+            badges:
+              - type: entity
+                entity: sensor.template_zoe_battery
+            tap_action:
+              action: navigate
+              navigation_path: /lovelace/tesla
+            grid_options:
+              columns: 6
+              rows: 1
+          - type: custom:mushroom-template-card
+            icon: mdi:ev-station
+            entity: binary_sensor.tesla_plugged_in
+            badge_icon: mdi:robot
+            badge_color: >-
+              {{"grey" if states("input_boolean.car_1_charge")=="off" else
+              "green"}}
+            primary: >-
+              {{ (states('sensor.tesla_y_charge_period')|as_datetime|
+              as_local).strftime('%H:%M') if
+              states('sensor.tesla_y_charge_period') not in ['unknown',
+              'unavailable'] else '-' }}
+            secondary: >-
+              {%if states("sensor.template_rya_req_hours")|float(0) > 0%}
+
+              {{states("sensor.template_rya_req_hours")|float(0)|replace(".",",")}}
+              h
+
+              {%else%}
+
+              0 h
+
+              {%endif%}
+            tap_action:
+              action: perform-action
+              perform_action: input_boolean.toggle
+              target:
+                entity_id: input_boolean.car_1_charge
+            hold_action:
+              action: call-service
+              service: script.charge_the_tesla
+            grid_options:
+              columns: 6
+              rows: 1
+            color: >-
+              {{"green" if states("sensor.tesla_state")=="charging" else
+              "grey"}}
+            features_position: bottom
+          - type: custom:mushroom-template-card
+            icon: mdi:ev-station
+            entity: input_boolean.car_2_charge
+            secondary: >-
+              {%if states("sensor.template_zoe_req_hours")|float(0) > 0%}
+
+              {{states("sensor.template_zoe_req_hours")|float(0)|replace(".",",")}}
+              h
+
+              {%else%}
+
+              0 h
+
+              {%endif%}
+            tap_action:
+              action: perform-action
+              perform_action: input_boolean.toggle
+              target:
+                entity_id: input_boolean.car_2_charge
+            primary: >-
+              {{ (states('sensor.byd_eazy_charge_period')|as_datetime|
+              as_local).strftime('%H:%M') if
+              states('sensor.byd_eazy_charge_period') not in ['unknown',
+              'unavailable'] else '-' }}
+            grid_options:
+              columns: 6
+              rows: 1
+            hold_action:
+              action: perform-action
+              perform_action: input_boolean.turn_on
+              target:
+                entity_id: input_boolean.car_2_charge
+            badge_color: >-
+              {{"grey" if states("input_boolean.car_2_charge")=="off" else
+              "green"}}
+            badge_icon: mdi:robot
+            color: >-
+              {{ "green" if is_state('input_boolean.car_2_charge', 'on') else
+              "grey" }}
+            features_position: bottom
+          - type: custom:mushroom-template-card
+            primary: '{{states("sensor.tesla_charge_limit_soc")}}%'
+            features_position: bottom
+            icon: |-
+              {%if (states("sensor.tesla_charge_limit_soc")|int(0)<61)%}
+              mdi:battery-50
+              {%elif (states("sensor.tesla_charge_limit_soc")|int(0)<81)%}
+              mdi:battery-70
+              {%else%}
+              mdi:battery
+              {%endif%}
+            color: |-
+              {%if (states("sensor.tesla_charge_limit_soc")|int(0)<61)%}
+              yellow
+              {%elif (states("sensor.tesla_charge_limit_soc")|int(0)<81)%}
+              green
+              {%else%}
+              red
+              {%endif%}
+            grid_options:
+              columns: 6
+              rows: 2
+            entity: sensor.tesla_charge_limit_soc
+            vertical: true
+          - type: custom:mushroom-number-card
+            entity: input_number.zoe_soc_upper_limit
+            name: Ladda till
+            display_mode: buttons
+            grid_options:
+              columns: 6
+              rows: 2
+            icon: mdi:battery-medium
+            primary_info: none
+            secondary_info: none
+          - type: custom:mushroom-template-card
+            primary: Dörrar
+            icon: |-
+              {%if states('binary_sensor.tesla_locked')=='on'%}
+              mdi:lock-open
+              {%else%}
+              mdi:lock
+              {%endif%}
+            features_position: bottom
+            entity: lock.eazy_las
+            secondary: >-
+              {{'låst' if states('binary_sensor.tesla_locked')=='off' else
+              'olåst'}}
+            grid_options:
+              columns: 3
+              rows: 1
+            color: '{{ ''red'' if states(''binary_sensor.tesla_locked'')!=''off''}}'
+            icon_tap_action:
+              action: toggle
+          - type: custom:mushroom-template-card
+            primary: Lucka
+            icon: mdi:ev-plug-ccs2
+            features_position: bottom
+            entity: cover.eazy_lucka_till_laddkontakt
+            secondary: >-
+              {{'stängd' if
+              states('binary_sensor.tesla_charge_port_door_open')=='off' else
+              'öppen'}}
+            grid_options:
+              columns: 3
+              rows: 1
+            color: '{{ ''green'' if states(''binary_sensor.tesla_locked'')!=''off''}}'
+            icon_tap_action:
+              action: toggle
+      - type: grid
+        cards:
+          - type: heading
+            icon: mdi:calendar
+            heading_style: subtitle
+            heading: Kalender
+          - type: custom:mushroom-chips-card
+            chips:
+              - type: template
+                icon: >-
+                  {% if
+                  states("binary_sensor.template_nordpool_price_reallow")|bool%}
+
+                  mdi:arrow-down-thick
+
+                  {% elif
+                  states("binary_sensor.template_nordpool_price_low")|bool%}
+
+                  mdi:arrow-bottom-right-thick
+
+                  {% elif
+                  states("binary_sensor.template_nordpool_price_not_high")|bool%}
+
+                  mdi:arrow-top-right-thick
+
+                  {%else%}
+
+                  mdi:arrow-up-thick
+
+                  {%endif%}
+                entity: sensor.template_elpris_kr
+                tap_action:
+                  action: navigate
+                  navigation_path: /lovelace/prices
+                content: >-
+                  {{'%.2f'|format(states('sensor.template_elpris_kr')|float)|replace('.',',')}}
+                  kr
+                icon_color: |2
+                          {% if
+                        states("binary_sensor.template_nordpool_price_reallow")|bool%}
+                          green
+                          {% elif states("binary_sensor.template_nordpool_price_low")|bool%}
+                          yellow
+                          {% elif
+                          states("binary_sensor.template_nordpool_price_not_high")|bool%}
+                          orange
+                          {%else%}
+                          red
+                          {%endif%}
+              - type: template
+                icon: mdi:home-lightning-bolt
+                content: >-
+                  {{'%.1f'|format(
+                  states("sensor.template_house_power_kw")|float)|replace('.',',')}}
+                  kW
+                icon_color: >-
+                  {% if states("sensor.template_house_power_kw")|float < 2.3 %}
+
+                  green
+
+                  {% elif states("sensor.template_house_power_kw")|float > 3.7
+                  %}
+
+                  red
+
+                  {% else %}
+
+                  yellow
+
+                  {% endif %}
+                entity: sensor.template_house_power_kw
+                tap_action:
+                  action: navigate
+                  navigation_path: /lovelace/huset
+              - type: template
+                tap_action:
+                  action: navigate
+                  navigation_path: /lovelace/8
+                icon: mdi:weather-sunny
+                content: >-
+                  {{'%.1f'|format(
+                  states("sensor.fronius_inverter_total_power")|float(0))|replace('.',',')}}
+                  kW
+                icon_color: >-
+                  {% if states("sensor.fronius_inverter_total_power")|float(0) <
+                  3 %}
+
+                  red
+
+                  {% elif states("sensor.fronius_inverter_total_power")|float(0)
+                  > 5 %}
+
+                  green
+
+                  {% else %}
+
+                  yellow
+
+                  {% endif %}
+                entity: sensor.fronius_inverter_total_power
+              - type: template
+                entity: sensor.template_home_temp
+                icon: |-
+                  {%if states("sensor.template_home_temp")|float(0)<0%}
+                  mdi:thermometer-minus
+                  {%elif states("sensor.template_home_temp")|float(0)<11%}
+                  mdi:thermometer-low
+                  {%elif states("sensor.template_home_temp")|float(0)<21%}
+                  mdi:thermometer
+                  {%else%}
+                  mdi:thermometer-high
+                  {%endif%}
+                icon_color: |-
+                  {%if states("sensor.template_home_temp")|float(0)<0%}
+                  blue
+                  {%elif states("sensor.template_home_temp")|float(0)<11%}
+                  green
+                  {%elif states("sensor.template_home_temp")|float(0)<21%}
+                  yellow
+                  {%else%}
+                  red
+                  {%endif%}
+                content: >-
+                  {{states("sensor.template_home_temp")|float(0)|replace('.',',')}}°C
+                tap_action:
+                  action: navigate
+                  navigation_path: /lovelace/ute
+                hold_action:
+                  action: more-info
+            alignment: center
           - type: custom:week-planner-card
             calendars:
               - entity: calendar.family
@@ -267,148 +572,6 @@ views:
               tomorrow: Imorgon
               fullDay: Hela dagen
               noEvents: ' '
-      - type: grid
-        cards:
-          - type: heading
-            icon: mdi:car
-            heading: Eazy
-            heading_style: title
-            badges:
-              - type: entity
-                show_state: true
-                show_icon: true
-                entity: sensor.tesla_battery_level
-                color: green
-            tap_action:
-              action: navigate
-              navigation_path: /lovelace/tesla
-          - type: custom:mushroom-climate-card
-            entity: climate.eazy_klimat
-            grid_options:
-              columns: 4
-              rows: 2
-            name: A/C
-            layout: vertical
-          - type: custom:mushroom-template-card
-            primary: Dörrar
-            secondary: >-
-              {{ "låsta" if states("binary_sensor.tesla_doors_open") == "off"
-              else "öppna" }}
-            icon: |-
-              {% if states("binary_sensor.tesla_doors_open") == "on" -%}
-              mdi:car-door-lock-open
-              {%- else -%}
-              mdi:car-door-lock
-              {%- endif -%}
-            entity: lock.eazy_las
-            hold_action:
-              action: perform-action
-              perform_action: lock.unlock
-              target:
-                entity_id: lock.eazy_las
-            badge_color: >-
-              {% if states("binary_sensor.tesla_windows_open") in [ "off",
-              "unavailable" ]%}
-
-              green
-
-              {% else %}
-
-              red
-
-              {% endif %}
-            badge_icon: >-
-              {% if states("binary_sensor.tesla_windows_open") in [ "off",
-              "unavailable" ]%}
-
-              mdi:check-bold
-
-              {% else %}
-
-              mdi:exclamation-thick
-
-              {% endif %}
-            color: |-
-              {% if states("binary_sensor.tesla_doors_open") == "on" -%}
-              red
-              {%- else -%}
-              grey
-              {%- endif -%}
-            features_position: bottom
-            grid_options:
-              columns: 4
-              rows: 2
-            vertical: true
-            icon_tap_action:
-              action: perform-action
-              perform_action: lock.lock
-              target:
-                entity_id: lock.eazy_las
-          - type: custom:mushroom-entity-card
-            entity: cover.eazy_lucka_till_laddkontakt
-            name: Lucka
-            icon: mdi:ev-plug-type2
-            tap_action:
-              action: perform-action
-              perform_action: cover.open_cover
-              target:
-                entity_id: cover.eazy_lucka_till_laddkontakt
-            hold_action:
-              action: more-info
-            double_tap_action:
-              action: none
-            grid_options:
-              columns: 4
-              rows: 2
-            layout: vertical
-          - type: heading
-            icon: mdi:car-hatchback
-            heading: Delphine
-            heading_style: title
-            badges:
-              - type: entity
-                entity: sensor.template_zoe_battery
-              - type: entity
-                show_state: true
-                show_icon: true
-                entity: sensor.byd_eazy_charge_period
-                icon: mdi:battery-clock
-            tap_action:
-              action: navigate
-              navigation_path: /lovelace/tesla
-          - type: custom:mushroom-template-card
-            primary: Charge Time
-            secondary: >
-              {{states("sensor.template_zoe_req_hours")|float(0)|replace(".",",")}}
-              timmar
-            icon: mdi:power-plug-battery
-            badge_color: green
-            badge_icon: >-
-              {% if
-              state_attr("automation.car_2_show_soc_while_charging","current")|bool(false)
-              %}
-
-              mdi:battery-charging
-
-              {% endif %}
-            entity: input_boolean.car_2_charge
-            hold_action:
-              action: navigate
-              navigation_path: /lovelace/tesla
-            color: |-
-              {% if states("input_boolean.car_2_charge") == "off" -%}
-              red
-              {%- else -%}
-              green
-              {%- endif -%}
-            features_position: bottom
-            grid_options:
-              columns: 6
-              rows: 2
-            vertical: true
-          - type: custom:mushroom-number-card
-            entity: input_number.zoe_soc_upper_limit
-            name: Limit
       - type: grid
         cards:
           - type: heading
@@ -789,87 +952,7 @@ views:
                           --chip-height: 40px;      
                         }
     cards: []
-    badges:
-      - type: custom:mushroom-template-badge
-        icon: >-
-          {% if states("binary_sensor.template_nordpool_price_reallow")|bool%}
-
-          mdi:arrow-down-thick
-
-          {% elif states("binary_sensor.template_nordpool_price_low")|bool%}
-
-          mdi:arrow-bottom-right-thick
-
-          {% elif
-          states("binary_sensor.template_nordpool_price_not_high")|bool%}
-
-          mdi:arrow-top-right-thick
-
-          {%else%}
-
-          mdi:arrow-up-thick
-
-          {%endif%}
-        entity: sensor.template_elpris_kr
-        tap_action:
-          action: navigate
-          navigation_path: /lovelace/prices
-        content: >-
-          {{'%.2f'|format(states('sensor.template_elpris_kr')|float)|replace('.',',')}}
-          kr
-        color: |2
-            {% if
-          states("binary_sensor.template_nordpool_price_reallow")|bool%}
-            green
-            {% elif states("binary_sensor.template_nordpool_price_low")|bool%}
-            yellow
-            {% elif
-            states("binary_sensor.template_nordpool_price_not_high")|bool%}
-            orange
-            {%else%}
-            red
-            {%endif%}
-      - type: custom:mushroom-template-badge
-        icon: mdi:home-lightning-bolt
-        content: >-
-          {{'%.1f'|format(
-          states("sensor.template_house_power_kw")|float)|replace('.',',')}} kW
-        color: |-
-          {% if states("sensor.template_house_power_kw")|float < 2.3 %}
-          green
-          {% elif states("sensor.template_house_power_kw")|float > 3.7 %}
-          red
-          {% else %}
-          yellow
-          {% endif %}
-        entity: sensor.template_house_power_kw
-        tap_action:
-          action: navigate
-          navigation_path: /lovelace/huset
-      - type: custom:mushroom-template-badge
-        tap_action:
-          action: navigate
-          navigation_path: /lovelace/8
-        icon: mdi:weather-sunny
-        content: >-
-          {{'%.1f'|format(
-          states("sensor.fronius_inverter_total_power")|float)|replace('.',',')}}
-          kW
-        color: |-
-          {% if states("sensor.fronius_inverter_total_power")|float < 3 %}
-          red
-          {% elif states("sensor.fronius_inverter_total_power")|float > 5 %}
-          green
-          {% else %}
-          yellow
-          {% endif %}
-        entity: sensor.fronius_inverter_total_power
-      - type: entity
-        show_name: false
-        show_state: true
-        show_icon: true
-        entity: sensor.template_home_temp
-        icon: mdi:sun-thermometer-outline
+    badges: []
     header:
       layout: center
       badges_position: top
@@ -971,29 +1054,6 @@ views:
               {{"green" if states("sensor.tesla_state")=="charging" else
               "grey"}}
             features_position: bottom
-          - type: custom:mushroom-template-card
-            primary: '{{states("sensor.tesla_charge_limit_soc")}}%'
-            features_position: bottom
-            icon: |-
-              {%if (states("sensor.tesla_charge_limit_soc")|int(0)<61)%}
-              mdi:battery-50
-              {%elif (states("sensor.tesla_charge_limit_soc")|int(0)<81)%}
-              mdi:battery-70
-              {%else%}
-              mdi:battery
-              {%endif%}
-            color: |-
-              {%if (states("sensor.tesla_charge_limit_soc")|int(0)<61)%}
-              yellow
-              {%elif (states("sensor.tesla_charge_limit_soc")|int(0)<81)%}
-              green
-              {%else%}
-              red
-              {%endif%}
-            grid_options:
-              columns: 4
-              rows: 1
-            entity: sensor.tesla_charge_limit_soc
           - type: custom:mushroom-empty-card
           - type: custom:mushroom-climate-card
             entity: climate.eazy_klimat
