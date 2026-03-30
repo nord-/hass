@@ -266,6 +266,10 @@
   - at: sensor.tesla_y_charge_period
     trigger: time
   conditions:
+  - alias: Charge enabled
+    condition: state
+    entity_id: input_boolean.car_1_charge
+    state: 'on'
   - condition: state
     state: home
     entity_id: device_tracker.tesla_location
@@ -287,11 +291,10 @@
     entity_id: sensor.tesla_battery_level
     below: sensor.tesla_charge_limit_soc
   actions:
-  - data:
-      stop_actions: false
+  - data: {}
     target:
-      entity_id: automation.ladda_bilen_nar_det_ar_billigt
-    action: automation.turn_off
+      entity_id: input_boolean.car_1_charge
+    action: input_boolean.turn_off
   - data: {}
     enabled: false
     action: script.ladda_bilen_uppstart
@@ -1307,6 +1310,10 @@
     alias: When at Start time
     trigger: time
   conditions:
+  - alias: Charge enabled
+    condition: state
+    entity_id: input_boolean.car_2_charge
+    state: 'on'
   - alias: When SoC is below limit
     condition: numeric_state
     entity_id: sensor.byd_dolphin_soc
@@ -1346,13 +1353,11 @@
         }} kr\n {{now().strftime(''%d %H:%M'')}}'
     alias: Send message
     action: notify.rickards_devices
-  - alias: 'Turn off automation '
-    data:
-      stop_actions: true
+  - alias: Turn off charge flag
+    data: {}
     target:
-      entity_id:
-      - automation.zoe_charge
-    action: automation.turn_off
+      entity_id: input_boolean.car_2_charge
+    action: input_boolean.turn_off
   - delay:
       hours: 0
       minutes: 2
@@ -1665,7 +1670,7 @@
     entity_id: device_tracker.tesla_location
     zone: zone.home
   - condition: state
-    entity_id: automation.ladda_bilen_nar_det_ar_billigt
+    entity_id: input_boolean.car_1_charge
     state: 'off'
   - condition: template
     value_template: '{{ trigger.from_state.state not in [''unknown'', ''unavailable'']
@@ -1674,9 +1679,9 @@
   actions:
   - data: {}
     target:
-      entity_id: automation.ladda_bilen_nar_det_ar_billigt
-    alias: Enable Automation Ladda Car 1
-    action: automation.turn_on
+      entity_id: input_boolean.car_1_charge
+    alias: Enable charge Car 1
+    action: input_boolean.turn_on
   mode: single
 - id: '1717930116901'
   alias: Dolphin, show SoC while charging
@@ -2393,20 +2398,18 @@
       - as_timestamp(from.last_changed)) >= 300 }}\n{% endif %}"
     alias: NOT Connected for >5 mins
   - condition: state
-    entity_id: automation.zoe_charge
-    state:
-    - 'off'
+    entity_id: input_boolean.car_2_charge
+    state: 'off'
   - condition: state
     entity_id: sensor.byd_dolphin_status
     state:
     - connected
   actions:
-  - alias: Enable Automation Dolphin, Charge
+  - alias: Enable charge Dolphin
     data: {}
     target:
-      entity_id:
-      - automation.zoe_charge
-    action: automation.turn_on
+      entity_id: input_boolean.car_2_charge
+    action: input_boolean.turn_on
   mode: single
 - id: '1743292800000'
   alias: Dolphin, notify charge planned

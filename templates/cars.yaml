@@ -178,7 +178,7 @@
       entity_id: input_datetime.zoe_before
       to:
     - platform: state
-      entity_id: automation.zoe_charge
+      entity_id: input_boolean.car_2_charge
       to:
     - platform: state
       entity_id: sensor.tesla_y_charge_period
@@ -188,7 +188,7 @@
     device_class: timestamp
     name: "Car 2 charge period"
     state: >-
-      {% set duration = states('sensor.template_zoe_req_hours')|float(0) if is_state('automation.zoe_charge','on') else 0 %}
+      {% set duration = states('sensor.template_zoe_req_hours')|float(0) if is_state('input_boolean.car_2_charge','on') else 0 %}
       {% if duration <= 0 -%}
         unavailable
       {%- else %}
@@ -202,7 +202,7 @@
         {% endif %}
         {% set entry_hours = ((prices[1].start - prices[0].start).total_seconds() / 3600) if prices|length > 1 else 1.0 %}
         {% set other_state = states('sensor.tesla_y_charge_period') %}
-        {% set other_dur = states('sensor.template_rya_req_hours')|float(0) if is_state('automation.ladda_bilen_nar_det_ar_billigt','on') else 0 %}
+        {% set other_dur = states('sensor.template_rya_req_hours')|float(0) if is_state('input_boolean.car_1_charge','on') else 0 %}
         {% set other_start = other_state|as_datetime if other_state not in ['unavailable','unknown'] and other_dur > 0 else none %}
         {% set other_end = other_start + timedelta(hours=other_dur) if other_start else none %}
         {% set fees = states('sensor.template_fees_ex_vat')|float(0) %}
@@ -243,7 +243,7 @@
       {%- endif %}
     attributes:
       periods_list: >-
-        {% set duration = states('sensor.template_zoe_req_hours')|float(0) if is_state('automation.zoe_charge','on') else 0 %}
+        {% set duration = states('sensor.template_zoe_req_hours')|float(0) if is_state('input_boolean.car_2_charge','on') else 0 %}
         {% if duration <= 0 %}
           []
         {% else %}
@@ -259,7 +259,7 @@
           {% set fees = states('sensor.template_fees_ex_vat')|float(0) %}
           {% set power = states('sensor.template_car_2_season_power')|float(1) %}
           {% set other_state = states('sensor.tesla_y_charge_period') %}
-          {% set other_dur = states('sensor.template_rya_req_hours')|float(0) if is_state('automation.ladda_bilen_nar_det_ar_billigt','on') else 0 %}
+          {% set other_dur = states('sensor.template_rya_req_hours')|float(0) if is_state('input_boolean.car_1_charge','on') else 0 %}
           {% set other_start = other_state|as_datetime if other_state not in ['unavailable','unknown'] and other_dur > 0 else none %}
           {% set other_end = other_start + timedelta(hours=other_dur) if other_start else none %}
           {% set candidates = namespace(value=[]) %}
@@ -305,7 +305,7 @@
       entity_id: input_datetime.rya_before
       to:
     - platform: state
-      entity_id: automation.ladda_bilen_nar_det_ar_billigt
+      entity_id: input_boolean.car_1_charge
       to:
     - platform: state
       entity_id: sensor.byd_eazy_charge_period
@@ -315,7 +315,7 @@
     device_class: timestamp
     name: "Car 1 charge period"
     state: >-
-      {% set duration = states('sensor.template_rya_req_hours')|float(0) if is_state('automation.ladda_bilen_nar_det_ar_billigt','on') else 0 %}
+      {% set duration = states('sensor.template_rya_req_hours')|float(0) if is_state('input_boolean.car_1_charge','on') else 0 %}
       {% if duration <= 0 -%}
         unavailable
       {%- else %}
@@ -329,7 +329,7 @@
         {% endif %}
         {% set entry_hours = ((prices[1].start - prices[0].start).total_seconds() / 3600) if prices|length > 1 else 1.0 %}
         {% set other_state = states('sensor.byd_eazy_charge_period') %}
-        {% set other_dur = states('sensor.template_zoe_req_hours')|float(0) if is_state('automation.zoe_charge','on') else 0 %}
+        {% set other_dur = states('sensor.template_zoe_req_hours')|float(0) if is_state('input_boolean.car_2_charge','on') else 0 %}
         {% set other_start = other_state|as_datetime if other_state not in ['unavailable','unknown'] and other_dur > 0 else none %}
         {% set other_end = other_start + timedelta(hours=other_dur) if other_start else none %}
         {% set fees = states('sensor.template_fees_ex_vat')|float(0) %}
@@ -370,7 +370,7 @@
       {%- endif %}
     attributes:
       periods_list: >-
-        {% set duration = states('sensor.template_rya_req_hours')|float(0) if is_state('automation.ladda_bilen_nar_det_ar_billigt','on') else 0 %}
+        {% set duration = states('sensor.template_rya_req_hours')|float(0) if is_state('input_boolean.car_1_charge','on') else 0 %}
         {% if duration <= 0 %}
           []
         {% else %}
@@ -386,7 +386,7 @@
           {% set fees = states('sensor.template_fees_ex_vat')|float(0) %}
           {% set power = states('sensor.template_car_1_season_power')|float(1) %}
           {% set other_state = states('sensor.byd_eazy_charge_period') %}
-          {% set other_dur = states('sensor.template_zoe_req_hours')|float(0) if is_state('automation.zoe_charge','on') else 0 %}
+          {% set other_dur = states('sensor.template_zoe_req_hours')|float(0) if is_state('input_boolean.car_2_charge','on') else 0 %}
           {% set other_start = other_state|as_datetime if other_state not in ['unavailable','unknown'] and other_dur > 0 else none %}
           {% set other_end = other_start + timedelta(hours=other_dur) if other_start else none %}
           {% set candidates = namespace(value=[]) %}
