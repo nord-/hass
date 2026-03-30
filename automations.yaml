@@ -2429,9 +2429,9 @@
   - action: notify.rickards_devices
     data:
       title: Dolphin laddning planerad
-      message: '🔋 SoC: {{states("sensor.byd_dolphin_soc")}}%\n🎯 Target: {{states("input_number.zoe_soc_upper_limit")|int}}%\n⏰ Start: {{(states("sensor.byd_eazy_charge_period")|as_datetime|as_local).strftime("%H:%M") if states("sensor.byd_eazy_charge_period") not in ["unknown","unavailable"] else "-"}}\n🏁 Klar innan: {{states("input_datetime.zoe_before")}}\n💰 Kostnad: {{(state_attr("sensor.byd_eazy_charge_period","All sequences")[0].cost|round(0)|int) if state_attr("sensor.byd_eazy_charge_period","All sequences") else "-"}} kr'
+      message: '🔋 SoC: {{state_attr("sensor.byd_eazy_charge_period","current_soc")}}%\n🎯 Target: {{state_attr("sensor.byd_eazy_charge_period","target_soc")}}%\n⏰ Start: {{(states("sensor.byd_eazy_charge_period")|as_datetime|as_local).strftime("%H:%M") if states("sensor.byd_eazy_charge_period") not in ["unknown","unavailable"] else "-"}}\n🏁 Klar innan: {{(state_attr("sensor.byd_eazy_charge_period","deadline")|as_datetime|as_local).strftime("%H:%M")}}\n💰 Kostnad: {{state_attr("sensor.byd_eazy_charge_period","All sequences").values()|first}}'
       data:
-        tag: dolphin_charge_planned
+        tag: dolphin_start_charging
         clickAction: /lovelace/tesla
         channel: ev
   mode: single
