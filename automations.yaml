@@ -842,7 +842,7 @@
           tag: igrill
           channel: Alarm
           clickAction: /lovelace/koket
-        message: Temperaturen är {{ states.sensor.igrill_probe_1.state|int }}°C.
+        message: "\U0001F321️ Temperaturen är {{ states.sensor.igrill_probe_1.state|int }}°C."
       alias: Send alarm notification
       action: notify.rickards_devices
     else:
@@ -853,8 +853,7 @@
           sticky: true
           channel: Food
           clickAction: /lovelace/koket
-        message: '{{ states("sensor.igrill_probe_1")|int }}°C\n ({{states("input_number.igrill_target_temp")|int}}°C)
-          • {{now().strftime(''%H:%M'')}}'
+        message: "\U0001F321️ {{ states('sensor.igrill_probe_1')|int }}°C\n\U0001F3AF ({{states('input_number.igrill_target_temp')|int}}°C)"
       alias: Send persistant notification
       action: notify.rickards_devices
   mode: single
