@@ -2516,5 +2516,5 @@
       message: "{{ parts }}"
       data:
         tag: pollen
-        channel: Alarm
+        channel: Weather
   mode: single

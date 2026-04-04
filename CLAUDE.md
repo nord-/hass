@@ -111,6 +111,7 @@ Controlled via 3 switched phases: `switch.spabadet_l2` (heater), `switch.spabade
 - **Secrets**: All credentials in `secrets.yaml` (git-ignored)
 - **Language**: Swedish in UI labels and automation descriptions
 - **Database**: 3-day history retention in external MariaDB
+- **No Co-Authored-By**: Never add `Co-Authored-By: Claude` (or similar) in commit messages, PR descriptions, or PR comments
 
 ## Network Context
 
