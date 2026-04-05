@@ -16,6 +16,7 @@ google_service_account.json
 # ignore folders
 .storage
 .cloud
+www/community
 .google.token
 .ssh
 custom_components
