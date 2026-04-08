@@ -190,11 +190,15 @@
     device_class: monetary
 
   - unique_id: house_cost
-    # state: "{{ states('sensor.template_house_power_kw')|float(0) * states('sensor.template_elpris_kr') | float(0) }}"
-    state: "{{ (states('sensor.template_house_power_w')|float(0)/1000.0) * states('sensor.template_elpris_kr')|float(0) }}"
+    state: >-
+      {% set total_kw = states('sensor.template_house_power_kw')|float(0) %}
+      {% set grid_kw = states('sensor.template_house_power_w')|float(0) / 1000.0 %}
+      {% set solar_kw = [total_kw - grid_kw, 0]|max %}
+      {{ (grid_kw * states('sensor.template_elpris_kr')|float(0)
+        + solar_kw * states('sensor.template_elpris_solar_kr')|float(0))|round(4) }}
     unit_of_measurement: kr
     device_class: monetary
-    name: "Kostnad köpt el [kr]"
+    name: "Kostnad all el [kr]"
 
   - unique_id: spot_gain_loss_daily
     unit_of_measurement: '%'
