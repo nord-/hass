@@ -97,6 +97,13 @@
     state: "{{(((states('sensor.power_ac_fronius_inverter_1_192_168_2_31')|float(default=0))/1000)|float + states('sensor.template_grid_power_kw')|float)|round(2)}}"
     name: "Husets förbrukning [kW]"
 
+  - unique_id: self_consumed_solar_kw
+    unit_of_measurement: "kW"
+    device_class: power
+    state_class: measurement
+    state: "{{ [states('sensor.template_house_power_kw')|float(0) - states('sensor.grid_buy_power_kw')|float(0), 0]|max|round(3) }}"
+    name: "Egenförbrukad sol [kW]"
+
   - unique_id: house_net_energy_kwh
     unit_of_measurement: "kWh"
     device_class: energy

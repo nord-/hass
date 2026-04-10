@@ -2369,8 +2369,8 @@ views:
                 float_precision: 2
                 color: '#6f90f4'
                 curve: stepline
-              - entity: sensor.template_house_power_kw
-                name: hus
+              - entity: sensor.grid_buy_power_kw
+                name: Köpt
                 type: column
                 color: '#B0C4DE'
                 stroke_width: 5
@@ -2379,8 +2379,8 @@ views:
                 group_by:
                   func: avg
                   duration: 1h
-              - entity: sensor.template_fronius_solar_power
-                name: sol
+              - entity: sensor.self_consumed_solar_kw
+                name: Sol
                 type: column
                 color: '#3CB371'
                 stroke_width: 5
@@ -2393,15 +2393,16 @@ views:
             graph_span: 1d
             span:
               end: hour
+            stacked: true
             apex_config:
               yaxis:
-                - seriesName: pris
+                - seriesName: Pris
                   decimalsInFloat: 2
                   min: 0
                   opposite: true
-                - seriesName: hus
+                - seriesName: Köpt
                   decimalsInFloat: 1
-                - seriesName: hus
+                - seriesName: Köpt
                   show: false
               legend:
                 show: false
