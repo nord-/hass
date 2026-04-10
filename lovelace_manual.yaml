@@ -2379,7 +2379,7 @@ views:
                 group_by:
                   func: avg
                   duration: 1h
-              - entity: sensor.self_consumed_solar_kw
+              - entity: sensor.egenforbrukad_sol_kw
                 name: Sol
                 type: column
                 color: '#3CB371'
