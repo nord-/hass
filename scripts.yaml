@@ -637,6 +637,72 @@ byd_stop_charge:
   mode: single
   icon: mdi:ev-station
   description: ''
+byd_charge_forty:
+  alias: Delphine, Charge to 40%
+  description: Ladda Dolphin till 40% SoC - beräknar energimängd och ChargeNode avbryter automatiskt
+  icon: mdi:battery-40
+  mode: single
+  sequence:
+  - alias: Check SoC is below 40
+    condition: numeric_state
+    entity_id: sensor.byd_dolphin_soc
+    below: 40
+  - alias: Turn off household consumers
+    action: script.turn_on
+    data: {}
+    target:
+      entity_id: script.ladda_bilen_uppstart
+  - alias: Start charging to 40%
+    action: retry.actions
+    data:
+      sequence:
+      - action: rest_command.cn_charge_byd_to_soc
+        data:
+          target_soc: 40
+  - alias: Notify Charge starting
+    action: notify.rickards_devices
+    data:
+      title: Dolphin börjar ladda (mål 40%)
+      message: 'SoC:    {{states("sensor.byd_dolphin_soc")}}%\n Priset: {{states("sensor.template_nordpool_current_price_vat")}}
+        kr\n {{now().strftime(''%d %H:%M'')}}'
+      data:
+        sticky: true
+        tag: dolphin_charge_40
+        clickAction: /lovelace/tesla
+        channel: ev
+tesla_charge_forty:
+  alias: Tesla, Charge to 40%
+  description: Ladda Tesla till 40% SoC - beräknar energimängd och ChargeNode avbryter automatiskt
+  icon: mdi:battery-40
+  mode: single
+  sequence:
+  - alias: Check SoC is below 40
+    condition: numeric_state
+    entity_id: sensor.tesla_battery_level
+    below: 40
+  - alias: Turn off household consumers
+    action: script.turn_on
+    data: {}
+    target:
+      entity_id: script.ladda_bilen_uppstart
+  - alias: Start charging to 40%
+    action: retry.actions
+    data:
+      sequence:
+      - action: rest_command.cn_charge_tesla_to_soc
+        data:
+          target_soc: 40
+  - alias: Notify Charge starting
+    action: notify.rickards_devices
+    data:
+      title: Eazy börjar ladda (mål 40%)
+      message: 'SoC:    {{states("sensor.tesla_battery_level")}}%\n Priset: {{states("sensor.template_nordpool_current_price_vat")}}
+        kr\n {{now().strftime(''%d %H:%M'')}}'
+      data:
+        sticky: true
+        tag: tesla_charge_40
+        clickAction: /lovelace/tesla
+        channel: ev
 car_1_hvac:
   sequence:
   - action: climate.turn_on
