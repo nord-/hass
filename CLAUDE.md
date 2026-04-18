@@ -112,6 +112,7 @@ Controlled via 3 switched phases: `switch.spabadet_l2` (heater), `switch.spabade
 - **Language**: Swedish in UI labels and automation descriptions
 - **Database**: 3-day history retention in external MariaDB
 - **No Co-Authored-By**: Never add `Co-Authored-By: Claude` (or similar) in commit messages, PR descriptions, or PR comments
+- **Resolve review threads**: After addressing a PR review comment in code, mark that review thread resolved on GitHub (via `mcp__github__resolve_review_thread`). If the thread's GraphQL node ID isn't available through the MCP tools, tell the user so they can resolve it manually.
 
 ## Network Context
 
