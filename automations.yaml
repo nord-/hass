@@ -1872,7 +1872,7 @@
         kl. {{closest(states.geo_location).last_updated|as_timestamp(0)|timestamp_custom("%H:%M")}}
       data:
         clickAction: /lovelace/ute
-        channel: weather
+        channel: Thunder
   mode: single
 - id: '1753005702141'
   alias: Tesla, charging
