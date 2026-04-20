@@ -373,17 +373,9 @@ views:
               columns: 6
               rows: 1
             entity: sensor.tesla_charge_limit_soc
-          - type: custom:mushroom-number-card
+          - type: custom:mushroom-entity-card
             entity: input_number.zoe_soc_upper_limit
-            name: Ladda till
-            display_mode: buttons
-            grid_options:
-              columns: 6
-              rows: 1
-            icon: mdi:battery-medium
-            primary_info: none
-            secondary_info: none
-            layout: horizontal
+            name: SoC limit
           - type: custom:mushroom-template-card
             primary: Dörrar
             icon: |-
@@ -1057,33 +1049,14 @@ views:
               {{"green" if states("sensor.tesla_state")=="charging" else
               "grey"}}
             features_position: bottom
-          - type: custom:mushroom-empty-card
-          - type: custom:mushroom-climate-card
+          - show_name: false
+            show_icon: true
+            type: button
             entity: climate.eazy_klimat
+            icon: mdi:snowflake-melt
             grid_options:
-              columns: 6
-              rows: 2
-            show_temperature_control: true
-          - type: custom:mushroom-template-card
-            icon: mdi:update
-            secondary: >-
-              {{states.sensor.tesla_battery_level.last_updated | as_timestamp |
-              timestamp_custom("%H:%M")}}
-            tap_action:
-              action: more-info
-            hold_action:
-              action: none
-            double_tap_action:
-              action: none
-            badge_icon: ''
-            badge_color: ''
-            grid_options:
-              columns: 6
+              columns: 4
               rows: 1
-            primary: Uppdaterad
-            entity: sensor.tesla_since
-            color: blue
-            features_position: bottom
           - type: entities
             entities:
               - entity: input_datetime.rya_before
@@ -1124,8 +1097,34 @@ views:
               columns: 12
               rows: 1
             card_mod:
-              style: |
-                div.card-content { padding: 8px 4px; }
+              style: >
+                div.card-content { padding: 0 !important; scrollbar-width: none;
+                }
+          - type: custom:mushroom-template-card
+            icon: mdi:battery-40
+            features_position: bottom
+            color: >-
+              {{"green" if states("sensor.tesla_state")=="charging" else
+              "grey"}}
+            primary: ➡️ 40%
+            grid_options:
+              columns: 6
+              rows: 1
+            entity: script.tesla_charge_forty
+            badge_color: green
+            badge_icon: >-
+              {{"mdi:lightning-bolt" if states("sensor.tesla_state")=="charging"
+              }}
+            tap_action:
+              action: perform-action
+              perform_action: script.turn_on
+              target:
+                entity_id: script.tesla_charge_forty
+            icon_tap_action:
+              action: perform-action
+              perform_action: script.turn_on
+              target:
+                entity_id: script.tesla_charge_forty
       - type: grid
         cards:
           - type: heading
@@ -1282,8 +1281,9 @@ views:
               columns: 12
               rows: 1
             card_mod:
-              style: |
-                div.card-content { padding: 8px 4px; }
+              style: >
+                div.card-content { padding: 0 !important; scrollbar-width: none;
+                }
       - type: grid
         cards:
           - type: heading
