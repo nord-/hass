@@ -842,7 +842,8 @@
           tag: igrill
           channel: Alarm
           clickAction: /lovelace/koket
-        message: "\U0001F321️ Temperaturen är {{ states.sensor.igrill_probe_1.state|int }}°C."
+        message: "\U0001F321️ Temperaturen är {{ states.sensor.igrill_probe_1.state|int
+          }}°C."
       alias: Send alarm notification
       action: notify.rickards_devices
     else:
@@ -853,7 +854,8 @@
           sticky: true
           channel: Food
           clickAction: /lovelace/koket
-        message: "\U0001F321️ {{ states('sensor.igrill_probe_1')|int }}°C\n\U0001F3AF ({{states('input_number.igrill_target_temp')|int}}°C)"
+        message: "\U0001F321️ {{ states('sensor.igrill_probe_1')|int }}°C\n\U0001F3AF
+          ({{states('input_number.igrill_target_temp')|int}}°C)"
       alias: Send persistant notification
       action: notify.rickards_devices
   mode: single
@@ -1080,17 +1082,13 @@
     id: afternoon
   conditions:
   - condition: template
-    value_template: >
-      {% set is_workday = is_state('binary_sensor.workday_sensor', 'on') %}
-      {% set is_workday_tomorrow = is_state('binary_sensor.workday_tomorrow',
-      'on') %}
-      {% set was_workday_yesterday = is_state('binary_sensor.workday_yesterday',
-      'on') %}
-      {% set pre_free = is_workday and not is_workday_tomorrow %}
-      {% set first_free = not is_workday and was_workday_yesterday %}
-      {{ (trigger.id == 'morning' and pre_free) or
-         (trigger.id == 'noon' and (pre_free or first_free)) or
-         (trigger.id == 'afternoon' and first_free) }}
+    value_template: "{% set is_workday = is_state('binary_sensor.workday_sensor',
+      'on') %} {% set is_workday_tomorrow = is_state('binary_sensor.workday_tomorrow',
+      'on') %} {% set was_workday_yesterday = is_state('binary_sensor.workday_yesterday',
+      'on') %} {% set pre_free = is_workday and not is_workday_tomorrow %} {% set
+      first_free = not is_workday and was_workday_yesterday %} {{ (trigger.id == 'morning'
+      and pre_free) or\n   (trigger.id == 'noon' and (pre_free or first_free)) or\n
+      \  (trigger.id == 'afternoon' and first_free) }}\n"
   actions:
   - choose:
     - conditions:
@@ -1104,19 +1102,13 @@
             tag: spa_ready
             channel: Spa
             clickAction: /lovelace/spa
-          message: >
-            {% set current_temp = states('sensor.template_spabadet_temperature')
-            | float(0) %}
-            {% set target = states('input_number.spabadet_target_temp_weekends')
-            | float(0) %}
-            {% set outside_temp = states('sensor.template_home_temp') | float(0) %}
-            🛁 {{ current_temp }}°C (mål {{ target|int }}°C)
-            {% if current_temp >= target %}
-            ✅ Redo för bad!
-            {% else %}
-            ⏳ {{ (target - current_temp) | round(1) }}°C kvar
-            {% endif %}
-            🌿 Ute: {{ outside_temp }}°C
+          message: "{% set current_temp = states('sensor.template_spabadet_temperature')
+            | float(0) %} {% set target = states('input_number.spabadet_target_temp_weekends')
+            | float(0) %} {% set outside_temp = states('sensor.template_home_temp')
+            | float(0) %} \U0001F6C1 {{ current_temp }}°C (mål {{ target|int }}°C)
+            {% if current_temp >= target %} ✅ Redo för bad! {% else %} ⏳ {{ (target
+            - current_temp) | round(1) }}°C kvar {% endif %} \U0001F33F Ute: {{ outside_temp
+            }}°C\n"
     default:
     - action: notify.rickards_devices
       data:
@@ -1131,19 +1123,19 @@
           | float(0) %} {% set current_hour = now().hour %} {% if current_temp >=
           target %} \U0001F321️ {{ current_temp }}°C (mål {{ target|int }}°C)\\n\U0001F33F
           Ute: {{ outside_temp }}°C\\n✅ Redan vid måltemperatur! {% else %} {% set
-          hours_left = 16 - current_hour %} {% set hours_needed = ((target + 1 -
-          current_temp + hours_left * 0.2) / 2.0) | round(0, 'ceil') | int %} {%
-          set hours_needed = [hours_needed, 0] | max %} {% set prices = state_attr('sensor.nordpool_kwh_se3_sek_3_095_0',
+          hours_left = 16 - current_hour %} {% set hours_needed = ((target + 1 - current_temp
+          + hours_left * 0.2) / 2.0) | round(0, 'ceil') | int %} {% set hours_needed
+          = [hours_needed, 0] | max %} {% set prices = state_attr('sensor.nordpool_kwh_se3_sek_3_095_0',
           'today') %} {% if prices is not none and hours_needed > 0 and hours_left
           > 0 %} {% set remaining = prices[current_hour:16] | sort %} {% set ix =
-          [hours_needed - 1, remaining | length - 1] | min %} {% set threshold =
-          remaining[ix] %} {% set ns = namespace(last_hour = current_hour) %} {% for
-          i in range(current_hour, 16) %} {% if prices[i] <= threshold %} {% set ns.last_hour
-          = i %} {% endif %} {% endfor %} \U0001F321️ {{ current_temp }}°C → {{ target|int
-          }}°C\\n\U0001F33F Ute: {{ outside_temp }}°C\\n⏰ Klart ca kl {{ '%02d:00'
-          | format([ns.last_hour + 1, 16] | min) }} ({{ hours_needed }} tim) {% else
-          %} \U0001F321️ {{ current_temp }}°C → {{ target|int }}°C\\n\U0001F33F Ute:
-          {{ outside_temp }}°C {% endif %} {% endif %}"
+          [hours_needed - 1, remaining | length - 1] | min %} {% set threshold = remaining[ix]
+          %} {% set ns = namespace(last_hour = current_hour) %} {% for i in range(current_hour,
+          16) %} {% if prices[i] <= threshold %} {% set ns.last_hour = i %} {% endif
+          %} {% endfor %} \U0001F321️ {{ current_temp }}°C → {{ target|int }}°C\\n\U0001F33F
+          Ute: {{ outside_temp }}°C\\n⏰ Klart ca kl {{ '%02d:00' | format([ns.last_hour
+          + 1, 16] | min) }} ({{ hours_needed }} tim) {% else %} \U0001F321️ {{ current_temp
+          }}°C → {{ target|int }}°C\\n\U0001F33F Ute: {{ outside_temp }}°C {% endif
+          %} {% endif %}"
   mode: single
 - id: '1684931331914'
   alias: 'Wall-E: Query Status'
@@ -2163,7 +2155,17 @@
       minutes: 5
       seconds: 0
     alias: Current Is 0 for 5 mins
-  conditions: []
+  conditions:
+  - condition: or
+    conditions:
+    - condition: numeric_state
+      entity_id: sensor.chargenode_sma_voltage_l1
+      below: 1
+    - condition: state
+      entity_id: sensor.chargenode_sma_voltage_l1
+      state:
+      - unavailable
+    alias: Voltage is 0 or Unavailable
   actions:
   - data:
       message: ⚠️ SMA offline (eller ogiltigt värde)\n ({{states("sensor.chargenode_sma_current_l1")|float(0)}})
@@ -2403,12 +2405,39 @@
     entity_id: sensor.byd_dolphin_status
     state:
     - connected
+  - condition: numeric_state
+    entity_id: sensor.byd_dolphin_soc
+    below: input_number.zoe_soc_upper_limit
+    enabled: false
   actions:
   - alias: Enable charge Dolphin
     data: {}
     target:
       entity_id: input_boolean.car_2_charge
     action: input_boolean.turn_on
+  - delay:
+      hours: 0
+      minutes: 1
+      seconds: 0
+      milliseconds: 0
+  - if:
+    - condition: numeric_state
+      entity_id: sensor.byd_dolphin_soc
+      below: input_number.zoe_soc_upper_limit
+    then:
+    - action: notify.rickards_devices
+      data:
+        title: Dolphin laddning planerad
+        message: "\U0001F50B SoC: {{state_attr(\"sensor.byd_eazy_charge_period\",\"current_soc\")}}%\\n\U0001F3AF
+          Target: {{state_attr(\"sensor.byd_eazy_charge_period\",\"target_soc\")}}%\\n⏰
+          Start: {{(states(\"sensor.byd_eazy_charge_period\")|as_datetime|as_local).strftime(\"%H:%M\")
+          if states(\"sensor.byd_eazy_charge_period\") not in [\"unknown\",\"unavailable\"]
+          else \"-\"}}\\n\U0001F3C1 Klar innan: {{(state_attr(\"sensor.byd_eazy_charge_period\",\"deadline\")|as_datetime|as_local).strftime(\"%H:%M\")}}\\n\U0001F4B0
+          Kostnad: {{state_attr(\"sensor.byd_eazy_charge_period\",\"All sequences\").values()|first}}"
+        data:
+          tag: dolphin_start_charging
+          clickAction: /lovelace/tesla
+          channel: ev
   mode: single
 - id: '1743292800000'
   alias: Dolphin, notify charge planned
@@ -2428,7 +2457,12 @@
   - action: notify.rickards_devices
     data:
       title: Dolphin laddning planerad
-      message: '🔋 SoC: {{state_attr("sensor.byd_eazy_charge_period","current_soc")}}%\n🎯 Target: {{state_attr("sensor.byd_eazy_charge_period","target_soc")}}%\n⏰ Start: {{(states("sensor.byd_eazy_charge_period")|as_datetime|as_local).strftime("%H:%M") if states("sensor.byd_eazy_charge_period") not in ["unknown","unavailable"] else "-"}}\n🏁 Klar innan: {{(state_attr("sensor.byd_eazy_charge_period","deadline")|as_datetime|as_local).strftime("%H:%M")}}\n💰 Kostnad: {{state_attr("sensor.byd_eazy_charge_period","All sequences").values()|first}}'
+      message: "\U0001F50B SoC: {{state_attr(\"sensor.byd_eazy_charge_period\",\"current_soc\")}}%\\n\U0001F3AF
+        Target: {{state_attr(\"sensor.byd_eazy_charge_period\",\"target_soc\")}}%\\n⏰
+        Start: {{(states(\"sensor.byd_eazy_charge_period\")|as_datetime|as_local).strftime(\"%H:%M\")
+        if states(\"sensor.byd_eazy_charge_period\") not in [\"unknown\",\"unavailable\"]
+        else \"-\"}}\\n\U0001F3C1 Klar innan: {{(state_attr(\"sensor.byd_eazy_charge_period\",\"deadline\")|as_datetime|as_local).strftime(\"%H:%M\")}}\\n\U0001F4B0
+        Kostnad: {{state_attr(\"sensor.byd_eazy_charge_period\",\"All sequences\").values()|first}}"
       data:
         tag: dolphin_start_charging
         clickAction: /lovelace/tesla
@@ -2457,10 +2491,10 @@
   description: ''
   triggers:
   - trigger: time
-    at: '07:00:00'
+    at: 07:00:00
     id: workday
   - trigger: time
-    at: '09:00:00'
+    at: 09:00:00
     id: weekend
   conditions:
   - condition: or
@@ -2492,9 +2526,9 @@
       above: 0
   actions:
   - variables:
-      hassel: "{{ states('sensor.pollen_goteborg_hassel') | int(0) }}"
-      bjork: "{{ states('sensor.pollen_goteborg_bjork') | int(0) }}"
-      gras: "{{ states('sensor.pollen_goteborg_gras') | int(0) }}"
+      hassel: '{{ states(''sensor.pollen_goteborg_hassel'') | int(0) }}'
+      bjork: '{{ states(''sensor.pollen_goteborg_bjork'') | int(0) }}'
+      gras: '{{ states(''sensor.pollen_goteborg_gras'') | int(0) }}'
       levels:
         '1': Låga
         '2': Låga-måttliga
@@ -2503,16 +2537,15 @@
         '5': Höga
         '6': Höga-mycket höga
         '7': Mycket höga
-      parts: >-
-        {% set ns = namespace(items=[]) %}
-        {% if bjork > 0 %}{% set ns.items = ns.items + ['Björk: ' ~ levels[bjork|string]] %}{% endif %}
-        {% if gras > 0 %}{% set ns.items = ns.items + ['Gräs: ' ~ levels[gras|string]] %}{% endif %}
-        {% if hassel > 2 %}{% set ns.items = ns.items + ['Hassel: ' ~ levels[hassel|string]] %}{% endif %}
-        {{ ns.items | join('\n') }}
+      parts: '{% set ns = namespace(items=[]) %} {% if bjork > 0 %}{% set ns.items
+        = ns.items + [''Björk: '' ~ levels[bjork|string]] %}{% endif %} {% if gras
+        > 0 %}{% set ns.items = ns.items + [''Gräs: '' ~ levels[gras|string]] %}{%
+        endif %} {% if hassel > 2 %}{% set ns.items = ns.items + [''Hassel: '' ~ levels[hassel|string]]
+        %}{% endif %} {{ ns.items | join(''\n'') }}'
   - action: notify.rickards_devices
     data:
       title: "\U0001F33C Pollenvarning"
-      message: "{{ parts }}"
+      message: '{{ parts }}'
       data:
         tag: pollen
         channel: Weather

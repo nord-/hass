@@ -189,7 +189,7 @@ views:
               - type: entity
                 show_state: true
                 show_icon: true
-                entity: sensor.wall_e_blades_current_on_time_2
+                entity: sensor.geten_bladets_livslangd
                 tap_action:
                   action: more-info
             visibility:
@@ -197,7 +197,7 @@ views:
                 entity: lawn_mower.wall_e
                 state_not: unavailable
           - type: custom:mushroom-template-card
-            primary: Wall-E • {{states("lawn_mower.wall_e")}}
+            primary: Geten • {{states("lawn_mower.geten")}}
             icon: mdi:mower
             secondary: >-
               {{
@@ -212,14 +212,14 @@ views:
 
               {%-endif-%}
             badge_icon: >-
-              {{ "mdi:pause" if states("lawn_mower.wall_e") == "paused" else
+              {{ "mdi:pause" if states("lawn_mower.geten") == "paused" else
               "mdi:play" }}
             badge_color: >-
-              {% if states("lawn_mower.wall_e") == "mowing" %}green{%elif
-              states("lawn_mower.wall_e") == "error" or
-              states("lawn_mower.wall_e") ==
+              {% if states("lawn_mower.geten") == "mowing" %}green{%elif
+              states("lawn_mower.geten") == "error" or
+              states("lawn_mower.geten") ==
               "unavailable"%}red{%else%}grey{%endif%}
-            entity: lawn_mower.wall_e
+            entity: lawn_mower.geten
             tap_action:
               action: perform-action
               perform_action: lawn_mower.pause
@@ -231,13 +231,9 @@ views:
               target:
                 device_id: 04744719de96abcefa75f8ffeeb42a05
             color: >-
-              {{ "green" if states("lawn_mower.wall_e") == "mowing" else
+              {{ "green" if states("lawn_mower.geten") == "mowing" else
               "#44739e" }}
             features_position: bottom
-            visibility:
-              - condition: state
-                entity: lawn_mower.wall_e
-                state_not: unavailable
       - type: grid
         cards:
           - type: heading
@@ -3200,13 +3196,14 @@ views:
                 show_icon: true
                 entity: sensor.wall_e_blades_current_on_time_2
                 icon: mdi:knife
-          - image: default
-            image_size: '2'
-            show_animation: true
+          - image_size: '2'
             show_status: true
             show_toolbar: true
+            show_edgecut: true
+            show_animation: true
+            image: default
             type: custom:landroid-card
-            entity: lawn_mower.wall_e
+            entity: lawn_mower.geten
             image_left: true
             compact_view: false
             show_name: false
@@ -3218,26 +3215,15 @@ views:
               - button.wall_e_reset_blade_time
           - type: history-graph
             entities:
-              - entity: lawn_mower.wall_e
-                name: ' '
+              - entity: lawn_mower.geten
             hours_to_show: 8
           - type: entities
             entities:
-              - entity: sensor.wall_e_error_2
-                secondary_info: last-changed
-                name: Fel
-                icon: mdi:mower-on
-            grid_options:
-              columns: 6
-              rows: auto
-          - type: entities
-            entities:
-              - entity: binary_sensor.wall_e_rainsensor_triggered_2
-                secondary_info: last-changed
-                name: Regn
-            grid_options:
-              columns: 6
-              rows: auto
+              - entity: sensor.geten_total_rengoringstid
+                name: Klipptid
+                icon: mdi:clock-fast
+              - entity: sensor.geten_bladets_livslangd
+              - entity: sensor.geten_linsborstens_livslangd
         visibility:
           - condition: state
             entity: lawn_mower.wall_e
