@@ -563,385 +563,6 @@ views:
               tomorrow: Imorgon
               fullDay: Hela dagen
               noEvents: ' '
-      - type: grid
-        cards:
-          - type: heading
-            heading: Rummen
-          - square: false
-            columns: 2
-            type: grid
-            cards:
-              - type: custom:vertical-stack-in-card
-                cards:
-                  - type: custom:mushroom-template-card
-                    entity: group.vrum_nere
-                    primary: Vardagsrummet
-                    secondary: >
-                      {{ states('sensor.vardagsrummet_temperature')|round }}°C
-                      •🔋{{ states('sensor.vardagsrummet_power')|round }}%
-                    icon: mdi:sofa
-                    icon_color: >-
-                      {% if states('sensor.vardagsrummet_temperature')|round >
-                      24 %}
-
-                      red
-
-                      {% elif states('sensor.vardagsrummet_temperature')|round >
-                      21 %}
-
-                      green
-
-                      {% else %}
-
-                      blue
-
-                      {% endif %}
-                    tap_action:
-                      action: more-info
-                  - type: custom:mushroom-chips-card
-                    chips:
-                      - type: template
-                        entity: group.vrum_nere
-                        icon: mdi:lightbulb-group
-                        icon_color: |-
-                          {%if states('group.vrum_nere') == 'on' %}
-                            orange
-                          {%endif%}
-                        tap_action:
-                          action: toggle
-                    alignment: center
-                    card_mod:
-                      style: |
-                        ha-card {
-                          margin: -4px 0px 5px;
-                          --chip-border-width: 0;
-                          --chip-height: 40px;      
-                        }
-              - type: custom:vertical-stack-in-card
-                cards:
-                  - type: custom:mushroom-template-card
-                    entity: group.sovrummet
-                    primary: Sovrummet
-                    secondary: |
-                      {{states('sensor.215_temperature')|round}}°C
-                    icon: mdi:bed-double
-                    icon_color: |-
-                      {% if states('sensor.215_temperature')|round > 24 %}
-                      red
-                      {% elif states('sensor.215_temperature')|round > 21 %}
-                      green
-                      {% else %}
-                      blue
-                      {% endif %}
-                    tap_action:
-                      action: more-info
-                  - type: custom:mushroom-chips-card
-                    chips:
-                      - type: template
-                        entity: group.sovrummet
-                        icon: mdi:lightbulb-group
-                        icon_color: |-
-                          {%if states('group.sovrummet') == 'on' %}
-                            orange
-                          {%endif%}
-                        tap_action:
-                          action: toggle
-                    alignment: center
-                    card_mod:
-                      style: |
-                        ha-card {
-                          margin: -4px 0px 5px;
-                          --chip-border-width: 0;
-                          --chip-height: 40px;      
-                        }
-              - type: custom:vertical-stack-in-card
-                cards:
-                  - type: custom:mushroom-template-card
-                    entity: sensor.template_home_temp
-                    primary: Ute
-                    secondary: >
-                      {{states('sensor.template_home_temp')|round}}°C
-                      •🔋{{states('sensor.framsidan_batteri')|round }}%
-                    icon: mdi:home
-                    icon_color: |-
-                      {% if states('sensor.template_home_temp')|round > 26 %}
-                      red
-                      {% elif states('sensor.template_home_temp')|round > 15 %}
-                      green
-                      {% else %}
-                      blue
-                      {% endif %}
-                    tap_action:
-                      action: more-info
-                  - type: custom:mushroom-chips-card
-                    chips:
-                      - type: template
-                        entity: group.ute
-                        icon: mdi:lightbulb-group
-                        icon_color: |-
-                          {%if states('group.ute') == 'on' %}
-                            orange
-                          {%endif%}
-                        tap_action:
-                          action: toggle
-                      - type: template
-                        entity: lawn_mower.wall_e
-                        icon: mdi:robot-mower
-                        tap_action:
-                          action: more-info
-                        icon_color: |-
-                          {%if states('lawn_mower.wall_e') == 'mowing' %}
-                            green
-                          {% elif states('lawn_mower.wall_e') == 'returning' %}
-                            orange
-                          {% elif states('lawn_mower.wall_e') == 'docked' %}
-                            yellow
-                          {% elif states('lawn_mower.wall_e') == 'error' %}
-                            red
-                          {%endif%}
-                        hold_action:
-                          action: navigate
-                          navigation_path: /lovelace/koket
-                    alignment: center
-                    card_mod:
-                      style: |
-                        ha-card {
-                          margin: -4px 0px 5px;
-                          --chip-border-width: 0;
-                          --chip-height: 40px;      
-                        }
-              - type: custom:vertical-stack-in-card
-                cards:
-                  - type: custom:mushroom-template-card
-                    entity: sensor.xiaomi_lys3_temperatur
-                    primary: Köket
-                    secondary: >
-                      {{ states('sensor.xiaomi_lys3_temperatur')|round }}°C
-                      •🔋{{ states('sensor.xiaomi_lys3_batteri')|round }}%
-                    icon: mdi:silverware-fork-knife
-                    icon_color: >-
-                      {% if states('sensor.xiaomi_lys3_temperatur')|round > 24
-                      %}
-
-                      red
-
-                      {% elif states('sensor.xiaomi_lys3_temperatur')|round > 21
-                      %}
-
-                      green
-
-                      {% else %}
-
-                      blue
-
-                      {% endif %}
-                    tap_action:
-                      action: more-info
-                  - type: custom:mushroom-chips-card
-                    chips:
-                      - type: template
-                        entity: group.koket
-                        icon: mdi:lightbulb-group
-                        tap_action:
-                          action: toggle
-                        icon_color: |-
-                          {%if states('group.koket') == 'on' %}
-                            orange
-                          {%endif%}
-                      - type: template
-                        entity: input_boolean.diskmaskinen_smart_start
-                        icon: mdi:dishwasher
-                        icon_color: >-
-                          {%if
-                          is_state('input_boolean.diskmaskinen_smart_start',
-                          'on') %}
-                            green
-                          {%endif%}
-                        tap_action:
-                          action: toggle
-                        hold_action:
-                          action: navigate
-                          navigation_path: /lovelace/koket
-                        content: >-
-                          {% if states("sensor.peaqnext_dishwasher")=="unknown"
-                          -%}
-
-                          --:--
-
-                          {%- else -%}
-
-                          {{states("sensor.peaqnext_dishwasher") |
-                          regex_replace('(>> )*(\d{2}:\d{2}).*', '\\2')}}
-
-                          {%- endif -%}
-                      - type: template
-                        tap_action:
-                          action: more-info
-                        hold_action:
-                          action: navigate
-                          navigation_path: /lovelace/koket
-                        entity: sensor.igrill_probe_1
-                        icon: mdi:grill
-                        icon_color: >-
-                          {% set temp_diff =
-                          states("input_number.igrill_target_temp")|int -
-                          states("sensor.igrill_probe_1")|int(0) -%}
-
-                          {%if temp_diff > 10 %}
-
-                          blue
-
-                          {%elif temp_diff > 5 %}
-
-                          yellow
-
-                          {%elif temp_diff > 0 %}
-
-                          orange
-
-                          {%else%}
-
-                          red
-
-                          {%endif%}
-                        content: '{{states("sensor.igrill_probe_1")|int(0)}}°C'
-                    alignment: center
-                    card_mod:
-                      style: |
-                        ha-card {
-                          margin: -4px 0px 5px;
-                          --chip-border-width: 0;
-                          --chip-height: 40px;      
-                        }
-              - type: custom:vertical-stack-in-card
-                cards:
-                  - type: custom:mushroom-template-card
-                    entity: group.kontoret
-                    primary: Kontoret
-                    secondary: >
-                      {{states('sensor.kontoret_temperature')|round}}°C
-                      •🔋{{states('sensor.kontoret_power')|round }}%
-                    icon: mdi:office-building
-                    icon_color: >-
-                      {% if states('sensor.kontoret_temperature')|round > 24 %}
-
-                      red
-
-                      {% elif states('sensor.kontoret_temperature')|round > 21
-                      %}
-
-                      green
-
-                      {% else %}
-
-                      blue
-
-                      {% endif %}
-                    tap_action:
-                      action: more-info
-                  - type: custom:mushroom-chips-card
-                    chips:
-                      - type: template
-                        entity: group.kontoret
-                        icon: mdi:lightbulb-group
-                        icon_color: |-
-                          {%if states('group.kontoret') == 'on' %}
-                            orange
-                          {%endif%}
-                        tap_action:
-                          action: toggle
-                      - type: template
-                        entity: switch.tz2
-                        icon: |-
-                          {%if states('switch.tz2') == 'on'%}
-                            mdi:desk-lamp-on
-                          {%else%}
-                            mdi:desk-lamp-off
-                          {%endif%}
-                        icon_color: |-
-                          {%if states('switch.tz2') == 'on' %}
-                            orange
-                          {%endif%}
-                        content_info: none
-                        tap_action:
-                          action: toggle
-                        hold_action:
-                          action: more-info
-                        double_tap_action:
-                          action: navigate
-                          navigation_path: /lovelace/5
-                      - type: light
-                        entity: light.office_window
-                        content_info: none
-                        icon: mdi:lamp
-                    alignment: center
-                    card_mod:
-                      style: |
-                        ha-card {
-                          margin: -4px 0px 5px;
-                          --chip-border-width: 0;
-                          --chip-height: 40px;      
-                        }
-              - type: custom:vertical-stack-in-card
-                cards:
-                  - type: custom:mushroom-template-card
-                    entity: sensor.xiaomi_lys2_temperatur
-                    primary: Felix
-                    secondary: >
-                      {{ states('sensor.xiaomi_lys2_temperatur')|round }}°C
-                      •🔋{{ states('sensor.xiaomi_lys2_batteri')|round }}%
-                    icon: mdi:human-male-child
-                    icon_color: >-
-                      {% if states('sensor.xiaomi_lys2_temperatur')|round > 24
-                      %}
-
-                      red
-
-                      {% elif states('sensor.xiaomi_lys2_temperatur')|round > 21
-                      %}
-
-                      green
-
-                      {% else %}
-
-                      blue
-
-                      {% endif %}
-                    tap_action:
-                      action: more-info
-                    hold_action:
-                      action: navigate
-                      navigation_path: /lovelace/5
-                  - type: custom:mushroom-chips-card
-                    chips:
-                      - type: template
-                        entity: group.felix_rum
-                        icon: mdi:lightbulb-group
-                        tap_action:
-                          action: toggle
-                        icon_color: |-
-                          {%if states('group.felix_rum') == 'on' %}
-                            orange
-                          {%endif%}
-                      - type: template
-                        entity: light.felix_rum_taket_light
-                        icon: mdi:ceiling-light
-                        icon_color: |-
-                          {%if states('light.felix_rum_taket_light') == 'on' %}
-                            orange
-                          {%endif%}
-                        tap_action:
-                          action: more-info
-                        hold_action:
-                          action: toggle
-                    alignment: center
-                    card_mod:
-                      style: |
-                        ha-card {
-                          margin: -4px 0px 5px;
-                          --chip-border-width: 0;
-                          --chip-height: 40px;      
-                        }
     cards: []
     badges: []
     header:
@@ -1010,7 +631,10 @@ views:
           - type: custom:mushroom-template-card
             icon: mdi:ev-station
             entity: binary_sensor.tesla_plugged_in
-            badge_icon: mdi:robot
+            badge_icon: >-
+              {{"mdi:power-plug" if
+              (states("binary_sensor.tesla_charge_port_door_open")=="on") else
+              "mdi:robot"}}
             badge_color: >-
               {{"grey" if states("input_boolean.car_1_charge")=="off" else
               "green"}}
@@ -1096,6 +720,13 @@ views:
               style: >
                 div.card-content { padding: 0 !important; scrollbar-width: none;
                 }
+          - type: entities
+            entities:
+              - entity: sensor.tesla_charger_power
+                name:
+                  type: entity
+              - entity: sensor.tesla_charge_energy_added
+                name: Energy Added
           - type: custom:mushroom-template-card
             icon: mdi:battery-40
             features_position: bottom
@@ -1121,6 +752,11 @@ views:
               perform_action: script.turn_on
               target:
                 entity_id: script.tesla_charge_forty
+            secondary: >-
+              {{((40-states("sensor.tesla_battery_level")|int(0))/100*states("input_number.car_1_battery")|int)|replace(".",",")}}
+              kWh |
+              {{(((40-states("sensor.tesla_battery_level")|int(0))/100*states("input_number.car_1_battery")|int)/states("sensor.template_car_1_season_power")|float)|round(1)|replace(".",",")}}
+              h
       - type: grid
         cards:
           - type: heading
@@ -3196,23 +2832,6 @@ views:
                 show_icon: true
                 entity: sensor.wall_e_blades_current_on_time_2
                 icon: mdi:knife
-          - image_size: '2'
-            show_status: true
-            show_toolbar: true
-            show_edgecut: true
-            show_animation: true
-            image: default
-            type: custom:landroid-card
-            entity: lawn_mower.geten
-            image_left: true
-            compact_view: false
-            show_name: false
-            settings:
-              - button.wall_e_restart_baseboard
-              - number.wall_e_raindelay
-              - number.wall_e_time_extension
-              - switch.wall_e_party_mode_2
-              - button.wall_e_reset_blade_time
           - type: history-graph
             entities:
               - entity: lawn_mower.geten
@@ -3223,7 +2842,9 @@ views:
                 name: Klipptid
                 icon: mdi:clock-fast
               - entity: sensor.geten_bladets_livslangd
+                name: Knivarna
               - entity: sensor.geten_linsborstens_livslangd
+                name: Linsborste
         visibility:
           - condition: state
             entity: lawn_mower.wall_e
@@ -3574,61 +3195,58 @@ views:
             entity: sensor.template_lightning_distance
             below: 9999
     max_columns: 4
-  - icon: mdi:weather-sunny
-    title: Solcellerna
-    badges: []
-    cards:
-      - type: horizontal-stack
+  - type: sections
+    max_columns: 4
+    icon: mdi:weather-sunny
+    path: solar
+    sections:
+      - type: grid
         cards:
-          - entity: sensor.fronius_inverter_total_power
-            max: 8.2
-            min: 0
-            name: Effekt
-            type: gauge
-          - entity: sensor.template_fronius_solar_daily_energy
-            max: 70
-            name: Energi
-            type: gauge
+          - type: heading
+            heading: Produktion
+            heading_style: title
+            icon: mdi:weather-sunny
           - type: gauge
-            entity: sensor.template_elpris_solar_kr
-            min: 0
-            max: 2.5
+            entity: sensor.fronius_inverter_total_power
+            grid_options:
+              columns: 6
+              rows: auto
             severity:
-              green: 1.5
+              green: 3
               yellow: 1
               red: 0
-            unit: kr
-            name: Elpriset
-      - chart_type: line
-        period: 5minute
-        type: statistics-graph
-        entities:
-          - sensor.template_fronius_solar_power
-        stat_types:
-          - mean
-        days_to_show: 0.5
-        hide_legend: true
-      - chart_type: bar
-        period: day
-        type: statistics-graph
-        entities:
-          - sensor.template_fronius_solar_daily_energy
-        stat_types:
-          - change
-        days_to_show: 7
-        hide_legend: true
-      - type: vertical-stack
+            min: 0
+            max: 8
+            needle: true
+            name: ' '
+          - type: gauge
+            entity: sensor.grid_sell_power_kw
+            name: Exporterar
+            grid_options:
+              columns: 6
+              rows: auto
+            severity:
+              green: -8
+              yellow: -3
+              red: 0
+            min: -8
+            max: 0
+            needle: true
+      - type: grid
         cards:
-          - chart_type: bar
-            period: hour
+          - type: heading
+            heading: Statistik
+            heading_style: title
+            icon: mdi:chart-areaspline
+          - chart_type: line
+            period: 5minute
             type: statistics-graph
             entities:
-              - sensor.template_house_net_power_kw
+              - sensor.template_fronius_solar_power
             stat_types:
               - mean
-            days_to_show: 1
+            days_to_show: 0.5
             hide_legend: true
-            logarithmic_scale: false
           - type: custom:apexcharts-card
             graph_span: 18h
             update_interval: 5m
@@ -3673,30 +3291,42 @@ views:
                   opacity: 0
                 dropShadow:
                   enabled: true
-      - type: entities
-        entities:
-          - entity: sensor.solenergi_kwh_man_2
-            name: Månad
-            icon: mdi:weather-sunny
-          - entity: sensor.solenergi_kwh_ar_2
-            name: År
-            icon: mdi:weather-sunny
-          - entity: sensor.template_fronius_solar_energy
-            name: Totalt
-            icon: mdi:weather-sunny
-          - entity: sensor.fronius_solenergi_forra_manaden
-            name: Förra mån
-            suffix: kWh
-            icon: mdi:gauge
-          - type: divider
-          - entity: sensor.solenergi_salt_manad
-            name: Sålt (mån)
-            icon: mdi:hand-coin-outline
-          - entity: sensor.solenergi_salt_manad
-            type: attribute
-            attribute: last_period
-            name: Förra mån
-            suffix: kWh
+          - type: entities
+            entities:
+              - entity: sensor.solenergi_kwh_man_2
+                name: Månad
+                icon: mdi:weather-sunny
+              - entity: sensor.solenergi_kwh_ar_2
+                name: År
+                icon: mdi:weather-sunny
+              - entity: sensor.template_fronius_solar_energy
+                name: Totalt
+                icon: mdi:weather-sunny
+              - entity: sensor.fronius_solenergi_forra_manaden
+                name: Förra mån
+                suffix: kWh
+                icon: mdi:gauge
+              - type: divider
+              - entity: sensor.solenergi_salt_manad
+                name: Sålt (mån)
+                icon: mdi:hand-coin-outline
+              - entity: sensor.solenergi_salt_manad
+                type: attribute
+                attribute: last_period
+                name: Förra mån
+                suffix: kWh
+    badges:
+      - type: entity
+        show_name: false
+        show_state: true
+        show_icon: true
+        entity: sensor.fronius_inverter_total_power
+        icon: mdi:solar-power-variant
+      - type: entity
+        entity: sensor.template_fronius_solar_daily_energy
+      - type: entity
+        entity: sensor.template_elpris_solar_kr
+    cards: []
   - theme: Backend-selected
     icon: mdi:access-point-network
     title: Status
