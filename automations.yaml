@@ -2287,8 +2287,8 @@
         below: 0
       sequence:
       - variables:
-          target: '{{ states(''sensor.fronius_effektmal'')|int }}'
-          current: '{{ states(''input_number.fronius_power_limit_pct'') | int }}'
+          target: '{{ states(''sensor.fronius_effektmal'') | int(0) }}'
+          current: '{{ states(''input_number.fronius_power_limit_pct'') | int(0) }}'
           delta: '{{ target - current }}'
           limited: "{% if delta > 10 %}\n  {{ current + 10 }}\n{% elif delta < -10
             %}\n  {{ current - 10 }}\n{% else %}\n  {{ target }}\n{% endif %}\n"
