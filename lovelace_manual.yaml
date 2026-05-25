@@ -192,6 +192,12 @@ views:
                 entity: sensor.geten_bladets_livslangd
                 tap_action:
                   action: more-info
+                icon: mdi:knife
+              - type: entity
+                show_state: true
+                show_icon: true
+                entity: sensor.geten_batteri
+                icon: mdi:mower
             visibility:
               - condition: state
                 entity: lawn_mower.wall_e
@@ -412,130 +418,6 @@ views:
             icon: mdi:calendar
             heading_style: subtitle
             heading: Kalender
-          - type: custom:mushroom-chips-card
-            chips:
-              - type: template
-                icon: >-
-                  {% if
-                  states("binary_sensor.template_nordpool_price_reallow")|bool%}
-
-                  mdi:arrow-down-thick
-
-                  {% elif
-                  states("binary_sensor.template_nordpool_price_low")|bool%}
-
-                  mdi:arrow-bottom-right-thick
-
-                  {% elif
-                  states("binary_sensor.template_nordpool_price_not_high")|bool%}
-
-                  mdi:arrow-top-right-thick
-
-                  {%else%}
-
-                  mdi:arrow-up-thick
-
-                  {%endif%}
-                entity: sensor.template_elpris_kr
-                tap_action:
-                  action: navigate
-                  navigation_path: /lovelace/prices
-                content: >-
-                  {{'%.2f'|format(states('sensor.template_elpris_kr')|float)|replace('.',',')}}
-                  kr
-                icon_color: |2
-                          {% if
-                        states("binary_sensor.template_nordpool_price_reallow")|bool%}
-                          green
-                          {% elif states("binary_sensor.template_nordpool_price_low")|bool%}
-                          yellow
-                          {% elif
-                          states("binary_sensor.template_nordpool_price_not_high")|bool%}
-                          orange
-                          {%else%}
-                          red
-                          {%endif%}
-              - type: template
-                icon: mdi:home-lightning-bolt
-                content: >-
-                  {{'%.1f'|format(
-                  states("sensor.template_house_power_kw")|float)|replace('.',',')}}
-                  kW
-                icon_color: >-
-                  {% if states("sensor.template_house_power_kw")|float < 2.3 %}
-
-                  green
-
-                  {% elif states("sensor.template_house_power_kw")|float > 3.7
-                  %}
-
-                  red
-
-                  {% else %}
-
-                  yellow
-
-                  {% endif %}
-                entity: sensor.template_house_power_kw
-                tap_action:
-                  action: navigate
-                  navigation_path: /lovelace/huset
-              - type: template
-                tap_action:
-                  action: navigate
-                  navigation_path: /lovelace/8
-                icon: mdi:weather-sunny
-                content: >-
-                  {{'%.1f'|format(
-                  states("sensor.fronius_inverter_total_power")|float(0))|replace('.',',')}}
-                  kW
-                icon_color: >-
-                  {% if states("sensor.fronius_inverter_total_power")|float(0) <
-                  3 %}
-
-                  red
-
-                  {% elif states("sensor.fronius_inverter_total_power")|float(0)
-                  > 5 %}
-
-                  green
-
-                  {% else %}
-
-                  yellow
-
-                  {% endif %}
-                entity: sensor.fronius_inverter_total_power
-              - type: template
-                entity: sensor.template_home_temp
-                icon: |-
-                  {%if states("sensor.template_home_temp")|float(0)<0%}
-                  mdi:thermometer-minus
-                  {%elif states("sensor.template_home_temp")|float(0)<11%}
-                  mdi:thermometer-low
-                  {%elif states("sensor.template_home_temp")|float(0)<21%}
-                  mdi:thermometer
-                  {%else%}
-                  mdi:thermometer-high
-                  {%endif%}
-                icon_color: |-
-                  {%if states("sensor.template_home_temp")|float(0)<0%}
-                  blue
-                  {%elif states("sensor.template_home_temp")|float(0)<11%}
-                  green
-                  {%elif states("sensor.template_home_temp")|float(0)<21%}
-                  yellow
-                  {%else%}
-                  red
-                  {%endif%}
-                content: >-
-                  {{states("sensor.template_home_temp")|float(0)|replace('.',',')}}°C
-                tap_action:
-                  action: navigate
-                  navigation_path: /lovelace/ute
-                hold_action:
-                  action: more-info
-            alignment: center
           - type: custom:week-planner-card
             calendars:
               - entity: calendar.family
@@ -564,7 +446,109 @@ views:
               fullDay: Hela dagen
               noEvents: ' '
     cards: []
-    badges: []
+    badges:
+      - type: custom:mushroom-template-badge
+        entity: sensor.template_home_temp
+        icon: |-
+          {%if states("sensor.template_home_temp")|float(0)<0%}
+          mdi:thermometer-minus
+          {%elif states("sensor.template_home_temp")|float(0)<11%}
+          mdi:thermometer-low
+          {%elif states("sensor.template_home_temp")|float(0)<21%}
+          mdi:thermometer
+          {%else%}
+          mdi:thermometer-high
+          {%endif%}
+        color: |-
+          {%if states("sensor.template_home_temp")|float(0)<0%}
+          blue
+          {%elif states("sensor.template_home_temp")|float(0)<11%}
+          green
+          {%elif states("sensor.template_home_temp")|float(0)<21%}
+          yellow
+          {%else%}
+          red
+          {%endif%}
+        content: '{{states("sensor.template_home_temp")|float(0)|round(0)}}°C'
+        tap_action:
+          action: navigate
+          navigation_path: /lovelace/ute
+        hold_action:
+          action: more-info
+      - type: custom:mushroom-template-badge
+        icon: >-
+          {% if states("binary_sensor.template_nordpool_price_reallow")|bool%}
+
+          mdi:arrow-down-thick
+
+          {% elif states("binary_sensor.template_nordpool_price_low")|bool%}
+
+          mdi:arrow-bottom-right-thick
+
+          {% elif
+          states("binary_sensor.template_nordpool_price_not_high")|bool%}
+
+          mdi:arrow-top-right-thick
+
+          {%else%}
+
+          mdi:arrow-up-thick
+
+          {%endif%}
+        entity: sensor.template_elpris_kr
+        tap_action:
+          action: navigate
+          navigation_path: /lovelace/prices
+        content: >-
+          {{'%.2f'|format(states('sensor.template_elpris_kr')|float)|replace('.',',')}}
+          kr
+        color: |2
+                  {% if
+                states("binary_sensor.template_nordpool_price_reallow")|bool%}
+                  green
+                  {% elif states("binary_sensor.template_nordpool_price_low")|bool%}
+                  yellow
+                  {% elif
+                  states("binary_sensor.template_nordpool_price_not_high")|bool%}
+                  orange
+                  {%else%}
+                  red
+                  {%endif%}
+      - type: custom:mushroom-template-badge
+        icon: mdi:home-lightning-bolt
+        content: >-
+          {{'%.1f'|format(
+          states("sensor.template_house_power_kw")|float)|replace('.',',')}} kW
+        color: |-
+          {% if states("sensor.template_house_power_kw")|float < 2.3 %}
+          green
+          {% elif states("sensor.template_house_power_kw")|float > 3.7 %}
+          red
+          {% else %}
+          yellow
+          {% endif %}
+        entity: sensor.template_house_power_kw
+        tap_action:
+          action: navigate
+          navigation_path: /lovelace/huset
+      - type: custom:mushroom-template-badge
+        tap_action:
+          action: navigate
+          navigation_path: /lovelace/8
+        icon: mdi:weather-sunny
+        content: >-
+          {{'%.1f'|format(
+          states("sensor.fronius_inverter_total_power")|float(0))|replace('.',',')}}
+          kW
+        color: |-
+          {% if states("sensor.fronius_inverter_total_power")|float(0) < 3 %}
+          red
+          {% elif states("sensor.fronius_inverter_total_power")|float(0) > 5 %}
+          green
+          {% else %}
+          yellow
+          {% endif %}
+        entity: sensor.fronius_inverter_total_power
     header:
       layout: center
       badges_position: top
@@ -753,7 +737,7 @@ views:
               target:
                 entity_id: script.tesla_charge_forty
             secondary: >-
-              {{((40-states("sensor.tesla_battery_level")|int(0))/100*states("input_number.car_1_battery")|int)|replace(".",",")}}
+              {{((40-states("sensor.tesla_battery_level")|int(0))/100*states("input_number.car_1_battery")|int)|round(1)|replace(".",",")}}
               kWh |
               {{(((40-states("sensor.tesla_battery_level")|int(0))/100*states("input_number.car_1_battery")|int)/states("sensor.template_car_1_season_power")|float)|round(1)|replace(".",",")}}
               h
@@ -2816,22 +2800,16 @@ views:
             heading: Gräsklipparen
             heading_style: subtitle
             icon: mdi:robot-mower
-            visibility:
-              - condition: state
-                entity: binary_sensor.wall_e_online_2
-                state: 'on'
             badges:
               - type: entity
                 show_state: true
                 show_icon: true
-                entity: sensor.wall_e_battery_2
-                tap_action:
-                  action: more-info
+                icon: mdi:knife
+                entity: sensor.geten_bladets_livslangd
               - type: entity
                 show_state: true
                 show_icon: true
-                entity: sensor.wall_e_blades_current_on_time_2
-                icon: mdi:knife
+                entity: sensor.geten_batteri
           - type: history-graph
             entities:
               - entity: lawn_mower.geten
@@ -3232,12 +3210,6 @@ views:
             min: -8
             max: 0
             needle: true
-      - type: grid
-        cards:
-          - type: heading
-            heading: Statistik
-            heading_style: title
-            icon: mdi:chart-areaspline
           - chart_type: line
             period: 5minute
             type: statistics-graph
@@ -3262,15 +3234,11 @@ views:
                 group_by:
                   func: avg
                   duration: 1h
-              - entity: sensor.nordpool_kwh_se3_sek_3_095_0
+              - entity: sensor.template_elpris_solar_kr
                 name: Pris
                 stroke_width: 2
                 color: deepskyblue
                 float_precision: 2
-                data_generator: |
-                  return entity.attributes.raw_today.map((p) => {
-                    return [new Date(p.start), p.value];
-                  });
                 curve: stepline
                 group_by:
                   func: avg
@@ -3291,6 +3259,12 @@ views:
                   opacity: 0
                 dropShadow:
                   enabled: true
+      - type: grid
+        cards:
+          - type: heading
+            heading: Statistik
+            heading_style: title
+            icon: mdi:chart-areaspline
           - type: entities
             entities:
               - entity: sensor.solenergi_kwh_man_2

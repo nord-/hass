@@ -643,6 +643,11 @@
       target:
         entity_id: switch.clever_spz3
       data: {}
+    - delay:
+        hours: 0
+        minutes: 0
+        seconds: 2
+        milliseconds: 0
     - wait_for_trigger:
       - event_type: mobile_app_notification_action
         event_data:
@@ -657,6 +662,7 @@
         - switch.clever_spz3
         to:
         - 'on'
+        enabled: true
     - action: switch.turn_on
       target:
         entity_id: switch.clever_spz3
@@ -1048,6 +1054,21 @@
             clickAction: /lovelace/spa
         action: notify.rickards_devices
         alias: Notify Rickard
+      - device_id: 67cc2f43e85f65f021d4297b5037cca1
+        domain: button
+        entity_id: ecf22507c1ea3c81facbb76a2d9c5909
+        type: press
+        enabled: false
+      - action: retry.actions
+        metadata: {}
+        data:
+          sequence:
+          - device_id: 67cc2f43e85f65f021d4297b5037cca1
+            domain: button
+            entity_id: ecf22507c1ea3c81facbb76a2d9c5909
+            type: press
+          retries: 3
+        continue_on_error: true
     - conditions:
       - condition: numeric_state
         entity_id: sensor.template_spabadet_temperature
@@ -1136,34 +1157,6 @@
           + 1, 16] | min) }} ({{ hours_needed }} tim) {% else %} \U0001F321️ {{ current_temp
           }}°C → {{ target|int }}°C\\n\U0001F33F Ute: {{ outside_temp }}°C {% endif
           %} {% endif %}"
-  mode: single
-- id: '1684931331914'
-  alias: 'Wall-E: Query Status'
-  description: Tvinga uppdatering av Wall-E
-  trigger:
-  - platform: time_pattern
-    hours: /1
-  condition:
-  - condition: time
-    after: '10:00:00'
-    before: '18:00:00'
-    alias: Between 10 and 18
-  - condition: template
-    value_template: '{{ (as_timestamp(now()) - as_timestamp(state_attr(''vacuum.wall_e'',''state_updated_at''),0))
-      > 3600 }}'
-    alias: Updated at least an hour ago
-  - type: is_connected
-    condition: device
-    device_id: 04744719de96abcefa75f8ffeeb42a05
-    entity_id: be792a9a0e07a92d1d4e5562caaf30b2
-    domain: binary_sensor
-  action:
-  - service: landroid_cloud.partymode
-    data:
-      party_mode_enabled: false
-    target:
-      device_id: 04744719de96abcefa75f8ffeeb42a05
-    alias: Disable Wall-E Party Mode
   mode: single
 - id: '1695920348544'
   alias: Värmepumpen, styrning
@@ -2294,7 +2287,7 @@
         below: 0
       sequence:
       - variables:
-          target: '{{ states(''sensor.template_fronius_target_pct'') | int }}'
+          target: '{{ states(''sensor.fronius_effektmal'')|int }}'
           current: '{{ states(''input_number.fronius_power_limit_pct'') | int }}'
           delta: '{{ target - current }}'
           limited: "{% if delta > 10 %}\n  {{ current + 10 }}\n{% elif delta < -10
