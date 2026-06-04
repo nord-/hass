@@ -580,6 +580,25 @@ views:
                 icon: mdi:lightning-bolt
                 tap_action:
                   action: more-info
+          - type: custom:mushroom-chips-card
+            chips:
+              - type: template
+                icon: mdi:update
+                entity: sensor.tesla_battery_level
+                content: >-
+                  {% set s = (now() -
+                  states.sensor.tesla_battery_level.last_updated).total_seconds()
+                  %}
+
+                  {{ '%02d:%02d' % (s // 3600, (s % 3600) // 60) }}
+                icon_color: >-
+                  {% set s = (now() -
+                  states.sensor.tesla_battery_level.last_updated).total_seconds()
+                  %}
+
+                  {{ 'green' if s <= 3600 else 'red' }}
+                tap_action:
+                  action: more-info
           - type: gauge
             entity: sensor.tesla_battery_level
             name: ' '
