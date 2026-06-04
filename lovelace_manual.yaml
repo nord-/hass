@@ -567,17 +567,36 @@ views:
               - type: entity
                 show_state: true
                 show_icon: true
-                entity: sensor.tesla_inside_temp
-              - type: entity
-                show_state: true
-                show_icon: true
-                entity: sensor.tesla_y_charge_period
-                icon: mdi:battery-clock
-              - type: entity
-                show_state: true
-                show_icon: true
                 entity: sensor.template_rya_charging_required_time
                 icon: mdi:lightning-bolt
+                tap_action:
+                  action: more-info
+          - type: custom:mushroom-chips-card
+            chips:
+              - type: entity
+                entity: sensor.tesla_inside_temp
+              - type: template
+                icon: mdi:update
+                entity: sensor.tesla_battery_level
+                content: >-
+                  {% set s = (now() -
+                  states.sensor.tesla_battery_level.last_updated).total_seconds()
+                  %} {{ '%02d:%02d' % (s // 3600, (s % 3600) // 60) }}
+                icon_color: >-
+                  {% set s = (now() -
+                  states.sensor.tesla_battery_level.last_updated).total_seconds()
+                  %} {{ 'green' if s <= 3600 else 'red' }}
+                tap_action:
+                  action: more-info
+              - type: spacer
+              - type: template
+                icon: mdi:battery-clock
+                entity: sensor.tesla_y_charge_period
+                content: >-
+                  {{ (states('sensor.tesla_y_charge_period') | as_datetime |
+                  as_local).strftime('%H:%M') if
+                  states('sensor.tesla_y_charge_period') not in ['unknown',
+                  'unavailable'] else '-' }}
                 tap_action:
                   action: more-info
           - type: gauge
@@ -741,6 +760,10 @@ views:
               kWh |
               {{(((40-states("sensor.tesla_battery_level")|int(0))/100*states("input_number.car_1_battery")|int)/states("sensor.template_car_1_season_power")|float)|round(1)|replace(".",",")}}
               h
+          - type: custom:mushroom-cover-card
+            entity: cover.eazy_lucka_till_laddkontakt
+            name: Laddlucka
+            show_position_control: false
       - type: grid
         cards:
           - type: heading
@@ -751,15 +774,21 @@ views:
               - type: entity
                 show_state: true
                 show_icon: true
-                entity: sensor.byd_eazy_charge_period
-                icon: mdi:battery-clock
-                tap_action:
-                  action: more-info
-              - type: entity
-                show_state: true
-                show_icon: true
                 entity: sensor.template_zoe_charging_required_time
                 icon: mdi:lightning-bolt
+                tap_action:
+                  action: more-info
+          - type: custom:mushroom-chips-card
+            chips:
+              - type: spacer
+              - type: template
+                icon: mdi:battery-clock
+                entity: sensor.byd_eazy_charge_period
+                content: >-
+                  {{ (states('sensor.byd_eazy_charge_period') | as_datetime |
+                  as_local).strftime('%H:%M') if
+                  states('sensor.byd_eazy_charge_period') not in ['unknown',
+                  'unavailable'] else '-' }}
                 tap_action:
                   action: more-info
           - type: gauge
