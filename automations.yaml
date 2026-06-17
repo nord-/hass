@@ -606,7 +606,7 @@
   triggers:
   - entity_id:
     - sensor.clever_spz3_electric_consumption_w
-    above: 3
+    above: 5
     trigger: numeric_state
   conditions: []
   actions:
@@ -1313,75 +1313,9 @@
       state: '3'
     alias: Port 2 is NOT charging State
   actions:
-  - action: script.turn_on
+  - action: script.car_2_charge_2
     metadata: {}
     data: {}
-    target:
-      entity_id: script.ladda_bilen_uppstart
-    alias: Turn off household consumers
-  - alias: Try Add BYD to queue
-    data:
-      sequence:
-      - action: rest_command.cn_add_yxx_to_queue
-        metadata: {}
-        data: {}
-    action: retry.actions
-  - data:
-      title: Dolphin börjar ladda
-      data:
-        sticky: true
-        tag: dolphin_start_charging
-        clickAction: /lovelace/tesla
-        channel: ev
-      message: 'SoC:    {{states("sensor.byd_dolphin_soc")}}%\n Priset: {{states("sensor.template_nordpool_current_price_vat")
-        }} kr\n {{now().strftime(''%d %H:%M'')}}'
-    alias: Send message
-    action: notify.rickards_devices
-  - alias: Turn off charge flag
-    data: {}
-    target:
-      entity_id: input_boolean.car_2_charge
-    action: input_boolean.turn_off
-  - delay:
-      hours: 0
-      minutes: 2
-      seconds: 0
-      milliseconds: 0
-  - alias: Get SessionId
-    data: {}
-    target:
-      entity_id: sensor.charge_yxx_sessionid
-    action: homeassistant.update_entity
-    enabled: true
-  - alias: Wait for SoC > Limit (max 6h)
-    wait_for_trigger:
-    - entity_id:
-      - sensor.byd_dolphin_soc
-      above: input_number.byd_soc_upper_limit
-      trigger: numeric_state
-    timeout:
-      hours: 6
-      minutes: 0
-      seconds: 0
-      milliseconds: 0
-  - alias: If SoC > Limit
-    if:
-    - condition: numeric_state
-      entity_id: sensor.byd_dolphin_soc
-      above: input_number.byd_soc_upper_limit
-    then:
-    - data: {}
-      action: rest_command.cn_remove_byd_from_queue
-    - data:
-        title: Dolphin har laddat färdigt
-        message: 'SoC:    {{states("sensor.byd_dolphin_soc")}}%\n Priset: {{states("sensor.template_nordpool_current_price_vat")}}
-          kr\n {{now().strftime(''%m-%d %H:%M'')}}'
-        data:
-          sticky: true
-          tag: dolphin_charging
-          clickAction: /lovelace/tesla
-          channel: ev
-      action: notify.rickards_devices
   mode: single
 - id: '1703854838804'
   alias: Belysning, sovrumsfönstet
@@ -1846,15 +1780,19 @@
     - unavailable
     enabled: false
   - trigger: template
+    value_template: ' {{states("sensor.template_lightning_distance")|int<40}}'
+    alias: Närmare än 40 km
+  - trigger: template
     value_template: ' {{states("sensor.template_lightning_distance")|int<20}}'
+    alias: Närmare än 20 km
   conditions: []
   actions:
   - action: notify.rickards_devices
     metadata: {}
     data:
-      title: Åska i närheten!
-      message: Blixt {{states("sensor.template_lightning_distance")}} km bort.\n Närmast
-        kl. {{closest(states.geo_location).last_updated|as_timestamp(0)|timestamp_custom("%H:%M")}}
+      title: "\U0001F329️ Åska i närheten!"
+      message: ⚡ Blixt {{states("sensor.template_lightning_distance")}} km bort.\n
+        Närmast kl. {{closest(states.geo_location).last_updated|as_timestamp(0)|timestamp_custom("%H:%M")}}
       data:
         clickAction: /lovelace/ute
         channel: Thunder

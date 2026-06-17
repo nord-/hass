@@ -36,8 +36,8 @@ views:
             entity: script.turn_off_general_lights
             icon: mdi:weather-night
           - type: custom:mushroom-template-card
-            primary: ''
-            secondary: ''
+            primary: ""
+            secondary: ""
             icon: mdi:projector-screen-outline
             tap_action:
               action: toggle
@@ -53,15 +53,15 @@ views:
           - type: custom:mushroom-template-card
             icon: mdi:bed
             entity: script.turn_off_uppe
-            secondary: ''
+            secondary: ""
             hold_action:
               action: navigate
               navigation_path: /lovelace/5
             grid_options:
               columns: 3
               rows: 1
-            primary: ''
-            color: '#44739e'
+            primary: ""
+            color: "#44739e"
             features_position: bottom
             vertical: true
           - type: heading
@@ -258,9 +258,64 @@ views:
             tap_action:
               action: navigate
               navigation_path: /lovelace/tesla
+          - type: custom:mushroom-chips-card
+            chips:
+              - type: template
+                icon: mdi:battery-clock
+                entity: sensor.tesla_y_charge_period
+                content: >-
+                  {{ (states('sensor.tesla_y_charge_period') | as_datetime |
+                  as_local).strftime('%H:%M') if
+                  states('sensor.tesla_y_charge_period') not in ['unknown',
+                  'unavailable'] else '--:--' }}
+                tap_action:
+                  action: more-info
+              - type: template
+                entity: sensor.template_rya_charging_required_time
+                content: "{{states(\"sensor.template_rya_charging_required_time\")}}"
+                icon: mdi:clock-fast
+          - type: custom:mushroom-template-card
+            primary: Dörr
+            icon: mdi:car-door
+            features_position: bottom
+            entity: lock.eazy_las
+            secondary: >-
+              {{'låst' if states('binary_sensor.tesla_locked')=='off' else
+              'olåst'}}
             grid_options:
-              columns: 6
+              columns: 3
               rows: 1
+            color: "{{ 'red' if states('binary_sensor.tesla_locked')!='off'}}"
+            icon_tap_action:
+              action: toggle
+            badge_icon: "{{'mdi:alert' if states('binary_sensor.tesla_locked')!='off'}}"
+            badge_color: yellow
+          - type: custom:mushroom-template-card
+            icon: mdi:power-plug
+            entity: binary_sensor.tesla_plugged_in
+            badge_icon: >-
+              {{"mdi:check-circle-outline" if
+              (states("binary_sensor.tesla_charge_port_door_open")=="on") else
+              "mdi:cancel"}}
+            badge_color: >-
+              {{"green" if
+              (states("binary_sensor.tesla_charge_port_door_open")=="on") else
+              "grey"}}
+            primary: ""
+            secondary: ""
+            tap_action:
+              action: perform-action
+              perform_action: cover.toggle
+              target:
+                entity_id: cover.eazy_lucka_till_laddkontakt
+            color: >-
+              {{"green" if states("sensor.tesla_state")=="charging" else
+              "grey"}}
+            features_position: bottom
+            grid_options:
+              columns: 3
+              rows: 1
+            vertical: true
           - type: heading
             icon: mdi:car-hatchback
             heading: Delphine
@@ -272,46 +327,8 @@ views:
               action: navigate
               navigation_path: /lovelace/tesla
             grid_options:
-              columns: 6
-              rows: 1
-          - type: custom:mushroom-template-card
-            icon: mdi:ev-station
-            entity: binary_sensor.tesla_plugged_in
-            badge_icon: mdi:robot
-            badge_color: >-
-              {{"grey" if states("input_boolean.car_1_charge")=="off" else
-              "green"}}
-            primary: >-
-              {{ (states('sensor.tesla_y_charge_period')|as_datetime|
-              as_local).strftime('%H:%M') if
-              states('sensor.tesla_y_charge_period') not in ['unknown',
-              'unavailable'] else '-' }}
-            secondary: >-
-              {%if states("sensor.template_rya_req_hours")|float(0) > 0%}
-
-              {{states("sensor.template_rya_req_hours")|float(0)|replace(".",",")}}
-              h
-
-              {%else%}
-
-              0 h
-
-              {%endif%}
-            tap_action:
-              action: perform-action
-              perform_action: input_boolean.toggle
-              target:
-                entity_id: input_boolean.car_1_charge
-            hold_action:
-              action: call-service
-              service: script.charge_the_tesla
-            grid_options:
-              columns: 6
-              rows: 1
-            color: >-
-              {{"green" if states("sensor.tesla_state")=="charging" else
-              "grey"}}
-            features_position: bottom
+              columns: full
+              rows: auto
           - type: custom:mushroom-template-card
             icon: mdi:ev-station
             entity: input_boolean.car_2_charge
@@ -341,9 +358,8 @@ views:
               rows: 1
             hold_action:
               action: perform-action
-              perform_action: input_boolean.turn_on
-              target:
-                entity_id: input_boolean.car_2_charge
+              perform_action: script.car_2_charge_2
+              target: {}
             badge_color: >-
               {{"grey" if states("input_boolean.car_2_charge")=="off" else
               "green"}}
@@ -352,66 +368,9 @@ views:
               {{ "green" if is_state('input_boolean.car_2_charge', 'on') else
               "grey" }}
             features_position: bottom
-          - type: custom:mushroom-template-card
-            primary: '{{states(''sensor.tesla_charge_limit_soc'')}}%'
-            features_position: bottom
-            icon: |-
-              {%if (states("sensor.tesla_charge_limit_soc")|int(0)<61)%}
-              mdi:battery-50
-              {%elif (states("sensor.tesla_charge_limit_soc")|int(0)<81)%}
-              mdi:battery-70
-              {%else%}
-              mdi:battery
-              {%endif%}
-            color: |-
-              {%if (states("sensor.tesla_charge_limit_soc")|int(0)<61)%}
-              yellow
-              {%elif (states("sensor.tesla_charge_limit_soc")|int(0)<81)%}
-              green
-              {%else%}
-              red
-              {%endif%}
-            grid_options:
-              columns: 6
-              rows: 1
-            entity: sensor.tesla_charge_limit_soc
           - type: custom:mushroom-entity-card
             entity: input_number.zoe_soc_upper_limit
             name: SoC limit
-          - type: custom:mushroom-template-card
-            primary: Dörrar
-            icon: |-
-              {%if states('binary_sensor.tesla_locked')=='on'%}
-              mdi:lock-open
-              {%else%}
-              mdi:lock
-              {%endif%}
-            features_position: bottom
-            entity: lock.eazy_las
-            secondary: >-
-              {{'låst' if states('binary_sensor.tesla_locked')=='off' else
-              'olåst'}}
-            grid_options:
-              columns: 3
-              rows: 1
-            color: '{{ ''red'' if states(''binary_sensor.tesla_locked'')!=''off''}}'
-            icon_tap_action:
-              action: toggle
-          - type: custom:mushroom-template-card
-            primary: Lucka
-            icon: mdi:ev-plug-ccs2
-            features_position: bottom
-            entity: cover.eazy_lucka_till_laddkontakt
-            secondary: >-
-              {{'stängd' if
-              states('binary_sensor.tesla_charge_port_door_open')=='off' else
-              'öppen'}}
-            grid_options:
-              columns: 3
-              rows: 1
-            color: '{{ ''green'' if states(''binary_sensor.tesla_locked'')!=''off''}}'
-            icon_tap_action:
-              action: toggle
       - type: grid
         cards:
           - type: heading
@@ -444,7 +403,7 @@ views:
               today: Idag
               tomorrow: Imorgon
               fullDay: Hela dagen
-              noEvents: ' '
+              noEvents: " "
     cards: []
     badges:
       - type: custom:mushroom-template-badge
@@ -469,7 +428,7 @@ views:
           {%else%}
           red
           {%endif%}
-        content: '{{states("sensor.template_home_temp")|float(0)|round(0)}}°C'
+        content: "{{states(\"sensor.template_home_temp\")|float(0)|round(0)}}°C"
         tap_action:
           action: navigate
           navigation_path: /lovelace/ute
@@ -576,6 +535,14 @@ views:
               - type: entity
                 entity: sensor.tesla_inside_temp
               - type: template
+                content: |-
+                  {% set val=(states("sensor.tesla_odometer")|int(0))/10 %}
+                  {{"{:,.0f}".format(val).replace(","," ")}} mil
+                tap_action:
+                  action: more-info
+                icon: mdi:counter
+                entity: sensor.template_car_2_odometer
+              - type: template
                 icon: mdi:update
                 entity: sensor.tesla_battery_level
                 content: >-
@@ -601,7 +568,7 @@ views:
                   action: more-info
           - type: gauge
             entity: sensor.tesla_battery_level
-            name: ' '
+            name: " "
             needle: true
             severity:
               green: 20
@@ -611,8 +578,8 @@ views:
               rows: 1
               columns: 4
           - type: gauge
-            entity: sensor.template_rya_charging_power
-            name: ' '
+            entity: sensor.tesla_charger_power
+            name: " "
             severity:
               green: 0
               yellow: 5.5
@@ -725,9 +692,6 @@ views:
                 }
           - type: entities
             entities:
-              - entity: sensor.tesla_charger_power
-                name:
-                  type: entity
               - entity: sensor.tesla_charge_energy_added
                 name: Energy Added
           - type: custom:mushroom-template-card
@@ -798,13 +762,13 @@ views:
               yellow: 80
               red: 90
             entity: sensor.template_zoe_battery
-            name: ' '
+            name: " "
             grid_options:
               columns: 4
               rows: 1
           - type: gauge
             entity: sensor.template_zoe_charging_power
-            name: ' '
+            name: " "
             severity:
               green: 0
               yellow: 5.5
@@ -853,9 +817,8 @@ views:
               rows: 1
             hold_action:
               action: perform-action
-              perform_action: input_boolean.turn_on
-              target:
-                entity_id: input_boolean.car_2_charge
+              perform_action: script.car_2_charge_2
+              target: {}
             badge_color: >-
               {{"grey" if states("input_boolean.car_2_charge")=="off" else
               "green"}}
@@ -874,7 +837,7 @@ views:
             features_position: bottom
             entity: sensor.byd_dolphin_status
             primary: Status
-            secondary: '{{states(''sensor.byd_dolphin_status'')}}'
+            secondary: "{{states('sensor.byd_dolphin_status')}}"
             color: |-
               {%if states('sensor.byd_dolphin_status')=='connected'%}
               green
@@ -976,7 +939,7 @@ views:
           - type: heading
             icon: mdi:car-hatchback
             heading_style: subtitle
-            heading: 'Delphine '
+            heading: "Delphine "
             badges:
               - type: entity
                 show_state: true
@@ -1088,8 +1051,8 @@ views:
             sweeper:
               enabled: true
               use_system_time: true
-              entity: ''
-              color: '#ffffff'
+              entity: ""
+              color: "#ffffff"
               width: 1.5
               opacity: 0.8
               show_dash: false
@@ -1097,22 +1060,22 @@ views:
             hour_sweeper:
               enabled: true
               use_system_time: true
-              entity: ''
-              color: '#ffffff'
+              entity: ""
+              color: "#ffffff"
               width: 1.5
               opacity: 0.8
               show_dash: false
               length_scale: 0.95
             minute_sweeper:
               enabled: false
-              color: '#FFFFFF'
+              color: "#FFFFFF"
               width: 1.2
               opacity: 0.8
               show_dash: false
               length_scale: 0.9
             second_sweeper:
               enabled: false
-              color: '#f50049'
+              color: "#f50049"
               width: 1
               opacity: 1
               show_dash: false
@@ -1143,23 +1106,23 @@ views:
                 intervals:
                   - from: -100
                     to: 80
-                    color_from: '#2ecc71'
-                    color_to: '#a3e635'
+                    color_from: "#2ecc71"
+                    color_to: "#a3e635"
                   - from: 100
                     to: 150
-                    color_from: '#a3e635'
-                    color_to: '#facc15'
+                    color_from: "#a3e635"
+                    color_to: "#facc15"
                   - from: 150
                     to: 250
-                    color_from: '#facc15'
-                    color_to: '#fb923c'
+                    color_from: "#facc15"
+                    color_to: "#fb923c"
                   - from: 250
                     to: 1000
-                    color_from: '#fb7c3c'
-                    color_to: '#FF0000'
+                    color_from: "#fb7c3c"
+                    color_to: "#FF0000"
                 gradient:
-                  from: '#28c76f'
-                  to: '#ea5455'
+                  from: "#28c76f"
+                  to: "#ea5455"
                 stats_markers:
                   show_min: true
                   show_max: true
@@ -1186,34 +1149,34 @@ views:
                 intervals:
                   - from: -100
                     to: 80
-                    color_from: '#2ecc71'
-                    color_to: '#a3e635'
+                    color_from: "#2ecc71"
+                    color_to: "#a3e635"
                   - from: 100
                     to: 150
-                    color_from: '#a3e635'
-                    color_to: '#facc15'
+                    color_from: "#a3e635"
+                    color_to: "#facc15"
                   - from: 150
                     to: 250
-                    color_from: '#facc15'
-                    color_to: '#fb923c'
+                    color_from: "#facc15"
+                    color_to: "#fb923c"
                   - from: 250
                     to: 400
-                    color_from: '#fb7c3c'
-                    color_to: '#FF0000'
+                    color_from: "#fb7c3c"
+                    color_to: "#FF0000"
                 gradient:
-                  from: '#28c76f'
-                  to: '#ea5455'
+                  from: "#28c76f"
+                  to: "#ea5455"
                 stats_markers:
                   show_min: true
                   show_max: true
                   show_avg: false
-                  color: '#5a58fe'
+                  color: "#5a58fe"
                   font_size: 4
                   radius_offset: -8
                   decimals: 0
-                  min_label: ''
-                  max_label: ''
-                  avg_label: ''
+                  min_label: ""
+                  max_label: ""
+                  avg_label: ""
                 keep_across_midnight: false
                 fade_previous_day: false
                 fade_previous_day_opacity: 0.25
@@ -1223,9 +1186,9 @@ views:
                 entity: sensor.template_elpris_kr
                 show_icon: false
                 label_template: <state> kr
-                decimals: ''
+                decimals: ""
                 font_size: 28
-                font_weight: '600'
+                font_weight: "600"
                 color: white
                 top_margin: -30
             bottom_layers: []
@@ -1312,17 +1275,17 @@ views:
                 color: coral
                 color_threshold:
                   - value: -1
-                    color: '#86D18E'
+                    color: "#86D18E"
                   - value: 0.8
-                    color: '#21AB2F'
+                    color: "#21AB2F"
                   - value: 1
-                    color: '#6A79FD'
+                    color: "#6A79FD"
                   - value: 1.5
-                    color: '#FFB529'
+                    color: "#FFB529"
                   - value: 2.2
-                    color: '#ff7538'
+                    color: "#ff7538"
                   - value: 4.2
-                    color: '#FA0F17'
+                    color: "#FA0F17"
                 float_precision: 2
                 stroke_width: 2
                 name: Idag
@@ -1419,17 +1382,17 @@ views:
                 stroke_width: 2
                 color_threshold:
                   - value: -1
-                    color: '#86D18E'
+                    color: "#86D18E"
                   - value: 0.1
-                    color: '#21AB2F'
+                    color: "#21AB2F"
                   - value: 0.35
-                    color: '#6A79FD'
+                    color: "#6A79FD"
                   - value: 0.75
-                    color: '#FFB529'
+                    color: "#FFB529"
                   - value: 1.5
-                    color: '#ff7538'
+                    color: "#ff7538"
                   - value: 3.5
-                    color: '#FA0F17'
+                    color: "#FA0F17"
                 show:
                   in_header: false
                   legend_value: false
@@ -1469,17 +1432,17 @@ views:
                   duration: 15m
                 color_threshold:
                   - value: -15
-                    color: '#006600'
+                    color: "#006600"
                   - value: -10
-                    color: '#009900'
+                    color: "#009900"
                   - value: -3
-                    color: '#00CC00'
+                    color: "#00CC00"
                   - value: 1
-                    color: '#ffcc80'
+                    color: "#ffcc80"
                   - value: 10
-                    color: '#e53935'
+                    color: "#e53935"
                   - value: 15
-                    color: '#CC0000'
+                    color: "#CC0000"
           - type: horizontal-stack
             cards:
               - type: custom:mushroom-template-card
@@ -1489,7 +1452,7 @@ views:
                   '{:.1f}'.format((states("sensor.energy_used_24_hrs")|int/1000)|round(1)).replace('.',',')}}
                   kWh
                 icon: mdi:chart-bell-curve
-                icon_color: '#44739e'
+                icon_color: "#44739e"
                 entity: sensor.energy_used_24_hrs
                 tap_action:
                   action: more-info
@@ -1500,7 +1463,7 @@ views:
                   '{:.2f}'.format(states("sensor.template_my_avg_spot_price")|float).replace('.',',')
                   }} kr
                 icon: mdi:chart-bell-curve
-                icon_color: '#44739e'
+                icon_color: "#44739e"
                 entity: sensor.template_my_avg_spot_price
                 tap_action:
                   action: more-info
@@ -1669,7 +1632,7 @@ views:
                 show_icon: true
                 entity: sensor.template_house_power_kw
           - type: heading
-            icon: ''
+            icon: ""
             heading: L1
             heading_style: subtitle
             grid_options:
@@ -1681,7 +1644,7 @@ views:
                   color: var(--warning-color) !important;
                 }
           - type: heading
-            icon: ''
+            icon: ""
             heading: L2
             heading_style: subtitle
             grid_options:
@@ -1693,7 +1656,7 @@ views:
                   color: var(--primary-color) !important;
                 }
           - type: heading
-            icon: ''
+            icon: ""
             heading: L3
             heading_style: subtitle
             grid_options:
@@ -1754,7 +1717,7 @@ views:
             cards:
               - type: gauge
                 entity: sensor.shelly_3em_c45bbe55c55e_current_0
-                name: ' '
+                name: " "
                 max: 16
                 needle: false
                 severity:
@@ -1764,7 +1727,7 @@ views:
                 min: 0
               - type: gauge
                 entity: sensor.shelly_3em_c45bbe55c55e_current_1
-                name: ' '
+                name: " "
                 needle: false
                 severity:
                   green: 1
@@ -1774,7 +1737,7 @@ views:
               - type: gauge
                 entity: sensor.shelly_3em_c45bbe55c55e_current_2
                 max: 16
-                name: ' '
+                name: " "
                 needle: false
                 severity:
                   green: 1
@@ -1796,7 +1759,7 @@ views:
               yellow: 5
               red: 10
           - type: heading
-            icon: ''
+            icon: ""
             heading_style: title
             grid_options:
               columns: 4
@@ -1832,21 +1795,21 @@ views:
             heading: Spa
             heading_style: subtitle
           - type: heading
-            icon: ''
+            icon: ""
             heading: Jet
             heading_style: subtitle
             grid_options:
               columns: 4
               rows: auto
           - type: heading
-            icon: ''
+            icon: ""
             heading: Värmare
             heading_style: subtitle
             grid_options:
               columns: 4
               rows: auto
           - type: heading
-            icon: ''
+            icon: ""
             heading: Pump
             heading_style: subtitle
             grid_options:
@@ -1858,7 +1821,7 @@ views:
               - type: gauge
                 entity: sensor.template_spabadet_l1_current_a
                 max: 10
-                name: ' '
+                name: " "
                 severity:
                   green: 1
                   yellow: 5
@@ -1866,7 +1829,7 @@ views:
               - type: gauge
                 entity: sensor.template_spabadet_l2_current_a
                 max: 13
-                name: ' '
+                name: " "
                 severity:
                   green: 1
                   yellow: 5
@@ -1874,7 +1837,7 @@ views:
               - type: gauge
                 entity: sensor.template_spabadet_l3_current_a
                 max: 10
-                name: ' '
+                name: " "
                 severity:
                   green: 1
                   yellow: 5
@@ -1890,7 +1853,7 @@ views:
             cards:
               - type: gauge
                 entity: sensor.chargenode_current_l1
-                name: ' '
+                name: " "
                 max: 16
                 severity:
                   green: 1
@@ -1898,7 +1861,7 @@ views:
                   red: 10
               - type: gauge
                 entity: sensor.chargenode_current_l2
-                name: ' '
+                name: " "
                 max: 16
                 severity:
                   green: 1
@@ -1906,7 +1869,7 @@ views:
                   red: 10
               - type: gauge
                 entity: sensor.chargenode_current_l3
-                name: ' '
+                name: " "
                 max: 16
                 severity:
                   green: 1
@@ -1929,7 +1892,7 @@ views:
             cards:
               - type: gauge
                 entity: sensor.fronius_inverter_current_l1
-                name: ' '
+                name: " "
                 max: 12
                 severity:
                   green: 6
@@ -1937,7 +1900,7 @@ views:
                   red: 0
               - type: gauge
                 entity: sensor.fronius_inverter_current_l2
-                name: ' '
+                name: " "
                 max: 12
                 severity:
                   green: 6
@@ -1945,7 +1908,7 @@ views:
                   red: 0
               - type: gauge
                 entity: sensor.fronius_inverter_current_l3
-                name: ' '
+                name: " "
                 max: 12
                 severity:
                   green: 6
@@ -2012,12 +1975,12 @@ views:
                 type: line
                 stroke_width: 1
                 float_precision: 2
-                color: '#6f90f4'
+                color: "#6f90f4"
                 curve: stepline
               - entity: sensor.grid_buy_power_kw
                 name: Köpt
                 type: column
-                color: '#B0C4DE'
+                color: "#B0C4DE"
                 stroke_width: 5
                 show:
                   legend_value: false
@@ -2027,7 +1990,7 @@ views:
               - entity: sensor.egenforbrukad_sol_kw
                 name: Sol
                 type: column
-                color: '#3CB371'
+                color: "#3CB371"
                 stroke_width: 5
                 show:
                   legend_value: false
@@ -2454,7 +2417,7 @@ views:
         cards:
           - type: heading
             heading_style: subtitle
-            heading: 'Hallen '
+            heading: "Hallen "
             icon: mdi:hanger
           - type: entities
             entities:
@@ -2592,7 +2555,7 @@ views:
             display_mode: buttons
             icon_color: red
           - type: custom:mushroom-template-card
-            primary: '{{states("sensor.spabadet_temperatur")|replace(''.'','','')}}°C'
+            primary: "{{states(\"sensor.spabadet_temperatur\")|replace('.',',')}}°C"
             secondary: >-
               {{
               (states.sensor.spabadet_temperatur.last_updated|as_local).strftime('%H:%M')
@@ -2686,7 +2649,7 @@ views:
                 icon: mdi:counter
               - type: template
                 icon: mdi:cash
-                content: '{{states("sensor.diskmaskinen_kostnad")|replace(''.'','','')}} kr'
+                content: "{{states(\"sensor.diskmaskinen_kostnad\")|replace('.',',')}} kr"
                 tap_action:
                   action: more-info
                 hold_action:
@@ -2768,7 +2731,7 @@ views:
                 icon: mdi:counter
               - type: template
                 icon: mdi:cash
-                content: '{{states(''sensor.tvattmaskinen_kostnad'')|replace(''.'','','')}} kr'
+                content: "{{states('sensor.tvattmaskinen_kostnad')|replace('.',',')}} kr"
               - type: spacer
               - type: template
                 icon: mdi:cash
@@ -2817,12 +2780,6 @@ views:
             name: Mål [°C]
             layout: horizontal
             fill_container: false
-        visibility:
-          - condition: not
-            conditions:
-              - condition: state
-                entity: sensor.igrill_probe_1
-                state: unknown
       - type: grid
         cards:
           - type: heading
@@ -2966,8 +2923,8 @@ views:
           - type: custom:mushroom-template-card
             icon: mdi:coffee-maker
             entity: switch.kaffebryggaren_switch
-            primary: ''
-            secondary: ''
+            primary: ""
+            secondary: ""
             icon_color: |-
               {%if states('sensor.metered_wall_plug_switch_power')|int(0) > 1 %}
               green
@@ -3039,7 +2996,7 @@ views:
             entity: sensor.template_home_temp
             min: -20
             max: 40
-            unit: ''
+            unit: ""
             decimals: 1
             value_position: top_right
             name_position: auto
@@ -3058,60 +3015,60 @@ views:
             graph_max_points: 160
             graph_line_width: 0.7
             extra_entity_1: null
-            extra_icon_1: ''
-            extra_label_1: ''
-            extra_entity_2: ''
-            extra_icon_2: ''
-            extra_label_2: ''
-            extra_entity_3: ''
-            extra_icon_3: ''
-            extra_label_3: ''
+            extra_icon_1: ""
+            extra_label_1: ""
+            extra_entity_2: ""
+            extra_icon_2: ""
+            extra_label_2: ""
+            extra_entity_3: ""
+            extra_icon_3: ""
+            extra_label_3: ""
             intervals:
               - id: it0
                 to: 0
-                color: '#2b6cff'
-                outline: '#ffffff'
-                scale_color: '#2b6cff'
+                color: "#2b6cff"
+                outline: "#ffffff"
+                scale_color: "#2b6cff"
                 gradient:
                   enabled: false
-                  from: '#2b6cff'
-                  to: '#2b6cff'
+                  from: "#2b6cff"
+                  to: "#2b6cff"
               - id: it1
                 to: 10
-                color: '#39c0ff'
-                outline: '#ffffff'
-                scale_color: '#39c0ff'
+                color: "#39c0ff"
+                outline: "#ffffff"
+                scale_color: "#39c0ff"
                 gradient:
                   enabled: false
-                  from: '#39c0ff'
-                  to: '#39c0ff'
+                  from: "#39c0ff"
+                  to: "#39c0ff"
               - id: it2
                 to: 20
-                color: '#22c55e'
-                outline: '#ffffff'
-                scale_color: '#22c55e'
+                color: "#22c55e"
+                outline: "#ffffff"
+                scale_color: "#22c55e"
                 gradient:
                   enabled: false
-                  from: '#22c55e'
-                  to: '#22c55e'
+                  from: "#22c55e"
+                  to: "#22c55e"
               - id: it3
                 to: 30
-                color: '#f59e0b'
-                outline: '#ffffff'
-                scale_color: '#f59e0b'
+                color: "#f59e0b"
+                outline: "#ffffff"
+                scale_color: "#f59e0b"
                 gradient:
                   enabled: false
-                  from: '#f59e0b'
-                  to: '#f59e0b'
+                  from: "#f59e0b"
+                  to: "#f59e0b"
               - id: it4
                 to: 100
-                color: '#ef4444'
-                outline: '#ffffff'
-                scale_color: '#ef4444'
+                color: "#ef4444"
+                outline: "#ffffff"
+                scale_color: "#ef4444"
                 gradient:
                   enabled: false
-                  from: '#ef4444'
-                  to: '#ef4444'
+                  from: "#ef4444"
+                  to: "#ef4444"
             type: custom:andy-temperature-card
           - type: tile
             entity: sensor.meteorologisk_arstid
@@ -3126,7 +3083,7 @@ views:
             days_to_show: 365
             entities:
               - entity: sensor.framsidan_temperature
-                name: ' '
+                name: " "
               - sensor.template_home_temp
             stat_types:
               - mean
@@ -3143,23 +3100,23 @@ views:
             entity: weather.smhi_home
             state_color: false
             attribute: cloud_coverage
-            unit: '%'
-            name: ' '
+            unit: "%"
+            name: " "
             icon: mdi:cloud-outline
           - type: entity
             entity: weather.smhi_home
             attribute: pressure
-            name: ' '
+            name: " "
             icon: mdi:gauge
           - type: entity
             entity: weather.smhi_home
             attribute: wind_speed
             icon: mdi:weather-windy
             unit: m/s
-            name: ' '
+            name: " "
           - type: entity
             entity: weather.smhi_home
-            name: ' '
+            name: " "
             attribute: wind_bearing
             unit: °
             icon: mdi:windsock
@@ -3225,7 +3182,7 @@ views:
             min: 0
             max: 8
             needle: true
-            name: ' '
+            name: " "
           - type: gauge
             entity: sensor.grid_sell_power_kw
             name: Exporterar
@@ -3239,14 +3196,15 @@ views:
             min: -8
             max: 0
             needle: true
-          - chart_type: line
-            period: 5minute
-            type: statistics-graph
+          - type: statistics-graph
             entities:
               - sensor.template_fronius_solar_power
+              - sensor.template_current_sold_grid
+            days_to_show: 0.5
+            period: 5minute
+            chart_type: line
             stat_types:
               - mean
-            days_to_show: 0.5
             hide_legend: true
           - type: custom:apexcharts-card
             graph_span: 18h
@@ -3256,7 +3214,7 @@ views:
               - entity: sensor.template_fronius_solar_power
                 name: Effekt
                 type: column
-                color: '#4682B4'
+                color: "#4682B4"
                 opacity: 0.5
                 show:
                   datalabels: true
@@ -3705,11 +3663,11 @@ views:
           - type: history-graph
             entities:
               - entity: sensor.chargenode_sma_voltage_l1
-                name: ' '
+                name: " "
               - entity: sensor.chargenode_sma_voltage_l2
-                name: ' '
+                name: " "
               - entity: sensor.chargenode_sma_voltage_l3
-                name: ' '
+                name: " "
             hours_to_show: 12
           - show_name: false
             show_icon: false
