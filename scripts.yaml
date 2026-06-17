@@ -464,37 +464,13 @@ spabadet_pump_and_heater_v2:
         entity_id: binary_sensor.spabadet_deadline_heating
         state:
         - 'on'
-    - condition: or
-      conditions:
-      - alias: I veckan
-        condition: and
-        conditions:
-        - condition: time
-          weekday:
-          - mon
-          - tue
-          - wed
-          - thu
-          - sun
-          alias: Inte helg
-        - condition: template
-          value_template: "{{ \n  (now().weekday() not in [4, 5] and \n   states('sensor.template_spabadet_temperature')
-            | float < states('input_number.spabadet_target_temp_weekdays') | float)
-            \n}}\n"
-          alias: Temp under målet (vecka)
-      - condition: and
-        conditions:
-        - condition: time
-          weekday:
-          - fri
-          - sat
-          alias: Är helg
-        - condition: template
-          value_template: "{{ (now().weekday() in [4, 5] and \n   states('sensor.template_spabadet_temperature')
-            | float < states('input_number.spabadet_target_temp_weekends') | float)
-            }}"
-          alias: Temp under målet (helg)
-        alias: Är helg
+    - alias: Temp under målet (helgdagsmedvetet)
+      condition: template
+      value_template: >-
+        {% set bath = is_state('binary_sensor.workday_tomorrow', 'off') %}
+        {% set temp = states('sensor.template_spabadet_temperature') | float(0) %}
+        {% set target = states('input_number.spabadet_target_temp_weekends' if bath else 'input_number.spabadet_target_temp_weekdays') | float(0) %}
+        {{ temp < target }}
     then:
     - data: {}
       target:
