@@ -12,6 +12,13 @@ Home Assistant configuration repository for a Swedish smart home. Primary focus 
 
 Running Home Assistant 2026.1.3 with MariaDB on Synology NAS for history storage.
 
+## Host / Hardware
+
+- **Board**: Raspberry Pi 4, 4 GB RAM (`rpi4-64` HAOS build), **headless** (no display attached)
+- **OS**: Home Assistant OS (HAOS)
+- **SD card**: 28.5 GB total (~18 GB free). System ~9 GB, Appdata ~0.6 GB, backups ~0.4 GB
+- **Recorder/history DB**: MariaDB on Synology NAS — the recorder does **not** write to the SD card (saves SD wear). Local SD holds OS, add-ons, config, and backups only.
+
 ## Configuration Architecture
 
 **Entry point**: `configuration.yaml` - includes all other configs via `!include` directives
