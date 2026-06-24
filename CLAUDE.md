@@ -18,6 +18,10 @@ Running Home Assistant 2026.1.3 with MariaDB on Synology NAS for history storage
 - **OS**: Home Assistant OS (HAOS)
 - **SD card**: 28.5 GB total (~18 GB free). System ~9 GB, Appdata ~0.6 GB, backups ~0.4 GB
 - **Recorder/history DB**: MariaDB on Synology NAS — the recorder does **not** write to the SD card (saves SD wear). Local SD holds OS, add-ons, config, and backups only.
+- **Network**: wired Ethernet (`end0`) with static IP `192.168.1.181` (gateway `192.168.1.1`, DNS `192.168.1.50`). Wi-Fi (`wlan0`) is disabled. The interface is named `end0`, not `eth0` (newer kernel predictable naming on Pi 4).
+- **Also hosts the UniFi Network controller** (in addition to HA) — so the Pi is critical infra for the LAN itself.
+- **Network gear**: UniFi — USG-3P gateway (`192.168.1.1`), USW Lite 8 PoE switch, three U7-Lite APs (Kontoret, Vardagsrummet, Förrådet), all wired.
+- **History note**: the Pi was previously on Wi-Fi, which caused intermittent unreachability — a roaming wireless host leaves stale inter-AP bridge entries, so HA was sometimes unreachable from clients on a different AP. Moving to wired eliminated this. Keep the Pi wired.
 
 ## Configuration Architecture
 
