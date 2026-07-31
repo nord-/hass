@@ -10,7 +10,7 @@ Home Assistant configuration repository for a Swedish smart home. Primary focus 
 - **Climate**: IVT heat pump monitoring, room-based automation
 - **Lighting**: ZigBee-based (Aqara devices), Tellstick RF, 9+ room zones
 
-Running Home Assistant 2026.1.3 with MariaDB on Synology NAS for history storage.
+Running Home Assistant OS 17.2 / Core 2026.4.4 with MariaDB on Synology NAS for history storage.
 
 ## Host / Hardware
 
