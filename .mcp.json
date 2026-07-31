@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "homeassistant": {
+      "type": "sse",
+      "url": "http://hassio.local:8123/mcp_server/sse",
+      "headers": { "Authorization": "Bearer ${HA_TOKEN}" }
+    }
+  }
+}

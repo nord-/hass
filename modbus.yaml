@@ -197,6 +197,17 @@
   type: tcp
   host: 192.168.2.31
   port: 502
+  # The inverter answers slower than the default 3s timeout while producing. The late
+  # reply lands after HA gave up and is then read as the answer to the next request,
+  # shifting transaction ids one step out of phase ("request ask for
+  # transaction_id=N but got id=N-1"), whereupon pymodbus dumps every packet to
+  # stdout and floods the core log. Attributing those errors by transaction id put
+  # 139 of 141 on this hub and none on ChargeNode, and 90% of them fall in daylight
+  # hours, so it is slow responses under load rather than the inverter's nightly
+  # shutdown. The sensors below have no scan_interval, i.e. all ten poll every 15s
+  # back to back, which is what a longer timeout and a gap between requests fixes.
+  timeout: 5
+  message_wait_milliseconds: 100
   sensors:
     # - name: Fronius Inverter SerialNo
     #   address: 40052

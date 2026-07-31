@@ -26,6 +26,7 @@ blueprints
 __pycache__/
 
 .claude/settings.local.json
+.claude/worktrees/
 .ha_run.lock
 .HA_VERSION
 *.code-workspace

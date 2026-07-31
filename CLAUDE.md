@@ -10,7 +10,7 @@ Home Assistant configuration repository for a Swedish smart home. Primary focus 
 - **Climate**: IVT heat pump monitoring, room-based automation
 - **Lighting**: ZigBee-based (Aqara devices), Tellstick RF, 9+ room zones
 
-Running Home Assistant OS 17.2 / Core 2026.4.4 with MariaDB on Synology NAS for history storage.
+Running Home Assistant OS 18.1 / Core 2026.7.3 with MariaDB on Synology NAS for history storage.
 
 ## Host / Hardware
 
@@ -124,6 +124,25 @@ Controlled via 3 switched phases: `switch.spabadet_l2` (heater), `switch.spabade
 - **Database**: 3-day history retention in external MariaDB
 - **No Co-Authored-By**: Never add `Co-Authored-By: Claude` (or similar) in commit messages, PR descriptions, or PR comments
 - **Resolve review threads**: After addressing a PR review comment in code, mark that review thread resolved on GitHub (via `mcp__github__resolve_review_thread`). If the thread's GraphQL node ID isn't available through the MCP tools, tell the user so they can resolve it manually.
+
+## Claude Code MCP Access
+
+`.mcp.json` connects Claude Code to HA's built-in **Model Context Protocol Server** integration
+over SSE at `http://hassio.local:8123/mcp_server/sse`.
+
+- **Token**: the config references `${HA_TOKEN}`, which must exist as a user environment variable
+  holding a long-lived access token. It is deliberately not in the file, so `.mcp.json` is safe to
+  commit — but a fresh machine has to set the variable, or the server just fails to connect.
+- **Exposes**: Assist intents (`HassTurnOn`, `HassClimateSetTemperature`, `GetLiveContext`) plus
+  every script exposed to Assist (`spabadet_pump_and_heater_v2`, `ladda_bilen_uppstart`, …). Only
+  entities exposed under Settings → Voice assistants are visible to it.
+- **Does not expose**: logs, history, or template rendering. The one MCP resource is
+  `assist_context_snapshot`. For those, use the REST API with the same token.
+- **Reading logs**: `/api/hassio/core/logs`, `/api/hassio/supervisor/logs`,
+  `/api/hassio/host/logs`. `/api/error_log` is gone in this version, and other `/api/hassio/*`
+  paths (e.g. `os/info`) return 401 for user tokens — only the log endpoints are proxied.
+- **Versions** are readable from the `update.home_assistant_*` entities
+  (`installed_version` / `latest_version`) when updating the version line above.
 
 ## Network Context
 

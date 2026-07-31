@@ -200,23 +200,11 @@ views:
                 icon: mdi:mower
             visibility:
               - condition: state
-                entity: lawn_mower.wall_e
+                entity: lawn_mower.geten
                 state_not: unavailable
           - type: custom:mushroom-template-card
             primary: Geten • {{states("lawn_mower.geten")}}
             icon: mdi:mower
-            secondary: >-
-              {{
-              states("sensor.wall_e_next_scheduled_start_2")|as_timestamp|timestamp_custom('%H:%M')
-              }}
-
-              {%- if
-              states('sensor.wall_e_next_scheduled_start_2')|as_timestamp|timestamp_custom('%d')
-              != now().date()|as_timestamp|timestamp_custom('%d') -%}
-
-              ⁺¹
-
-              {%-endif-%}
             badge_icon: >-
               {{ "mdi:pause" if states("lawn_mower.geten") == "paused" else
               "mdi:play" }}
@@ -2868,7 +2856,7 @@ views:
                 name: Linsborste
         visibility:
           - condition: state
-            entity: lawn_mower.wall_e
+            entity: lawn_mower.geten
             state_not: unavailable
       - type: grid
         cards:

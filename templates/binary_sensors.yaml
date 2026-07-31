@@ -89,11 +89,6 @@
     state: >
       {{ not states('switch.varmepumpen_b') | bool }}
 
-  - name: Wall-E online
-    unique_id: walle_online
-    state: >
-      {{ state_attr('vacuum.wall_e', 'online') }}
-
 
 - binary_sensor:
   - unique_id: nordpool_tomorrow_valid
