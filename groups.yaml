@@ -1,7 +1,6 @@
 vrum_nere:
   name: Vardagsrummet, nere
   entities:
-    - switch.nexa_6     # skänken
     - light.fibaro_system_fgd212_dimmer_2_level_2 # vardagsrumsfönstret
     - switch.telldus_2  # flörtkulorna
     - light.tv_banken_light
@@ -31,13 +30,14 @@ koket:
   name: Köket
   entities:
     - light.koksfonstret_3
+    - switch.koksbanken
 #    - light.fibaro_system_fgd212_dimmer_2_level_4
     
 grovkoket:
   name: Grovköket
   entities:
 #    - switch.rusta15b
-    - switch.telldus_1
+    - switch.nexa_6
     
     
 vrum_uppe:

@@ -435,6 +435,25 @@ views:
         hold_action:
           action: more-info
       - type: custom:mushroom-template-badge
+        icon: mdi:home-thermometer
+        color: |-
+          {%if states("sensor.felix_rum_temperature")|float(0)<21%}
+          blue
+          {%elif states("sensor.felix_rum_temperature")|float(0)<23%}
+          yellow
+          {%elif states("sensor.felix_rum_temperature")|float(0)<25%}
+          green
+          {%else%}
+          red
+          {%endif%}
+        content: "{{states(\"sensor.felix_rum_temperature\")|float(0)|round(0)}}°C"
+        tap_action:
+          action: navigate
+          navigation_path: /lovelace/ute
+        hold_action:
+          action: more-info
+        entity: sensor.felix_rum_temperature
+      - type: custom:mushroom-template-badge
         icon: >-
           {% if states("binary_sensor.template_nordpool_price_reallow")|bool%}
 
@@ -728,6 +747,37 @@ views:
             entity: cover.eazy_lucka_till_laddkontakt
             name: Laddlucka
             show_position_control: false
+          - type: custom:mushroom-template-card
+            primary: Dörr
+            icon: mdi:car-door
+            features_position: bottom
+            entity: lock.eazy_las
+            secondary: >-
+              {{'låst' if states('binary_sensor.tesla_locked')=='off' else
+              'olåst'}}
+            grid_options:
+              columns: 6
+              rows: 1
+            color: "{{ 'red' if states('binary_sensor.tesla_locked')!='off'}}"
+            icon_tap_action:
+              action: toggle
+            badge_icon: "{{'mdi:alert' if states('binary_sensor.tesla_locked')!='off'}}"
+            badge_color: yellow
+          - type: custom:mushroom-cover-card
+            entity: cover.eazy_fonster
+            name: Ventilering
+            icon: mdi:car-door
+            show_position_control: false
+            tap_action:
+              action: toggle
+            hold_action:
+              action: more-info
+            double_tap_action:
+              action: perform-action
+              perform_action: cover.close_cover
+              target:
+                entity_id: cover.eazy_fonster
+            show_buttons_control: false
       - type: grid
         cards:
           - type: heading
@@ -2160,6 +2210,13 @@ views:
           - type: entities
             entities:
               - entity: light.koksfonstret_3
+                name: Fönstret
+                icon: mdi:lamp
+              - entity: switch.koksbanken
+                icon: mdi:light-flood-down
+              - entity: sensor.igrill_probe_1
+                name: Grillen
+                icon: mdi:thermometer
             footer:
               type: graph
               entity: sensor.xiaomi_lys3_temperatur
@@ -2211,8 +2268,8 @@ views:
               - entity: switch.nexa_6
                 icon: mdi:lamp
                 name: Skänken
-              - entity: switch.tz3000_3_ljusslingan_brytare
-                name: Ljusslingan
+              - entity: switch.tz3000_4
+                icon: mdi:string-lights
             type: entities
             state_color: true
             footer:
@@ -2406,9 +2463,9 @@ views:
             entities:
               - entity: light.tvattstugan_banken_light
                 name: Tvättstugan
-              - entity: switch.telldus_1
+              - entity: switch.nexa_6
                 name: Groventrén
-                icon: mdi:lamp
+                icon: mdi:lamp-outline
             footer:
               type: graph
               entity: sensor.felix_rum_temperature
@@ -3238,7 +3295,6 @@ views:
                   decimalsInFloat: 1
                 - seriesName: Pris
                   decimalsInFloat: 2
-                  min: 0
                   opposite: true
               dataLabels:
                 background:

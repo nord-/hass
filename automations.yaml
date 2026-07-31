@@ -455,71 +455,6 @@
         clickAction: /lovelace/2
     action: notify.rickards_devices
   mode: single
-- id: '1659106208657'
-  alias: Wall-E, dags att byta blad
-  description: ''
-  triggers:
-  - entity_id:
-    - sensor.wall_e_blades_current_on_time_2
-    above: 100
-    trigger: numeric_state
-    enabled: false
-  - entity_id:
-    - sensor.wall_e_blades_current_on_time_2
-    above: 150
-    trigger: numeric_state
-    enabled: false
-  - entity_id:
-    - sensor.wall_e_blades_current_on_time_2
-    above: 200
-    trigger: numeric_state
-    enabled: false
-  - trigger: state
-    entity_id:
-    - sensor.wall_e_blades_current_on_time_2
-  conditions:
-  - condition: template
-    value_template: '{{ trigger.from_state.state not in [''unknown'', ''unavailable'']
-      }}'
-    alias: 'Not from unavailable state '
-  - alias: Every 50th hour
-    condition: template
-    value_template: '{{ states(''sensor.wall_e_blades_current_on_time_2'')|round(0)
-      % 50 == 0 }}'
-  - condition: template
-    value_template: '{{ trigger.from_state.state|round(0) < trigger.to_state.state|round(0)
-      }}'
-  actions:
-  - action: logbook.log
-    metadata: {}
-    data:
-      name: Blade count
-      message: '{{states("sensor.wall_e_blades_current_on_time_2")}}'
-      entity_id: sensor.wall_e_blades_current_on_time_2
-  - choose:
-    - conditions:
-      - condition: numeric_state
-        entity_id: sensor.wall_e_blades_current_on_time_2
-        above: 199
-      sequence:
-      - data:
-          title: Dags att byta knivar på Wall-E
-          message: Bladen har använts i {{states('sensor.wall_e_blades_current_on_time_2')|round(0)}}
-            timmar.
-        action: notify.rickards_devices
-      alias: Blade count ≥200
-    - conditions:
-      - condition: numeric_state
-        entity_id: sensor.wall_e_blades_current_on_time_2
-        above: 99
-      sequence:
-      - data:
-          title: Snart dags att byta knivar på Wall-E
-          message: Bladen har använts i {{states('sensor.wall_e_blades_current_on_time_2')|round(0)}}
-            timmar.
-        action: notify.rickards_devices
-      alias: Blade count ≥100
-  mode: single
 - id: '1661109418803'
   alias: Tesla, Charge on time
   description: ''
@@ -1022,6 +957,7 @@
       seconds: 0
     above: 0.5
     trigger: numeric_state
+    enabled: false
   - trigger: numeric_state
     entity_id:
     - sensor.spabadet_temperatur
@@ -1034,14 +970,15 @@
       hours: 4
       minutes: 0
       seconds: 0
+    enabled: false
   conditions: []
   actions:
   - choose:
     - conditions:
-      - condition: template
+      - alias: Temp value is stale
+        condition: template
         value_template: '{{ now() - states.sensor.spabadet_temperatur.last_changed
-          >= timedelta(hours=2) }}'
-        alias: Temp value is stale
+          >= timedelta(hours=12) }}'
       sequence:
       - data:
           message: "Gammalt värde från spabadet\\n {{ states(\"sensor.spabadet_temperatur\")
@@ -1054,11 +991,6 @@
             clickAction: /lovelace/spa
         action: notify.rickards_devices
         alias: Notify Rickard
-      - device_id: 67cc2f43e85f65f021d4297b5037cca1
-        domain: button
-        entity_id: ecf22507c1ea3c81facbb76a2d9c5909
-        type: press
-        enabled: false
       - action: retry.actions
         metadata: {}
         data:
@@ -1865,7 +1797,7 @@
     - sensor.xiaomi_lys2_batteri
     - sensor.xiaomi_lys3_batteri
     - sensor.xiaomi_lys4_batteri
-    below: 10
+    below: 5
   conditions: []
   actions:
   - action: notify.rickards_devices
@@ -2021,13 +1953,28 @@
       seconds: 0
   conditions: []
   actions:
-  - data:
-      message: ⚠️ Teslamate är offline!
-      data:
-        channel: Alarm
-        priority: high
-        clickAction: /lovelace/9
-    action: notify.rickards_devices
+  - action: homeassistant.update_entity
+    data:
+      entity_id:
+      - binary_sensor.teslamate
+  - delay:
+      hours: 0
+      minutes: 0
+      seconds: 10
+      milliseconds: 0
+  - if:
+    - condition: state
+      entity_id: binary_sensor.teslamate
+      state:
+      - 'off'
+    then:
+    - data:
+        message: ⚠️ Teslamate är offline!
+        data:
+          channel: Alarm
+          priority: high
+          clickAction: /lovelace/9
+      action: notify.rickards_devices
   mode: single
 - id: '1758030680455'
   alias: 'ALARM: ChargeNode offline 2'
@@ -2480,4 +2427,45 @@
       data:
         tag: pollen
         channel: Weather
+  mode: single
+- id: '1783184623623'
+  alias: GOAT, time to change blades
+  description: ''
+  triggers:
+  - trigger: numeric_state
+    entity_id:
+    - sensor.geten_bladets_livslangd
+    below: 10
+  - trigger: numeric_state
+    entity_id:
+    - sensor.geten_bladets_livslangd
+    below: 5
+  - trigger: numeric_state
+    entity_id:
+    - sensor.geten_bladets_livslangd
+    below: 2
+  conditions: []
+  actions:
+  - if:
+    - condition: numeric_state
+      entity_id: sensor.geten_bladets_livslangd
+      below: 5
+    then:
+    - action: notify.rickards_devices
+      data:
+        title: "\U0001F52A Bladen på Geten"
+        data:
+          tag: lawn
+          channel: Lawn
+        message: Dags att byta knivar på Geten. {{states('sensor.geten_bladets_livslangd')|round(0)}}%
+          kvar
+    else:
+    - action: notify.rickards_devices
+      data:
+        title: "\U0001F52A Bladen på Geten"
+        data:
+          tag: lawn
+          channel: Lawn
+        message: Snart dags att byta knivar på Geten. {{states('sensor.geten_bladets_livslangd')|round(0)}}%
+          kvar
   mode: single
