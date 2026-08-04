@@ -218,7 +218,8 @@
       {% if energy > 0
             and denominator > 0
             and state_attr('sensor.house_total_energy_24_hrs', 'source_value_valid')
-            and state_attr('sensor.house_total_energy_24_hrs', 'age_coverage_ratio') | float(0) >= 0.5 %}
+            and state_attr('sensor.house_total_energy_24_hrs', 'age_coverage_ratio') | float(0) >= 0.9
+            and state_attr('sensor.energy_x_cost_24_hrs', 'age_coverage_ratio') | float(0) >= 0.9 %}
         {{ ((cost / denominator - 1) * 100) | round(0) }}
       {% else %}
         {{ this.state | float(none) }}
@@ -226,9 +227,12 @@
 
   - unique_id: my_avg_spot_price
     state: >-
+      {# Båda fönstren måste vara i stort sett fulla — en halv nämnare mot en hel
+         täljare ger dubbelt för högt pris. #}
       {% if states('sensor.house_total_energy_24_hrs')|is_number and
             state_attr('sensor.house_total_energy_24_hrs','source_value_valid') and
-            state_attr('sensor.house_total_energy_24_hrs','age_coverage_ratio')|float(0) >= 0.5 and
+            state_attr('sensor.house_total_energy_24_hrs','age_coverage_ratio')|float(0) >= 0.9 and
+            state_attr('sensor.energy_x_cost_24_hrs','age_coverage_ratio')|float(0) >= 0.9 and
             states('sensor.house_total_energy_24_hrs')|float(0) > 0 -%}
         {{ (states('sensor.energy_x_cost_24_hrs')|float(0) / states('sensor.house_total_energy_24_hrs')|float(0))|round(2) }}
       {%- else -%}
