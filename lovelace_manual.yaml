@@ -189,7 +189,7 @@ views:
               - type: entity
                 show_state: true
                 show_icon: true
-                entity: sensor.geten_bladets_livslangd
+                entity: sensor.geten_blades_remaining
                 tap_action:
                   action: more-info
                 icon: mdi:knife
@@ -2836,7 +2836,7 @@ views:
                 show_state: true
                 show_icon: true
                 icon: mdi:knife
-                entity: sensor.geten_bladets_livslangd
+                entity: sensor.geten_blades_remaining
               - type: entity
                 show_state: true
                 show_icon: true
@@ -2847,13 +2847,17 @@ views:
             hours_to_show: 8
           - type: entities
             entities:
-              - entity: sensor.geten_total_rengoringstid
+              - entity: sensor.geten_total_mowing_time
                 name: Klipptid
                 icon: mdi:clock-fast
-              - entity: sensor.geten_bladets_livslangd
+              - entity: sensor.geten_blades_remaining
                 name: Knivarna
-              - entity: sensor.geten_linsborstens_livslangd
+              - entity: sensor.geten_weed_rope_remaining
+                name: Trimmer
+              - entity: sensor.geten_lens_brush_remaining
                 name: Linsborste
+              - entity: sensor.geten_trimmer_brush_remaining
+                name: Trimmerborste
         visibility:
           - condition: state
             entity: lawn_mower.geten
