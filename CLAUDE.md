@@ -67,7 +67,7 @@ Running Home Assistant OS 18.1 / Core 2026.7.3 with MariaDB on Synology NAS for 
 
 ## Template Patterns
 
-Templates in `/templates/` use Jinja2 heavily. **Naming**: older template entities have a `template_` prefix (e.g. `sensor.template_spabadet_temperature`), but newer HA versions use the `unique_id` directly (e.g. `binary_sensor.spabadet_deadline_heating`). Don't add the prefix for new entities.
+Templates in `/templates/` use Jinja2 heavily. **Naming**: entity_id is `slugify(name)` on every platform — never the `unique_id` (proof: `unique_id: energycost_24hrs` + `name: "Energy × Cost (24 hrs)"` → `sensor.energy_x_cost_24_hrs`). It's assigned once, at first registration, and the registry keeps it forever: older template entities kept a `template_` prefix from the legacy `sensors:`-key format even though their `name` says otherwise (e.g. `sensor.template_house_power_w` / "Köpt effekt [W]"). Don't add the prefix for new entities — pick the `name` you want the id to come from, and set `unique_id` to the same slug so both readings agree.
 
 Common patterns:
 
