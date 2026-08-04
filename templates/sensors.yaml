@@ -210,15 +210,15 @@
   - unique_id: spot_gain_loss_daily
     unit_of_measurement: '%'
     state: >-
-      {% set energy = states('sensor.energy_used_24_hrs') | float(0) %}
+      {% set energy = states('sensor.house_total_energy_24_hrs') | float(0) %}
       {% set cost = states('sensor.energy_x_cost_24_hrs') | float(0) %}
       {% set avg_price = states('sensor.elpriset_kr_avg') | float(0) %}
-      {% set denominator = (energy / 1000) * avg_price %}
+      {% set denominator = energy * avg_price %}
 
       {% if energy > 0
             and denominator > 0
-            and state_attr('sensor.energy_used_24_hrs', 'source_value_valid')
-            and state_attr('sensor.energy_used_24_hrs', 'age_coverage_ratio') | float(0) >= 0.5 %}
+            and state_attr('sensor.house_total_energy_24_hrs', 'source_value_valid')
+            and state_attr('sensor.house_total_energy_24_hrs', 'age_coverage_ratio') | float(0) >= 0.5 %}
         {{ ((cost / denominator - 1) * 100) | round(0) }}
       {% else %}
         {{ this.state | float(none) }}
@@ -226,11 +226,11 @@
 
   - unique_id: my_avg_spot_price
     state: >-
-      {% if states('sensor.energy_used_24_hrs')|is_number and
-            state_attr('sensor.energy_used_24_hrs','source_value_valid') and
-            state_attr('sensor.energy_used_24_hrs','age_coverage_ratio')|float(0) >= 0.5 and
-            states('sensor.energy_used_24_hrs')|float(0) > 0 -%}
-        {{ (states('sensor.energy_x_cost_24_hrs')|float(0) / (states('sensor.energy_used_24_hrs')|float(0)/1000))|round(2) }}
+      {% if states('sensor.house_total_energy_24_hrs')|is_number and
+            state_attr('sensor.house_total_energy_24_hrs','source_value_valid') and
+            state_attr('sensor.house_total_energy_24_hrs','age_coverage_ratio')|float(0) >= 0.5 and
+            states('sensor.house_total_energy_24_hrs')|float(0) > 0 -%}
+        {{ (states('sensor.energy_x_cost_24_hrs')|float(0) / states('sensor.house_total_energy_24_hrs')|float(0))|round(2) }}
       {%- else -%}
         {{ this.state | float(none) }}
       {%- endif -%}

@@ -85,6 +85,19 @@
 #   method: left
 #   round: 2
 
+# Husets totala förbrukning (nät + egenförbrukad sol) — matchar täljaren i
+# sensor.template_house_cost, som prissätter både nätel och egenförbrukad sol.
+# ponytail: integrerar house_power_kw rakt av. Om Fronius blir unavailable
+# faller den till float(0) och kW kan bli negativ under export → integralen
+# backar. Lägg till en clamp i house_power_kw om det visar sig i praktiken.
+- platform: integration
+  unique_id: house_total_energy
+  name: "House Total Energy"
+  source: sensor.template_house_power_kw
+  method: trapezoidal
+  unit_time: h
+  round: 3
+
 ### STATISTICS
 # https://www.home-assistant.io/integrations/statistics/
 - platform: statistics
@@ -101,7 +114,18 @@
   entity_id: sensor.house_cost_real
   state_characteristic: change
   max_age:
-    hours: 24  
+    hours: 24
+
+# Nämnare till template_my_avg_spot_price / template_spot_gain_loss_daily.
+# Energy Used (24 hrs) räknar bara nätimport och får INTE användas där, eftersom
+# kostnaden ovan även innehåller egenförbrukad sol.
+- platform: statistics
+  unique_id: house_total_energy_24_hrs
+  name: "House Total Energy (24 hrs)"
+  entity_id: sensor.house_total_energy
+  state_characteristic: change
+  max_age:
+    hours: 24
 
 - platform: statistics
   unique_id: spa_active_24hrs
