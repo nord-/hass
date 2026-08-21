@@ -22,14 +22,14 @@ mobile_app:
 # Enables configuration UI
 config:
 
-http:
-  # api_password: !secret http_password
-  # base_url: example.duckdns.org:8123
-  # ssl_certificate: /ssl/fullchain.pem
-  # ssl_key: /ssl/privkey.pem
-  use_x_forwarded_for: true
-  trusted_proxies:
-    - 172.30.33.0/24
+# http:
+#   # api_password: !secret http_password
+#   # base_url: example.duckdns.org:8123
+#   # ssl_certificate: /ssl/fullchain.pem
+#   # ssl_key: /ssl/privkey.pem
+#   use_x_forwarded_for: true
+#   trusted_proxies:
+#     - 172.30.33.0/24
 
 history:
 
@@ -104,6 +104,8 @@ var: !include vars.yaml
 #     custom_components.peaqev: debug
 logger:
   default: error
+  logs:
+    deebot_client: debug
   # logs: 
   #   zigpy: debug
   #   zigpy.quirks: debug

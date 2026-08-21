@@ -1951,6 +1951,13 @@
       hours: 0
       minutes: 10
       seconds: 0
+    id: tm_off
+  - trigger: state
+    entity_id:
+    - binary_sensor.teslamate
+    to:
+    - 'on'
+    id: tm_on
   conditions: []
   actions:
   - action: homeassistant.update_entity
@@ -1974,7 +1981,15 @@
           channel: Alarm
           priority: high
           clickAction: /lovelace/9
+          tag: tm_offline
       action: notify.rickards_devices
+    else:
+    - data:
+        data:
+          tag: tm_offline
+        message: clear_notification
+      action: notify.rickards_devices
+      alias: Clear notification
   mode: single
 - id: '1758030680455'
   alias: 'ALARM: ChargeNode offline 2'
@@ -2434,21 +2449,21 @@
   triggers:
   - trigger: numeric_state
     entity_id:
-    - sensor.geten_bladets_livslangd
+    - sensor.geten_blades_remaining
     below: 10
   - trigger: numeric_state
     entity_id:
-    - sensor.geten_bladets_livslangd
+    - sensor.geten_blades_remaining
     below: 5
   - trigger: numeric_state
     entity_id:
-    - sensor.geten_bladets_livslangd
+    - sensor.geten_blades_remaining
     below: 2
   conditions: []
   actions:
   - if:
     - condition: numeric_state
-      entity_id: sensor.geten_bladets_livslangd
+      entity_id: sensor.geten_blades_remaining
       below: 5
     then:
     - action: notify.rickards_devices
@@ -2457,7 +2472,7 @@
         data:
           tag: lawn
           channel: Lawn
-        message: Dags att byta knivar på Geten. {{states('sensor.geten_bladets_livslangd')|round(0)}}%
+        message: Dags att byta knivar på Geten. {{states('sensor.geten_blades_remaining')|round(0)}}%
           kvar
     else:
     - action: notify.rickards_devices
@@ -2466,6 +2481,43 @@
         data:
           tag: lawn
           channel: Lawn
-        message: Snart dags att byta knivar på Geten. {{states('sensor.geten_bladets_livslangd')|round(0)}}%
+        message: Snart dags att byta knivar på Geten. {{states('sensor.geten_blades_remaining')|round(0)}}%
+          kvar
+  mode: single
+- id: '1786633185188'
+  alias: GOAT Weed Rope alert
+  description: ''
+  triggers:
+  - trigger: numeric_state
+    entity_id:
+    - sensor.geten_weed_rope_remaining
+    below: 15
+  - trigger: numeric_state
+    entity_id:
+    - sensor.geten_weed_rope_remaining
+    below: 10
+  conditions: []
+  actions:
+  - if:
+    - condition: numeric_state
+      entity_id: sensor.geten_weed_rope_remaining
+      below: 10
+    then:
+    - action: notify.rickards_devices
+      data:
+        title: "\U0001F52A Trimmern på Geten"
+        data:
+          tag: lawn
+          channel: Lawn
+        message: Dags att byta trimmertråd på Geten. {{states('sensor.geten_weed_rope_remaining')|round(0)}}%
+          kvar
+    else:
+    - action: notify.rickards_devices
+      data:
+        title: "\U0001F52A Bladen på Geten"
+        data:
+          tag: lawn
+          channel: Lawn
+        message: Snart dags att byta trimmertråd på Geten. {{states('sensor.geten_weed_rope_remaining')|round(0)}}%
           kvar
   mode: single
