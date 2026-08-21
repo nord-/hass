@@ -2521,3 +2521,27 @@
         message: Snart dags att byta trimmertråd på Geten. {{states('sensor.geten_weed_rope_remaining')|round(0)}}%
           kvar
   mode: single
+- id: '1787303626000'
+  alias: GOAT, error alert
+  description: ''
+  triggers:
+  - trigger: state
+    entity_id: sensor.geten_error
+    not_to:
+    - '0'
+    - unknown
+    - unavailable
+  conditions: []
+  actions:
+  - action: notify.rickards_devices
+    data:
+      title: "\U000026A0 Geten har ett fel"
+      data:
+        tag: lawn_error
+        channel: Lawn
+      message: >-
+        Felkod {{ states('sensor.geten_error') }}: {{
+        state_attr('sensor.geten_error', 'description') }} ({{
+        states('sensor.geten_activity') }}, batteri {{
+        states('sensor.geten_batteri') }}%)
+  mode: single
