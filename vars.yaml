@@ -54,6 +54,11 @@ solarenergy_daily:
   tracked_entity_id:
     - sensor.energy_day_fronius_inverter_1_192_168_2_31
 
+solar_forecast_ratio:
+  friendly_name: 'Solprognos, felkvot (utfall/prognos)'
+  initial_value: 1.0
+  icon: mdi:sun-wireless
+
 # spa
 spa_cost:
   friendly_name: 'Badkostnad'

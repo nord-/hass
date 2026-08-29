@@ -487,6 +487,11 @@
       - action: rest_command.cn_add_car1_energy
         data: {}
     action: retry.actions
+  - action: automation.turn_off
+    target:
+      entity_id: automation.ladda_azarel_pa_klocka
+    data:
+      stop_actions: false
   mode: single
 - id: '1662395114345'
   alias: Värmepumpen, tillåt elpatron
@@ -2555,4 +2560,247 @@
     - '18:30:00'
   actions:
   - action: solcast_solar.update_forecasts
+  mode: single
+- id: '1787763600001'
+  alias: Solprognos, kalibrera felkvot
+  description: Glidande medel av utfall/prognos (Solcast) för solproduktionen. Används av sol-laddningsnotiserna.
+  triggers:
+  - trigger: time
+    at: '23:30:00'
+  conditions:
+  - alias: Giltiga värden för prognos och utfall
+    condition: template
+    value_template: >-
+      {{ states('sensor.solcast_pv_forecast_forecast_today')|float(0) > 1 and
+         states('sensor.template_fronius_solar_daily_energy')|float(0) > 0 }}
+  actions:
+  - variables:
+      today_ratio: >-
+        {{ states('sensor.template_fronius_solar_daily_energy')|float(0) /
+           states('sensor.solcast_pv_forecast_forecast_today')|float(1) }}
+      new_ratio: '{{ 0.7 * states(''var.solar_forecast_ratio'')|float(1.0) + 0.3 *
+        today_ratio|float(1) }}'
+  - alias: Spara kvoten (begränsad till 0.5–4.0)
+    action: var.set
+    data:
+      entity_id: var.solar_forecast_ratio
+      value_template: '{{ [0.5, [new_ratio|float(1.0), 4.0]|min]|max|round(3) }}'
+  mode: single
+- id: '1787763600002'
+  alias: Eazy, sol-laddning imorgon
+  description: Notis kl 19 när imorgon är solig och billig. Knappen stänger av auto-läget
+    och sätter manuell starttid mitt i solfönstret.
+  triggers:
+  - trigger: time
+    at: '19:00:00'
+  variables:
+    solar_kwh: >-
+      {{ (states('sensor.solcast_pv_forecast_forecast_tomorrow')|float(0) *
+          states('var.solar_forecast_ratio')|float(1.0))|round(1) }}
+    avg_price: >-
+      {% set prices = (state_attr('sensor.nordpool_kwh_se3_sek_3_095_0','raw_tomorrow') or [])
+         | selectattr('start.hour','ge',9) | selectattr('start.hour','lt',16)
+         | map(attribute='value') | list %}
+      {{ (prices|average)|round(3) if prices|count > 0 else 1 }}
+    req_h: '{{ states(''sensor.template_rya_req_hours'')|float(0) }}'
+  conditions:
+  - alias: Morgondagens priser finns
+    condition: state
+    entity_id: binary_sensor.template_nordpool_tomorrow_valid
+    state: 'on'
+  - alias: Solprognosens topptid finns
+    condition: template
+    value_template: '{{ states(''sensor.solcast_pv_forecast_peak_time_tomorrow'') not in
+      [''unknown'',''unavailable''] }}'
+  - alias: Soligt imorgon, skalad prognos över 15 kWh
+    condition: template
+    value_template: '{{ solar_kwh|float(0) > 15 }}'
+  - alias: Billigt i solfönstret 09-16, snitt under 20 öre
+    condition: template
+    value_template: '{{ avg_price|float(1) < 0.20 }}'
+  - alias: Eazy hemma
+    condition: state
+    entity_id: device_tracker.tesla_location
+    state: home
+  - alias: Laddporten öppen
+    condition: state
+    entity_id: binary_sensor.tesla_charge_port_door_open
+    state: 'on'
+  - alias: Behöver laddas
+    condition: template
+    value_template: '{{ req_h|float(0) > 0 }}'
+  actions:
+  - variables:
+      start_ts: >-
+        {% set peak = states('sensor.solcast_pv_forecast_peak_time_tomorrow')|as_datetime|as_local %}
+        {% set s = peak - timedelta(hours=req_h|float(0)/2) %}
+        {{ s.replace(minute=(s.minute // 15) * 15, second=0, microsecond=0).isoformat() }}
+      start_hm: '{{ (start_ts|as_datetime).strftime(''%H:%M'') }}'
+      end_hm: '{{ ((start_ts|as_datetime) + timedelta(hours=req_h|float(0))).strftime(''%H:%M'')
+        }}'
+      action_charge: '{{ ''SOLCHARGE1_'' ~ context.id }}'
+  - alias: Föreslå sol-laddning
+    action: notify.rickards_devices
+    data:
+      title: '☀️ Eazy: ladda med solen imorgon?'
+      message: '~{{ solar_kwh }} kWh sol, snitt {{ (avg_price|float(0)*100)|round(1)
+        }} öre (09–16)\n Förslag: {{ start_hm }}–{{ end_hm }} ({{ req_h }} h)\n SoC
+        {{ states("sensor.tesla_battery_level") }}% → {{ states("sensor.tesla_charge_limit_soc")
+        }}%'
+      data:
+        tag: solar_charge_car1
+        channel: ev
+        sticky: true
+        clickAction: /lovelace/tesla
+        actions:
+        - action: '{{ action_charge }}'
+          title: Ladda {{ start_hm }}
+  - alias: Vänta på knapptryck (till 23:00)
+    wait_for_trigger:
+    - trigger: event
+      event_type: mobile_app_notification_action
+      event_data:
+        action: '{{ action_charge }}'
+    timeout:
+      hours: 4
+    continue_on_timeout: true
+  - if:
+    - condition: template
+      value_template: '{{ wait.trigger is none }}'
+    then:
+    - action: notify.rickards_devices
+      data:
+        message: clear_notification
+        data:
+          tag: solar_charge_car1
+    - stop: Ingen knapptryck inom tidsfönstret
+  - alias: Stäng av auto-läget
+    action: input_boolean.turn_off
+    target:
+      entity_id: input_boolean.car_1_charge
+  - alias: Sätt manuell starttid
+    action: input_datetime.set_datetime
+    target:
+      entity_id: input_datetime.car_1_time
+    data:
+      time: '{{ (start_ts|as_datetime).strftime(''%H:%M:%S'') }}'
+  - alias: Aktivera klock-laddningen
+    action: automation.turn_on
+    target:
+      entity_id: automation.ladda_azarel_pa_klocka
+  - alias: Bekräfta
+    action: notify.rickards_devices
+    data:
+      title: ☀️ Eazy laddar med solen
+      message: 'Start {{ start_hm }} imorgon ({{ req_h }} h). Auto-läget avstängt.'
+      data:
+        tag: solar_charge_car1
+        channel: ev
+  mode: single
+- id: '1787763600003'
+  alias: Dolphin, sol-laddning imorgon
+  description: Notis kl 19 när imorgon är solig och billig. Knappen stänger av auto-läget
+    och sätter manuell starttid mitt i solfönstret.
+  triggers:
+  - trigger: time
+    at: '19:00:00'
+  variables:
+    solar_kwh: >-
+      {{ (states('sensor.solcast_pv_forecast_forecast_tomorrow')|float(0) *
+          states('var.solar_forecast_ratio')|float(1.0))|round(1) }}
+    avg_price: >-
+      {% set prices = (state_attr('sensor.nordpool_kwh_se3_sek_3_095_0','raw_tomorrow') or [])
+         | selectattr('start.hour','ge',9) | selectattr('start.hour','lt',16)
+         | map(attribute='value') | list %}
+      {{ (prices|average)|round(3) if prices|count > 0 else 1 }}
+    req_h: '{{ states(''sensor.template_zoe_req_hours'')|float(0) }}'
+  conditions:
+  - alias: Morgondagens priser finns
+    condition: state
+    entity_id: binary_sensor.template_nordpool_tomorrow_valid
+    state: 'on'
+  - alias: Solprognosens topptid finns
+    condition: template
+    value_template: '{{ states(''sensor.solcast_pv_forecast_peak_time_tomorrow'') not in
+      [''unknown'',''unavailable''] }}'
+  - alias: Soligt imorgon, skalad prognos över 15 kWh
+    condition: template
+    value_template: '{{ solar_kwh|float(0) > 15 }}'
+  - alias: Billigt i solfönstret 09-16, snitt under 20 öre
+    condition: template
+    value_template: '{{ avg_price|float(1) < 0.20 }}'
+  - alias: Dolphin hemma och inkopplad
+    condition: state
+    entity_id: sensor.byd_dolphin_status
+    state: connected
+  - alias: Behöver laddas
+    condition: template
+    value_template: '{{ req_h|float(0) > 0 }}'
+  actions:
+  - variables:
+      start_ts: >-
+        {% set peak = states('sensor.solcast_pv_forecast_peak_time_tomorrow')|as_datetime|as_local %}
+        {% set s = peak - timedelta(hours=req_h|float(0)/2) %}
+        {{ s.replace(minute=(s.minute // 15) * 15, second=0, microsecond=0).isoformat() }}
+      start_hm: '{{ (start_ts|as_datetime).strftime(''%H:%M'') }}'
+      end_hm: '{{ ((start_ts|as_datetime) + timedelta(hours=req_h|float(0))).strftime(''%H:%M'')
+        }}'
+      action_charge: '{{ ''SOLCHARGE2_'' ~ context.id }}'
+  - alias: Föreslå sol-laddning
+    action: notify.rickards_devices
+    data:
+      title: '☀️ Dolphin: ladda med solen imorgon?'
+      message: '~{{ solar_kwh }} kWh sol, snitt {{ (avg_price|float(0)*100)|round(1)
+        }} öre (09–16)\n Förslag: {{ start_hm }}–{{ end_hm }} ({{ req_h }} h)\n SoC
+        {{ states("sensor.byd_dolphin_soc") }}% → {{ states("input_number.zoe_soc_upper_limit")|round(0)
+        }}%'
+      data:
+        tag: solar_charge_car2
+        channel: ev
+        sticky: true
+        clickAction: /lovelace/tesla
+        actions:
+        - action: '{{ action_charge }}'
+          title: Ladda {{ start_hm }}
+  - alias: Vänta på knapptryck (till 23:00)
+    wait_for_trigger:
+    - trigger: event
+      event_type: mobile_app_notification_action
+      event_data:
+        action: '{{ action_charge }}'
+    timeout:
+      hours: 4
+    continue_on_timeout: true
+  - if:
+    - condition: template
+      value_template: '{{ wait.trigger is none }}'
+    then:
+    - action: notify.rickards_devices
+      data:
+        message: clear_notification
+        data:
+          tag: solar_charge_car2
+    - stop: Ingen knapptryck inom tidsfönstret
+  - alias: Stäng av auto-läget
+    action: input_boolean.turn_off
+    target:
+      entity_id: input_boolean.car_2_charge
+  - alias: Sätt manuell starttid
+    action: input_datetime.set_datetime
+    target:
+      entity_id: input_datetime.zoe_hour
+    data:
+      time: '{{ (start_ts|as_datetime).strftime(''%H:%M:%S'') }}'
+  - alias: Aktivera klock-laddningen
+    action: automation.turn_on
+    target:
+      entity_id: automation.ladda_zoe_pa_tid
+  - alias: Bekräfta
+    action: notify.rickards_devices
+    data:
+      title: ☀️ Dolphin laddar med solen
+      message: 'Start {{ start_hm }} imorgon ({{ req_h }} h). Auto-läget avstängt.'
+      data:
+        tag: solar_charge_car2
+        channel: ev
   mode: single
