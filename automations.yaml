@@ -2535,13 +2535,24 @@
   actions:
   - action: notify.rickards_devices
     data:
-      title: "\U000026A0 Geten har ett fel"
+      title: ⚠ Geten har ett fel
       data:
         tag: lawn_error
         channel: Lawn
-      message: >-
-        Felkod {{ states('sensor.geten_error') }}: {{
-        state_attr('sensor.geten_error', 'description') }} ({{
-        states('sensor.geten_activity') }}, batteri {{
-        states('sensor.geten_batteri') }}%)
+      message: 'Felkod {{ states(''sensor.geten_error'') }}: {{ state_attr(''sensor.geten_error'',
+        ''description'') }} ({{ states(''sensor.geten_activity'') }}, batteri {{ states(''sensor.geten_batteri'')
+        }}%)'
+  mode: single
+- id: '1788016424730'
+  alias: Solcast, hämta prognos
+  description: Fetch solar forecast, max 10 times per day
+  triggers:
+  - trigger: time
+    at:
+    - 00:00:00
+    - 05:30:00
+    - '12:30:00'
+    - '18:30:00'
+  actions:
+  - action: solcast_solar.update_forecasts
   mode: single
