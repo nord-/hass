@@ -56,7 +56,7 @@ solarenergy_daily:
 
 solar_forecast_ratio:
   friendly_name: 'Solprognos, felkvot (utfall/prognos)'
-  initial_value: 2.0
+  initial_value: 1.0
   icon: mdi:sun-wireless
 
 # spa

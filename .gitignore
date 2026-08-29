@@ -29,5 +29,6 @@ __pycache__/
 .claude/worktrees/
 .ha_run.lock
 .HA_VERSION
+solcast.json
 *.code-workspace
 solcast_solar/
