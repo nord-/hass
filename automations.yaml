@@ -487,6 +487,11 @@
       - action: rest_command.cn_add_car1_energy
         data: {}
     action: retry.actions
+  - action: automation.turn_off
+    target:
+      entity_id: automation.ladda_azarel_pa_klocka
+    data:
+      stop_actions: false
   mode: single
 - id: '1662395114345'
   alias: Värmepumpen, tillåt elpatron
@@ -2561,7 +2566,7 @@
   description: Glidande medel av utfall/prognos (Solcast) för solproduktionen. Används av sol-laddningsnotiserna.
   triggers:
   - trigger: time
-    at: '21:00:00'
+    at: '23:30:00'
   conditions:
   - alias: Giltiga värden för prognos och utfall
     condition: template
@@ -2579,7 +2584,7 @@
     action: var.set
     data:
       entity_id: var.solar_forecast_ratio
-      value: '{{ [0.5, [new_ratio|float(1.0), 4.0]|min]|max|round(3) }}'
+      value_template: '{{ [0.5, [new_ratio|float(1.0), 4.0]|min]|max|round(3) }}'
   mode: single
 - id: '1787763600002'
   alias: Eazy, sol-laddning imorgon
@@ -2593,7 +2598,7 @@
       {{ (states('sensor.solcast_pv_forecast_forecast_tomorrow')|float(0) *
           states('var.solar_forecast_ratio')|float(1.0))|round(1) }}
     avg_price: >-
-      {% set prices = state_attr('sensor.nordpool_kwh_se3_sek_3_095_0','raw_tomorrow')
+      {% set prices = (state_attr('sensor.nordpool_kwh_se3_sek_3_095_0','raw_tomorrow') or [])
          | selectattr('start.hour','ge',9) | selectattr('start.hour','lt',16)
          | map(attribute='value') | list %}
       {{ (prices|average)|round(3) if prices|count > 0 else 1 }}
@@ -2658,7 +2663,17 @@
         action: '{{ action_charge }}'
     timeout:
       hours: 4
-    continue_on_timeout: false
+    continue_on_timeout: true
+  - if:
+    - condition: template
+      value_template: '{{ wait.trigger is none }}'
+    then:
+    - action: notify.rickards_devices
+      data:
+        message: clear_notification
+        data:
+          tag: solar_charge_car1
+    - stop: Ingen knapptryck inom tidsfönstret
   - alias: Stäng av auto-läget
     action: input_boolean.turn_off
     target:
@@ -2694,7 +2709,7 @@
       {{ (states('sensor.solcast_pv_forecast_forecast_tomorrow')|float(0) *
           states('var.solar_forecast_ratio')|float(1.0))|round(1) }}
     avg_price: >-
-      {% set prices = state_attr('sensor.nordpool_kwh_se3_sek_3_095_0','raw_tomorrow')
+      {% set prices = (state_attr('sensor.nordpool_kwh_se3_sek_3_095_0','raw_tomorrow') or [])
          | selectattr('start.hour','ge',9) | selectattr('start.hour','lt',16)
          | map(attribute='value') | list %}
       {{ (prices|average)|round(3) if prices|count > 0 else 1 }}
@@ -2755,7 +2770,17 @@
         action: '{{ action_charge }}'
     timeout:
       hours: 4
-    continue_on_timeout: false
+    continue_on_timeout: true
+  - if:
+    - condition: template
+      value_template: '{{ wait.trigger is none }}'
+    then:
+    - action: notify.rickards_devices
+      data:
+        message: clear_notification
+        data:
+          tag: solar_charge_car2
+    - stop: Ingen knapptryck inom tidsfönstret
   - alias: Stäng av auto-läget
     action: input_boolean.turn_off
     target:
