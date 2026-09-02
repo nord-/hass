@@ -142,9 +142,14 @@
     unit_of_measurement: "km"
     name: 'Tesla Eazy Odometer'
     icon: mdi:counter
+    device_class: distance
     state_class: total_increasing
+    # No float(0) default: a MQTT dropout must make this sensor unavailable, not 0.
+    # A 0 followed by the real reading looks like a meter reset to total_increasing
+    # statistics and books the whole odometer value as distance driven in one hour.
+    availability: "{{ has_value('sensor.tesla_odometer') }}"
     state: >-
-      {{ states("sensor.tesla_odometer")|float(0)|round(0) }}
+      {{ states('sensor.tesla_odometer')|float|round(0) }}
       
   - unique_id: rya_charging_cost
     device_class: monetary
