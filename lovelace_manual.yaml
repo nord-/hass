@@ -214,20 +214,17 @@ views:
               states("lawn_mower.geten") ==
               "unavailable"%}red{%else%}grey{%endif%}
             entity: lawn_mower.geten
-            tap_action:
+            hold_action:
               action: perform-action
               perform_action: lawn_mower.pause
               target:
-                device_id: 04744719de96abcefa75f8ffeeb42a05
-            hold_action:
-              action: perform-action
-              perform_action: lawn_mower.dock
-              target:
-                device_id: 04744719de96abcefa75f8ffeeb42a05
+                entity_id: lawn_mower.geten
             color: >-
               {{ "green" if states("lawn_mower.geten") == "mowing" else
               "#44739e" }}
             features_position: bottom
+            icon_tap_action:
+              action: more-info
       - type: grid
         cards:
           - type: heading
@@ -3572,6 +3569,13 @@ views:
             icon: mdi:road-variant
             heading: Körsträcka
             heading_style: subtitle
+            badges:
+              - type: entity
+                show_state: true
+                show_icon: true
+                entity: sensor.template_car_2_odometer
+                tap_action:
+                  action: more-info
           - chart_type: bar
             period: month
             type: statistics-graph
