@@ -747,6 +747,40 @@ views:
               kWh |
               {{(((40-states("sensor.tesla_battery_level")|int(0))/100*states("input_number.car_1_battery")|int)/states("sensor.template_car_1_season_power")|float)|round(1)|replace(".",",")}}
               h
+          - type: custom:mushroom-template-card
+            icon: mdi:battery-clock
+            entity: input_boolean.car_1_charge_forty
+            primary: 🕒 40%
+            secondary: >-
+              {% if is_state("input_boolean.car_1_charge_forty", "on") %}
+
+              {{ (states('sensor.tesla_y_charge_period')|as_datetime|
+              as_local).strftime('%H:%M') if
+              states('sensor.tesla_y_charge_period') not in ['unknown',
+              'unavailable'] else 'planeras' }}
+
+              {% else %}
+
+              av
+
+              {% endif %}
+            color: >-
+              {{"green" if is_state("input_boolean.car_1_charge_forty", "on")
+              else "grey"}}
+            tap_action:
+              action: perform-action
+              perform_action: input_boolean.toggle
+              target:
+                entity_id: input_boolean.car_1_charge_forty
+            icon_tap_action:
+              action: perform-action
+              perform_action: input_boolean.toggle
+              target:
+                entity_id: input_boolean.car_1_charge_forty
+            grid_options:
+              columns: 6
+              rows: 1
+            features_position: bottom
           - type: custom:mushroom-cover-card
             entity: cover.eazy_lucka_till_laddkontakt
             name: Laddlucka
