@@ -650,8 +650,8 @@ byd_charge_forty:
         channel: ev
 tesla_charge_forty:
   alias: Tesla, Charge to 40%
-  description: Ladda Tesla till 40% SoC - beräknar energimängd och ChargeNode avbryter
-    automatiskt
+  description: Ladda Tesla till 40% SoC - stoppar sessionen när SoC når 40%, med
+    beräknad energimängd hos ChargeNode som reserv
   icon: mdi:battery-40
   mode: single
   sequence:
@@ -682,6 +682,27 @@ tesla_charge_forty:
         tag: tesla_charge_40
         clickAction: /lovelace/tesla
         channel: ev
+  - alias: Wait for the session to appear at ChargeNode
+    delay:
+      minutes: 2
+  - alias: Get SessionId
+    action: homeassistant.update_entity
+    target:
+      entity_id: sensor.charge_rya_sessionid
+  - alias: Wait for SoC 40% or the car to be unplugged
+    wait_template: >-
+      {{ states('sensor.tesla_battery_level')|float(0) >= 40
+         or is_state('binary_sensor.tesla_plugged_in', 'off') }}
+    timeout:
+      hours: 8
+    continue_on_timeout: false
+  - alias: Stop charging if still running at 40%
+    if:
+    - condition: state
+      entity_id: sensor.chargenode_port1_state
+      state: '3'
+    then:
+    - action: script.ladda_tesla_stoppa
 car_1_hvac:
   sequence:
   - action: climate.turn_on
