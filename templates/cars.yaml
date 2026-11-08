@@ -110,10 +110,19 @@
     state: "{{ states('input_number.car_1_power_high')|int if now().month > 2 and now().month < 10 else states('input_number.car_1_power_low')|int }}"
     name: "Eazy laddeffekt (kW)"
 
+  # Charge target: 40 % while the one-off "next charge to 40 %" mode is on
+  # (below the car's own 50 % minimum, so ChargeNode stops it via
+  # RequestedEnergy), otherwise the car's charge limit.
+  - unique_id: car_1_soc_target
+    name: "Car 1 SoC target"
+    unit_of_measurement: "%"
+    availability: "{{ is_state('input_boolean.car_1_charge_forty', 'on') or states('sensor.tesla_charge_limit_soc')|is_number }}"
+    state: "{{ 40 if is_state('input_boolean.car_1_charge_forty', 'on') else states('sensor.tesla_charge_limit_soc')|int }}"
+
   - unique_id: rya_charging_required_time
     name: "Required charging time Eazy"
     state: >-
-      {%- set time = (states('sensor.tesla_charge_limit_soc')|float(0) - states('sensor.tesla_battery_level')|float(0)) /100*(states('input_number.car_1_battery')|int)/(states('sensor.template_car_1_season_power')|int) -%}
+      {%- set time = (states('sensor.car_1_soc_target')|float(0) - states('sensor.tesla_battery_level')|float(0)) /100*(states('input_number.car_1_battery')|int)/(states('sensor.template_car_1_season_power')|int) -%}
       {% if time <= 0 -%}
         --:--
       {%- else -%}
@@ -123,7 +132,7 @@
       {%- endif %}
   - unique_id: rya_req_hours
     state: >-
-      {{ ((states('sensor.tesla_charge_limit_soc')|float(0) - states('sensor.tesla_battery_level')|float(0)) /100*(states('input_number.car_1_battery')|int)/(states('sensor.template_car_1_season_power')|int) * 4)|round(0, 'ceil') / 4 }}
+      {{ ((states('sensor.car_1_soc_target')|float(0) - states('sensor.tesla_battery_level')|float(0)) /100*(states('input_number.car_1_battery')|int)/(states('sensor.template_car_1_season_power')|int) * 4)|round(0, 'ceil') / 4 }}
 
   - unique_id: rya_charging_power
     unit_of_measurement: "kW"
@@ -199,4 +208,4 @@
       {{ (priceDict.value|first).strftime('%H:%M') }}
       {% else -%}
         undefined
-      {% endif -%}
+      {% endif -%}

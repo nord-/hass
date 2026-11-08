@@ -286,10 +286,10 @@
     - condition: state
       state: charging
       entity_id: sensor.tesla_state
-  - alias: SoC < Charging limit
+  - alias: SoC < Charging target
     condition: numeric_state
     entity_id: sensor.tesla_battery_level
-    below: sensor.tesla_charge_limit_soc
+    below: sensor.car_1_soc_target
   actions:
   - data: {}
     target:
@@ -298,10 +298,21 @@
   - data: {}
     enabled: false
     action: script.ladda_bilen_uppstart
-  - metadata: {}
-    data: {}
-    alias: Run script Tesla, Charge
-    action: script.charge_the_tesla
+  - alias: Charge to 40% or to the car's limit
+    if:
+    - condition: state
+      entity_id: input_boolean.car_1_charge_forty
+      state: 'on'
+    then:
+    - metadata: {}
+      data: {}
+      alias: Run script Tesla, Charge to 40%
+      action: script.tesla_charge_forty
+    else:
+    - metadata: {}
+      data: {}
+      alias: Run script Tesla, Charge
+      action: script.charge_the_tesla
   mode: single
 - id: '1652813052285'
   alias: Wall-E, fellarm
@@ -1788,6 +1799,15 @@
       stop_actions: true
     target:
       entity_id: automation.car_1_charging
+  - alias: Reset one-off 40% charge mode
+    if:
+    - condition: state
+      entity_id: binary_sensor.tesla_plugged_in
+      state: 'on'
+    then:
+    - action: input_boolean.turn_off
+      target:
+        entity_id: input_boolean.car_1_charge_forty
   mode: single
 - id: '1753259946553'
   alias: 'ALARM: low battery'
@@ -1890,10 +1910,10 @@
         condition: template
         value_template: '{{ as_timestamp(now()) < as_timestamp(as_timestamp(states("sensor.tesla_y_charge_period"))|timestamp_local)
           }}'
-      - alias: SoC > Charging limit
+      - alias: SoC > Charging target
         condition: numeric_state
         entity_id: sensor.tesla_battery_level
-        above: sensor.tesla_charge_limit_soc
+        above: sensor.car_1_soc_target
       - condition: state
         entity_id: binary_sensor.template_nordpool_price_not_high
         state: 'off'
@@ -2644,7 +2664,7 @@
       title: '☀️ Eazy: ladda med solen imorgon?'
       message: '~{{ solar_kwh }} kWh sol, snitt {{ (avg_price|float(0)*100)|round(1)
         }} öre (09–16)\n Förslag: {{ start_hm }}–{{ end_hm }} ({{ req_h }} h)\n SoC
-        {{ states("sensor.tesla_battery_level") }}% → {{ states("sensor.tesla_charge_limit_soc")
+        {{ states("sensor.tesla_battery_level") }}% → {{ states("sensor.car_1_soc_target")
         }}%'
       data:
         tag: solar_charge_car1
