@@ -3113,20 +3113,15 @@ views:
             entity: weather.smhi_home
             weather_icon_type: fill
             additional_sensors:
-              temperature: sensor.smhi_temperatur
+              temperature: sensor.template_home_temp
             sections:
               header:
                 animated_icons: true
                 rows:
                   - segments:
                       - type: entity
-                        entity_id: sensor.smhi_temperatur
+                        entity_id: sensor.template_home_temp
                       - type: weather
-                      - type: spacer
-                      - type: icon
-                        icon: mdi:sun-thermometer
-                      - type: entity
-                        entity_id: sensor.feel
                   - font_size: 3.5rem
                     alignment: center
                     segments:
