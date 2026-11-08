@@ -2262,7 +2262,7 @@
   description: ''
   triggers:
   - entity_id:
-    - binary_sensor.byd_monitor_pi_online
+    - binary_sensor.pi_hole
     to:
     - 'off'
     trigger: state
@@ -2371,7 +2371,7 @@
   description: ''
   triggers:
   - entity_id:
-    - binary_sensor.byd_monitor_pi_online
+    - binary_sensor.pi_hole
     to:
     - 'on'
     trigger: state
@@ -2810,7 +2810,7 @@
     from:
     - 'off'
   conditions:
-  - condition: or
+  - condition: and
     conditions:
     - condition: not
       conditions:

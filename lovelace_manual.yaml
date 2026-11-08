@@ -301,6 +301,19 @@ views:
               columns: 3
               rows: 1
             vertical: true
+          - type: tile
+            entity: update.eazy_uppdatera
+            vertical: false
+            tap_action:
+              action: perform-action
+              perform_action: script.car_1_install_update
+              target: {}
+            icon_tap_action:
+              action: more-info
+            features_position: bottom
+            visibility:
+              - condition: state
+                state: 'on'
           - type: heading
             icon: mdi:car-hatchback
             heading: Delphine
@@ -388,7 +401,7 @@ views:
               today: Idag
               tomorrow: Imorgon
               fullDay: Hela dagen
-              noEvents: ' '
+              noEvents: " "
     cards: []
     badges:
       - type: custom:mushroom-template-badge
@@ -530,6 +543,12 @@ views:
               - type: entity
                 show_state: true
                 show_icon: true
+                entity: sensor.template_car_2_odometer
+                tap_action:
+                  action: more-info
+              - type: entity
+                show_state: true
+                show_icon: true
                 entity: sensor.template_rya_charging_required_time
                 icon: mdi:lightning-bolt
                 tap_action:
@@ -539,26 +558,23 @@ views:
               - type: entity
                 entity: sensor.tesla_inside_temp
               - type: template
-                content: |-
-                  {% set val=(states("sensor.tesla_odometer")|int(0))/10 %}
-                  {{"{:,.0f}".format(val).replace(","," ")}} mil
-                tap_action:
-                  action: more-info
-                icon: mdi:counter
-                entity: sensor.template_car_2_odometer
-              - type: template
-                icon: mdi:update
+                icon: >-
+                  {{ "mdi:car-connected" if (states('sensor.tesla_state') !=
+                  "offline") else "mdi:network-strength-off-outline" }}
                 entity: sensor.tesla_battery_level
                 content: >-
                   {% set s = (now() -
                   states.sensor.tesla_battery_level.last_updated).total_seconds()
                   %} {{ '%02d:%02d' % (s // 3600, (s % 3600) // 60) }}
                 icon_color: >-
-                  {% set s = (now() -
-                  states.sensor.tesla_battery_level.last_updated).total_seconds()
-                  %} {{ 'green' if s <= 3600 else 'red' }}
+                  {{ "green" if (states('sensor.tesla_state') != "offline") else
+                  "red" }}
                 tap_action:
                   action: more-info
+                hold_action:
+                  action: perform-action
+                  perform_action: script.tesla_wake_up
+                  target: {}
               - type: spacer
               - type: template
                 icon: mdi:battery-clock
@@ -572,7 +588,7 @@ views:
                   action: more-info
           - type: gauge
             entity: sensor.tesla_battery_level
-            name: ' '
+            name: " "
             needle: true
             severity:
               green: 20
@@ -583,7 +599,7 @@ views:
               columns: 4
           - type: gauge
             entity: sensor.tesla_charger_power
-            name: ' '
+            name: " "
             severity:
               green: 0
               yellow: 5.5
@@ -698,6 +714,9 @@ views:
             entities:
               - entity: sensor.tesla_charge_energy_added
                 name: Energy Added
+            grid_options:
+              columns: full
+              rows: auto
           - type: custom:mushroom-template-card
             icon: mdi:battery-40
             features_position: bottom
@@ -763,6 +782,21 @@ views:
               target:
                 entity_id: cover.eazy_fonster
             show_buttons_control: false
+          - type: tile
+            grid_options:
+              columns: full
+            entity: update.eazy_uppdatera
+            vertical: false
+            tap_action:
+              action: perform-action
+              perform_action: script.car_1_install_update
+              target: {}
+            icon_tap_action:
+              action: more-info
+            features_position: bottom
+            visibility:
+              - condition: state
+                state: 'on'
       - type: grid
         cards:
           - type: heading
@@ -779,6 +813,18 @@ views:
                   action: more-info
           - type: custom:mushroom-chips-card
             chips:
+              - type: template
+                icon: >-
+                  {{"mdi:car-connected" if
+                  (states('sensor.byd_dolphin_status')=="connected") else
+                  "mdi:network-strength-off-outline"}}
+                icon_color: >-
+                  {{"green" if
+                  (states('sensor.byd_dolphin_status')=="connected") else
+                  "red"}}
+                entity: sensor.byd_dolphin_status
+                tap_action:
+                  action: more-info
               - type: spacer
               - type: template
                 icon: mdi:battery-clock
@@ -797,13 +843,13 @@ views:
               yellow: 80
               red: 90
             entity: sensor.template_zoe_battery
-            name: ' '
+            name: " "
             grid_options:
               columns: 4
               rows: 1
           - type: gauge
             entity: sensor.template_zoe_charging_power
-            name: ' '
+            name: " "
             severity:
               green: 0
               yellow: 5.5
@@ -862,28 +908,6 @@ views:
               {{ "green" if is_state('input_boolean.car_2_charge', 'on') else
               "grey" }}
             features_position: bottom
-          - type: custom:mushroom-template-card
-            icon: |-
-              {%if states('sensor.byd_dolphin_status')=='connected'%}
-              mdi:car-connected
-              {%else%}
-              mdi:connection 
-              {%endif%}
-            features_position: bottom
-            entity: sensor.byd_dolphin_status
-            primary: Status
-            secondary: '{{states(''sensor.byd_dolphin_status'')}}'
-            color: |-
-              {%if states('sensor.byd_dolphin_status')=='connected'%}
-              green
-              {%else%}
-              grey
-              {%endif%}
-            icon_tap_action:
-              action: more-info
-            grid_options:
-              columns: 4
-              rows: 1
           - type: entities
             entities:
               - entity: input_datetime.zoe_before
@@ -1650,11 +1674,12 @@ views:
             grid_options:
               columns: 6
               rows: auto
-            max: 8
+            max: 0
             severity:
-              green: 3
-              yellow: 8
-              red: 8
+              green: -3
+              yellow: -6
+              red: -8
+            min: -8
       - type: grid
         cards:
           - type: heading
@@ -1752,7 +1777,7 @@ views:
             cards:
               - type: gauge
                 entity: sensor.shelly_3em_c45bbe55c55e_current_0
-                name: ' '
+                name: " "
                 max: 16
                 needle: false
                 severity:
@@ -1762,7 +1787,7 @@ views:
                 min: 0
               - type: gauge
                 entity: sensor.shelly_3em_c45bbe55c55e_current_1
-                name: ' '
+                name: " "
                 needle: false
                 severity:
                   green: 1
@@ -1772,7 +1797,7 @@ views:
               - type: gauge
                 entity: sensor.shelly_3em_c45bbe55c55e_current_2
                 max: 16
-                name: ' '
+                name: " "
                 needle: false
                 severity:
                   green: 1
@@ -1856,7 +1881,7 @@ views:
               - type: gauge
                 entity: sensor.template_spabadet_l1_current_a
                 max: 10
-                name: ' '
+                name: " "
                 severity:
                   green: 1
                   yellow: 5
@@ -1864,7 +1889,7 @@ views:
               - type: gauge
                 entity: sensor.template_spabadet_l2_current_a
                 max: 13
-                name: ' '
+                name: " "
                 severity:
                   green: 1
                   yellow: 5
@@ -1872,7 +1897,7 @@ views:
               - type: gauge
                 entity: sensor.template_spabadet_l3_current_a
                 max: 10
-                name: ' '
+                name: " "
                 severity:
                   green: 1
                   yellow: 5
@@ -1888,7 +1913,7 @@ views:
             cards:
               - type: gauge
                 entity: sensor.chargenode_current_l1
-                name: ' '
+                name: " "
                 max: 16
                 severity:
                   green: 1
@@ -1896,7 +1921,7 @@ views:
                   red: 10
               - type: gauge
                 entity: sensor.chargenode_current_l2
-                name: ' '
+                name: " "
                 max: 16
                 severity:
                   green: 1
@@ -1904,7 +1929,7 @@ views:
                   red: 10
               - type: gauge
                 entity: sensor.chargenode_current_l3
-                name: ' '
+                name: " "
                 max: 16
                 severity:
                   green: 1
@@ -1927,7 +1952,7 @@ views:
             cards:
               - type: gauge
                 entity: sensor.fronius_inverter_current_l1
-                name: ' '
+                name: " "
                 max: 12
                 severity:
                   green: 6
@@ -1935,7 +1960,7 @@ views:
                   red: 0
               - type: gauge
                 entity: sensor.fronius_inverter_current_l2
-                name: ' '
+                name: " "
                 max: 12
                 severity:
                   green: 6
@@ -1943,7 +1968,7 @@ views:
                   red: 0
               - type: gauge
                 entity: sensor.fronius_inverter_current_l3
-                name: ' '
+                name: " "
                 max: 12
                 severity:
                   green: 6
@@ -2334,6 +2359,10 @@ views:
             heading: Kontoret
             heading_style: subtitle
             badges:
+              - type: entity
+                show_state: true
+                show_icon: true
+                entity: sensor.lumi_lumi_sen_ill_agl01_illuminance
               - type: entity
                 entity: sensor.kontoret_temperature
             icon: mdi:office-building
@@ -2855,6 +2884,19 @@ views:
                 name: Linsborste
               - entity: sensor.geten_trimmer_brush_remaining
                 name: Trimmerborste
+          - type: tile
+            visibility:
+              - condition: numeric_state
+                entity_id: sensor.geten_blades_remaining
+                below: 25
+            entity: button.geten_reset_blades
+            name: Återställ
+            icon: mdi:knife
+            hide_state: true
+            vertical: false
+            features:
+              - type: button
+            features_position: bottom
         visibility:
           - condition: state
             entity: lawn_mower.geten
@@ -2971,10 +3013,6 @@ views:
             entity: switch.kaffebryggaren_switch
             primary: ''
             secondary: ''
-            icon_color: |-
-              {%if states('sensor.metered_wall_plug_switch_power')|int(0) > 1 %}
-              green
-              {%endif%}
             badge_icon: mdi:power
             badge_color: |-
               {%if states('switch.kaffebryggaren_switch')=='on' %}
@@ -2985,6 +3023,15 @@ views:
             grid_options:
               columns: 3
               rows: 1
+            color: |-
+              {%if states('sensor.metered_wall_plug_switch_power')|int(0) > 1 %}
+              green
+              {%endif%}
+            features_position: bottom
+            icon_tap_action:
+              action: more-info
+            hold_action:
+              action: toggle
     cards: []
   - theme: Backend-selected
     title: Ute
@@ -3129,7 +3176,7 @@ views:
             days_to_show: 365
             entities:
               - entity: sensor.framsidan_temperature
-                name: ' '
+                name: " "
               - sensor.template_home_temp
             stat_types:
               - mean
@@ -3147,22 +3194,22 @@ views:
             state_color: false
             attribute: cloud_coverage
             unit: '%'
-            name: ' '
+            name: " "
             icon: mdi:cloud-outline
           - type: entity
             entity: weather.smhi_home
             attribute: pressure
-            name: ' '
+            name: " "
             icon: mdi:gauge
           - type: entity
             entity: weather.smhi_home
             attribute: wind_speed
             icon: mdi:weather-windy
             unit: m/s
-            name: ' '
+            name: " "
           - type: entity
             entity: weather.smhi_home
-            name: ' '
+            name: " "
             attribute: wind_bearing
             unit: °
             icon: mdi:windsock
@@ -3228,7 +3275,7 @@ views:
             min: 0
             max: 8
             needle: true
-            name: ' '
+            name: " "
           - type: gauge
             entity: sensor.grid_sell_power_kw
             name: Exporterar
@@ -3351,8 +3398,8 @@ views:
             icon: mdi:car-electric
             status_adaptive_color: true
           - type: custom:uptime-card
-            entity: binary_sensor.byd_monitor_pi_online
-            title_template: bydpi
+            entity: binary_sensor.pi_hole
+            title_template: bydpi / pi-hole
             icon: mdi:car-electric
             status_adaptive_color: true
       - type: vertical-stack
@@ -3516,10 +3563,12 @@ views:
                 tap_action:
                   action: more-info
           - type: tile
-            entity: sensor.le2123_battery_level
-            features_position: bottom
-            vertical: false
+            entity: sensor.felix_oneplus_battery_level
             name: OP9 Batteri
+            vertical: false
+            icon_tap_action:
+              action: more-info
+            features_position: bottom
           - type: map
             entities:
               - entity: person.felix
@@ -3537,16 +3586,6 @@ views:
             heading_style: title
             icon: mdi:car
           - chart_type: bar
-            period: day
-            type: statistics-graph
-            entities:
-              - sensor.rya_kwh
-              - sensor.zoe_kwh
-            stat_types:
-              - change
-            days_to_show: 7
-            hide_legend: true
-          - chart_type: bar
             period: month
             type: statistics-graph
             entities:
@@ -3556,15 +3595,6 @@ views:
               - change
             hide_legend: true
             days_to_show: 70
-          - chart_type: bar
-            period: month
-            type: statistics-graph
-            entities:
-              - sensor.template_chargenode_energy_kwh
-            stat_types:
-              - change
-            hide_legend: true
-            days_to_show: 40
           - type: heading
             icon: mdi:road-variant
             heading: Körsträcka
@@ -3586,28 +3616,16 @@ views:
             hide_legend: true
             logarithmic_scale: false
             days_to_show: 40
-          - type: entities
-            entities:
-              - entity: sensor.template_car_1_monthly_cost
-                icon: mdi:car-sports
-                name: Eazy
-              - entity: sensor.template_car_2_monthly_cost
-                icon: mdi:car-hatchback
-                name: Delphine
-              - type: divider
-              - entity: sensor.template_rya_charging_cost_last_period
-                icon: mdi:car-sports
-                name: Eazy (förra)
-              - entity: sensor.template_zoe_charging_cost_last_period
-                name: Delphine (förra)
-                icon: mdi:car-hatchback
-          - type: history-graph
-            entities:
-              - entity: sensor.template_rya_charging_power
-                name: EV6
-              - entity: sensor.template_zoe_charging_power
-                name: Delphine
-            hours_to_show: 6
+          - type: custom:mushroom-template-card
+            primary: ChargeNode, förra mån
+            icon: mdi:ev-station
+            features_position: bottom
+            secondary: >-
+              {{state_attr("sensor.chargenode_kwh_man",
+              "last_period")|float(0)|round(0)|replace(".",",")}} kWh
+            entity: sensor.chargenode_kwh_man
+            icon_tap_action:
+              action: more-info
       - type: grid
         cards:
           - type: heading
@@ -3638,18 +3656,6 @@ views:
               - change
             days_to_show: 14
             hide_legend: true
-          - chart_type: line
-            period: 5minute
-            type: statistics-graph
-            entities:
-              - sensor.template_spabadet_l1_current_a
-              - sensor.template_spabadet_l2_current_a
-              - sensor.template_spabadet_l3_current_a
-            stat_types:
-              - mean
-            hide_legend: true
-            days_to_show: 1
-            logarithmic_scale: false
           - type: entities
             entities:
               - entity: sensor.spabadet_kr_man
@@ -3715,11 +3721,11 @@ views:
           - type: history-graph
             entities:
               - entity: sensor.chargenode_sma_voltage_l1
-                name: ' '
+                name: " "
               - entity: sensor.chargenode_sma_voltage_l2
-                name: ' '
+                name: " "
               - entity: sensor.chargenode_sma_voltage_l3
-                name: ' '
+                name: " "
             hours_to_show: 12
           - show_name: false
             show_icon: false

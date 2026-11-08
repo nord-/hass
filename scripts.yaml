@@ -102,8 +102,7 @@ turn_on_general_lights:
 turn_off_general_lights:
   alias: Släck allmän belysning
   sequence:
-  - service: homeassistant.turn_off
-    data: {}
+  - data: {}
     target:
       entity_id:
       - group.grovkoket
@@ -116,15 +115,17 @@ turn_off_general_lights:
       - switch.rusta13a
       - switch.rusta13c
       - group.sovrummet
+      - switch.koksbanken
+    action: homeassistant.turn_off
   - if:
     - condition: state
       entity_id: script.turn_on_general_lights
       state: 'on'
     then:
-    - service: script.turn_off
-      data: {}
+    - data: {}
       target:
         entity_id: script.turn_on_general_lights
+      action: script.turn_off
   mode: restart
 turn_off_all:
   alias: Stäng av allt
@@ -466,11 +467,11 @@ spabadet_pump_and_heater_v2:
         - 'on'
     - alias: Temp under målet (helgdagsmedvetet)
       condition: template
-      value_template: >-
-        {% set bath = is_state('binary_sensor.workday_tomorrow', 'off') %}
-        {% set temp = states('sensor.template_spabadet_temperature') | float(0) %}
-        {% set target = states('input_number.spabadet_target_temp_weekends' if bath else 'input_number.spabadet_target_temp_weekdays') | float(0) %}
-        {{ temp < target }}
+      value_template: '{% set bath = is_state(''binary_sensor.workday_tomorrow'',
+        ''off'') %} {% set temp = states(''sensor.template_spabadet_temperature'')
+        | float(0) %} {% set target = states(''input_number.spabadet_target_temp_weekends''
+        if bath else ''input_number.spabadet_target_temp_weekdays'') | float(0) %}
+        {{ temp < target }}'
     then:
     - data: {}
       target:
@@ -765,3 +766,53 @@ car_2_charge_2:
   alias: Delphine, Charge
   description: ''
   icon: mdi:ev-station
+car_1_install_update:
+  sequence:
+  - action: button.press
+    metadata: {}
+    target:
+      entity_id: button.eazy_vack
+    data: {}
+  - delay:
+      hours: 0
+      minutes: 0
+      seconds: 10
+      milliseconds: 0
+  - action: update.install
+    metadata: {}
+    target:
+      entity_id: update.eazy_uppdatera
+    data: {}
+  alias: Tesla Install Update
+  description: ''
+  icon: mdi:car-select
+light_koksbanken:
+  sequence:
+  - action: switch.toggle
+    metadata: {}
+    target:
+      entity_id: switch.koksbanken
+    data: {}
+  alias: 'Light: köksbänken'
+  description: ''
+tesla_wake_up:
+  sequence:
+  - action: button.press
+    metadata: {}
+    target:
+      entity_id: button.eazy_vack
+    data: {}
+  - repeat:
+      until:
+      - condition: state
+        entity_id: binary_sensor.eazy_status
+        state:
+        - 'on'
+      sequence:
+      - delay:
+          hours: 0
+          minutes: 0
+          seconds: 5
+          milliseconds: 0
+  alias: Tesla, wake up
+  description: ''

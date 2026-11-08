@@ -73,3 +73,9 @@
   - device_id: familjefilm
     ignore_availability: true
     name: Familjefilm
+
+- cal_id: noljsfdkdot0nu01op19a7ho8i7he1db@import.calendar.google.com
+  entities:
+  - device_id: nord_trollhattans_flygklubb_myweblog
+    ignore_availability: true
+    name: "Nord - Trollh\xE4ttans Flygklubb [myWebLog]"
