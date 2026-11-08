@@ -3111,14 +3111,34 @@ views:
                 icon: mdi:home-thermometer-outline
           - type: custom:clock-weather-card
             entity: weather.smhi_home
-            apparent_sensor: sensor.feel
-            temperature_sensor: sensor.smhi_temperatur
-            animated_icon: true
-            time_format: 24
-            forecast_rows: 5
             weather_icon_type: fill
-            hourly_forecast: false
-            show_decimal: true
+            additional_sensors:
+              temperature: sensor.smhi_temperatur
+            sections:
+              header:
+                animated_icons: true
+                rows:
+                  - segments:
+                      - type: entity
+                        entity_id: sensor.smhi_temperatur
+                      - type: weather
+                      - type: spacer
+                      - type: icon
+                        icon: mdi:sun-thermometer
+                      - type: entity
+                        entity_id: sensor.feel
+                  - font_size: 3.5rem
+                    alignment: center
+                    segments:
+                      - type: time
+                        time_pattern: HH:mm
+                  - alignment: center
+                    segments:
+                      - type: date
+              forecast_strip:
+                hide: true
+              forecast_list:
+                count: 5
           - name: Temperature
             entity: sensor.template_home_temp
             min: -20
