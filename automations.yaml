@@ -854,10 +854,6 @@
     trigger: state
   conditions:
   - condition: state
-    state: 'on'
-    entity_id: binary_sensor.low_price
-    enabled: false
-  - condition: state
     state:
     - 'on'
     entity_id: binary_sensor.template_nordpool_price_not_high

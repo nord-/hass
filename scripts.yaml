@@ -281,9 +281,10 @@ ladda_tesla_stoppa:
   - data: {}
     action: rest_command.cn_remove_rya_from_queue
   - data:
-      message: 'SoC:    {{states("sensor.tesla_battery_level")}}%\n Priset: {{states("sensor.template_nordpool_current_price_vat")}}
-        kr\n {{now().strftime(''%m-%d %H:%M'')}}'
-      title: Eazy har laddat färdigt
+      message: "⚡SoC:    {{states(\"sensor.tesla_battery_level\")}}%\\n \U0001F4B6Priset:
+        {{states(\"sensor.template_nordpool_current_price_vat\")}} kr\\n {{now().strftime('%m-%d
+        %H:%M')}}"
+      title: "\U0001F698 Eazy har laddat färdigt"
       data:
         sticky: true
         tag: car_1_charging
@@ -675,8 +676,9 @@ tesla_charge_forty:
     action: notify.rickards_devices
     data:
       title: Eazy börjar ladda (mål 40%)
-      message: 'SoC:    {{states("sensor.tesla_battery_level")}}%\n Priset: {{states("sensor.template_nordpool_current_price_vat")}}
-        kr\n {{now().strftime(''%d %H:%M'')}}'
+      message: "⚡SoC:    {{states(\"sensor.tesla_battery_level\")}}%\\n\n\U0001F4B6Priset:
+        {{states(\"sensor.template_nordpool_current_price_vat\")}} kr\\n\n{{now().strftime('%d
+        %H:%M')}}"
       data:
         sticky: true
         tag: tesla_charge_40
@@ -802,8 +804,8 @@ tesla_wake_up:
     target:
       entity_id: button.eazy_vack
     data: {}
-  - wait_template: "{{ is_state('binary_sensor.eazy_status', 'on') }}"
-    timeout: '00:01:00'
+  - wait_template: '{{ is_state(''binary_sensor.eazy_status'', ''on'') }}'
+    timeout: 00:01:00
     continue_on_timeout: false
   alias: Tesla, wake up
   description: ''
