@@ -1201,7 +1201,7 @@ views:
                     to: 80
                     color_from: '#2ecc71'
                     color_to: '#a3e635'
-                  - from: 100
+                  - from: 80
                     to: 150
                     color_from: '#a3e635'
                     color_to: '#facc15'
@@ -1210,8 +1210,12 @@ views:
                     color_from: '#facc15'
                     color_to: '#fb923c'
                   - from: 250
-                    to: 1000
-                    color_from: '#fb7c3c'
+                    to: 400
+                    color_from: '#fb923c'
+                    color_to: '#FF0000'
+                  - from: 400
+                    to: 10000
+                    color_from: '#FF0000'
                     color_to: '#FF0000'
                 gradient:
                   from: '#28c76f'
@@ -1244,7 +1248,7 @@ views:
                     to: 80
                     color_from: '#2ecc71'
                     color_to: '#a3e635'
-                  - from: 100
+                  - from: 80
                     to: 150
                     color_from: '#a3e635'
                     color_to: '#facc15'
@@ -1254,7 +1258,11 @@ views:
                     color_to: '#fb923c'
                   - from: 250
                     to: 400
-                    color_from: '#fb7c3c'
+                    color_from: '#fb923c'
+                    color_to: '#FF0000'
+                  - from: 400
+                    to: 10000
+                    color_from: '#FF0000'
                     color_to: '#FF0000'
                 gradient:
                   from: '#28c76f'
@@ -1474,18 +1482,17 @@ views:
                 float_precision: 2
                 stroke_width: 2
                 color_threshold:
-                  - value: -1
-                    color: '#86D18E'
-                  - value: 0.1
-                    color: '#21AB2F'
-                  - value: 0.35
-                    color: '#6A79FD'
-                  - value: 0.75
-                    color: '#FFB529'
-                  - value: 1.5
-                    color: '#ff7538'
-                  - value: 3.5
-                    color: '#FA0F17'
+                  # Spot ex VAT matching the clock's total price in öre: (öre / 125) - fees (0.461 kr)
+                  - value: -1.26
+                    color: '#2ecc71'
+                  - value: 0.18
+                    color: '#a3e635'
+                  - value: 0.74
+                    color: '#facc15'
+                  - value: 1.54
+                    color: '#fb923c'
+                  - value: 2.74
+                    color: '#FF0000'
                 show:
                   in_header: false
                   legend_value: false
