@@ -278,8 +278,16 @@ slack_inne:
 ladda_tesla_stoppa:
   alias: 'Tesla, Stop Charge '
   sequence:
-  - data: {}
-    action: rest_command.cn_remove_rya_from_queue
+  - alias: Refresh the active session
+    action: homeassistant.update_entity
+    target:
+      entity_id: sensor.charge_rya_sessionid
+  - alias: Stop the session if it is still active
+    if:
+    - condition: template
+      value_template: "{{ state_attr('sensor.charge_rya_sessionid', 'id') is not none }}"
+    then:
+    - action: rest_command.cn_remove_rya_from_queue
   - data:
       message: "⚡SoC:    {{states(\"sensor.tesla_battery_level\")}}%\\n \U0001F4B6Priset:
         {{states(\"sensor.template_nordpool_current_price_vat\")}} kr\\n {{now().strftime('%m-%d
@@ -601,8 +609,16 @@ movie_time:
   icon: mdi:projector-screen
 byd_stop_charge:
   sequence:
-  - action: rest_command.cn_remove_yxx_from_queue
-    data: {}
+  - alias: Refresh the active session
+    action: homeassistant.update_entity
+    target:
+      entity_id: sensor.charge_yxx_sessionid
+  - alias: Stop the session if it is still active
+    if:
+    - condition: template
+      value_template: "{{ state_attr('sensor.charge_yxx_sessionid', 'id') is not none }}"
+    then:
+    - action: rest_command.cn_remove_yxx_from_queue
   - data:
       message: 'SoC:    {{states("sensor.template_zoe_battery")}}%\n Priset: {{states("sensor.template_nordpool_current_price_vat")}}
         kr\n {{now().strftime(''%m-%d %H:%M'')}}'
@@ -666,14 +682,13 @@ tesla_charge_forty:
     timeout:
       hours: 8
     continue_on_timeout: false
-  - alias: Refresh the active session
-    action: homeassistant.update_entity
-    target:
-      entity_id: sensor.charge_rya_sessionid
-  - alias: Stop charging if the session is still active
+  - alias: Stop charging unless the car was unplugged
     if:
-    - condition: template
-      value_template: "{{ state_attr('sensor.charge_rya_sessionid', 'id') is not none }}"
+    - condition: not
+      conditions:
+      - condition: state
+        entity_id: binary_sensor.tesla_plugged_in
+        state: 'off'
     then:
     - action: script.ladda_tesla_stoppa
 car_1_hvac:
@@ -736,14 +751,13 @@ car_2_charge_2:
     timeout:
       hours: 8
     continue_on_timeout: false
-  - alias: Refresh the active session
-    action: homeassistant.update_entity
-    target:
-      entity_id: sensor.charge_yxx_sessionid
-  - alias: Stop charging if the session is still active
+  - alias: Stop charging unless the car was unplugged
     if:
-    - condition: template
-      value_template: "{{ state_attr('sensor.charge_yxx_sessionid', 'id') is not none }}"
+    - condition: not
+      conditions:
+      - condition: state
+        entity_id: sensor.byd_dolphin_status
+        state: disconnected
     then:
     - action: script.byd_stop_charge
   alias: Delphine, Charge
