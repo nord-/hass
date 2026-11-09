@@ -1562,13 +1562,14 @@
         state: '3'
       sequence:
       - data:
-          message: 'SoC: {{states(''sensor.byd_dolphin_soc'')}}% ({{states.sensor.byd_dolphin_soc.last_updated|as_local|as_timestamp|timestamp_custom(''%H:%M'')}})\n
+          message: '⚡SoC: {{states(''sensor.byd_dolphin_soc'')}}% ({{states.sensor.byd_dolphin_soc.last_updated|as_local|as_timestamp|timestamp_custom(''%H:%M'')}})\n
+
             {{now().strftime(''%H:%M'')}}'
-          title: Dolphin laddar
+          title: "\U0001F698Delphine laddar"
           data:
             clickAction: /lovelace/tesla
             sticky: true
-            tag: dolphin_charging
+            tag: car_2_charging
             channel: ev
         alias: Send persistent notification
         action: notify.mobile_app_op9_pro
@@ -1581,16 +1582,18 @@
     data:
       message: clear_notification
       data:
-        tag: dolphin_charging
+        tag: car_2_charging
     action: notify.rickards_devices
+    enabled: false
   - data:
-      message: 'SoC: {{states(''sensor.byd_dolphin_soc'')}}% ({{states.sensor.byd_dolphin_soc.last_updated|as_local|as_timestamp|timestamp_custom(''%m-%d
-        %H:%M'')}})\n {{now().strftime(''%m-%d %H:%M'')}}'
-      title: Dolphin slutat ladda
+      message: '⚡SoC: {{states(''sensor.byd_dolphin_soc'')}}% ({{states.sensor.byd_dolphin_soc.last_updated|as_local|as_timestamp|timestamp_custom(''%m-%d
+        %H:%M'')}})\n
+
+        {{now().strftime(''%m-%d %H:%M'')}}'
+      title: "\U0001F698Delphine slutat ladda"
       data:
         clickAction: /lovelace/tesla
-        sticky: true
-        tag: dolphin_stop_charge
+        tag: car_2_charging
         channel: ev
     alias: Send notification
     action: notify.rickards_devices
@@ -1761,15 +1764,16 @@
   actions:
   - alias: Notify Charge in progress
     data:
-      title: Eazy laddar
+      title: "\U0001F698Eazy laddar"
       data:
         sticky: true
         tag: car_1_charging
         channel: ev
         clickAction: /lovelace/tesla
-      message: 'SoC:    {{states("sensor.tesla_battery_level")}}%\n Priset: {{states("sensor.template_nordpool_current_price_vat")}}
-        kr\n Effekt: {{states("sensor.template_rya_charging_power")}} kW\n {{now().strftime(''%d
-        %H:%M'')}}'
+      message: "⚡SoC:    {{states(\"sensor.tesla_battery_level\")}}%\\n\n\U0001F4B6Priset:
+        {{states(\"sensor.template_nordpool_current_price_vat\")}} kr\\n\n\U0001F50CEffekt:
+        {{states(\"sensor.template_rya_charging_power\")}} kW\\n\n{{now().strftime('%d
+        %H:%M')}}"
     action: notify.rickards_devices
   - action: logbook.log
     metadata: {}
@@ -2341,15 +2345,15 @@
     then:
     - action: notify.rickards_devices
       data:
-        title: Dolphin laddning planerad
-        message: "\U0001F50B SoC: {{state_attr(\"sensor.byd_eazy_charge_period\",\"current_soc\")}}%\\n\U0001F3AF
-          Target: {{state_attr(\"sensor.byd_eazy_charge_period\",\"target_soc\")}}%\\n⏰
+        title: "\U0001F698Dolphin laddning planerad"
+        message: "\U0001F50B SoC: {{state_attr(\"sensor.byd_eazy_charge_period\",\"current_soc\")}}%\\n\n\U0001F3AF
+          Target: {{state_attr(\"sensor.byd_eazy_charge_period\",\"target_soc\")}}%\\n\n⏰
           Start: {{(states(\"sensor.byd_eazy_charge_period\")|as_datetime|as_local).strftime(\"%H:%M\")
           if states(\"sensor.byd_eazy_charge_period\") not in [\"unknown\",\"unavailable\"]
-          else \"-\"}}\\n\U0001F3C1 Klar innan: {{(state_attr(\"sensor.byd_eazy_charge_period\",\"deadline\")|as_datetime|as_local).strftime(\"%H:%M\")}}\\n\U0001F4B0
+          else \"-\"}}\\n\n\U0001F3C1 Klar innan: {{(state_attr(\"sensor.byd_eazy_charge_period\",\"deadline\")|as_datetime|as_local).strftime(\"%H:%M\")}}\\n\n\U0001F4B0
           Kostnad: {{state_attr(\"sensor.byd_eazy_charge_period\",\"All sequences\").values()|first}}"
         data:
-          tag: dolphin_start_charging
+          tag: car_2_charging
           clickAction: /lovelace/tesla
           channel: ev
   mode: single
