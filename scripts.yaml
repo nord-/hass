@@ -294,7 +294,7 @@ ladda_tesla_stoppa:
       message: "⚡SoC:    {{states(\"sensor.tesla_battery_level\")}}%\\n\n\U0001F4B6Priset:
         {{states(\"sensor.template_nordpool_current_price_vat\")}} kr\\n\n{{now().strftime('%m-%d
         %H:%M')}}"
-      title: "\U0001F698 Eazy har laddat färdigt"
+      title: "\U0001F698Eazy har laddat färdigt"
       data:
         tag: car_1_charging
         clickAction: /lovelace/tesla
@@ -622,8 +622,8 @@ byd_stop_charge:
     then:
     - action: rest_command.cn_remove_yxx_from_queue
   - data:
-      message: "⚡SoC:    {{states(\"sensor.template_zoe_battery\")}}%\\n \U0001F4B6Priset:
-        {{states(\"sensor.template_nordpool_current_price_vat\")}} kr\\n {{now().strftime('%m-%d
+      message: "⚡SoC:    {{states(\"sensor.template_zoe_battery\")}}%\\n\n\U0001F4B6Priset:
+        {{states(\"sensor.template_nordpool_current_price_vat\")}} kr\\n\n{{now().strftime('%m-%d
         %H:%M')}}"
       title: "\U0001F698Delphine har laddat färdigt"
       data:
