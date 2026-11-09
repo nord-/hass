@@ -226,14 +226,15 @@ charge_the_tesla:
     action: retry.actions
   - alias: Notify Charge starting
     data:
-      title: Eazy börjar ladda
+      title: "\U0001F698Eazy börjar ladda"
       data:
         sticky: true
-        tag: car_1_start_charging
+        tag: car_1_charging
         channel: ev
         clickAction: /lovelace/tesla
-      message: 'SoC:    {{states("sensor.tesla_battery_level") }}%\n Priset: {{states("sensor.template_nordpool_current_price_vat")}}
-        kr\n {{now().strftime(''%d %H:%M'')}}'
+      message: "⚡SoC:    {{states(\"sensor.tesla_battery_level\") }}%\\n\n\U0001F4B6Priset:
+        {{states(\"sensor.template_nordpool_current_price_vat\")}} kr\\n\n{{now().strftime('%d
+        %H:%M')}}"
     action: notify.rickards_devices
   - delay:
       hours: 0
@@ -285,16 +286,16 @@ ladda_tesla_stoppa:
   - alias: Stop the session if it is still active
     if:
     - condition: template
-      value_template: "{{ state_attr('sensor.charge_rya_sessionid', 'id') is not none }}"
+      value_template: '{{ state_attr(''sensor.charge_rya_sessionid'', ''id'') is not
+        none }}'
     then:
     - action: rest_command.cn_remove_rya_from_queue
   - data:
-      message: "⚡SoC:    {{states(\"sensor.tesla_battery_level\")}}%\\n \U0001F4B6Priset:
-        {{states(\"sensor.template_nordpool_current_price_vat\")}} kr\\n {{now().strftime('%m-%d
+      message: "⚡SoC:    {{states(\"sensor.tesla_battery_level\")}}%\\n\n\U0001F4B6Priset:
+        {{states(\"sensor.template_nordpool_current_price_vat\")}} kr\\n\n{{now().strftime('%m-%d
         %H:%M')}}"
       title: "\U0001F698 Eazy har laddat färdigt"
       data:
-        sticky: true
         tag: car_1_charging
         clickAction: /lovelace/tesla
         channel: ev
@@ -616,16 +617,17 @@ byd_stop_charge:
   - alias: Stop the session if it is still active
     if:
     - condition: template
-      value_template: "{{ state_attr('sensor.charge_yxx_sessionid', 'id') is not none }}"
+      value_template: '{{ state_attr(''sensor.charge_yxx_sessionid'', ''id'') is not
+        none }}'
     then:
     - action: rest_command.cn_remove_yxx_from_queue
   - data:
-      message: 'SoC:    {{states("sensor.template_zoe_battery")}}%\n Priset: {{states("sensor.template_nordpool_current_price_vat")}}
-        kr\n {{now().strftime(''%m-%d %H:%M'')}}'
-      title: Delphine har laddat färdigt
+      message: "⚡SoC:    {{states(\"sensor.template_zoe_battery\")}}%\\n \U0001F4B6Priset:
+        {{states(\"sensor.template_nordpool_current_price_vat\")}} kr\\n {{now().strftime('%m-%d
+        %H:%M')}}"
+      title: "\U0001F698Delphine har laddat färdigt"
       data:
-        sticky: true
-        tag: dolphin_charging
+        tag: car_2_charging
         clickAction: /lovelace/tesla
         channel: ev
     action: notify.rickards_devices
@@ -635,8 +637,8 @@ byd_stop_charge:
   description: ''
 tesla_charge_forty:
   alias: Tesla, Charge to 40%
-  description: Ladda Tesla till 40% SoC - stoppar sessionen när SoC når 40%, med
-    beräknad energimängd hos ChargeNode som reserv
+  description: Ladda Tesla till 40% SoC - stoppar sessionen när SoC når 40%, med beräknad
+    energimängd hos ChargeNode som reserv
   icon: mdi:battery-40
   mode: single
   sequence:
@@ -659,13 +661,13 @@ tesla_charge_forty:
   - alias: Notify Charge starting
     action: notify.rickards_devices
     data:
-      title: Eazy börjar ladda (mål 40%)
-      message: "⚡SoC:    {{states(\"sensor.tesla_battery_level\")}}%\\n\n\U0001F4B6Priset:
+      title: "\U0001F698Eazy börjar ladda"
+      message: "⚡SoC:    {{states(\"sensor.tesla_battery_level\")}}% \U0001F3AF40%\\n\n\U0001F4B6Priset:
         {{states(\"sensor.template_nordpool_current_price_vat\")}} kr\\n\n{{now().strftime('%d
         %H:%M')}}"
       data:
         sticky: true
-        tag: tesla_charge_40
+        tag: car_1_charging
         clickAction: /lovelace/tesla
         channel: ev
   - alias: Wait for the session to appear at ChargeNode
@@ -676,9 +678,8 @@ tesla_charge_forty:
     target:
       entity_id: sensor.charge_rya_sessionid
   - alias: Wait for SoC 40% or the car to be unplugged
-    wait_template: >-
-      {{ states('sensor.tesla_battery_level')|float(0) >= 40
-         or is_state('binary_sensor.tesla_plugged_in', 'off') }}
+    wait_template: "{{ states('sensor.tesla_battery_level')|float(0) >= 40\n   or
+      is_state('binary_sensor.tesla_plugged_in', 'off') }}"
     timeout:
       hours: 8
     continue_on_timeout: false
@@ -717,14 +718,15 @@ car_2_charge_2:
         data: {}
     action: retry.actions
   - data:
-      title: Dolphin börjar ladda
+      title: "\U0001F698Delphine börjar ladda"
       data:
         sticky: true
-        tag: dolphin_start_charging
+        tag: car_2_charging
         clickAction: /lovelace/tesla
         channel: ev
-      message: 'SoC:    {{states("sensor.byd_dolphin_soc")}}%\n Priset: {{states("sensor.template_nordpool_current_price_vat")
-        }} kr\n {{now().strftime(''%d %H:%M'')}}'
+      message: "⚡SoC:    {{states(\"sensor.byd_dolphin_soc\")}}%\\n\n\U0001F4B6Priset:
+        {{states(\"sensor.template_nordpool_current_price_vat\")}} kr\\n\n{{now().strftime('%d
+        %H:%M')}}"
     alias: Send message
     action: notify.rickards_devices
   - alias: Turn off charge flag
@@ -744,10 +746,8 @@ car_2_charge_2:
     action: homeassistant.update_entity
     enabled: true
   - alias: Wait for SoC to reach the limit or the car to be unplugged
-    wait_template: >-
-      {{ states('sensor.template_zoe_battery')|float(0)
-           >= states('input_number.zoe_soc_upper_limit')|float(100)
-         or is_state('sensor.byd_dolphin_status', 'disconnected') }}
+    wait_template: "{{ states('sensor.template_zoe_battery')|float(0)\n     >= states('input_number.zoe_soc_upper_limit')|float(100)\n
+      \  or is_state('sensor.byd_dolphin_status', 'disconnected') }}"
     timeout:
       hours: 8
     continue_on_timeout: false
