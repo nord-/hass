@@ -604,10 +604,12 @@ byd_stop_charge:
   - action: rest_command.cn_remove_yxx_from_queue
     data: {}
   - data:
-      message: 'SoC:    {{states("input_number.car_2_soc")}}%\n Priset: {{states("sensor.template_nordpool_current_price_vat")}}
+      message: 'SoC:    {{states("sensor.template_zoe_battery")}}%\n Priset: {{states("sensor.template_nordpool_current_price_vat")}}
         kr\n {{now().strftime(''%m-%d %H:%M'')}}'
       title: Delphine har laddat färdigt
       data:
+        sticky: true
+        tag: dolphin_charging
         clickAction: /lovelace/tesla
         channel: ev
     action: notify.rickards_devices
@@ -615,40 +617,6 @@ byd_stop_charge:
   mode: single
   icon: mdi:ev-station
   description: ''
-byd_charge_forty:
-  alias: Delphine, Charge to 40%
-  description: Ladda Dolphin till 40% SoC - beräknar energimängd och ChargeNode avbryter
-    automatiskt
-  icon: mdi:battery-40
-  mode: single
-  sequence:
-  - alias: Check SoC is below 40
-    condition: numeric_state
-    entity_id: sensor.byd_dolphin_soc
-    below: 40
-  - alias: Turn off household consumers
-    action: script.turn_on
-    data: {}
-    target:
-      entity_id: script.ladda_bilen_uppstart
-  - alias: Start charging to 40%
-    action: retry.actions
-    data:
-      sequence:
-      - action: rest_command.cn_charge_byd_to_soc
-        data:
-          target_soc: 40
-  - alias: Notify Charge starting
-    action: notify.rickards_devices
-    data:
-      title: Dolphin börjar ladda (mål 40%)
-      message: 'SoC:    {{states("sensor.byd_dolphin_soc")}}%\n Priset: {{states("sensor.template_nordpool_current_price_vat")}}
-        kr\n {{now().strftime(''%d %H:%M'')}}'
-      data:
-        sticky: true
-        tag: dolphin_charge_40
-        clickAction: /lovelace/tesla
-        channel: ev
 tesla_charge_forty:
   alias: Tesla, Charge to 40%
   description: Ladda Tesla till 40% SoC - stoppar sessionen när SoC når 40%, med
@@ -698,11 +666,14 @@ tesla_charge_forty:
     timeout:
       hours: 8
     continue_on_timeout: false
-  - alias: Stop charging if still running at 40%
+  - alias: Refresh the active session
+    action: homeassistant.update_entity
+    target:
+      entity_id: sensor.charge_rya_sessionid
+  - alias: Stop charging if the session is still active
     if:
-    - condition: state
-      entity_id: sensor.chargenode_port1_state
-      state: '3'
+    - condition: template
+      value_template: "{{ state_attr('sensor.charge_rya_sessionid', 'id') is not none }}"
     then:
     - action: script.ladda_tesla_stoppa
 car_1_hvac:
@@ -757,35 +728,24 @@ car_2_charge_2:
       entity_id: sensor.charge_yxx_sessionid
     action: homeassistant.update_entity
     enabled: true
-  - alias: Wait for SoC > Limit (max 6h)
-    wait_for_trigger:
-    - entity_id:
-      - sensor.byd_dolphin_soc
-      above: input_number.byd_soc_upper_limit
-      trigger: numeric_state
+  - alias: Wait for SoC to reach the limit or the car to be unplugged
+    wait_template: >-
+      {{ states('sensor.template_zoe_battery')|float(0)
+           >= states('input_number.zoe_soc_upper_limit')|float(100)
+         or is_state('sensor.byd_dolphin_status', 'disconnected') }}
     timeout:
-      hours: 6
-      minutes: 0
-      seconds: 0
-      milliseconds: 0
-  - alias: If SoC > Limit
+      hours: 8
+    continue_on_timeout: false
+  - alias: Refresh the active session
+    action: homeassistant.update_entity
+    target:
+      entity_id: sensor.charge_yxx_sessionid
+  - alias: Stop charging if the session is still active
     if:
-    - condition: numeric_state
-      entity_id: sensor.byd_dolphin_soc
-      above: input_number.byd_soc_upper_limit
+    - condition: template
+      value_template: "{{ state_attr('sensor.charge_yxx_sessionid', 'id') is not none }}"
     then:
-    - data: {}
-      action: rest_command.cn_remove_byd_from_queue
-    - data:
-        title: Dolphin har laddat färdigt
-        message: 'SoC:    {{states("sensor.byd_dolphin_soc")}}%\n Priset: {{states("sensor.template_nordpool_current_price_vat")}}
-          kr\n {{now().strftime(''%m-%d %H:%M'')}}'
-        data:
-          sticky: true
-          tag: dolphin_charging
-          clickAction: /lovelace/tesla
-          channel: ev
-      action: notify.rickards_devices
+    - action: script.byd_stop_charge
   alias: Delphine, Charge
   description: ''
   icon: mdi:ev-station
