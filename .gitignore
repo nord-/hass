@@ -20,7 +20,13 @@ www/community
 .google.token
 .ssh
 custom_components
-blueprints
+# blueprints are ignored, except the locally modified IKEA remote preset blueprint
+/blueprints/*
+!/blueprints/automation/
+/blueprints/automation/*
+!/blueprints/automation/niro1987/
+/blueprints/automation/niro1987/*
+!/blueprints/automation/niro1987/zha_ikea_tradfri_5button_remote_preset.yaml
 
 .cache/
 __pycache__/

@@ -799,8 +799,19 @@ tesla_wake_up:
     target:
       entity_id: button.eazy_vack
     data: {}
-  - wait_template: '{{ is_state(''binary_sensor.eazy_status'', ''on'') }}'
+  - delay:
+      hours: 0
+      minutes: 0
+      seconds: 10
+      milliseconds: 0
+    enabled: false
+  - wait_template: '{{ is_state("binary_sensor.eazy_status", "on") }}'
     timeout: 00:01:00
     continue_on_timeout: false
+    continue_on_error: true
+  - action: homeassistant.reload_config_entry
+    metadata: {}
+    data:
+      entry_id: 01KHY1PVT1A43BB0T3J4RXCBTW
   alias: Tesla, wake up
   description: ''

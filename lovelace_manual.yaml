@@ -301,6 +301,22 @@ views:
               columns: 3
               rows: 1
             vertical: true
+          - type: custom:mushroom-template-card
+            icon: mdi:sun-snowflake
+            features_position: bottom
+            vertical: true
+            color: '{{"orange" if states("binary_sensor.tesla_is_climate_on")|bool }}'
+            tap_action:
+              action: perform-action
+              perform_action: script.car_1_hvac
+              target: {}
+            icon_tap_action:
+              action: perform-action
+              perform_action: script.car_1_hvac
+              target: {}
+            grid_options:
+              columns: 3
+              rows: 1
           - type: tile
             entity: update.eazy_uppdatera
             vertical: false
@@ -659,11 +675,19 @@ views:
               {{"green" if states("sensor.tesla_state")=="charging" else
               "grey"}}
             features_position: bottom
-          - show_name: false
-            show_icon: true
-            type: button
-            entity: climate.eazy_klimat
-            icon: mdi:snowflake-melt
+          - type: custom:mushroom-template-card
+            icon: mdi:sun-snowflake
+            features_position: bottom
+            vertical: true
+            color: '{{"orange" if states("binary_sensor.tesla_is_climate_on")|bool }}'
+            tap_action:
+              action: perform-action
+              perform_action: script.car_1_hvac
+              target: {}
+            icon_tap_action:
+              action: perform-action
+              perform_action: script.car_1_hvac
+              target: {}
             grid_options:
               columns: 4
               rows: 1
@@ -1710,17 +1734,17 @@ views:
               yellow: 4
               red: 7
           - type: gauge
-            entity: sensor.grid_sell_power_kw
             name: Säljer
             grid_options:
               columns: 6
               rows: auto
-            max: 0
+            max: 8
             severity:
-              green: -3
-              yellow: -6
-              red: -8
-            min: -8
+              green: 6
+              yellow: 3
+              red: 0
+            min: 0
+            entity: sensor.sald_effekt_neg_kw
       - type: grid
         cards:
           - type: heading
@@ -3141,84 +3165,15 @@ views:
                 hide: true
               forecast_list:
                 count: 5
-          - name: Temperature
-            entity: sensor.template_home_temp
-            min: -20
-            max: 40
-            unit: ''
-            decimals: 1
-            value_position: top_right
-            name_position: auto
-            value_font_size: 0
-            glass: true
-            orientation: vertical
-            show_scale: false
-            scale_color_mode: per_interval
-            show_stats: true
-            stats_hours: 24
-            card_scale: 1
-            show_graph: true
-            graph_hours: 24
-            graph_height: 58
-            graph_show_time: false
-            graph_max_points: 160
-            graph_line_width: 0.7
-            extra_entity_1: null
-            extra_icon_1: ''
-            extra_label_1: ''
-            extra_entity_2: ''
-            extra_icon_2: ''
-            extra_label_2: ''
-            extra_entity_3: ''
-            extra_icon_3: ''
-            extra_label_3: ''
-            intervals:
-              - id: it0
-                to: 0
-                color: '#2b6cff'
-                outline: '#ffffff'
-                scale_color: '#2b6cff'
-                gradient:
-                  enabled: false
-                  from: '#2b6cff'
-                  to: '#2b6cff'
-              - id: it1
-                to: 10
-                color: '#39c0ff'
-                outline: '#ffffff'
-                scale_color: '#39c0ff'
-                gradient:
-                  enabled: false
-                  from: '#39c0ff'
-                  to: '#39c0ff'
-              - id: it2
-                to: 20
-                color: '#22c55e'
-                outline: '#ffffff'
-                scale_color: '#22c55e'
-                gradient:
-                  enabled: false
-                  from: '#22c55e'
-                  to: '#22c55e'
-              - id: it3
-                to: 30
-                color: '#f59e0b'
-                outline: '#ffffff'
-                scale_color: '#f59e0b'
-                gradient:
-                  enabled: false
-                  from: '#f59e0b'
-                  to: '#f59e0b'
-              - id: it4
-                to: 100
-                color: '#ef4444'
-                outline: '#ffffff'
-                scale_color: '#ef4444'
-                gradient:
-                  enabled: false
-                  from: '#ef4444'
-                  to: '#ef4444'
-            type: custom:andy-temperature-card
+          - type: statistics-graph
+            entities:
+              - entity: sensor.template_home_temp
+            days_to_show: 7
+            period: hour
+            chart_type: line
+            stat_types:
+              - mean
+            hide_legend: true
           - type: tile
             entity: sensor.meteorologisk_arstid
             name: Årstid
@@ -3227,7 +3182,7 @@ views:
             grid_options:
               columns: full
           - chart_type: line
-            period: week
+            period: month
             type: statistics-graph
             days_to_show: 365
             entities:
@@ -3245,6 +3200,9 @@ views:
               - Hassel
               - Björk
               - Gräs
+            visibility:
+              - condition: template
+                value_template: '{{states("sensor.pollen_goteborg_gras")!="0" or states("sensor.pollen_goteborg_bjork")!="0" or states("sensor.pollen_goteborg_hassel")!="0"}}'
           - type: entity
             entity: weather.smhi_home
             state_color: false
