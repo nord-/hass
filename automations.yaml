@@ -730,7 +730,7 @@
     alias: Notify Finished
   mode: single
 - id: '1663105406145'
-  alias: Spelrummet, LED
+  alias: Tvättstugan, LED
   description: ''
   use_blueprint:
     path: niro1987/zha_ikea_tradfri_5button_remote_preset.yaml
@@ -739,7 +739,7 @@
       light: light.tvattstugan_banken_light
       preset: input_select.tvattstugan_led_color
 - id: '1664118673084'
-  alias: Tvättstugan, LED
+  alias: Spelrummet, LED
   description: ''
   use_blueprint:
     path: niro1987/zha_ikea_tradfri_5button_remote_preset.yaml
