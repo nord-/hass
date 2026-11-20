@@ -213,25 +213,52 @@ def carried_gap(today_iso):
     return 0
 
 
-def optimise(excess, m, b, first_free):
-    """Blocks as [[start, end], ...] quarter indices (end exclusive).
+def block_values(prices, m):
+    """values[i][L]: the worth of blocking quarters [i, i + L).
 
-    Interval DP: g[i][u] is the best total excess from quarter i to the end of
-    the day when quarter i is free and u quarters of budget are spent.
+    The heat pump repays a block at full power as soon as it releases, so a
+    block is valued against the mean price of its own recovery gap:
+    sum(price - gap mean - 0.10). A gap cut short by midnight uses the part
+    inside the day; a block ending at midnight uses the day mean, since the
+    next day's prices are unknown.
     """
     n = QUARTERS_PER_DAY
     prefix = [0.0]
-    for value in excess:
-        prefix.append(prefix[-1] + value)
+    for price in prices:
+        prefix.append(prefix[-1] + price)
+    day_mean = prefix[n] / float(n)
+    values = []
+    for i in range(n):
+        row = [0.0] * (m + 1)
+        for length in range(MIN_BLOCK_QUARTERS, min(m, n - i) + 1):
+            end = i + length
+            gap_end = min(end + gap_after(length), n)
+            if gap_end > end:
+                reference = (prefix[gap_end] - prefix[end]) / float(gap_end - end)
+            else:
+                reference = day_mean
+            row[length] = prefix[end] - prefix[i] - length * (reference + MIN_BLOCK_EXCESS)
+        values.append(row)
+    return values
+
+
+def optimise(prices, m, b, first_free):
+    """Blocks as [[start, end], ...] quarter indices (end exclusive).
+
+    Interval DP: g[i][u] is the best total block value from quarter i to the
+    end of the day when quarter i is free and u quarters of budget are spent.
+    """
+    n = QUARTERS_PER_DAY
+    values = block_values(prices, m)
     gaps = [gap_after(length) for length in range(m + 1)]
 
     g = [None] * (n + 1)
     g[n] = [0.0] * (b + 1)
     for i in range(n - 1, -1, -1):
         row = list(g[i + 1])
-        start_sum = prefix[i]
+        row_values = values[i]
         for length in range(MIN_BLOCK_QUARTERS, min(m, b, n - i) + 1):
-            block_sum = prefix[i + length] - start_sum
+            block_sum = row_values[length]
             if block_sum <= SUM_EPSILON:
                 continue
             after = g[min(i + length + gaps[length], n)]
@@ -248,7 +275,7 @@ def optimise(excess, m, b, first_free):
         target = g[i][u]
         chosen = 0
         for length in range(MIN_BLOCK_QUARTERS, min(m, b - u, n - i) + 1):
-            block_sum = prefix[i + length] - prefix[i]
+            block_sum = values[i][length]
             if block_sum <= SUM_EPSILON:
                 continue
             value = block_sum + g[min(i + length + gaps[length], n)][u + length]
@@ -327,11 +354,9 @@ def main():
     b = floor_quarters(factor * base * correction)
 
     # Step 7: optimise and write.
-    mean = sum(quarters) / float(QUARTERS_PER_DAY)
-    excess = [price - mean - MIN_BLOCK_EXCESS for price in quarters]
     blocks = []
     if m >= MIN_BLOCK_QUARTERS:
-        blocks = optimise(excess, m, b, carried_gap(today.isoformat()))
+        blocks = optimise(quarters, m, b, carried_gap(today.isoformat()))
     # Avoid formatting a tiny negative mean as t=-0.0.
     if abs(outdoor) < 0.05:
         outdoor = 0.0

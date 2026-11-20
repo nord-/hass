@@ -355,11 +355,11 @@ def block_quarters(block):
 
 THURSDAY_CASES = [
     ("one block", {"helpers": {"input_number.heating_budget_factor": "1.0"}}, day(-2.5),
-     ["08:00-11:00"]),
-    ("default budget", {}, day(-2.5), ["08:00-11:00", "13:15-16:15"]),
+     ["17:30-20:30"]),
+    ("default budget", {}, day(-2.5), ["08:45-11:45", "17:30-20:30"]),
     ("short blocks", {"helpers": {"input_number.heating_block_chilly": "1"}}, day(-2.5),
-     ["08:00-09:00", "10:15-11:15"]),
-    ("long blocks", {}, day(7.5), ["07:30-11:30", "13:30-19:30"]),
+     ["19:00-20:00", "21:15-22:15"]),
+    ("long blocks", {}, day(7.5), ["08:15-12:15", "14:30-20:30"]),
 ]
 
 
@@ -408,7 +408,10 @@ def test_block_rules(label):
     for index, (start, end) in enumerate(spans):
         length = end - start
         assert 4 <= length <= m
-        assert sum(prices[start:end]) / length - mean > 0.10
+        gap = max(4, -(-length // 2))
+        recovery = prices[end:min(end + gap, 96)]
+        reference = sum(recovery) / len(recovery) if recovery else mean
+        assert sum(prices[start:end]) / length - reference > 0.10
         if index + 1 < len(spans):
             assert spans[index + 1][0] - end >= max(4, -(-length // 2))
 
@@ -483,3 +486,20 @@ def test_worst_case_runtime():
     info = info_of(result)
     assert (info["m"], info["b"]) == ("8.00", "24.00")
     assert result.elapsed < 0.5
+
+
+def test_recovery_gap_is_priced():
+    """2026-11-21: a block followed by an equally expensive gap only moves the cost.
+
+    Valued against the day mean the plan was 16:00-17:00,18:00-20:30,22:00-23:45,
+    whose first block recovered at 1.28 kr right after blocking at 1.30 kr.
+    """
+    with open(FIXTURE.parent / "prices_2026-11-21.json", encoding="utf8") as fil:
+        raw = json.load(fil)
+    prices = [{"start": dt.datetime.fromisoformat(e["start"]),
+               "end": dt.datetime.fromisoformat(e["end"]),
+               "value": e["value"]} for e in raw]
+    states = make_states(prices=prices, laundry="22.22", kitchen="21.43")
+    _, blocks, info = planned(run(states, day(-1.3)))[1]
+    assert (info["m"], info["b"]) == ("3.00", "6.25")
+    assert blocks == ["17:45-20:30", "22:00-24:00"]
