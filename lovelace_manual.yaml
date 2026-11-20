@@ -2115,19 +2115,6 @@ views:
 
               {% endif -%}
               {%- endfor -%}
-          - type: entities
-            title: Värmeplan, inställningar
-            entities:
-              - input_boolean.heating_plan_enabled
-              - input_number.heating_block_cold
-              - input_number.heating_block_chilly
-              - input_number.heating_block_mild
-              - input_number.heating_block_warm
-              - input_number.heating_budget_factor
-              - input_number.heating_laundry_full_p10
-              - input_number.heating_kitchen_floor_p10
-              - sensor.tvattstugan_p10_24h
-              - sensor.koket_p10_24h
       - type: grid
         cards:
           - type: heading
@@ -2209,6 +2196,19 @@ views:
               - entity: sensor.varmepump_ivt_ar_kwh
                 name: År
                 icon: mdi:lightning-bolt
+          - type: entities
+            title: Värmeplan, inställningar
+            entities:
+              - input_boolean.heating_plan_enabled
+              - input_number.heating_block_cold
+              - input_number.heating_block_chilly
+              - input_number.heating_block_mild
+              - input_number.heating_block_warm
+              - input_number.heating_budget_factor
+              - input_number.heating_laundry_full_p10
+              - input_number.heating_kitchen_floor_p10
+              - sensor.tvattstugan_p10_24h
+              - sensor.koket_p10_24h
     badges:
       - type: entity
         show_name: false
