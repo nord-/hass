@@ -10,7 +10,7 @@ Home Assistant configuration repository for a Swedish smart home. Primary focus 
 - **Climate**: IVT heat pump monitoring, room-based automation
 - **Lighting**: ZigBee-based (Aqara devices), Tellstick RF, 9+ room zones
 
-Running Home Assistant OS 18.1 / Core 2026.7.3 with MariaDB on Synology NAS for history storage.
+Running Home Assistant OS with MariaDB on Synology NAS for history storage. Rickard updates HA from the UI, so no version is recorded here: read the installed OS/Core versions live (see "Versions" under Claude Code MCP Access) whenever a version matters.
 
 ## Host / Hardware
 
@@ -45,7 +45,7 @@ Running Home Assistant OS 18.1 / Core 2026.7.3 with MariaDB on Synology NAS for 
 | `modbus.yaml` | ChargeNode EV charger TCP communication |
 | `mqtt/teslamate.yaml` | TeslaMate vehicle data integration |
 | `vars.yaml` | Persistent state variables (solar accumulation, car states) |
-| `packages/` | Bundled component configs (currently: engineheater) |
+| `packages/` | Bundled component configs (engineheater, heating) |
 
 **Custom components**:
 - `custom_zha_quirks/` - ZigBee device quirks (Aqara H1 remote, Tuya TS0601 dimmer)
@@ -142,7 +142,8 @@ over SSE at `http://hassio.local:8123/mcp_server/sse`.
   `/api/hassio/host/logs`. `/api/error_log` is gone in this version, and other `/api/hassio/*`
   paths (e.g. `os/info`) return 401 for user tokens — only the log endpoints are proxied.
 - **Versions** are readable from the `update.home_assistant_*` entities
-  (`installed_version` / `latest_version`) when updating the version line above.
+  (`installed_version` / `latest_version`), or `GET /api/config` (`version`). Always read them
+  live; never write a version into this file, since it goes stale at the next UI update.
 
 ## Network Context
 

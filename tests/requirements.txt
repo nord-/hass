@@ -1,0 +1,5 @@
+pytest
+RestrictedPython==8.5
+tzdata
+jinja2
+pyyaml

@@ -1103,77 +1103,6 @@
           }}°C → {{ target|int }}°C\\n\U0001F33F Ute: {{ outside_temp }}°C {% endif
           %} {% endif %}"
   mode: single
-- id: '1695920348544'
-  alias: Värmepumpen, styrning
-  description: ''
-  trigger:
-  - platform: state
-    entity_id:
-    - binary_sensor.template_nordpool_price_not_high
-    to: 'on'
-    alias: When not expensive
-    id: not_expensive
-  - platform: state
-    entity_id:
-    - binary_sensor.template_nordpool_price_not_high
-    to: 'off'
-    id: expensive
-    alias: When expensive
-  - platform: numeric_state
-    entity_id:
-    - sensor.felix_rum_temperature
-    below: 23
-    alias: When Temp goes below 23°
-    enabled: false
-  - alias: When Temp goes above 23°
-    platform: numeric_state
-    entity_id:
-    - sensor.felix_rum_temperature
-    above: 22.9
-    enabled: false
-  condition: []
-  action:
-  - alias: When expensive turn off heat
-    if:
-    - condition: numeric_state
-      entity_id: sensor.felix_rum_temperature
-      above: 23
-      enabled: false
-    - condition: state
-      entity_id: binary_sensor.template_nordpool_price_not_high
-      state: 'off'
-    then:
-    - service: switch.turn_on
-      data: {}
-      target:
-        entity_id: switch.varmepumpen_a
-    - service: switch.turn_on
-      metadata: {}
-      data: {}
-      target:
-        entity_id: switch.varmepumpen_b
-      enabled: false
-  - alias: When not expensive turn on heat and warm water
-    if:
-    - alias: When Not Expensive OR Temp<23°
-      condition: or
-      conditions:
-      - alias: When Temp goes below 23°
-        condition: numeric_state
-        entity_id: sensor.felix_rum_temperature
-        below: 23
-        enabled: false
-      - condition: state
-        entity_id: binary_sensor.template_nordpool_price_not_high
-        state: 'on'
-    then:
-    - service: switch.turn_off
-      data: {}
-      target:
-        entity_id:
-        - switch.varmepumpen_a
-        - switch.varmepumpen_b
-  mode: single
 - id: '1698044468504'
   alias: Elpriset, indikator
   description: ''
@@ -2870,3 +2799,60 @@
       title: ⚠️ Fel på Geten
     action: notify.rickards_devices
   mode: single
+- id: '1795400000001'
+  alias: Värmepumpen, planera morgondagen
+  description: Planerar morgondagens värmepumpsblock när elpriserna för imorgon finns.
+  triggers:
+  - trigger: state
+    entity_id:
+    - binary_sensor.template_nordpool_tomorrow_valid
+    to: 'on'
+  - trigger: time_pattern
+    minutes: /30
+  conditions:
+  - condition: template
+    value_template: "{% set t = (now() + timedelta(days=1)).strftime('%Y-%m-%d') %}{{ is_state('binary_sensor.template_nordpool_tomorrow_valid', 'on') and not states('input_text.heating_plan_a').startswith(t) and not states('input_text.heating_plan_b').startswith(t) }}"
+  actions:
+  - action: weather.get_forecasts
+    target:
+      entity_id: weather.smhi_home
+    data:
+      type: hourly
+    response_variable: fc
+    continue_on_error: true
+  - action: python_script.heating_plan
+    data:
+      forecast: "{{ fc['weather.smhi_home'].forecast if fc is defined and 'weather.smhi_home' in fc else [] }}"
+  mode: single
+- id: '1795400000002'
+  alias: Värmepumpen, följ plan
+  description: Slår av och på värmepumpen enligt planerade block.
+  triggers:
+  - trigger: state
+    entity_id:
+    - binary_sensor.varmepump_blockerad_enligt_plan
+  - trigger: state
+    entity_id:
+    - switch.varmepumpen_a
+    from: unavailable
+  - trigger: homeassistant
+    event: start
+  - trigger: time_pattern
+    minutes: /15
+  conditions:
+  - condition: template
+    value_template: "{{ states('switch.varmepumpen_a') in ['on', 'off'] and is_state('binary_sensor.varmepump_blockerad_enligt_plan', 'on') != is_state('switch.varmepumpen_a', 'on') }}"
+  actions:
+  - if:
+    - condition: state
+      entity_id: binary_sensor.varmepump_blockerad_enligt_plan
+      state: 'on'
+    then:
+    - action: switch.turn_on
+      target:
+        entity_id: switch.varmepumpen_a
+    else:
+    - action: switch.turn_off
+      target:
+        entity_id: switch.varmepumpen_a
+  mode: restart

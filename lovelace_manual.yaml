@@ -2077,6 +2077,57 @@ views:
                 secondary_info: last-changed
                 name: Elpatronen
             title: Stäng av
+          - type: markdown
+            title: Värmeplan
+            content: |-
+              {%- set a = states('input_text.heating_plan_a') -%}
+              {%- set b = states('input_text.heating_plan_b') -%}
+              {%- macro field(segs, key) -%}
+                {%- set ns = namespace(v='na') -%}
+                {%- for kv in segs.split(';') -%}
+                  {%- if kv.startswith(key ~ '=') -%}{%- set ns.v = kv[(key | length) + 1:] | trim -%}{%- endif -%}
+                {%- endfor -%}
+                {{- ns.v -}}
+              {%- endmacro -%}
+              {%- macro num(v, suffix) -%}{{ '–' if v == 'na' else v ~ suffix }}{%- endmacro -%}
+              {%- for label, day in [('Idag', now().strftime('%Y-%m-%d')), ('Imorgon', (now() + timedelta(days=1)).strftime('%Y-%m-%d'))] -%}
+                {%- set prefix = day ~ ' ' -%}
+                {%- set slot = (a if a.startswith(prefix) else (b if b.startswith(prefix) else '')) | trim -%}
+                {%- if slot == '' -%}
+                  {%- if label == 'Idag' or now().hour >= 15 -%}
+              **{{ label }}:** Ingen plan för {{ label | lower }}
+
+              {% endif -%}
+                {%- else -%}
+                  {%- set parts = slot.split('|') -%}
+                  {%- set segs = parts[1] if parts | length > 1 else '' -%}
+                  {%- set ns = namespace(blocks=[]) -%}
+                  {%- for p in parts[0][prefix | length:].split(',') -%}
+                    {%- set p = p | trim -%}
+                    {%- if p | length == 11 and p[2:3] == ':' and p[5:6] == '-' and p[8:9] == ':' -%}
+                      {%- set ns.blocks = ns.blocks + [p] -%}
+                    {%- endif -%}
+                  {%- endfor -%}
+                  {%- set c = field(segs, 'c') -%}
+              **{{ label }}:** {{ ns.blocks | join(', ') if ns.blocks else 'Inga block' }}
+
+              Kallaste 6 h: {{ num(field(segs, 't'), '°') }} · Tvättstuga p10 {{ num(field(segs, 'l'), '°') }} · Kök p10 {{ num(field(segs, 'k'), '°') }} · Justering {{ '–' if c == 'na' else ((c | float(0)) * 100) | round(0) | int(0) }} % · Max block {{ num(field(segs, 'm'), '') }} h · Budget {{ num(field(segs, 'b'), '') }} h
+
+              {% endif -%}
+              {%- endfor -%}
+          - type: entities
+            title: Värmeplan, inställningar
+            entities:
+              - input_boolean.heating_plan_enabled
+              - input_number.heating_block_cold
+              - input_number.heating_block_chilly
+              - input_number.heating_block_mild
+              - input_number.heating_block_warm
+              - input_number.heating_budget_factor
+              - input_number.heating_laundry_full_p10
+              - input_number.heating_kitchen_floor_p10
+              - sensor.tvattstugan_p10_24h
+              - sensor.koket_p10_24h
       - type: grid
         cards:
           - type: heading
