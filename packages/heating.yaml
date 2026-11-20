@@ -1,0 +1,111 @@
+# Heat pump price plan: helpers, indoor temperature percentiles and the block sensor.
+# The plan itself is written by a python_script into the two input_text slots.
+# Plan string: "YYYY-MM-DD HH:MM-HH:MM,HH:MM-HH:MM|t=..;l=..;k=..;c=..;m=..;b=.."
+#
+# No helper has an `initial`, so values changed from the dashboard survive restarts.
+# A helper without restored state starts at its `min`; the ranges make that safe
+# (0 = "use the built-in default" for the factor and the two thresholds, and 0 on an
+# anchor means "no blocking at that temperature").
+
+input_boolean:
+  heating_plan_enabled:
+    name: Värmeplan aktiv
+    icon: mdi:heat-pump
+
+input_number:
+  heating_block_cold:
+    name: Max block vid −7,5°
+    min: 0
+    max: 6
+    step: 0.25
+    unit_of_measurement: h
+    mode: box
+  heating_block_chilly:
+    name: Max block vid −2,5°
+    min: 0
+    max: 6
+    step: 0.25
+    unit_of_measurement: h
+    mode: box
+  heating_block_mild:
+    name: Max block vid +2,5°
+    min: 0
+    max: 8
+    step: 0.25
+    unit_of_measurement: h
+    mode: box
+  heating_block_warm:
+    name: Max block vid +7,5°
+    min: 0
+    max: 8
+    step: 0.25
+    unit_of_measurement: h
+    mode: box
+  heating_budget_factor:
+    name: Budgetfaktor
+    min: 0
+    max: 3
+    step: 0.1
+    mode: box
+  heating_laundry_full_p10:
+    name: Tvättstuga p10 full budget
+    min: 0
+    max: 25
+    step: 0.1
+    unit_of_measurement: °C
+    mode: box
+  heating_kitchen_floor_p10:
+    name: Kök p10 golv
+    min: 0
+    max: 25
+    step: 0.1
+    unit_of_measurement: °C
+    mode: box
+
+input_text:
+  heating_plan_a:
+    name: Värmeplan A
+    max: 255
+  heating_plan_b:
+    name: Värmeplan B
+    max: 255
+
+sensor:
+  - platform: statistics
+    unique_id: tvattstugan_p10_24h
+    name: "Tvättstugan p10 24h"
+    entity_id: sensor.felix_rum_temperature
+    state_characteristic: percentile
+    percentile: 10
+    max_age:
+      hours: 24
+  - platform: statistics
+    unique_id: koket_p10_24h
+    name: "Köket p10 24h"
+    entity_id: sensor.xiaomi_lys3_temperatur
+    state_characteristic: percentile
+    percentile: 10
+    max_age:
+      hours: 24
+
+template:
+  - binary_sensor:
+      - name: "Värmepump, blockerad enligt plan"
+        unique_id: varmepump_blockerad_enligt_plan
+        state: >-
+          {% set today = now().strftime('%Y-%m-%d') ~ ' ' %}
+          {% set hhmm = now().strftime('%H:%M') %}
+          {% set a = states('input_text.heating_plan_a') %}
+          {% set b = states('input_text.heating_plan_b') %}
+          {% set slot = a if a.startswith(today) else b %}
+          {% set ns = namespace(on=false) %}
+          {% if is_state('input_boolean.heating_plan_enabled', 'on') and slot.startswith(today) %}
+            {% for p in slot.split('|')[0][today | length:].split(',') %}
+              {% set p = p | trim %}
+              {% if p | length == 11 and p[2:3] == ':' and p[5:6] == '-' and p[8:9] == ':'
+                    and p[:5] <= hhmm and hhmm < p[6:] %}
+                {% set ns.on = true %}
+              {% endif %}
+            {% endfor %}
+          {% endif %}
+          {{ ns.on }}

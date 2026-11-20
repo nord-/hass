@@ -37,3 +37,6 @@ __pycache__/
 .HA_VERSION
 solcast_solar/
 *.code-workspace
+
+.pytest_cache/
+.venv/
