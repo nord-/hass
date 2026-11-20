@@ -2281,6 +2281,10 @@ views:
             badges:
               - type: entity
                 entity: sensor.xiaomi_lys3_temperatur
+                show_state: true
+                show_icon: true
+                tap_action:
+                  action: more-info
             icon: mdi:silverware-fork-knife
           - type: entities
             entities:
@@ -2536,6 +2540,10 @@ views:
             badges:
               - type: entity
                 entity: sensor.felix_rum_temperature
+                show_state: true
+                show_icon: true
+                tap_action:
+                  action: more-info
             icon: mdi:washing-machine
             heading: Tvättstugan
           - type: entities
