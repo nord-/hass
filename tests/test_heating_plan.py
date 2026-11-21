@@ -355,11 +355,11 @@ def block_quarters(block):
 
 THURSDAY_CASES = [
     ("one block", {"helpers": {"input_number.heating_budget_factor": "1.0"}}, day(-2.5),
-     ["17:30-20:30"]),
-    ("default budget", {}, day(-2.5), ["08:45-11:45", "17:30-20:30"]),
+     ["10:15-12:15", "15:15-16:15"]),
+    ("default budget", {}, day(-2.5), ["09:15-12:15", "14:15-17:15"]),
     ("short blocks", {"helpers": {"input_number.heating_block_chilly": "1"}}, day(-2.5),
-     ["19:00-20:00", "21:15-22:15"]),
-    ("long blocks", {}, day(7.5), ["08:15-12:15", "14:30-20:30"]),
+     ["10:30-11:30", "15:15-16:15"]),
+    ("long blocks", {}, day(7.5), ["07:45-11:45", "13:45-19:45"]),
 ]
 
 
@@ -408,9 +408,8 @@ def test_block_rules(label):
     for index, (start, end) in enumerate(spans):
         length = end - start
         assert 4 <= length <= m
-        gap = max(4, -(-length // 2))
-        recovery = prices[end:min(end + gap, 96)]
-        reference = sum(recovery) / len(recovery) if recovery else mean
+        known = prices[end:min(end + 48, 96)]
+        reference = (sum(known) + (48 - len(known)) * mean) / 48
         assert sum(prices[start:end]) / length - reference > 0.10
         if index + 1 < len(spans):
             assert spans[index + 1][0] - end >= max(4, -(-length // 2))
@@ -428,12 +427,14 @@ def test_only_the_expensive_part():
 
 
 def test_tie_is_deterministic():
-    prices = day_prices(1.0, [(8, 9, 2.0), (16, 17, 2.0)])
+    # Two equal peaks 13 h apart. The dips keep the day mean at 1.0, so the second
+    # peak's window (10 h known + 2 h at the day mean) equals the first one's.
+    prices = day_prices(1.0, [(0, 1, 2.0), (5, 6, 0.0), (13, 14, 2.0), (18, 19, 0.0)])
     helpers = {"input_number.heating_block_chilly": "1",
                "input_number.heating_budget_factor": "1.0"}
     for _ in range(3):
         result = run(make_states(prices=prices, helpers=helpers), day(-2.5))
-        assert blocks_of(result) == ["08:00-09:00"]
+        assert blocks_of(result) == ["00:00-01:00"]
 
 
 MIDNIGHT_PRICES = [(0, 3, 3.0)]
@@ -488,18 +489,26 @@ def test_worst_case_runtime():
     assert result.elapsed < 0.5
 
 
-def test_recovery_gap_is_priced():
-    """2026-11-21: a block followed by an equally expensive gap only moves the cost.
+def test_recovery_spreads_over_twelve_hours():
+    """2026-11-22: the evening plateau is blocked, not the cheaper hours after it.
 
-    Valued against the day mean the plan was 16:00-17:00,18:00-20:30,22:00-23:45,
-    whose first block recovered at 1.28 kr right after blocking at 1.30 kr.
+    Valued against the 1.5 h gap after each block the plan was
+    01:00-04:00,20:45-23:45: it let the heat pump run through the 1.4-1.57 kr
+    plateau and blocked at 1.29 kr once the price fell.
     """
-    with open(FIXTURE.parent / "prices_2026-11-21.json", encoding="utf8") as fil:
+    with open(FIXTURE.parent / "prices_2026-11-22.json", encoding="utf8") as fil:
         raw = json.load(fil)
     prices = [{"start": dt.datetime.fromisoformat(e["start"]),
                "end": dt.datetime.fromisoformat(e["end"]),
                "value": e["value"]} for e in raw]
-    states = make_states(prices=prices, laundry="22.22", kitchen="21.43")
-    _, blocks, info = planned(run(states, day(-1.3)))[1]
-    assert (info["m"], info["b"]) == ("3.00", "6.25")
-    assert blocks == ["17:45-20:30", "22:00-24:00"]
+    helpers = {"input_number.heating_block_cold": "2",
+               "input_number.heating_block_chilly": "4",
+               "input_number.heating_block_mild": "5",
+               "input_number.heating_block_warm": "6"}
+    states = make_states(prices=prices, laundry="22.81", kitchen="22.00", helpers=helpers)
+    forecast = make_forecast([-1.7] * 24, "2026-11-21T23:00:00+00:00")
+    now = dt.datetime(2026, 11, 21, 13, 30, tzinfo=LOCAL)
+    tomorrow, blocks, info = planned(run(states, forecast, now))[1]
+    assert tomorrow == "2026-11-22"
+    assert (info["m"], info["b"]) == ("4.00", "8.25")
+    assert blocks == ["15:30-17:30", "18:30-22:30"]

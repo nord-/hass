@@ -30,6 +30,7 @@ MIN_BLOCK_EXCESS = 0.10
 QUARTER_EPSILON = 1e-9
 SUM_EPSILON = 1e-9
 MIN_BLOCK_QUARTERS = 4
+RECOVERY_WINDOW_QUARTERS = 48
 
 
 def read_number(entity_id):
@@ -216,10 +217,10 @@ def carried_gap(today_iso):
 def block_values(prices, m):
     """values[i][L]: the worth of blocking quarters [i, i + L).
 
-    The heat pump repays a block at full power as soon as it releases, so a
-    block is valued against the mean price of its own recovery gap:
-    sum(price - gap mean - 0.10). A gap cut short by midnight uses the part
-    inside the day; a block ending at midnight uses the day mean, since the
+    The slab floor and a compressor capped near its normal power spread the
+    repayment of a block over many hours, so a block is valued against the
+    mean price of the 12 h after it: sum(price - window mean - 0.10).
+    Quarters of the window past midnight count at the day mean, since the
     next day's prices are unknown.
     """
     n = QUARTERS_PER_DAY
@@ -232,11 +233,10 @@ def block_values(prices, m):
         row = [0.0] * (m + 1)
         for length in range(MIN_BLOCK_QUARTERS, min(m, n - i) + 1):
             end = i + length
-            gap_end = min(end + gap_after(length), n)
-            if gap_end > end:
-                reference = (prefix[gap_end] - prefix[end]) / float(gap_end - end)
-            else:
-                reference = day_mean
+            window_end = min(end + RECOVERY_WINDOW_QUARTERS, n)
+            unknown = RECOVERY_WINDOW_QUARTERS - (window_end - end)
+            window_sum = prefix[window_end] - prefix[end] + unknown * day_mean
+            reference = window_sum / float(RECOVERY_WINDOW_QUARTERS)
             row[length] = prefix[end] - prefix[i] - length * (reference + MIN_BLOCK_EXCESS)
         values.append(row)
     return values
