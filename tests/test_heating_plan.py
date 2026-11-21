@@ -17,11 +17,11 @@ UTC = dt.timezone.utc
 
 PRICE_ENTITY = "sensor.nordpool_kwh_se3_sek_3_095_0"
 DEFAULT_HELPERS = {
-    "input_number.heating_block_cold": "1",
-    "input_number.heating_block_chilly": "3",
-    "input_number.heating_block_mild": "4",
-    "input_number.heating_block_warm": "6",
-    "input_number.heating_budget_factor": "2.0",
+    "input_number.heating_block_cold": "4",
+    "input_number.heating_block_chilly": "8",
+    "input_number.heating_block_mild": "10",
+    "input_number.heating_block_warm": "12",
+    "input_number.heating_min_pause": "2",
     "input_number.heating_laundry_full_p10": "22.0",
     "input_number.heating_kitchen_floor_p10": "21.0",
 }
@@ -118,38 +118,36 @@ def test_budget_at_anchor():
     entity, (date, blocks, info) = planned(run(make_states(), day(-2.5)))
     assert entity == "input_text.heating_plan_a"
     assert date == "2026-11-21"
-    assert (info["t"], info["c"], info["m"], info["b"]) == ("-2.5", "1.00", "3.00", "6.00")
+    assert (info["t"], info["c"], info["b"], info["p"]) == ("-2.5", "1.00", "8.00", "2.00")
     assert info["l"] == "22.50"
     assert info["k"] == "22.00"
 
 
 def test_budget_between_anchors():
     info = info_of(run(make_states(), day(0.0)))
-    assert (info["m"], info["b"]) == ("3.50", "7.00")
+    assert info["b"] == "9.00"
 
 
 def test_budget_outside_anchors():
-    info = info_of(run(make_states(), day(-10.0)))
-    assert (info["m"], info["b"]) == ("1.00", "2.00")
-    info = info_of(run(make_states(), day(10.0)))
-    assert (info["m"], info["b"]) == ("6.00", "12.00")
+    assert info_of(run(make_states(), day(-10.0)))["b"] == "4.00"
+    assert info_of(run(make_states(), day(10.0)))["b"] == "12.00"
 
 
 def test_coldest_six_hours():
     info = info_of(run(make_states(), make_forecast([3.0] * 18 + [-7.0] * 6)))
-    assert (info["t"], info["m"], info["b"]) == ("-7.0", "1.00", "2.25")
+    assert (info["t"], info["b"]) == ("-7.0", "4.25")
 
 
 def test_laundry_correction():
     info = info_of(run(make_states(laundry="21.5"), day(-2.5)))
-    assert (info["c"], info["m"], info["b"]) == ("0.50", "1.50", "3.00")
+    assert (info["c"], info["b"]) == ("0.50", "4.00")
     info = info_of(run(make_states(laundry="21.0"), day(-2.5)))
-    assert (info["c"], info["m"], info["b"]) == ("0.00", "0.00", "0.00")
+    assert (info["c"], info["b"]) == ("0.00", "0.00")
     info = info_of(run(make_states(laundry="22.0"), day(-2.5)))
     assert info["c"] == "1.00"
-    result = run(make_states(laundry="21.2"), day(-2.5))
+    result = run(make_states(laundry="21.1"), day(-2.5))
     _, (_, blocks, info) = planned(result)
-    assert (info["c"], info["m"], info["b"]) == ("0.20", "0.50", "1.00")
+    assert (info["c"], info["b"]) == ("0.10", "0.75")
     assert blocks == []
 
 
@@ -160,17 +158,23 @@ def test_kitchen_floor():
 
 def test_quarter_rounding_epsilon():
     states = make_states(laundry="21.9", helpers={"input_number.heating_block_chilly": "2.5"})
-    assert info_of(run(states, day(-2.5)))["m"] == "2.25"
+    assert info_of(run(states, day(-2.5)))["b"] == "2.25"
 
 
-@pytest.mark.parametrize("factor", ["0", "unknown", "abc", None])
-def test_helper_defaults_factor(factor):
-    helpers = {"input_number.heating_budget_factor": factor}
-    states = make_states(helpers=helpers if factor is not None else None)
-    if factor is None:
-        del states["input_number.heating_budget_factor"]
-    info = info_of(run(states, day(-2.5)))
-    assert info["b"] == "6.00"
+@pytest.mark.parametrize("pause", ["0", "unknown", "abc", None])
+def test_helper_defaults_pause(pause):
+    helpers = {"input_number.heating_min_pause": pause}
+    states = make_states(helpers=helpers if pause is not None else None)
+    if pause is None:
+        del states["input_number.heating_min_pause"]
+    assert info_of(run(states, day(-2.5)))["p"] == "2.00"
+
+
+def test_pause_helper():
+    states = make_states(helpers={"input_number.heating_min_pause": "3.1"})
+    assert info_of(run(states, day(-2.5)))["p"] == "3.00"
+    states = make_states(helpers={"input_number.heating_min_pause": "0.1"})
+    assert info_of(run(states, day(-2.5)))["p"] == "0.25"
 
 
 def test_helper_defaults_thresholds_and_anchors():
@@ -183,9 +187,9 @@ def test_helper_defaults_thresholds_and_anchors():
     states = make_states(laundry="21.5", helpers={"input_number.heating_laundry_full_p10": "0"})
     assert info_of(run(states, day(-2.5)))["c"] == "0.50"
     states = make_states(helpers={"input_number.heating_block_chilly": "0"})
-    assert info_of(run(states, day(-2.5)))["m"] == "0.00"
+    assert info_of(run(states, day(-2.5)))["b"] == "0.00"
     states = make_states(helpers={"input_number.heating_block_chilly": "unavailable"})
-    assert info_of(run(states, day(-2.5)))["m"] == "3.00"
+    assert info_of(run(states, day(-2.5)))["b"] == "8.00"
 
 
 def _without_raw_tomorrow(states):
@@ -273,7 +277,7 @@ def test_hourly_price_slots():
     _, (date, _, info) = planned(result)
     assert date == "2026-11-21"
     # Non-DST values prove the 24 slots were expanded to 96 quarters.
-    assert (info["t"], info["m"]) == ("-2.5", "3.00")
+    assert (info["t"], info["b"]) == ("-2.5", "8.00")
 
 
 def test_dst_day_empty_plan():
@@ -281,12 +285,12 @@ def test_dst_day_empty_plan():
     result = run(make_states(prices=spring), day(0.0), now=dt.datetime(2027, 3, 27, 13, 30, tzinfo=LOCAL))
     assert result.exception is None
     assert len(result.service_calls) == 1
-    assert result.service_calls[0][2]["value"] == "2027-03-28 |t=na;l=na;k=na;c=na;m=0.00;b=0.00"
+    assert result.service_calls[0][2]["value"] == "2027-03-28 |t=na;l=na;k=na;c=na;b=0.00;p=na"
     autumn = contiguous_quarters(dt.datetime(2027, 10, 31, tzinfo=LOCAL), 100)
     result = run(make_states(prices=autumn), day(0.0), now=dt.datetime(2027, 10, 30, 13, 30, tzinfo=LOCAL))
     assert result.exception is None
     assert len(result.service_calls) == 1
-    assert result.service_calls[0][2]["value"] == "2027-10-31 |t=na;l=na;k=na;c=na;m=0.00;b=0.00"
+    assert result.service_calls[0][2]["value"] == "2027-10-31 |t=na;l=na;k=na;c=na;b=0.00;p=na"
 
 
 def test_dst_day_with_gap_is_an_error():
@@ -299,7 +303,7 @@ def test_dst_day_with_gap_is_an_error():
 
 
 def test_slot_choice():
-    plan = "{} |t=0.0;l=22.00;k=22.00;c=1.00;m=3.00;b=6.00"
+    plan = "{} |t=0.0;l=22.00;k=22.00;c=1.00;b=8.00;p=2.00"
 
     def target(slot_a, slot_b):
         result = run(make_states(slot_a=slot_a, slot_b=slot_b), day(-2.5))
@@ -354,12 +358,12 @@ def block_quarters(block):
 
 
 THURSDAY_CASES = [
-    ("one block", {"helpers": {"input_number.heating_budget_factor": "1.0"}}, day(-2.5),
+    ("small limit", {"helpers": {"input_number.heating_block_chilly": "3"}}, day(-2.5),
      ["10:15-12:15", "15:15-16:15"]),
-    ("default budget", {}, day(-2.5), ["09:15-12:15", "14:15-17:15"]),
-    ("short blocks", {"helpers": {"input_number.heating_block_chilly": "1"}}, day(-2.5),
-     ["10:30-11:30", "15:15-16:15"]),
-    ("long blocks", {}, day(7.5), ["07:45-11:45", "13:45-19:45"]),
+    ("default limit", {}, day(-2.5), ["08:15-16:15"]),
+    ("one hour", {"helpers": {"input_number.heating_block_chilly": "1"}}, day(-2.5),
+     ["15:15-16:15"]),
+    ("large limit", {}, day(7.5), ["07:15-19:15"]),
 ]
 
 
@@ -377,22 +381,22 @@ def expected_blocks(label):
     return [case[3] for case in THURSDAY_CASES if case[0] == label][0]
 
 
-def test_thursday_one_block():
-    assert thursday_plan("one block")[1] == expected_blocks("one block")
+def test_thursday_small_limit():
+    assert thursday_plan("small limit")[1] == expected_blocks("small limit")
 
 
-def test_thursday_default_budget():
-    assert thursday_plan("default budget")[1] == expected_blocks("default budget")
+def test_thursday_default_limit():
+    assert thursday_plan("default limit")[1] == expected_blocks("default limit")
 
 
-def test_thursday_short_blocks():
-    assert thursday_plan("short blocks")[1] == expected_blocks("short blocks")
+def test_thursday_one_hour():
+    assert thursday_plan("one hour")[1] == expected_blocks("one hour")
 
 
-def test_thursday_long_blocks():
-    _, blocks, info = thursday_plan("long blocks")
-    assert (info["m"], info["b"]) == ("6.00", "12.00")
-    assert blocks == expected_blocks("long blocks")
+def test_thursday_large_limit():
+    _, blocks, info = thursday_plan("large limit")
+    assert (info["b"], info["p"]) == ("12.00", "2.00")
+    assert blocks == expected_blocks("large limit")
 
 
 @pytest.mark.parametrize("label", [case[0] for case in THURSDAY_CASES])
@@ -401,18 +405,18 @@ def test_block_rules(label):
     assert blocks, "the rules must be checked against a non-empty plan"
     prices = [e["value"] for e in fixture_prices()]
     mean = sum(prices) / len(prices)
-    m = round(float(info["m"]) * 4)
     b = round(float(info["b"]) * 4)
+    pause = round(float(info["p"]) * 4)
     spans = [block_quarters(block) for block in blocks]
     assert sum(end - start for start, end in spans) <= b
     for index, (start, end) in enumerate(spans):
         length = end - start
-        assert 4 <= length <= m
+        assert 4 <= length <= b
         known = prices[end:min(end + 48, 96)]
         reference = (sum(known) + (48 - len(known)) * mean) / 48
         assert sum(prices[start:end]) / length - reference > 0.10
         if index + 1 < len(spans):
-            assert spans[index + 1][0] - end >= max(4, -(-length // 2))
+            assert spans[index + 1][0] - end >= pause
 
 
 def test_flat_day_no_blocks():
@@ -430,21 +434,20 @@ def test_tie_is_deterministic():
     # Two equal peaks 13 h apart. The dips keep the day mean at 1.0, so the second
     # peak's window (10 h known + 2 h at the day mean) equals the first one's.
     prices = day_prices(1.0, [(0, 1, 2.0), (5, 6, 0.0), (13, 14, 2.0), (18, 19, 0.0)])
-    helpers = {"input_number.heating_block_chilly": "1",
-               "input_number.heating_budget_factor": "1.0"}
+    helpers = {"input_number.heating_block_chilly": "1"}
     for _ in range(3):
         result = run(make_states(prices=prices, helpers=helpers), day(-2.5))
         assert blocks_of(result) == ["00:00-01:00"]
 
 
 MIDNIGHT_PRICES = [(0, 3, 3.0)]
-INFO_TAIL = "|t=-2.5;l=22.50;k=22.00;c=1.00;m=3.00;b=6.00"
+INFO_TAIL = "|t=-2.5;l=22.50;k=22.00;c=1.00;b=8.00;p=2.00"
 
 
 @pytest.mark.parametrize("today_slot, expected", [
-    ("2026-11-20 21:00-24:00" + INFO_TAIL, ["01:30-03:00"]),
-    ("2026-11-20 22:30-23:30" + INFO_TAIL, ["00:30-03:00"]),
-    ("2026-11-20 08:00-09:00,22:30-23:30" + INFO_TAIL, ["00:30-03:00"]),
+    ("2026-11-20 21:00-24:00" + INFO_TAIL, ["02:00-03:00"]),
+    ("2026-11-20 22:30-23:30" + INFO_TAIL, ["01:30-03:00"]),
+    ("2026-11-20 08:00-09:00,22:30-23:30" + INFO_TAIL, ["01:30-03:00"]),
     ("2026-11-19 21:00-24:00" + INFO_TAIL, ["00:00-03:00"]),
 ])
 def test_midnight_gap_carried(today_slot, expected):
@@ -459,18 +462,18 @@ def test_midnight_gap_carried_from_slot_b():
                          slot_b="2026-11-20 21:00-24:00" + INFO_TAIL)
     entity, (_, blocks, _) = planned(run(states, day(-2.5)))
     assert entity == "input_text.heating_plan_a"
-    assert blocks == ["01:30-03:00"]
+    assert blocks == ["02:00-03:00"]
 
 
 @pytest.mark.parametrize("today_slot, expected", [
     ("2026-11-20 xx|yy", ["00:00-03:00"]),
     ("2026-11-20 ", ["00:00-03:00"]),
     ("2026-11-20", ["00:00-03:00"]),
-    ("2026-11-20 21:00-24:00,|yy", ["01:30-03:00"]),
+    ("2026-11-20 21:00-24:00,|yy", ["02:00-03:00"]),
     ("2026-11-20 21:00-2²:00|yy", ["00:00-03:00"]),
     # The last valid piece is 21:00-24:00; the malformed ones after it are skipped.
     ("2026-11-20 21:00-24:00,25:00-26:00,22:00-21:00,23:10-23:40,ab:cd-ef:gh|yy",
-     ["01:30-03:00"]),
+     ["02:00-03:00"]),
 ])
 def test_garbage_slots(today_slot, expected):
     states = make_states(prices=day_prices(1.0, MIDNIGHT_PRICES), slot_a="hello",
@@ -481,11 +484,11 @@ def test_garbage_slots(today_slot, expected):
 
 
 def test_worst_case_runtime():
-    helpers = {"input_number.heating_block_warm": "8",
-               "input_number.heating_budget_factor": "3"}
+    helpers = {"input_number.heating_block_warm": "16",
+               "input_number.heating_min_pause": "0.25"}
     result = run(make_states(helpers=helpers), day(10.0))
     info = info_of(result)
-    assert (info["m"], info["b"]) == ("8.00", "24.00")
+    assert (info["b"], info["p"]) == ("16.00", "0.25")
     assert result.elapsed < 0.5
 
 
@@ -494,21 +497,18 @@ def test_recovery_spreads_over_twelve_hours():
 
     Valued against the 1.5 h gap after each block the plan was
     01:00-04:00,20:45-23:45: it let the heat pump run through the 1.4-1.57 kr
-    plateau and blocked at 1.29 kr once the price fell.
+    plateau and blocked at 1.29 kr once the price fell. With a separate 4 h
+    max block it was 15:30-17:30,18:30-22:30, a pause at the peak.
     """
     with open(FIXTURE.parent / "prices_2026-11-22.json", encoding="utf8") as fil:
         raw = json.load(fil)
     prices = [{"start": dt.datetime.fromisoformat(e["start"]),
                "end": dt.datetime.fromisoformat(e["end"]),
                "value": e["value"]} for e in raw]
-    helpers = {"input_number.heating_block_cold": "2",
-               "input_number.heating_block_chilly": "4",
-               "input_number.heating_block_mild": "5",
-               "input_number.heating_block_warm": "6"}
-    states = make_states(prices=prices, laundry="22.81", kitchen="22.00", helpers=helpers)
+    states = make_states(prices=prices, laundry="22.81", kitchen="22.00")
     forecast = make_forecast([-1.7] * 24, "2026-11-21T23:00:00+00:00")
     now = dt.datetime(2026, 11, 21, 13, 30, tzinfo=LOCAL)
     tomorrow, blocks, info = planned(run(states, forecast, now))[1]
     assert tomorrow == "2026-11-22"
-    assert (info["m"], info["b"]) == ("4.00", "8.25")
-    assert blocks == ["15:30-17:30", "18:30-22:30"]
+    assert (info["b"], info["p"]) == ("8.25", "2.00")
+    assert blocks == ["14:30-22:45"]

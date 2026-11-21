@@ -14,38 +14,39 @@ input_boolean:
 
 input_number:
   heating_block_cold:
-    name: Max block vid −7,5°
+    name: Max blockering per dygn vid −7,5°
     min: 0
-    max: 6
+    max: 16
     step: 0.25
     unit_of_measurement: h
     mode: box
   heating_block_chilly:
-    name: Max block vid −2,5°
+    name: Max blockering per dygn vid −2,5°
     min: 0
-    max: 6
+    max: 16
     step: 0.25
     unit_of_measurement: h
     mode: box
   heating_block_mild:
-    name: Max block vid +2,5°
+    name: Max blockering per dygn vid +2,5°
     min: 0
-    max: 8
+    max: 16
     step: 0.25
     unit_of_measurement: h
     mode: box
   heating_block_warm:
-    name: Max block vid +7,5°
+    name: Max blockering per dygn vid +7,5°
     min: 0
-    max: 8
+    max: 16
     step: 0.25
     unit_of_measurement: h
     mode: box
-  heating_budget_factor:
-    name: Budgetfaktor
-    min: 0
-    max: 3
-    step: 0.1
+  heating_min_pause:
+    name: Minsta paus mellan block
+    min: 0.25
+    max: 6
+    step: 0.25
+    unit_of_measurement: h
     mode: box
   heating_laundry_full_p10:
     name: Tvättstuga p10 full budget

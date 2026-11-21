@@ -18,8 +18,9 @@ ANCHOR_ENTITIES = [
     "input_number.heating_block_mild",
     "input_number.heating_block_warm",
 ]
-ANCHOR_DEFAULTS = [1.0, 3.0, 4.0, 6.0]
-FACTOR_DEFAULT = 2.0
+ANCHOR_DEFAULTS = [4.0, 8.0, 10.0, 12.0]
+PAUSE_ENTITY = "input_number.heating_min_pause"
+PAUSE_DEFAULT = 2.0
 LAUNDRY_FULL_DEFAULT = 22.0
 KITCHEN_FLOOR_DEFAULT = 21.0
 
@@ -155,8 +156,8 @@ def coldest_mean(first_ts, last_ts):
     return sum(coldest) / float(len(coldest))
 
 
-def max_block_hours(temp):
-    """Max block (h) at a temperature, interpolated between the helper anchors."""
+def daily_block_hours(temp):
+    """Most hours blocked in a day at a temperature, interpolated between the helper anchors."""
     values = [max(0.0, read_helper(ANCHOR_ENTITIES[i], ANCHOR_DEFAULTS[i], False)) for i in range(4)]
     if temp <= ANCHOR_TEMPS[0]:
         return values[0]
@@ -173,9 +174,9 @@ def floor_quarters(hours):
     return int(hours * 4 + QUARTER_EPSILON)
 
 
-def gap_after(length):
-    """Quarters a block of `length` quarters must be followed by: max(1 h, ceil(L / 2))."""
-    return max(MIN_BLOCK_QUARTERS, (length + 1) // 2)
+def pause_quarters():
+    """The minimum pause between blocks, in whole quarters (at least one)."""
+    return max(1, floor_quarters(read_helper(PAUSE_ENTITY, PAUSE_DEFAULT, True)))
 
 
 def parse_quarter(text):
@@ -193,8 +194,8 @@ def parse_quarter(text):
     return quarter
 
 
-def carried_gap(today_iso):
-    """First free quarter tomorrow, from the gap after today's last valid block."""
+def carried_gap(today_iso, pause):
+    """First free quarter tomorrow, from the pause after today's last valid block."""
     for entity_id in [SLOT_A, SLOT_B]:
         if not slot_is_dated(entity_id, today_iso):
             continue
@@ -210,7 +211,7 @@ def carried_gap(today_iso):
                 last = [start, end]
         if last is None:
             return 0
-        return max(0, last[1] + gap_after(last[1] - last[0]) - QUARTERS_PER_DAY)
+        return max(0, last[1] + pause - QUARTERS_PER_DAY)
     return 0
 
 
@@ -242,26 +243,26 @@ def block_values(prices, m):
     return values
 
 
-def optimise(prices, m, b, first_free):
+def optimise(prices, b, pause, first_free):
     """Blocks as [[start, end], ...] quarter indices (end exclusive).
 
     Interval DP: g[i][u] is the best total block value from quarter i to the
-    end of the day when quarter i is free and u quarters of budget are spent.
+    end of the day when quarter i is free and u quarters of the daily limit b
+    are spent. A block may use the whole limit; blocks are `pause` apart.
     """
     n = QUARTERS_PER_DAY
-    values = block_values(prices, m)
-    gaps = [gap_after(length) for length in range(m + 1)]
+    values = block_values(prices, b)
 
     g = [None] * (n + 1)
     g[n] = [0.0] * (b + 1)
     for i in range(n - 1, -1, -1):
         row = list(g[i + 1])
         row_values = values[i]
-        for length in range(MIN_BLOCK_QUARTERS, min(m, b, n - i) + 1):
+        for length in range(MIN_BLOCK_QUARTERS, min(b, n - i) + 1):
             block_sum = row_values[length]
             if block_sum <= SUM_EPSILON:
                 continue
-            after = g[min(i + length + gaps[length], n)]
+            after = g[min(i + length + pause, n)]
             for u in range(b - length + 1):
                 value = block_sum + after[u + length]
                 if value > row[u]:
@@ -274,11 +275,11 @@ def optimise(prices, m, b, first_free):
     while i < n:
         target = g[i][u]
         chosen = 0
-        for length in range(MIN_BLOCK_QUARTERS, min(m, b - u, n - i) + 1):
+        for length in range(MIN_BLOCK_QUARTERS, min(b - u, n - i) + 1):
             block_sum = values[i][length]
             if block_sum <= SUM_EPSILON:
                 continue
-            value = block_sum + g[min(i + length + gaps[length], n)][u + length]
+            value = block_sum + g[min(i + length + pause, n)][u + length]
             if abs(value - target) <= SUM_EPSILON:
                 chosen = length
                 break
@@ -287,7 +288,7 @@ def optimise(prices, m, b, first_free):
         else:
             blocks.append([i, i + chosen])
             u = u + chosen
-            i = min(i + chosen + gaps[chosen], n)
+            i = min(i + chosen + pause, n)
     return blocks
 
 
@@ -325,7 +326,7 @@ def main():
     if quarters is None:
         return
     if len(quarters) != QUARTERS_PER_DAY:
-        write_plan(tomorrow_iso, "", "t=na;l=na;k=na;c=na;m=0.00;b=0.00")
+        write_plan(tomorrow_iso, "", "t=na;l=na;k=na;c=na;b=0.00;p=na")
         return
 
     # Step 3: outdoor temperature.
@@ -340,28 +341,27 @@ def main():
         logger.error("heating_plan: a p10 sensor is unavailable, unknown or not a number")
         return
 
-    # Step 5: base block and correction.
-    base = max_block_hours(outdoor)
+    # Step 5: daily block limit and correction.
+    base = daily_block_hours(outdoor)
     full = read_helper("input_number.heating_laundry_full_p10", LAUNDRY_FULL_DEFAULT, True)
     floor = read_helper("input_number.heating_kitchen_floor_p10", KITCHEN_FLOOR_DEFAULT, True)
-    factor = read_helper("input_number.heating_budget_factor", FACTOR_DEFAULT, True)
     laundry_c = min(1.0, max(0.0, 1.0 - (full - laundry)))
     kitchen_c = 0.0 if kitchen < floor else 1.0
     correction = min(laundry_c, kitchen_c)
 
-    # Step 6: max block and budget in whole quarters.
-    m = floor_quarters(base * correction)
-    b = floor_quarters(factor * base * correction)
+    # Step 6: daily block limit and pause in whole quarters.
+    b = floor_quarters(base * correction)
+    pause = pause_quarters()
 
     # Step 7: optimise and write.
     blocks = []
-    if m >= MIN_BLOCK_QUARTERS:
-        blocks = optimise(quarters, m, b, carried_gap(today.isoformat()))
+    if b >= MIN_BLOCK_QUARTERS:
+        blocks = optimise(quarters, b, pause, carried_gap(today.isoformat(), pause))
     # Avoid formatting a tiny negative mean as t=-0.0.
     if abs(outdoor) < 0.05:
         outdoor = 0.0
-    info = "t=%.1f;l=%.2f;k=%.2f;c=%.2f;m=%.2f;b=%.2f" % (
-        outdoor, laundry, kitchen, correction, m / 4.0, b / 4.0)
+    info = "t=%.1f;l=%.2f;k=%.2f;c=%.2f;b=%.2f;p=%.2f" % (
+        outdoor, laundry, kitchen, correction, b / 4.0, pause / 4.0)
     write_plan(tomorrow_iso, format_blocks(blocks), info)
 
 
