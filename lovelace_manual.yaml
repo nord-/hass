@@ -2115,6 +2115,198 @@ views:
 
               {% endif -%}
               {%- endfor -%}
+          - type: custom:apexcharts-card
+            header:
+              title: Värmeplan idag
+              show: true
+              show_states: false
+            graph_span: 24h
+            span:
+              start: day
+              offset: +0d
+            update_interval: 5min
+            now:
+              show: true
+              label: nu
+              color: var(--primary-color)
+            hours_12: false
+            apex_config:
+              chart:
+                height: 200px
+              legend:
+                show: false
+              tooltip:
+                shared: false
+              xaxis:
+                labels:
+                  datetimeFormatter:
+                    hour: HH
+            yaxis:
+              - id: price
+                decimals: 2
+                apex_config:
+                  forceNiceScale: true
+              - id: plan
+                show: false
+                min: 0
+                max: 1
+            series:
+              - entity: input_text.heating_plan_a
+                yaxis_id: plan
+                name: Blockerad
+                type: area
+                curve: stepline
+                color: '#21AB2F'
+                opacity: 0.25
+                stroke_width: 0
+                show:
+                  in_header: false
+                  legend_value: false
+                data_generator: |
+                  const day = new Date();
+                  day.setHours(0, 0, 0, 0);
+                  day.setDate(day.getDate() + 0);
+                  const next = new Date(day);
+                  next.setDate(next.getDate() + 1);
+                  const pad = (n) => String(n).padStart(2, '0');
+                  const prefix = day.getFullYear() + '-' + pad(day.getMonth() + 1) + '-' + pad(day.getDate()) + ' ';
+                  const slot = ['input_text.heating_plan_a', 'input_text.heating_plan_b']
+                    .map((id) => (hass.states[id] ? hass.states[id].state : ''))
+                    .find((s) => s.startsWith(prefix)) || '';
+                  const at = (h, m) => {
+                    const t = new Date(day);
+                    t.setHours(Number(h), Number(m), 0, 0);
+                    return t.getTime();
+                  };
+                  const points = [[day.getTime(), 0]];
+                  slot.split('|')[0].slice(prefix.length).split(',').forEach((block) => {
+                    const m = block.trim().match(/^(\d\d):(\d\d)-(\d\d):(\d\d)$/);
+                    if (m) {
+                      points.push([at(m[1], m[2]), 1], [at(m[3], m[4]), 0]);
+                    }
+                  });
+                  if (points[points.length - 1][0] < next.getTime()) {
+                    points.push([next.getTime(), 0]);
+                  }
+                  return points;
+              - entity: sensor.nordpool_kwh_se3_sek_3_095_0
+                yaxis_id: price
+                name: Elpris
+                type: line
+                curve: stepline
+                color: '#6A79FD'
+                stroke_width: 2
+                unit: kr
+                float_precision: 2
+                show:
+                  in_header: false
+                  legend_value: false
+                data_generator: |
+                  const fee = Number(hass.states['sensor.template_fees_ex_vat'].state);
+                  const raw = entity.attributes.raw_today || [];
+                  const points = raw.map((p) => [new Date(p.start).getTime(), (p.value + fee) * 1.25]);
+                  if (raw.length) {
+                    points.push([new Date(raw[raw.length - 1].end).getTime(), points[points.length - 1][1]]);
+                  }
+                  return points;
+          - type: custom:apexcharts-card
+            visibility:
+              - condition: state
+                entity: binary_sensor.template_nordpool_tomorrow_valid
+                state: 'on'
+            header:
+              title: Värmeplan imorgon
+              show: true
+              show_states: false
+            graph_span: 24h
+            span:
+              start: day
+              offset: +1d
+            update_interval: 5min
+            now:
+              show: false
+              label: nu
+              color: var(--primary-color)
+            hours_12: false
+            apex_config:
+              chart:
+                height: 200px
+              legend:
+                show: false
+              tooltip:
+                shared: false
+              xaxis:
+                labels:
+                  datetimeFormatter:
+                    hour: HH
+            yaxis:
+              - id: price
+                decimals: 2
+                apex_config:
+                  forceNiceScale: true
+              - id: plan
+                show: false
+                min: 0
+                max: 1
+            series:
+              - entity: input_text.heating_plan_a
+                yaxis_id: plan
+                name: Blockerad
+                type: area
+                curve: stepline
+                color: '#21AB2F'
+                opacity: 0.25
+                stroke_width: 0
+                show:
+                  in_header: false
+                  legend_value: false
+                data_generator: |
+                  const day = new Date();
+                  day.setHours(0, 0, 0, 0);
+                  day.setDate(day.getDate() + 1);
+                  const next = new Date(day);
+                  next.setDate(next.getDate() + 1);
+                  const pad = (n) => String(n).padStart(2, '0');
+                  const prefix = day.getFullYear() + '-' + pad(day.getMonth() + 1) + '-' + pad(day.getDate()) + ' ';
+                  const slot = ['input_text.heating_plan_a', 'input_text.heating_plan_b']
+                    .map((id) => (hass.states[id] ? hass.states[id].state : ''))
+                    .find((s) => s.startsWith(prefix)) || '';
+                  const at = (h, m) => {
+                    const t = new Date(day);
+                    t.setHours(Number(h), Number(m), 0, 0);
+                    return t.getTime();
+                  };
+                  const points = [[day.getTime(), 0]];
+                  slot.split('|')[0].slice(prefix.length).split(',').forEach((block) => {
+                    const m = block.trim().match(/^(\d\d):(\d\d)-(\d\d):(\d\d)$/);
+                    if (m) {
+                      points.push([at(m[1], m[2]), 1], [at(m[3], m[4]), 0]);
+                    }
+                  });
+                  if (points[points.length - 1][0] < next.getTime()) {
+                    points.push([next.getTime(), 0]);
+                  }
+                  return points;
+              - entity: sensor.nordpool_kwh_se3_sek_3_095_0
+                yaxis_id: price
+                name: Elpris
+                type: line
+                curve: stepline
+                color: '#6A79FD'
+                stroke_width: 2
+                unit: kr
+                float_precision: 2
+                show:
+                  in_header: false
+                  legend_value: false
+                data_generator: |
+                  const fee = Number(hass.states['sensor.template_fees_ex_vat'].state);
+                  const raw = entity.attributes.raw_tomorrow || [];
+                  const points = raw.map((p) => [new Date(p.start).getTime(), (p.value + fee) * 1.25]);
+                  if (raw.length) {
+                    points.push([new Date(raw[raw.length - 1].end).getTime(), points[points.length - 1][1]]);
+                  }
+                  return points;
       - type: grid
         cards:
           - type: heading
