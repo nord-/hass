@@ -1516,12 +1516,9 @@
     action: notify.rickards_devices
     enabled: false
   - data:
-      message: '⚡SoC: {{states(''sensor.byd_dolphin_soc'')}}% ({{states.sensor.byd_dolphin_soc.last_updated|as_local|as_timestamp|timestamp_custom(''%m-%d
-        %H:%M'')}})\n
-
-        💶Priset: {{states(''sensor.template_nordpool_current_price_vat'')}} kr\n
-
-        {{now().strftime(''%m-%d %H:%M'')}}'
+      message: "⚡SoC: {{states('sensor.byd_dolphin_soc')}}% ({{states.sensor.byd_dolphin_soc.last_updated|as_local|as_timestamp|timestamp_custom('%m-%d
+        %H:%M')}})\\n\n\U0001F4B6Priset: {{states('sensor.template_nordpool_current_price_vat')}}
+        kr\\n\n{{now().strftime('%m-%d %H:%M')}}"
       title: "\U0001F698Delphine slutat ladda"
       data:
         clickAction: /lovelace/tesla
@@ -1754,19 +1751,36 @@
     - sensor.xiaomi_lys2_batteri
     - sensor.xiaomi_lys3_batteri
     - sensor.xiaomi_lys4_batteri
-    below: 5
+    below: 10
+  - trigger: state
+    entity_id:
+    - sensor.framsidan_temperature
+    - sensor.xiaomi_lys1_temperatur
+    - sensor.spabadet_temperatur
+    - sensor.xiaomi_lys2_temperatur
+    - sensor.xiaomi_lys3_temperatur
+    - sensor.xiaomi_lys4_temperatur
+    - sensor.felix_rum_temperature
+    to:
+    - unavailable
   conditions: []
   actions:
   - action: notify.rickards_devices
     metadata: {}
     data:
-      message: "\U0001F50B framsidan {{states(\"sensor.framsidan_batteri\")}}%\nLYS1
-        {{states(\"sensor.xiaomi_lys1_batteri\")}}%\nLYS2 {{states(\"sensor.xiaomi_lys2_batteri\")}}%\nLYS3
-        {{states(\"sensor.xiaomi_lys3_batteri\")}}%\nLYS4 {{states(\"sensor.xiaomi_lys4_batteri\")}}%"
+      message: 'Framsidan {{states("sensor.framsidan_batteri")}}%
+
+        Vrum uppe {{states("sensor.xiaomi_lys1_batteri")}}%
+
+        Felix rum {{states("sensor.xiaomi_lys2_batteri")}}%
+
+        Köket {{states("sensor.xiaomi_lys3_batteri")}}%
+
+        Badrummet {{states("sensor.xiaomi_lys4_batteri")}}%'
       data:
         channel: Alarm
         priority: high
-        clickAction: /lovelace/9
+        clickAction: /lovelace/lights
       title: ⚠️ Låg batterinivå
   mode: single
 - id: '1753717461777'
@@ -2811,7 +2825,10 @@
     minutes: /30
   conditions:
   - condition: template
-    value_template: "{% set t = (now() + timedelta(days=1)).strftime('%Y-%m-%d') %}{{ is_state('binary_sensor.template_nordpool_tomorrow_valid', 'on') and not states('input_text.heating_plan_a').startswith(t) and not states('input_text.heating_plan_b').startswith(t) }}"
+    value_template: '{% set t = (now() + timedelta(days=1)).strftime(''%Y-%m-%d'')
+      %}{{ is_state(''binary_sensor.template_nordpool_tomorrow_valid'', ''on'') and
+      not states(''input_text.heating_plan_a'').startswith(t) and not states(''input_text.heating_plan_b'').startswith(t)
+      }}'
   actions:
   - action: weather.get_forecasts
     target:
@@ -2822,7 +2839,8 @@
     continue_on_error: true
   - action: python_script.heating_plan
     data:
-      forecast: "{{ fc['weather.smhi_home'].forecast if fc is defined and 'weather.smhi_home' in fc else [] }}"
+      forecast: '{{ fc[''weather.smhi_home''].forecast if fc is defined and ''weather.smhi_home''
+        in fc else [] }}'
   mode: single
 - id: '1795400000002'
   alias: Värmepumpen, följ plan
@@ -2841,7 +2859,9 @@
     minutes: /15
   conditions:
   - condition: template
-    value_template: "{{ states('switch.varmepumpen_a') in ['on', 'off'] and is_state('binary_sensor.varmepump_blockerad_enligt_plan', 'on') != is_state('switch.varmepumpen_a', 'on') }}"
+    value_template: '{{ states(''switch.varmepumpen_a'') in [''on'', ''off''] and
+      is_state(''binary_sensor.varmepump_blockerad_enligt_plan'', ''on'') != is_state(''switch.varmepumpen_a'',
+      ''on'') }}'
   actions:
   - if:
     - condition: state
