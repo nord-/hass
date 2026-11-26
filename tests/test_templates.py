@@ -61,7 +61,7 @@ def _binary_sensor_state_template() -> str:
 
 
 NOW = datetime(2026, 11, 20, 13, 30)
-TAIL = "|t=-1.0;l=0.50;k=0.50;c=0.50;b=6.00;p=2.00"
+TAIL = "|t=-1.0;l=0.50;k=0.50;c=0.50;b=6.00;p=2.00;e=0.20"
 
 
 def blocked(plan_a, plan_b="", now=NOW, enabled="on"):
@@ -166,6 +166,7 @@ def test_card_info_line():
     assert "Justering 50 %" in text
     assert "Max blockering 6.00 h" in text
     assert "Minsta paus 2.00 h" in text
+    assert "Minsta prisskillnad 0.20 kr" in text
 
 
 def test_card_no_tomorrow_after_15():
@@ -188,10 +189,11 @@ def test_card_empty_blocks():
 
 
 def test_card_na_fields_show_dash():
-    text = card_text("2026-11-20 |t=na;l=na;k=na;c=na;b=0.00;p=na")
+    text = card_text("2026-11-20 |t=na;l=na;k=na;c=na;b=0.00;p=na;e=na")
     assert "Kallaste 6 h: – · Tvättstuga p10 – · Kök p10 –" in text
     assert "Justering – %" in text
     assert "Minsta paus –" in text
+    assert "Minsta prisskillnad –" in text
     assert "Inga block" in text
 
 
@@ -206,6 +208,7 @@ def test_settings_card_lists_entities():
     assert {f"input_number.heating_block_{n}" for n in ("cold", "chilly", "mild", "warm")} <= ids
     assert {
         "input_number.heating_min_pause",
+        "input_number.heating_min_excess",
         "input_number.heating_laundry_full_p10",
         "input_number.heating_kitchen_floor_p10",
         "sensor.tvattstugan_p10_24h",

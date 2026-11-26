@@ -2111,7 +2111,7 @@ views:
                   {%- set c = field(segs, 'c') -%}
               **{{ label }}:** {{ ns.blocks | join(', ') if ns.blocks else 'Inga block' }}
 
-              Kallaste 6 h: {{ num(field(segs, 't'), '°') }} · Tvättstuga p10 {{ num(field(segs, 'l'), '°') }} · Kök p10 {{ num(field(segs, 'k'), '°') }} · Justering {{ '–' if c == 'na' else ((c | float(0)) * 100) | round(0) | int(0) }} % · Max blockering {{ num(field(segs, 'b'), ' h') }} · Minsta paus {{ num(field(segs, 'p'), ' h') }}
+              Kallaste 6 h: {{ num(field(segs, 't'), '°') }} · Tvättstuga p10 {{ num(field(segs, 'l'), '°') }} · Kök p10 {{ num(field(segs, 'k'), '°') }} · Justering {{ '–' if c == 'na' else ((c | float(0)) * 100) | round(0) | int(0) }} % · Max blockering {{ num(field(segs, 'b'), ' h') }} · Minsta paus {{ num(field(segs, 'p'), ' h') }} · Minsta prisskillnad {{ num(field(segs, 'e'), ' kr') }}
 
               {% endif -%}
               {%- endfor -%}
@@ -4009,6 +4009,7 @@ views:
               - input_number.heating_block_mild
               - input_number.heating_block_warm
               - input_number.heating_min_pause
+              - input_number.heating_min_excess
               - input_number.heating_laundry_full_p10
               - input_number.heating_kitchen_floor_p10
               - sensor.tvattstugan_p10_24h
