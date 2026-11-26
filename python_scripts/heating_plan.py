@@ -31,8 +31,8 @@ MIN_FORECAST_ENTRIES = 18
 COLDEST_HOURS = 6
 QUARTER_EPSILON = 1e-9
 SUM_EPSILON = 1e-9
-MIN_BLOCK_QUARTERS = 4
-RECOVERY_WINDOW_QUARTERS = 48
+MIN_BLOCK_QUARTERS = 8
+RECOVERY_WINDOW_QUARTERS = 96
 
 
 def read_number(entity_id):
@@ -220,8 +220,9 @@ def block_values(prices, m, excess):
     """values[i][L]: the worth of blocking quarters [i, i + L).
 
     The slab floor and a compressor capped near its normal power spread the
-    repayment of a block over many hours, so a block is valued against the
-    mean price of the 12 h after it: sum(price - window mean - excess).
+    repayment of a block over a day or more, so a block is valued against the
+    mean price of the 24 h after it: sum(price - window mean - excess). That
+    lets the cheap night count for a morning peak as well as an evening one.
     Quarters of the window past midnight count at the day mean, since the
     next day's prices are unknown.
     """

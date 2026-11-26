@@ -388,10 +388,10 @@ def block_quarters(block):
 
 THURSDAY_CASES = [
     ("small limit", {"helpers": {"input_number.heating_block_chilly": "3"}}, day(-2.5),
-     ["10:15-12:15", "15:15-16:15"]),
+     ["08:30-11:30"]),
     ("default limit", {}, day(-2.5), ["08:15-16:15"]),
-    ("one hour", {"helpers": {"input_number.heating_block_chilly": "1"}}, day(-2.5),
-     ["15:15-16:15"]),
+    ("two hours", {"helpers": {"input_number.heating_block_chilly": "2"}}, day(-2.5),
+     ["09:30-11:30"]),
     ("large limit", {}, day(7.5), ["07:15-19:15"]),
 ]
 
@@ -418,8 +418,15 @@ def test_thursday_default_limit():
     assert thursday_plan("default limit")[1] == expected_blocks("default limit")
 
 
-def test_thursday_one_hour():
-    assert thursday_plan("one hour")[1] == expected_blocks("one hour")
+def test_thursday_two_hours():
+    assert thursday_plan("two hours")[1] == expected_blocks("two hours")
+
+
+def test_limit_below_the_minimum_block_gives_no_blocks():
+    states = make_states(helpers={"input_number.heating_block_chilly": "1.75"})
+    _, blocks, info = planned(run(states, day(-2.5)))[1]
+    assert info["b"] == "1.75"
+    assert blocks == []
 
 
 def test_thursday_large_limit():
@@ -440,9 +447,9 @@ def test_block_rules(label):
     assert sum(end - start for start, end in spans) <= b
     for index, (start, end) in enumerate(spans):
         length = end - start
-        assert 4 <= length <= b
-        known = prices[end:min(end + 48, 96)]
-        reference = (sum(known) + (48 - len(known)) * mean) / 48
+        assert 8 <= length <= b
+        known = prices[end:min(end + 96, 96)]
+        reference = (sum(known) + (96 - len(known)) * mean) / 96
         assert sum(prices[start:end]) / length - reference > 0.10
         if index + 1 < len(spans):
             assert spans[index + 1][0] - end >= pause
@@ -455,18 +462,20 @@ def test_flat_day_no_blocks():
 
 
 def test_only_the_expensive_part():
+    # One expensive hour: the block is the 2 h minimum around it, not the 8 h limit.
     prices = day_prices(0.50, [(0, 2, -0.2), (17, 18, 1.5)])
-    assert blocks_of(run(make_states(prices=prices), day(-2.5))) == ["17:00-18:00"]
+    assert blocks_of(run(make_states(prices=prices), day(-2.5))) == ["17:00-19:00"]
 
 
 def test_tie_is_deterministic():
-    # Two equal peaks 13 h apart. The dips keep the day mean at 1.0, so the second
-    # peak's window (10 h known + 2 h at the day mean) equals the first one's.
-    prices = day_prices(1.0, [(0, 1, 2.0), (5, 6, 0.0), (13, 14, 2.0), (18, 19, 0.0)])
-    helpers = {"input_number.heating_block_chilly": "1"}
+    # Two equal 2 h peaks 12 h apart, and a limit that fits one of them. Their
+    # 24 h windows have the same mean: the first sees the second peak, the
+    # second sees 12 h more of the day mean (7/6), which weighs the same.
+    prices = day_prices(1.0, [(0, 2, 2.0), (12, 14, 2.0)])
+    helpers = {"input_number.heating_block_chilly": "2"}
     for _ in range(3):
         result = run(make_states(prices=prices, helpers=helpers), day(-2.5))
-        assert blocks_of(result) == ["00:00-01:00"]
+        assert blocks_of(result) == ["00:00-02:00"]
 
 
 MIDNIGHT_PRICES = [(0, 3, 3.0)]
@@ -474,9 +483,9 @@ INFO_TAIL = "|t=-2.5;l=22.50;k=22.00;c=1.00;b=8.00;p=2.00"
 
 
 @pytest.mark.parametrize("today_slot, expected", [
-    ("2026-11-20 21:00-24:00" + INFO_TAIL, ["02:00-03:00"]),
-    ("2026-11-20 22:30-23:30" + INFO_TAIL, ["01:30-03:00"]),
-    ("2026-11-20 08:00-09:00,22:30-23:30" + INFO_TAIL, ["01:30-03:00"]),
+    ("2026-11-20 21:00-24:00" + INFO_TAIL, ["02:00-04:00"]),
+    ("2026-11-20 22:30-23:30" + INFO_TAIL, ["01:30-03:30"]),
+    ("2026-11-20 08:00-09:00,22:30-23:30" + INFO_TAIL, ["01:30-03:30"]),
     ("2026-11-19 21:00-24:00" + INFO_TAIL, ["00:00-03:00"]),
 ])
 def test_midnight_gap_carried(today_slot, expected):
@@ -491,18 +500,18 @@ def test_midnight_gap_carried_from_slot_b():
                          slot_b="2026-11-20 21:00-24:00" + INFO_TAIL)
     entity, (_, blocks, _) = planned(run(states, day(-2.5)))
     assert entity == "input_text.heating_plan_a"
-    assert blocks == ["02:00-03:00"]
+    assert blocks == ["02:00-04:00"]
 
 
 @pytest.mark.parametrize("today_slot, expected", [
     ("2026-11-20 xx|yy", ["00:00-03:00"]),
     ("2026-11-20 ", ["00:00-03:00"]),
     ("2026-11-20", ["00:00-03:00"]),
-    ("2026-11-20 21:00-24:00,|yy", ["02:00-03:00"]),
+    ("2026-11-20 21:00-24:00,|yy", ["02:00-04:00"]),
     ("2026-11-20 21:00-2²:00|yy", ["00:00-03:00"]),
     # The last valid piece is 21:00-24:00; the malformed ones after it are skipped.
     ("2026-11-20 21:00-24:00,25:00-26:00,22:00-21:00,23:10-23:40,ab:cd-ef:gh|yy",
-     ["02:00-03:00"]),
+     ["02:00-04:00"]),
 ])
 def test_garbage_slots(today_slot, expected):
     states = make_states(prices=day_prices(1.0, MIDNIGHT_PRICES), slot_a="hello",
@@ -521,7 +530,32 @@ def test_worst_case_runtime():
     assert result.elapsed < 0.5
 
 
-def test_recovery_spreads_over_twelve_hours():
+def load_day(name):
+    with open(FIXTURE.parent / name, encoding="utf8") as fil:
+        raw = json.load(fil)
+    return [{"start": dt.datetime.fromisoformat(e["start"]),
+             "end": dt.datetime.fromisoformat(e["end"]),
+             "value": e["value"]} for e in raw]
+
+
+def test_two_peaks_get_a_block_each():
+    """2026-11-27: a morning peak (4.37 kr at 08-09), an evening peak and a cheap night.
+
+    Valued against the 12 h after each block the plan was 12:15-18:30: the
+    morning peak looked expensive to repay, because the cheap night lay
+    outside its window, and the heat pump ran through the day's dearest hour.
+    """
+    states = make_states(prices=load_day("prices_2026-11-27.json"), laundry="22.62", kitchen="22.18",
+                         helpers={"input_number.heating_min_excess": "0.2"})
+    forecast = make_forecast([-4.5] * 24, "2026-11-26T23:00:00+00:00")
+    now = dt.datetime(2026, 11, 26, 13, 30, tzinfo=LOCAL)
+    tomorrow, blocks, info = planned(run(states, forecast, now))[1]
+    assert tomorrow == "2026-11-27"
+    assert (info["b"], info["p"]) == ("6.25", "2.00")
+    assert blocks == ["07:45-11:45", "16:00-18:15"]
+
+
+def test_evening_plateau_is_blocked():
     """2026-11-22: the evening plateau is blocked, not the cheaper hours after it.
 
     Valued against the 1.5 h gap after each block the plan was
