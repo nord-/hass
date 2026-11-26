@@ -109,7 +109,8 @@
       - fri
     then:
     - service: script.turn_on_morning_lights
-      data: {}
+      data:
+        skip_bedroom: '{{ is_state(''person.frida'', ''home'') }}'
     alias: When triggered by weekday on a weekday
   - if:
     - condition: trigger
