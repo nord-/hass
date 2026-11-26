@@ -21,13 +21,14 @@ ANCHOR_ENTITIES = [
 ANCHOR_DEFAULTS = [4.0, 8.0, 10.0, 12.0]
 PAUSE_ENTITY = "input_number.heating_min_pause"
 PAUSE_DEFAULT = 2.0
+EXCESS_ENTITY = "input_number.heating_min_excess"
+EXCESS_DEFAULT = 0.20
 LAUNDRY_FULL_DEFAULT = 22.0
 KITCHEN_FLOOR_DEFAULT = 21.0
 
 QUARTERS_PER_DAY = 96
 MIN_FORECAST_ENTRIES = 18
 COLDEST_HOURS = 6
-MIN_BLOCK_EXCESS = 0.10
 QUARTER_EPSILON = 1e-9
 SUM_EPSILON = 1e-9
 MIN_BLOCK_QUARTERS = 4
@@ -215,12 +216,12 @@ def carried_gap(today_iso, pause):
     return 0
 
 
-def block_values(prices, m):
+def block_values(prices, m, excess):
     """values[i][L]: the worth of blocking quarters [i, i + L).
 
     The slab floor and a compressor capped near its normal power spread the
     repayment of a block over many hours, so a block is valued against the
-    mean price of the 12 h after it: sum(price - window mean - 0.10).
+    mean price of the 12 h after it: sum(price - window mean - excess).
     Quarters of the window past midnight count at the day mean, since the
     next day's prices are unknown.
     """
@@ -238,12 +239,12 @@ def block_values(prices, m):
             unknown = RECOVERY_WINDOW_QUARTERS - (window_end - end)
             window_sum = prefix[window_end] - prefix[end] + unknown * day_mean
             reference = window_sum / float(RECOVERY_WINDOW_QUARTERS)
-            row[length] = prefix[end] - prefix[i] - length * (reference + MIN_BLOCK_EXCESS)
+            row[length] = prefix[end] - prefix[i] - length * (reference + excess)
         values.append(row)
     return values
 
 
-def optimise(prices, b, pause, first_free):
+def optimise(prices, b, pause, excess, first_free):
     """Blocks as [[start, end], ...] quarter indices (end exclusive).
 
     Interval DP: g[i][u] is the best total block value from quarter i to the
@@ -251,7 +252,7 @@ def optimise(prices, b, pause, first_free):
     are spent. A block may use the whole limit; blocks are `pause` apart.
     """
     n = QUARTERS_PER_DAY
-    values = block_values(prices, b)
+    values = block_values(prices, b, excess)
 
     g = [None] * (n + 1)
     g[n] = [0.0] * (b + 1)
@@ -326,7 +327,7 @@ def main():
     if quarters is None:
         return
     if len(quarters) != QUARTERS_PER_DAY:
-        write_plan(tomorrow_iso, "", "t=na;l=na;k=na;c=na;b=0.00;p=na")
+        write_plan(tomorrow_iso, "", "t=na;l=na;k=na;c=na;b=0.00;p=na;e=na")
         return
 
     # Step 3: outdoor temperature.
@@ -352,16 +353,17 @@ def main():
     # Step 6: daily block limit and pause in whole quarters.
     b = floor_quarters(base * correction)
     pause = pause_quarters()
+    excess = max(0.0, read_helper(EXCESS_ENTITY, EXCESS_DEFAULT, True))
 
     # Step 7: optimise and write.
     blocks = []
     if b >= MIN_BLOCK_QUARTERS:
-        blocks = optimise(quarters, b, pause, carried_gap(today.isoformat(), pause))
+        blocks = optimise(quarters, b, pause, excess, carried_gap(today.isoformat(), pause))
     # Avoid formatting a tiny negative mean as t=-0.0.
     if abs(outdoor) < 0.05:
         outdoor = 0.0
-    info = "t=%.1f;l=%.2f;k=%.2f;c=%.2f;b=%.2f;p=%.2f" % (
-        outdoor, laundry, kitchen, correction, b / 4.0, pause / 4.0)
+    info = "t=%.1f;l=%.2f;k=%.2f;c=%.2f;b=%.2f;p=%.2f;e=%.2f" % (
+        outdoor, laundry, kitchen, correction, b / 4.0, pause / 4.0, excess)
     write_plan(tomorrow_iso, format_blocks(blocks), info)
 
 

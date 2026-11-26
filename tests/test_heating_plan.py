@@ -22,6 +22,7 @@ DEFAULT_HELPERS = {
     "input_number.heating_block_mild": "10",
     "input_number.heating_block_warm": "12",
     "input_number.heating_min_pause": "2",
+    "input_number.heating_min_excess": "0.1",
     "input_number.heating_laundry_full_p10": "22.0",
     "input_number.heating_kitchen_floor_p10": "21.0",
 }
@@ -170,6 +171,34 @@ def test_helper_defaults_pause(pause):
     assert info_of(run(states, day(-2.5)))["p"] == "2.00"
 
 
+@pytest.mark.parametrize("excess", ["0", "unknown", "abc", None])
+def test_helper_defaults_excess(excess):
+    helpers = {"input_number.heating_min_excess": excess}
+    states = make_states(helpers=helpers if excess is not None else None)
+    if excess is None:
+        del states["input_number.heating_min_excess"]
+    assert info_of(run(states, day(-2.5)))["e"] == "0.20"
+
+
+def test_excess_helper_decides_what_is_worth_blocking():
+    """2026-11-22: the evening plateau is about 0.4 kr above the 12 h after it."""
+    with open(FIXTURE.parent / "prices_2026-11-22.json", encoding="utf8") as fil:
+        raw = json.load(fil)
+    prices = [{"start": dt.datetime.fromisoformat(e["start"]),
+               "end": dt.datetime.fromisoformat(e["end"]),
+               "value": e["value"]} for e in raw]
+    forecast = make_forecast([-1.7] * 24, "2026-11-21T23:00:00+00:00")
+    now = dt.datetime(2026, 11, 21, 13, 30, tzinfo=LOCAL)
+
+    def plan_with(excess):
+        states = make_states(prices=prices, helpers={"input_number.heating_min_excess": excess})
+        _, blocks, info = planned(run(states, forecast, now))[1]
+        return blocks, info["e"]
+
+    assert plan_with("0.2") == (["14:30-22:45"], "0.20")
+    assert plan_with("0.4") == ([], "0.40")
+
+
 def test_pause_helper():
     states = make_states(helpers={"input_number.heating_min_pause": "3.1"})
     assert info_of(run(states, day(-2.5)))["p"] == "3.00"
@@ -285,12 +314,12 @@ def test_dst_day_empty_plan():
     result = run(make_states(prices=spring), day(0.0), now=dt.datetime(2027, 3, 27, 13, 30, tzinfo=LOCAL))
     assert result.exception is None
     assert len(result.service_calls) == 1
-    assert result.service_calls[0][2]["value"] == "2027-03-28 |t=na;l=na;k=na;c=na;b=0.00;p=na"
+    assert result.service_calls[0][2]["value"] == "2027-03-28 |t=na;l=na;k=na;c=na;b=0.00;p=na;e=na"
     autumn = contiguous_quarters(dt.datetime(2027, 10, 31, tzinfo=LOCAL), 100)
     result = run(make_states(prices=autumn), day(0.0), now=dt.datetime(2027, 10, 30, 13, 30, tzinfo=LOCAL))
     assert result.exception is None
     assert len(result.service_calls) == 1
-    assert result.service_calls[0][2]["value"] == "2027-10-31 |t=na;l=na;k=na;c=na;b=0.00;p=na"
+    assert result.service_calls[0][2]["value"] == "2027-10-31 |t=na;l=na;k=na;c=na;b=0.00;p=na;e=na"
 
 
 def test_dst_day_with_gap_is_an_error():
