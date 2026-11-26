@@ -49,6 +49,13 @@ vrum_uppe:
     - switch.tz3000_1_brudkistan_switch
     - switch.tz3000_2_byran_uppe_switch
 
+morgon_uppe:
+  name: Morgonbelysning, uppe
+  entities:
+    - switch.tz3000_2_byran_uppe_switch
+    - light.office_window
+    - light.kontoret_fonstret
+
 sovrummet:
   # id: 202111222351
   name: Sovrummet

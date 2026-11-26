@@ -177,6 +177,13 @@ turn_on_all_lights:
   mode: single
 turn_on_morning_lights:
   alias: Tänd morgonbelysning
+  fields:
+    skip_bedroom:
+      name: Hoppa över sovrummet
+      description: Tänd inte sovrummet, t.ex. när Frida sover.
+      default: false
+      selector:
+        boolean: {}
   sequence:
   - data: {}
     target:
@@ -184,12 +191,18 @@ turn_on_morning_lights:
       - group.grovkoket
       - group.koket
       - group.hallen
-      - light.office_window
       - light.fibaro_system_fgd212_dimmer_2_level_2
-      - group.sovrummet
-      - switch.tz3000_2_byran_uppe_switch
-      - light.kontoret_fonstret
+      - group.morgon_uppe
     action: homeassistant.turn_on
+  - alias: Turn on the bedroom unless asked to skip it
+    if:
+    - condition: template
+      value_template: '{{ not (skip_bedroom | default(false)) }}'
+    then:
+    - data: {}
+      target:
+        entity_id: group.sovrummet
+      action: homeassistant.turn_on
   - data:
       brightness_pct: 1
     target:
